@@ -1,0 +1,14 @@
+<div class="starter-template">
+    {{#document}}
+        <h1>{{title}}</h1>
+        <h3>{{category}}</h3>
+        <h3>{{csaf_version}}</h3>
+        {{#acknowledgments}}
+            <h2>{{organization}}</h2>
+            <div>{{summary}}</div>
+            {{#urls}}
+                <a>{{this}}</a>
+            {{/urls}}
+        {{/acknowledgments}}
+    {{/document}}
+</div>

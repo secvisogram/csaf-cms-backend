@@ -1,5 +1,20 @@
 # Secvisogram Backend
 
+## Gradle
+
+### build and execute tests
+
+./gradlew clean build
+
+### Start application
+
+main-class: de.exxcellent.bsi.SecvisogramApplication
+
+### check application running
+
+http://localhost:8080/2.0/about
+
+
 ## Spring boot
 
 ### Getting Started
@@ -30,3 +45,31 @@ These additional references should also help you:
 ## Code Quality Rules
 
 [Exxcellent Code Quality Rules] (https://www.exxcellent.de/confluence/pages/viewpage.action?pageId=65113099)
+
+
+## Links
+
+### CSAF 
+[OASIS CSAF](https://oasis-open.github.io/csaf-documentation/)
+
+[BSI CSAF](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Empfehlungen-nach-Angriffszielen/Industrielle-Steuerungs-und-Automatisierungssysteme/CSAF/CSAF_node.html)
+
+### JSON
+- [CSAF 2.0 JSON Schema](https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json)
+- [JSON Schema](https://json-schema.org/draft/2019-09/json-schema-core.html)
+- [JSON Schema Validation](https://json-schema.org/draft/2019-09/json-schema-validation.html)
+- [JSON Hyper-Schema](https://json-schema.org/draft/2019-09/json-schema-hypermedia.html)
+- [CVSS 2.0](https://www.first.org/cvss/cvss-v2.0.json)
+- [CVSS 3.0](https://www.first.org/cvss/cvss-v3.0.json)
+- [CVSS 3.1](https://www.first.org/cvss/cvss-v3.1.json)
+- [JSON API](https://jsonapi.org/)
+
+
+### Mustache
+
+[Mustache samskivert](https://github.com/samskivert/jmustache)
+
+
+### PoC for Backend
+
+(https://github.com/csaf-poc/csaf_backend)
