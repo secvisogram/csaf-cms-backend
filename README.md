@@ -8,7 +8,11 @@
 
 ### Start application
 
-main-class: de.exxcellent.bsi.SecvisogramApplication
+./gradlew bootRun
+
+or 
+
+with main class: de.exxcellent.bsi.SecvisogramApplication
 
 ### check application running
 
