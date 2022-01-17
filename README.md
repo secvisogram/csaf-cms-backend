@@ -18,6 +18,14 @@ with main class: de.exxcellent.bsi.SecvisogramApplication
 
 http://localhost:8080/2.0/about
 
+Swagger UI
+
+http://localhost:8080/swagger-ui.html
+
+OpenAPI Spezifikation
+
+http://localhost:8080/v3/api-docs/
+
 
 ## Spring boot
 
@@ -67,6 +75,8 @@ These additional references should also help you:
 - [CVSS 3.0](https://www.first.org/cvss/cvss-v3.0.json)
 - [CVSS 3.1](https://www.first.org/cvss/cvss-v3.1.json)
 - [JSON API](https://jsonapi.org/)
+- [JSON Patch](http://jsonpatch.com/)
+- [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901)
 
 
 ### Mustache
@@ -76,4 +86,8 @@ These additional references should also help you:
 
 ### PoC for Backend
 
-(https://github.com/csaf-poc/csaf_backend)
+[PoC Backend](https://github.com/csaf-poc/csaf_backend)
+
+### Open API
+
+https://www.openapis.org/
