@@ -18,3 +18,11 @@ jobs:
         run: chmod +x ./gradlew
       - name: Execute Gradle build
         run: ./gradlew build
+  lint-markdown:
+    name: Lint all markdowns in project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lintmark downs
+        uses: nosborn/github-action-markdown-cli@v3.0.1
+        with:
+          files: .
