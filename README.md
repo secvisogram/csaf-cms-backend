@@ -100,4 +100,10 @@ These additional references should also help you:
 
 #### Open API
 
-https://www.openapis.org/
+[Open API](https://www.openapis.org/)
+
+#### diagrams.net (formerly known as draw.io)
+
+- [diagrams.net](https://www.diagrams.net/)
+
+- [Intellij Integration](https://plugins.jetbrains.com/plugin/15635-diagrams-net-integration)

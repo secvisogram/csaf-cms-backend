@@ -25,4 +25,4 @@ jobs:
       - name: Lintmark downs
         uses: nosborn/github-action-markdown-cli@v3.0.1
         with:
-          files: .
+          files: ./*
