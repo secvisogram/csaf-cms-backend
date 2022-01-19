@@ -1,16 +1,18 @@
 # Secvisogram Backend
 
-## Gradle
+## Introduction
 
-### build and execute tests
+##  Getting started
+
+### gradle: build and execute tests
 
 ./gradlew clean build
 
-### Start application
+### gradle: start application
 
 ./gradlew bootRun
 
-or 
+###
 
 with main class: de.exxcellent.bsi.SecvisogramApplication
 
@@ -26,10 +28,18 @@ OpenAPI Spezifikation
 
 http://localhost:8080/v3/api-docs/
 
+## How to use
 
-## Spring boot
+...
 
-### Getting Started
+## Contributing
+
+
+...
+
+## Dependencies
+
+### Spring Boot
 
 #### Reference Documentation
 For further reference, please consider the following sections:
@@ -54,19 +64,19 @@ These additional references should also help you:
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
 
 
-## Code Quality Rules
+### Code Quality Rules
 
-[Exxcellent Code Quality Rules] (https://www.exxcellent.de/confluence/pages/viewpage.action?pageId=65113099)
+[Exxcellent Code Quality Rules](https://www.exxcellent.de/confluence/pages/viewpage.action?pageId=65113099)
 
 
-## Links
+### Links
 
-### CSAF 
+#### CSAF 
 [OASIS CSAF](https://oasis-open.github.io/csaf-documentation/)
 
 [BSI CSAF](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Empfehlungen-nach-Angriffszielen/Industrielle-Steuerungs-und-Automatisierungssysteme/CSAF/CSAF_node.html)
 
-### JSON
+#### JSON
 - [CSAF 2.0 JSON Schema](https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json)
 - [JSON Schema](https://json-schema.org/draft/2019-09/json-schema-core.html)
 - [JSON Schema Validation](https://json-schema.org/draft/2019-09/json-schema-validation.html)
@@ -79,15 +89,15 @@ These additional references should also help you:
 - [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901)
 
 
-### Mustache
+#### Mustache
 
 [Mustache samskivert](https://github.com/samskivert/jmustache)
 
 
-### PoC for Backend
+#### PoC for Backend
 
 [PoC Backend](https://github.com/csaf-poc/csaf_backend)
 
-### Open API
+#### Open API
 
 https://www.openapis.org/
