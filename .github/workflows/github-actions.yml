@@ -22,7 +22,9 @@ jobs:
     name: Lint all markdowns in project
     runs-on: ubuntu-latest
     steps:
-      - name: Lintmark downs
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Lint markdowns
         uses: nosborn/github-action-markdown-cli@v3.0.1
         with:
           files: '**/*.md'
