@@ -1,11 +1,11 @@
 # Datenmodel
 
-## data
+## Additional data
 
 The persistence layer holds **CSAF-documents**
-in the ["Common Security Advisory Framework Version 2.0"]
-(<https://github.com/oasis-tcs/csaf/blob/master/csaf_2.0/
-prose/csaf-v2-editor-draft.md>) format.
+in the ["Common Security Advisory Framework Version 2.0"](<https://github.
+com/oasis-tcs/csaf/blob/master/csaf_2.0/prose/csaf-v2-editor-draft.md>)
+format.
 For every CSAF-document some additional information is necessary.
 
 This additional information are:
@@ -14,7 +14,7 @@ This additional information are:
 - comments and answers
 - the audit trail
 
-### workflow state
+### Workflow state
 
 The workflow state is not part of the **CSAF-document**.
 
