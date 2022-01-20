@@ -3,8 +3,8 @@
 ## Additional data
 
 The persistence layer holds **CSAF-documents**
-in the ["Common Security Advisory Framework Version 2.0"](<https://github.
-com/oasis-tcs/csaf/blob/master/csaf_2.0/prose/csaf-v2-editor-draft.md>)
+in the ["Common Security Advisory Framework Version 2.0"](`https://github.
+com/oasis-tcs/csaf/blob/master/csaf_2.0/prose/csaf-v2-editor-draft.md>`)
 format.
 For every CSAF-document some additional information is necessary.
 
