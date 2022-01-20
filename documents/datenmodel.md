@@ -2,7 +2,9 @@
 
 ## data
 
-The persistence layer holds **CSAF-documents** in the ["Common Security Advisory Framework Version 2.0"](https://github.com/oasis-tcs/csaf/blob/master/csaf_2.0/prose/csaf-v2-editor-draft.md) format. 
+The persistence layer holds **CSAF-documents** 
+in the ["Common Security Advisory Framework Version 2.0"]
+(https://github.com/oasis-tcs/csaf/blob/master/csaf_2.0/prose/csaf-v2-editor-draft.md) format. 
 For every CSAF-document some additional information is necessary.
 
 This additional information are:
@@ -26,7 +28,8 @@ The comments could be for the whole document, a line or an area.
 
 It should be possible to **answer** to a comment.
 
-Every comment should hold the **user**, the **timestamp** and the **comment text**  
+Every comment should hold the **user**, the **timestamp** 
+and the **comment text**
 
 ### Audi trail
 
@@ -36,12 +39,13 @@ For every change the **user**, the **timestamp** and the **changes** should be s
 
 The change should record the:
 - creation and edit of documents
-- changes of the workflow-status 
+- changes of the workflow-status
 - creation and edit of comments and answers
 
 ## Logisches Datenmodel
 
 ## Assumptions
+
 for the model we assume the following assumptions:
 
 - no additional data is hold in the **CSAF-document**
@@ -57,7 +61,7 @@ Holds the **CSAF-document** and the following additional data:
 | Field         | Usage                                            |
 |---------------|--------------------------------------------------|
 | id            | unique database id of the document               |
-| createdBy     | user who created the initial dokument            | 
+| createdBy     | user who created the initial dokument            |
 | workflowState | current workflow state of the document           |
 | casfDocument | the current version of the managed casf document |
 
@@ -71,7 +75,7 @@ have zero to many comments.
 | id          | unique database id of the csaf document              |
 | documentId  | the id of the document holder the comment belongs to |
 | version     | the version of the csaf document                     |
-| createdBy   | user who created the comment                         | 
+| createdBy   | user who created the comment                         |
 | createdAt   | the timestamp of the creation                        |
 | jsonPath    | the path to the element in the casf document         |
 | commentText | the free text of the comment                         |
@@ -86,7 +90,7 @@ All **audit trail entries** have the following field:
 | id         | unique database id of the csaf document            |
 | documentId | the id of the document holder the entry belongs to |
 | version    | the version of the csaf document                   |
-| user       | user who is responsible for the entry              | 
+| user       | user who is responsible for the entry              |
 | createdAt  | the timestamp of the creation                      |
 
 A **document change**  has the following additional fields
@@ -101,13 +105,11 @@ A **comment change**  has the following additional fields
 |-------|--------------------------------|
 | diff  | The changes in the commentText |
 
-
 A **workflow change**  has the following additional fields
 
 | Field    | Usage                  |
 |----------|------------------------|
 | oldState | The old workflow state |
 | newState | The new workflow state |
-
 
 ![Logisches Datenmodel](logical_datamodel.drawio.svg)
