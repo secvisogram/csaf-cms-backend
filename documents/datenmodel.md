@@ -2,9 +2,10 @@
 
 ## data
 
-The persistence layer holds **CSAF-documents** 
+The persistence layer holds **CSAF-documents**
 in the ["Common Security Advisory Framework Version 2.0"]
-(https://github.com/oasis-tcs/csaf/blob/master/csaf_2.0/prose/csaf-v2-editor-draft.md) format. 
+(<https://github.com/oasis-tcs/csaf/blob/master/csaf_2.0/
+prose/csaf-v2-editor-draft.md>) format.
 For every CSAF-document some additional information is necessary.
 
 This additional information are:
@@ -28,7 +29,7 @@ The comments could be for the whole document, a line or an area.
 
 It should be possible to **answer** to a comment.
 
-Every comment should hold the **user**, the **timestamp** 
+Every comment should hold the **user**, the **timestamp**
 and the **comment text**
 
 ### Audi trail
@@ -38,6 +39,7 @@ For every **CSAF-document** an audit trail should be recorded.
 For every change the **user**, the **timestamp** and the **changes** should be saved.
 
 The change should record the:
+
 - creation and edit of documents
 - changes of the workflow-status
 - creation and edit of comments and answers
