@@ -45,7 +45,8 @@ The change should record the:
 for the model we assume the following assumptions:
 
 - no additional data is hold in the **CSAF-document**
-- the **CSAF-document**, the comments and the audit trail are hold in different database documents to hold the size limits of the database
+- the **CSAF-document**, the **comments** and the **audit trail** are hold
+in different database documents to hold the size limits of the database
 
 ### Locial Model
 
@@ -62,7 +63,8 @@ Holds the **CSAF-document** and the following additional data:
 
 #### Comments
 
-A comment or an answer to a **CSAF-document**. A CSAF-document could have zero to many comments.
+A comment or an answer to a **CSAF-document**. A CSAF-document could
+have zero to many comments.
 
 | Field       | Usage                                                |
 |-------------|------------------------------------------------------|
