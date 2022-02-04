@@ -4,24 +4,19 @@ import java.time.LocalDate;
 
 public class AuditTrailEntryResponse {
 
-    private long advisoryId;
-    private String advisoryVersion;
-    private String userId;
-    private LocalDate createdAt;
+    private CommentChangeResponse commentChangeResponse;
+    private DocumentChangeResponse documentChangeResponse;
+    private WorkflowChangeResponse workflowChangeResponse;
 
-    public long getAdvisoryId() {
-        return advisoryId;
+    public CommentChangeResponse getCommentChangeResponse() {
+        return commentChangeResponse;
     }
 
-    public String getAdvisoryVersion() {
-        return advisoryVersion;
+    public DocumentChangeResponse getDocumentChangeResponse() {
+        return documentChangeResponse;
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public LocalDate getCreatedAt() {
-        return createdAt;
+    public WorkflowChangeResponse getWorkflowChangeResponse() {
+        return workflowChangeResponse;
     }
 }

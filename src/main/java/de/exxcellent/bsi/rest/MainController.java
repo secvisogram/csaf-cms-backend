@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(SecvisogramApplication.BASE_ROUTE)
-@Tag(name = "User API", description = "User Management API")
 public class MainController {
 
     private static final Logger LOG = LoggerFactory.getLogger(MainController.class);

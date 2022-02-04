@@ -22,7 +22,7 @@ http://localhost:8080/api/2.0/about
 
 Swagger UI
 
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/swagger-ui/
 
 OpenAPI Spezifikation
 
@@ -98,9 +98,10 @@ These additional references should also help you:
 
 [PoC Backend](https://github.com/csaf-poc/csaf_backend)
 
-#### Open API
+#### Open API/ Swagger
 
 [Open API](https://www.openapis.org/)
+[Swagger Annotations](https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations)
 
 #### diagrams.net (formerly known as draw.io)
 

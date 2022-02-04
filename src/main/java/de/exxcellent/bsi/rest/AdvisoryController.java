@@ -5,22 +5,27 @@ import de.exxcellent.bsi.SecvisogramApplication;
 import de.exxcellent.bsi.model.ExportFormat;
 import de.exxcellent.bsi.model.WorkflowState;
 import de.exxcellent.bsi.rest.response.*;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * API for for Creating, Retrieving, Updating and Deleting of CSAF Dokuments,
+ * including their Versions, Audit Trails, Comments and Workflow States.
+ */
 @RestController
 @RequestMapping(SecvisogramApplication.BASE_ROUTE +"advisories")
-@Api(value = "Advisory API", description = "API for for Creating, Retrieving, Updating and Deleting of CSAF Dokuments, " +
-        "including their Versions, Audit Trails, Comments and Workflow States.")
+@Tag(name = "Advisory", description = "API for for Creating, Retrieving, Updating and Deleting of CSAF Dokuments, including their Versions, Audit Trails, Comments and Workflow States.")
 public class AdvisoryController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryController.class);
@@ -32,7 +37,7 @@ public class AdvisoryController {
      * @return
      */
     @GetMapping("/")
-    @ApiOperation(value="Get all authorized advisories")
+    @Operation(summary = "Get all authorized advisories", tags = { "Advisory" })
     public List<AdvisoryInformationResponse> findAllAdvisories() {
 
         LOG.info("findAll");
@@ -48,6 +53,7 @@ public class AdvisoryController {
      * @return dokument
      */
     @GetMapping("/{advisoryId}/")
+    @Operation(summary = "show and export advisory", tags = { "Advisory" })
     public AdvisoryResponse advisoryById(@PathVariable long advisoryId, @RequestParam(required = false) ExportFormat format) {
 
         return new AdvisoryResponse();
@@ -59,6 +65,7 @@ public class AdvisoryController {
      * @param newCsafJson
      */
     @PostMapping("/")
+    @Operation(summary = "Create advisory", tags = { "Advisory" })
     public void createCsafDocument(@RequestBody String newCsafJson) {
 
     }
@@ -67,6 +74,7 @@ public class AdvisoryController {
      * Aendern von CSAF-Dokumenten
      * @param changedCsafJson
      */
+    @Operation(summary = "Change advisory", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/")
     public void changeCsafDocument(@PathVariable long advisoryId, @RequestBody String changedCsafJson) {
 
@@ -77,31 +85,38 @@ public class AdvisoryController {
      * Loeschen von CSAF-Dokumenten
      * @param advisoryId Id des Dokument, dass geloescht werden soll
      */
+    @Operation(summary = "Delete advisory", tags = { "Advisory" })
     @DeleteMapping("/{advisoryId}/")
     public void deleteAdvisoryWithId(@PathVariable long advisoryId) {
 
     }
 
-/*
-    */
-/**
+    /**
      * Auflisten/Ansehen des Audits-Trails von CSAF-Dokumente
      * @param advisoryId
      * @return
-     *//*
-
+     */
     @GetMapping("/{advisoryId}/auditTrails")
+    @Operation(summary = "Show audit trail of an advisory", tags = { "Advisory" }
+            ,responses = {
+                @ApiResponse(responseCode = "200", description = "Audit Trail Response ", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(type = "object", oneOf = {CommentChangeResponse.class
+                                    , DocumentChangeResponse.class, WorkflowChangeResponse.class})
+                    )
+            ))})
     public List<AuditTrailEntryResponse> auditTrail(@PathVariable long advisoryId) {
 
         return Collections.emptyList();
     }
-*/
 
     /**
      * Auflisten der Versionen von CSAF-Dokumente
      * @param advisoryId
      * @return
      */
+    @Operation(summary = "Show versions of an advisory", tags = { "Advisory" })
     @GetMapping("/{advisoryId}/versions/")
     public List<DocumentChangeResponse> versions(@PathVariable long advisoryId) {
 
@@ -114,6 +129,7 @@ public class AdvisoryController {
      * @param version
      * @return
      */
+    @Operation(summary = "Show all version of an advisory", tags = { "Advisory" })
     @GetMapping("/{advisoryId}/versions/{version}/")
     public AdvisoryResponse version(@PathVariable long advisoryId, @PathVariable String version) {
 
@@ -125,6 +141,7 @@ public class AdvisoryController {
      * @param advisoryId
      * @return
      */
+    @Operation(summary = "Show workflow state of an advisory", tags = { "Advisory" })
     @GetMapping("/{advisoryId}/states/")
     public List<WorkflowChangeResponse> stateChanges(@PathVariable long advisoryId) {
 
@@ -136,6 +153,7 @@ public class AdvisoryController {
      * @param advisoryId
      * @param newState
      */
+    @Operation(summary = "Change workflow state of an advisory", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/state/")
     public void changeWorkflowState(@PathVariable long advisoryId, @RequestBody WorkflowState newState) {
 
@@ -146,6 +164,7 @@ public class AdvisoryController {
      * @param advisoryId
      * @return
      */
+    @Operation(summary = "Show comments an answers of an advisory", tags = { "Advisory" })
     @GetMapping("/{advisoryId}/comments/")
     public List<CommentResponse> comments(@PathVariable long advisoryId) {
 
@@ -157,6 +176,7 @@ public class AdvisoryController {
      * @param advisoryId
      * @param commentText
      */
+    @Operation(summary = "Add comment to an advisory", tags = { "Advisory" })
     @PostMapping("/{advisoryId}/comments")
     public void createComment(@PathVariable long advisoryId, @RequestBody String commentText) {
 
@@ -169,6 +189,7 @@ public class AdvisoryController {
      * @param answerText
      * @return
      */
+    @Operation(summary = "Add answer to an advisory comment", tags = { "Advisory" })
     @PostMapping("/{advisoryId}/comments/{commentId}/answer")
     public void createAnswer(@PathVariable long advisoryId, @PathVariable long commentId, @RequestBody String answerText) {
 
@@ -181,6 +202,7 @@ public class AdvisoryController {
      * @param newCommentText
      * @return
      */
+    @Operation(summary = "Change comment to an advisory", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/comments/{commentId}")
     public List<CommentResponse> changeComments(@PathVariable long advisoryId, @PathVariable long commentId
             , @RequestBody String newCommentText) {
@@ -196,6 +218,7 @@ public class AdvisoryController {
      * @param newAnswerText
      * @return
      */
+    @Operation(summary = "Change answer to an advisory comment", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/comments/{commentId}/answer/{answerId}")
     public List<CommentResponse> changeAnswer(@PathVariable long advisoryId, @PathVariable long commentId
                 , @PathVariable long answerId,  @RequestBody String newAnswerText) {
