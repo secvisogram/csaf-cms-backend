@@ -18,7 +18,7 @@ with main class: de.exxcellent.bsi.SecvisogramApplication
 
 ### check application running
 
-http://localhost:8080/2.0/about
+http://localhost:8080/api/2.0/about
 
 Swagger UI
 

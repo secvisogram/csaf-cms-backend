@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.2'
+	id 'org.springframework.boot' version '2.6.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 }
@@ -16,7 +16,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-couchbase'
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springdoc:springdoc-openapi-ui:1.6.4'
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
