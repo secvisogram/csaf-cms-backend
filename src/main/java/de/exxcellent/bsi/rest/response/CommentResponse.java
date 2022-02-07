@@ -4,24 +4,37 @@ import java.time.LocalDate;
 
 public class CommentResponse {
 
-    private long commentId;
+    private final long commentId;
 
-    private long advisoryId;
+    private final long advisoryId;
 
-    private String createdBy;
+    private final String createdBy;
 
-    private LocalDate createdAt;
+    private final LocalDate createdAt;
 
-    private String advisoryVersion;
+    private final String advisoryVersion;
 
-    private String jsonPath;
+    private final String jsonPath;
 
-    private String commentText;
+    private final String commentText;
 
     /**
-     * Answers references it's question
+     * an Answers references it's question
      */
-    private long questionId;
+    private final long questionId;
+
+
+    public CommentResponse(long commentId, long advisoryId, String createdBy, LocalDate createdAt
+            , String advisoryVersion, String jsonPath, String commentText, long questionId) {
+        this.commentId = commentId;
+        this.advisoryId = advisoryId;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.advisoryVersion = advisoryVersion;
+        this.jsonPath = jsonPath;
+        this.commentText = commentText;
+        this.questionId = questionId;
+    }
 
     public long getAdvisoryId() {
         return advisoryId;

@@ -4,11 +4,15 @@ import de.exxcellent.bsi.model.WorkflowState;
 
 public class AdvisoryInformationResponse {
 
-    private String advisoryId;
-    private WorkflowState status;
+    private final long advisoryId;
+    private final WorkflowState status;
 
+    public AdvisoryInformationResponse(long advisoryId, WorkflowState status) {
+        this.advisoryId = advisoryId;
+        this.status = status;
+    }
 
-    public String getAdvisoryId() {
+    public long getAdvisoryId() {
         return advisoryId;
     }
 

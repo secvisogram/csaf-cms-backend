@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 
 /**
  * Create Html from a mustache template file and Json Input File
@@ -20,7 +21,7 @@ public class MustacheCreator {
         final Mustache.Compiler compiler = Mustache.compiler().withLoader(name -> {
             InputStream inputStream = MustacheCreator.class.getResourceAsStream("/templates/" + name);
             if(inputStream != null) {
-                return new InputStreamReader(inputStream);
+                return new InputStreamReader(inputStream, Charset.forName("UTF-8"));
             } else {
                 throw new RuntimeException("Invalid Template: " + name);
             }
@@ -31,7 +32,7 @@ public class MustacheCreator {
             if(templateStream == null) {
                 throw new RuntimeException("Invalid Template: " + templateName);
             }
-            Template htmlTemplate = compiler.compile(new InputStreamReader(templateStream));
+            Template htmlTemplate = compiler.compile(new InputStreamReader(templateStream, Charset.forName("UTF-8")));
             Object result = new Csaf2MapReader().readCasfDocument(jsonReader);
             return htmlTemplate.execute(result);
         }
@@ -43,7 +44,8 @@ public class MustacheCreator {
         final String jsonFileName =   "exxcellent-2021AB123.json";
         try(InputStream csafJsonStream = Csaf2MapReader.class.getResourceAsStream(jsonFileName)) {
             if(csafJsonStream != null) {
-                System.out.println(new MustacheCreator().createHtml("index.mustache", new InputStreamReader(csafJsonStream)));
+                System.out.println(new MustacheCreator().createHtml("index.mustache"
+                        , new InputStreamReader(csafJsonStream, Charset.forName("UTF-8"))));
             } else {
                 System.out.println("Invalid Json File: "+ jsonFileName);
             }

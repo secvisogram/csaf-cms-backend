@@ -4,9 +4,11 @@ package de.exxcellent.bsi.rest;
 import de.exxcellent.bsi.SecvisogramApplication;
 import de.exxcellent.bsi.model.ExportFormat;
 import de.exxcellent.bsi.model.WorkflowState;
+import de.exxcellent.bsi.model.filter.FilterExpression;
 import de.exxcellent.bsi.rest.response.*;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -38,7 +41,13 @@ public class AdvisoryController {
      */
     @GetMapping("/")
     @Operation(summary = "Get all authorized advisories", tags = { "Advisory" })
-    public List<AdvisoryInformationResponse> findAllAdvisories() {
+    public List<AdvisoryInformationResponse> findAdvisories(@RequestParam(required = false)
+                        @Parameter(in = ParameterIn.QUERY, name = "expression",
+                                description = "the filter expression in JSON format",
+                                schema = @Schema(
+                                        type = "string",
+                                        format = "json",
+                                        description = "filter expression")) String expression) {
 
         LOG.info("findAll");
         return Collections.emptyList();
@@ -47,16 +56,28 @@ public class AdvisoryController {
 
     /**
      * Ansehen von CSAF-Dokumente
-     * Export von CSAF-Dokumenten
      * @param advisoryId Id des CSAF-Dokumente, dass geladen werden soll
-     * @format optional - format of the result
      * @return dokument
      */
     @GetMapping("/{advisoryId}/")
-    @Operation(summary = "show and export advisory", tags = { "Advisory" })
-    public AdvisoryResponse advisoryById(@PathVariable long advisoryId, @RequestParam(required = false) ExportFormat format) {
+    @Operation(summary = "show advisory", tags = { "Advisory" })
+    public AdvisoryResponse advisoryById(@PathVariable long advisoryId) {
 
-        return new AdvisoryResponse();
+        return new AdvisoryResponse(advisoryId, WorkflowState.Draft, "");
+    }
+
+    /**
+     * Export von CSAF-Dokumenten
+     * @param advisoryId Id des CSAF-Dokumente, dass geladen werden soll
+     * @param format optional - format of the result
+     * @return dokument
+     */
+    @GetMapping(value="/{advisoryId}/csaf",produces = {MediaType.APPLICATION_JSON_VALUE,MediaType.TEXT_HTML_VALUE
+            , MediaType.TEXT_MARKDOWN_VALUE, MediaType.APPLICATION_PDF_VALUE})
+    @Operation(summary = "export advisory csaf in different formats", tags = { "Advisory" })
+    public String advisoryById(@PathVariable long advisoryId, @RequestParam(required = false) ExportFormat format) {
+
+        return "";
     }
 
 
@@ -133,7 +154,7 @@ public class AdvisoryController {
     @GetMapping("/{advisoryId}/versions/{version}/")
     public AdvisoryResponse version(@PathVariable long advisoryId, @PathVariable String version) {
 
-        return new AdvisoryResponse();
+        return new AdvisoryResponse(advisoryId, WorkflowState.Draft, "");
     }
 
     /**

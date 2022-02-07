@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -66,7 +67,8 @@ public class Csaf2MapReader {
         try(InputStream csafJsonStream = Csaf2MapReader.class.getResourceAsStream(jsonFileName)) {
 
             if(csafJsonStream != null) {
-                Object result = new Csaf2MapReader().readCasfDocument(new InputStreamReader(csafJsonStream));
+                Object result = new Csaf2MapReader()
+                        .readCasfDocument(new InputStreamReader(csafJsonStream, Charset.forName("UTF-8")));
                 System.out.println(result);
             } else {
                 System.out.println("Invalid Json File: "+ jsonFileName);

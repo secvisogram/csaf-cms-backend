@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id "com.github.spotbugs" version "5.0.5"
 }
 
 group = 'de.exxcellent'
@@ -12,6 +13,8 @@ repositories {
 	mavenCentral()
 }
 
+
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-couchbase'
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
@@ -21,8 +24,35 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
 }
 
 test {
 	useJUnitPlatform()
+}
+
+spotbugs {
+	ignoreFailures = false
+	showStackTraces = true
+	showProgress = true
+	effort = 'default'
+	reportLevel = 'default'
+//	visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
+//	omitVisitors = [ 'FindNonShortCircuit' ]
+	reportsDir = file("$buildDir/spotbugs")
+//	onlyAnalyze = [ 'com.foobar.MyClass', 'com.foobar.mypkg.*' ]
+	maxHeapSize = '1g'
+	extraArgs = [ '-nested:false' ]
+	jvmArgs = [ '-Duser.language=de' ]
+}
+
+// Example to configure HTML report
+spotbugsMain {
+	reports {
+		html {
+			required = true
+			outputLocation = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+			stylesheet = 'fancy-hist.xsl'
+		}
+	}
 }
