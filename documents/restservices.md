@@ -1,10 +1,12 @@
 # CSAF-Backend
 
 [Leistungbeschr 2.2]
+
 `In diesem Arbeitspaket werden die „Managementfunktionen“ gemäß CSAF-Standard
 als REST-Service implementiert:`
 
 [Leistungbeschr 2.2.1]
+
 `In einem ersten Schritt soll der Auftragnehmer ein Konzept für das Backend
 entwickeln. In dem Konzept sind die wesentlichen Architekturentscheidungen
 aufzuführen sowie Datenstrukturen und die RESTSchnittstelle zu beschreiben.
@@ -12,7 +14,9 @@ Das Konzept umfasst auch die Web-Schnittstelle aus AP 2.3. Das Konzept wird dem
 AG abgestimmt`
 
 [CSAF2.0]
+
 `9.1.1 Conformance Clause 1: CSAF document`
+
 `A text file or data stream satisfies the "CSAF document" conformance profile
  if it:`
 
@@ -30,17 +34,20 @@ AG abgestimmt`
  as applying to CSAF producers.` (Schema, Security)
 
 `9.1.6 Conformance Clause 6: CSAF content management system`
+
 `A CSAF content management system satisfies the "CSAF content management system"
- conformance profile if the content management
-system:`
-`satisfies the "CSAF producer" conformance profile.`
-`satisfies the "CSAF viewer" conformance profile`
+ conformance profile if the content management system:`
+
+- `satisfies the "CSAF producer" conformance profile.`
+- `satisfies the "CSAF viewer" conformance profile`
 
 ## Abfrage von CSAF - Daten
 
 ## Auflisten/Ansehen von CSAF-Dokumente
 
-[Leistungbeschr 2.2] `Die Liste der CSAF-Dokument muss entsprechend der
+[Leistungbeschr 2.2]
+
+`Die Liste der CSAF-Dokument muss entsprechend der
 Berechtigung des jeweiligen Nutzers und des Status erfolgen`
 
 - `Registered darf alle CSAF-Dokumente im Status „published“ auflisten und ansehen.`
@@ -93,6 +100,7 @@ Berechtigung des jeweiligen Nutzers und des Status erfolgen`
 ### Auflisten/Ansehen der Statusänderungen von CSAF-Dokument
 
 [Leistungbeschr 2.2]
+
 `Auditor kann alle Statusänderungen zu CSAF-Dokumenten auflisten und ansehen`
 
 ### Auflisten/Ansehen der Kommentare und Antworten von CSAF-Dokument
@@ -248,6 +256,7 @@ muss unterstützt werden`
 ## Kommentieren von CSAF-Dokumenten
 
 [Leistungbeschr 2.2]
+
 `Es muss die Möglichkeit geben, für ein CSAF-Dokument Kommentare zu verfassen.
 In dem Kommentar muss mindestens der Nutzer, der diesen erstellt hat, der
 Zeitpunkt und ein Freitext enthalten sein. Ein Kommentar kann allgemein zum
@@ -261,8 +270,9 @@ sehen und beantworten`
 ## Export von CSAF-Dokumenten
 
 [Leistungbeschr 2.2]
+
 `Für den Export müssen die folgenden Transformationen zur Verfügung stehen.
-Diese erlauben es de![img.png](img.png)er, das CSAF Dokument in verschiedene
+Diese erlauben es, das CSAF Dokument in verschiedene
 Formate umzuwandeln. Als Konfigurationsoption steht mindestens, das Firmenlogo
 zur Verfügung und ein Template. Der AN muss ein Template erstellen.7 Das
 Template muss nach Bedarf angepasst werden können. Hierzu ist eine ausführliche
@@ -341,6 +351,7 @@ Ausgabeformat umgewandelt. Folgende Module sind zu implementieren:`
 ## Anbindung des Validator
 
 [Leistungbeschr 2.3.2]
+
 `Arbeitspaket 3.2 (OPTIONAL): Anbindung an das CSAFBackend und Secvisogram
 Es ist eine Anbindung an das in AP 2 entwickelte CSAF-Backend zu implementieren
 und dokumentieren, um CSAF-Dokumente zu prüfen und sicherzustellen, dass nur
@@ -355,6 +366,7 @@ das Ergebnis der Prüfung in Secvisogram darstellt.`
 ## Erweiterung zum ‚CSAF full validator‘ als REST-Service
 
 [Leistungbeschr 3.3]
+
 In diesem Arbeitspaket erstellt der AN einen „CSAF full validator“ gemäß der
 Spezifikation9 als REST-Service. Als Grundlage dafür dient der „CSAF extended
 validator“ aus AP 3.1. Der Service muss Aufrufe bereitstellen, die es
