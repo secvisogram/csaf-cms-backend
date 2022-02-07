@@ -74,9 +74,9 @@ These additional references should also help you:
 
 #### SpotBugs
 
-[IntelliJ SpotBugs](https://plugins.jetbrains.com/plugin/14014-spotbugs)
-[spotbugs-gradle-plugin](https://github.com/spotbugs/spotbugs-gradle-plugin)
-[find-sec-bugs](https://find-sec-bugs.github.io/)
+- [IntelliJ SpotBugs](https://plugins.jetbrains.com/plugin/14014-spotbugs)
+- [spotbugs-gradle-plugin](https://github.com/spotbugs/spotbugs-gradle-plugin)
+- [find-sec-bugs](https://find-sec-bugs.github.io/)
 
 ### Links
 

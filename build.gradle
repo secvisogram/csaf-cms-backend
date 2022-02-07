@@ -3,6 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id "com.github.spotbugs" version "5.0.5"
+	id 'jacoco'
 }
 
 group = 'de.exxcellent'
@@ -30,6 +31,24 @@ dependencies {
 test {
 	useJUnitPlatform()
 }
+
+
+
+jacoco {
+	toolVersion = "0.8.7"
+//	reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
+
+jacocoTestReport {
+	reports {
+		xml.required = true
+		csv.required = true
+		html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+	}
+}
+
+
 
 spotbugs {
 	ignoreFailures = false
