@@ -80,6 +80,10 @@ These additional references should also help you:
 - [spotbugs-gradle-plugin](https://github.com/spotbugs/spotbugs-gradle-plugin)
 - [find-sec-bugs](https://find-sec-bugs.github.io/)
 
+#### Jacoco
+
+- [Jacoco Plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html#sec:jacoco_report_configuration)
+
 ### Links
 
 #### CSAF 

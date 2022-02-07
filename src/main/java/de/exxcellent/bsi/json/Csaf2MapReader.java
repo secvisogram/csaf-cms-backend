@@ -2,13 +2,15 @@ package de.exxcellent.bsi.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.exxcellent.bsi.mustache.MustacheCreator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -18,6 +20,8 @@ import java.util.*;
  *   JSON-Properties are converted Map-Entries
  */
 public class Csaf2MapReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Csaf2MapReader.class);
 
     private final ObjectMapper mapper;
 
@@ -68,13 +72,13 @@ public class Csaf2MapReader {
 
             if(csafJsonStream != null) {
                 Object result = new Csaf2MapReader()
-                        .readCasfDocument(new InputStreamReader(csafJsonStream, Charset.forName("UTF-8")));
+                        .readCasfDocument(new InputStreamReader(csafJsonStream, StandardCharsets.UTF_8));
                 System.out.println(result);
             } else {
                 System.out.println("Invalid Json File: "+ jsonFileName);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.error("Error loading Json", ex);
         }
     }
 }

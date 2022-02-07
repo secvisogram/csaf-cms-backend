@@ -36,6 +36,14 @@ public class CommentResponse {
         this.questionId = questionId;
     }
 
+    public long getCommentId() {
+        return commentId;
+    }
+
+    public long getQuestionId() {
+        return questionId;
+    }
+
     public long getAdvisoryId() {
         return advisoryId;
     }

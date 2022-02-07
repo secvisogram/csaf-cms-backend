@@ -4,7 +4,6 @@ package de.exxcellent.bsi.rest;
 import de.exxcellent.bsi.SecvisogramApplication;
 import de.exxcellent.bsi.model.ExportFormat;
 import de.exxcellent.bsi.model.WorkflowState;
-import de.exxcellent.bsi.model.filter.FilterExpression;
 import de.exxcellent.bsi.rest.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -208,7 +207,7 @@ public class AdvisoryController {
      * @param advisoryId
      * @param commentId
      * @param answerText
-     * @return
+     *
      */
     @Operation(summary = "Add answer to an advisory comment", tags = { "Advisory" })
     @PostMapping("/{advisoryId}/comments/{commentId}/answer")

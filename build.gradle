@@ -25,7 +25,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
+	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+
+	spotbugsPlugins group: 'com.mebigfatguy.sb-contrib', name: 'sb-contrib', version: '7.4.7'
 }
 
 test {
