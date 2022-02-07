@@ -1,5 +1,7 @@
 # Secvisogram Backend
 
+![Coverage](.github/badges/jacoco.svg)
+
 ## Introduction
 
 ##  Getting started
