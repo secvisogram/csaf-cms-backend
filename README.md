@@ -8,6 +8,10 @@
 
 ./gradlew clean build
 
+### gradle: build and run SpotBugs
+
+./gradlew clean assemble spotbugsMain
+
 ### gradle: start application
 
 ./gradlew bootRun
@@ -68,6 +72,11 @@ These additional references should also help you:
 
 [Exxcellent Code Quality Rules](https://www.exxcellent.de/confluence/pages/viewpage.action?pageId=65113099)
 
+#### SpotBugs
+
+[IntelliJ SpotBugs](https://plugins.jetbrains.com/plugin/14014-spotbugs)
+[spotbugs-gradle-plugin](https://github.com/spotbugs/spotbugs-gradle-plugin)
+[find-sec-bugs](https://find-sec-bugs.github.io/)
 
 ### Links
 

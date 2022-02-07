@@ -54,5 +54,10 @@ spotbugsMain {
 			outputLocation = file("$buildDir/reports/spotbugs/main/spotbugs.html")
 			stylesheet = 'fancy-hist.xsl'
 		}
+		xml {
+			required = true
+			outputLocation = file("$buildDir/reports/spotbugs/xml/spotbugs.xml")
+		}
+
 	}
 }
