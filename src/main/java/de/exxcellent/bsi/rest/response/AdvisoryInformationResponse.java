@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,10 +17,10 @@ public class AdvisoryInformationResponse {
     private final long advisoryId;
     private final WorkflowState workflowState;
     private final String documentTrackingId;
-    private String title;
-    private String owner;
-    private final boolean changeable; // User can change/delete
-    private final boolean deletable; // User can change/delete
+    private final String title;
+    private final String owner;
+    private final boolean changeable;
+    private final boolean deletable;
     private List<WorkflowState> allowedStateChanges;
 
     public AdvisoryInformationResponse(long advisoryId, WorkflowState status) {
@@ -39,6 +40,8 @@ public class AdvisoryInformationResponse {
         } else if (WorkflowState.Review == workflowState) {
             this.allowedStateChanges = Arrays.asList(WorkflowState.Draft, WorkflowState.Approved);
         }
+        this.title = "Title of: " + documentTrackingId;
+        this.owner = "Mustermann";
     }
 
     @ApiModelProperty(value = "Unique Id of the advisory", example = "334723")
@@ -78,6 +81,6 @@ public class AdvisoryInformationResponse {
 
     @ApiModelProperty(value = "Allowed state changes of the logged in user", example = "Published")
     public List<WorkflowState> getAllowedStateChanges() {
-        return allowedStateChanges;
+        return Collections.unmodifiableList(allowedStateChanges);
     }
 }

@@ -4,15 +4,16 @@ import de.exxcellent.bsi.model.WorkflowState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 /**
- * Advisory content reponse
+ * Advisory content response
  */
 @ApiModel("AdvisoryDocument")
 public class AdvisoryResponse extends  AdvisoryInformationResponse {
 
-    private static Random RANDOM = new Random();
+    private static final SecureRandom RANDOM = new SecureRandom();
     private final long revision;
     private final String csafJsonWithComments;
 
