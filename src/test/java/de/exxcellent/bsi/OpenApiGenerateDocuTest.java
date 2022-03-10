@@ -23,14 +23,12 @@ public class OpenApiGenerateDocuTest {
     @LocalServerPort
     private int port;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
-
     /**
      * Start Rest Server and generate documentation from OpenApi-Json
      */
     @Test
     public void generateSwaggerDocu()  {
+
 
         final String url = "http://localhost:" + port + "/v3/api-docs/";
 

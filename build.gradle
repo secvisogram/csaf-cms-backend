@@ -27,7 +27,8 @@ dependencies {
 	testImplementation group: 'org.openapitools', name: 'openapi-generator', version: '5.4.0'
 	testImplementation group: 'org.openapitools', name: 'openapi-generator-cli', version: '5.4.0'
 
-	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+	spotbugsSlf4j group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 
 	spotbugsPlugins group: 'com.mebigfatguy.sb-contrib', name: 'sb-contrib', version: '7.4.7'
 }
@@ -48,7 +49,7 @@ jacocoTestReport {
 	reports {
 		xml.required = true
 		csv.required = true
-		html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+		html.outputLocation = layout.buildDirectory.dir('reports/jacocoHtml')
 	}
 }
 
@@ -69,7 +70,7 @@ spotbugs {
 	jvmArgs = [ '-Duser.language=de' ]
 }
 
-// Example to configure HTML report
+
 spotbugsMain {
 	reports {
 		html {
