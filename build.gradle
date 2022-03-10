@@ -24,6 +24,8 @@ dependencies {
 	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation group: 'org.openapitools', name: 'openapi-generator', version: '5.4.0'
+	testImplementation group: 'org.openapitools', name: 'openapi-generator-cli', version: '5.4.0'
 
 	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 
