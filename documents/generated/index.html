@@ -260,14 +260,14 @@ font-style: italic;
     <pre class="example"><code>{
   "owner" : "Mustermann",
   "allowedStateChanges" : "Published",
-  "advisoryId" : 334723,
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "documentTrackingId" : "RHBA-2019_0024",
   "workflowState" : "Approved",
   "deletable" : false,
   "changeable" : true,
   "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
   "csafJsonWithComments" : "{document: { $comment: [23454], category: generic_csaf,...",
-  "revision" : 52303295832
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -327,15 +327,26 @@ font-style: italic;
 
 
 
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      String
+    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#"></a>
+        <a href="#String">String</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -380,15 +391,26 @@ font-style: italic;
 
 
 
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      String
+    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#"></a>
+        <a href="#String">String</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -431,15 +453,26 @@ font-style: italic;
 
 
 
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      String
+    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#"></a>
+        <a href="#String">String</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -482,15 +515,26 @@ font-style: italic;
 
 
 
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      String
+    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#"></a>
+        <a href="#String">String</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -534,9 +578,9 @@ font-style: italic;
     <pre class="example"><code>{
   "createdAt" : "2000-01-23",
   "advisoryId" : 6677234,
+  "fieldName" : "csaf_version",
   "questionId" : 923873,
   "createdBy" : "Mustermann",
-  "jsonName" : "csaf_version",
   "commentId" : 238745,
   "commentText" : "Is this value correct?",
   "advisoryVersion" : "0.1.3"
@@ -599,12 +643,18 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
       
-      Long
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -616,7 +666,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#Long">Long</a>
+        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -664,12 +714,18 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
       
-      Long
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -681,7 +737,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#Long">Long</a>
+        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -723,12 +779,18 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
       
-      Long
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -740,7 +802,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#Long">Long</a>
+        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -805,7 +867,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -885,7 +947,7 @@ font-style: italic;
     <pre class="example"><code>{
   "owner" : "Mustermann",
   "allowedStateChanges" : "Published",
-  "advisoryId" : 334723,
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "documentTrackingId" : "RHBA-2019_0024",
   "workflowState" : "Approved",
   "deletable" : false,
@@ -1451,6 +1513,7 @@ font-style: italic;
   <ol>
     <li><a href="#AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - AdvisoryCommentResponse</a></li>
     <li><a href="#AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - AdvisoryCreateComment</a></li>
+    <li><a href="#AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - AdvisoryCreateResponse</a></li>
     <li><a href="#AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a></li>
     <li><a href="#AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a></li>
     <li><a href="#AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - AdvisoryTemplateInformation</a></li>
@@ -1468,7 +1531,7 @@ font-style: italic;
 <div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
 <div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created format: date</div>
 <div class="param">createdBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user which created the comment </div>
-<div class="param">jsonName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
 <div class="param">questionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Only in answers. The id of of the comment the answer belongs to format: int64</div>
     </div>  <!-- field-items -->
   </div>
@@ -1477,14 +1540,22 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">jsonName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - AdvisoryCreateResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the create object </div>
+<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the advisory format: int64</div>
+      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
 <div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
         <div class="param-enum-header">Enum:</div>
         
@@ -1493,7 +1564,7 @@ font-style: italic;
 <div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
 <div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
 <div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
-<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Document revision for optimistic concurrency format: int64</div>
+<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Document revision for optimistic concurrency </div>
 <div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
 <div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
         <div class="param-enum-header">Enum:</div>
@@ -1504,7 +1575,7 @@ font-style: italic;
     <h3><a name="AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the advisory format: int64</div>
+      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
 <div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
         <div class="param-enum-header">Enum:</div>
         

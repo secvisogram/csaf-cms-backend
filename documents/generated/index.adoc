@@ -190,9 +190,12 @@ Change answer to an advisory comment
 ===== Return Type
 
 
+<<String>>
 
--
 
+===== Content Type
+
+* */*
 
 ===== Responses
 
@@ -204,7 +207,7 @@ Change answer to an advisory comment
 
 | 200
 | OK
-|  <<>>
+|  <<String>>
 
 
 | 204
@@ -304,9 +307,12 @@ Change comment of an advisory
 ===== Return Type
 
 
+<<String>>
 
--
 
+===== Content Type
+
+* */*
 
 ===== Responses
 
@@ -318,7 +324,7 @@ Change comment of an advisory
 
 | 200
 | OK
-|  <<>>
+|  <<String>>
 
 
 | 204
@@ -412,9 +418,12 @@ Change advisory
 ===== Return Type
 
 
+<<String>>
 
--
 
+===== Content Type
+
+* */*
 
 ===== Responses
 
@@ -426,7 +435,7 @@ Change advisory
 
 | 200
 | OK
-|  <<>>
+|  <<String>>
 
 
 | 204
@@ -520,9 +529,12 @@ Change workflow state of an advisory
 ===== Return Type
 
 
+<<String>>
 
--
 
+===== Content Type
+
+* */*
 
 ===== Responses
 
@@ -534,7 +546,7 @@ Change workflow state of an advisory
 
 | 200
 | OK
-|  <<>>
+|  <<String>>
 
 
 | 204
@@ -730,8 +742,7 @@ Add answer to an advisory comment
 
 ===== Return Type
 
-
-<<Long>>
+<<AdvisoryCreateResponse>>
 
 
 ===== Content Type
@@ -748,7 +759,7 @@ Add answer to an advisory comment
 
 | 200
 | OK
-|  <<Long>>
+|  <<AdvisoryCreateResponse>>
 
 
 | 201
@@ -846,8 +857,7 @@ Add comment to an advisory
 
 ===== Return Type
 
-
-<<Long>>
+<<AdvisoryCreateResponse>>
 
 
 ===== Content Type
@@ -864,7 +874,7 @@ Add comment to an advisory
 
 | 200
 | OK
-|  <<Long>>
+|  <<AdvisoryCreateResponse>>
 
 
 | 201
@@ -949,8 +959,7 @@ Create a new Advisory in the system
 
 ===== Return Type
 
-
-<<Long>>
+<<AdvisoryCreateResponse>>
 
 
 ===== Content Type
@@ -967,7 +976,7 @@ Create a new Advisory in the system
 
 | 200
 | OK
-|  <<Long>>
+|  <<AdvisoryCreateResponse>>
 
 
 | 201
@@ -2326,10 +2335,10 @@ endif::internal-generation[]
 | The user which created the comment
 |  
 
-| jsonName
+| fieldName
 | 
 | String 
-| A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
+| A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
 |  
 
 | questionId
@@ -2357,10 +2366,35 @@ endif::internal-generation[]
 | 
 |  
 
-| jsonName
+| fieldName
 | 
 | String 
 | 
+|  
+
+|===
+
+
+[#AdvisoryCreateResponse]
+=== _AdvisoryCreateResponse_ AdvisoryCreateResponse
+
+
+
+[.fields-AdvisoryCreateResponse]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| id
+| 
+| String 
+| Unique Id of the create object
+|  
+
+| revision
+| 
+| String 
+| Revision for optimistic concurrency
 |  
 
 |===
@@ -2378,9 +2412,9 @@ endif::internal-generation[]
 
 | advisoryId
 | 
-| Long 
+| String 
 | Unique Id of the advisory
-| int64 
+|  
 
 | allowedStateChanges
 | 
@@ -2420,9 +2454,9 @@ endif::internal-generation[]
 
 | revision
 | 
-| Long 
+| String 
 | Document revision for optimistic concurrency
-| int64 
+|  
 
 | title
 | 
@@ -2451,9 +2485,9 @@ endif::internal-generation[]
 
 | advisoryId
 | 
-| Long 
+| String 
 | Unique Id of the advisory
-| int64 
+|  
 
 | allowedStateChanges
 | 
