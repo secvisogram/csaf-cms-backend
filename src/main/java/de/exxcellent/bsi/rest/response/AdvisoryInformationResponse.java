@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Entry in a list of advisory information's
@@ -14,7 +15,7 @@ import java.util.List;
 @ApiModel("AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
-    private final long advisoryId;
+    private final String advisoryId;
     private final WorkflowState workflowState;
     private final String documentTrackingId;
     private final String title;
@@ -23,11 +24,11 @@ public class AdvisoryInformationResponse {
     private final boolean deletable;
     private List<WorkflowState> allowedStateChanges;
 
-    public AdvisoryInformationResponse(long advisoryId, WorkflowState status) {
+    public AdvisoryInformationResponse(String advisoryId, WorkflowState status) {
         this(advisoryId, status, "");
     }
 
-    public AdvisoryInformationResponse(long advisoryId, WorkflowState workflowState, String documentTrackingId) {
+    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId) {
         this.advisoryId = advisoryId;
         this.workflowState = workflowState;
         this.documentTrackingId = documentTrackingId;
@@ -44,8 +45,8 @@ public class AdvisoryInformationResponse {
         this.owner = "Mustermann";
     }
 
-    @ApiModelProperty(value = "Unique Id of the advisory", example = "334723")
-    public long getAdvisoryId() {
+    @ApiModelProperty(value = "Unique Id of the advisory", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
+    public String getAdvisoryId() {
         return advisoryId;
     }
 
@@ -83,4 +84,5 @@ public class AdvisoryInformationResponse {
     public List<WorkflowState> getAllowedStateChanges() {
         return Collections.unmodifiableList(allowedStateChanges);
     }
+
 }

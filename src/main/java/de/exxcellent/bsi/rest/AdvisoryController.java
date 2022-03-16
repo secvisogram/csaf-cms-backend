@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * API for for Creating, Retrieving, Updating and Deleting of CSAF Dokuments,
@@ -32,9 +33,9 @@ public class AdvisoryController {
 
 
     /**
-     * Read an search advisories
-     * @param expression
-     * @return
+     * Read all searched advisories
+     * @param expression serach expression as json string
+     * @return filtered advisories
      */
     @GetMapping("/")
     @Operation(summary = "Get all authorized advisories", tags = { "Advisory" })
@@ -48,9 +49,9 @@ public class AdvisoryController {
 
 
         return Arrays.asList(
-           new AdvisoryInformationResponse(1L, WorkflowState.Draft, "Example Company - 2019-YH3234"),
-           new AdvisoryInformationResponse(2L, WorkflowState.Approved, "RHBA-2019:0024"),
-           new AdvisoryInformationResponse(3L, WorkflowState.Review, "cisco-sa-20190513-secureboot")
+           new AdvisoryInformationResponse(UUID.randomUUID().toString(), WorkflowState.Draft, "Example Company - 2019-YH3234"),
+           new AdvisoryInformationResponse(UUID.randomUUID().toString(), WorkflowState.Approved, "RHBA-2019:0024"),
+           new AdvisoryInformationResponse(UUID.randomUUID().toString(), WorkflowState.Review, "cisco-sa-20190513-secureboot")
         );
     }
 
@@ -103,7 +104,7 @@ public class AdvisoryController {
     @GetMapping(value="/{advisoryId}/csaf",produces = {MediaType.APPLICATION_JSON_VALUE,MediaType.TEXT_HTML_VALUE
             , MediaType.TEXT_MARKDOWN_VALUE, MediaType.APPLICATION_PDF_VALUE})
     @Operation(summary = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON", tags = { "Advisory" })
-    public String exportAdvisory(@PathVariable long advisoryId, @RequestParam(required = false) ExportFormat format) {
+    public String exportAdvisory(@PathVariable String advisoryId, @RequestParam(required = false) ExportFormat format) {
 
         return "";
     }
@@ -114,23 +115,24 @@ public class AdvisoryController {
      */
     @PostMapping(name="/", consumes = "application/json")
     @Operation(summary = "Create a new Advisory in the system", tags = { "Advisory" })
-    public long createCsafDocument(
+    public AdvisoryCreateResponse createCsafDocument(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Advisory in CSAF JSON Format with comments.", required = true)
             @RequestBody String newCsafJson) {
 
-        return 37429843L;
+        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**
      * change CSAF-document
      * @param advisoryId id of the CSAF document to change
+     * @return new optimistic locking revision
      */
     @Operation(summary = "Change advisory", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/")
-    public void changeCsafDocument(@PathVariable long advisoryId,
+    public String changeCsafDocument(@PathVariable long advisoryId,
            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Advisory in CSAF JSON Format with comments.", required = true)
                                    @RequestBody String changedCsafJson) {
-
+        return "2-efaa5db9409b2d4300535c70aaf6a66b";
     }
 
 
@@ -149,11 +151,13 @@ public class AdvisoryController {
      * Change workflow state of a CSAF document
      * @param advisoryId advisoryId id of the CSAF document to change
      * @param newState new workflow state of the CSAF document
+     * @return new optimistic locking revision
      */
     @Operation(summary = "Change workflow state of an advisory", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/workflowstate/")
-    public void changeWorkflowState(@PathVariable long advisoryId, @RequestBody WorkflowState newState) {
+    public String changeWorkflowState(@PathVariable long advisoryId, @RequestBody WorkflowState newState) {
 
+        return "2-efaa5db9409b2d4300535c70aaf6a66b";
     }
 
     /**
@@ -176,9 +180,9 @@ public class AdvisoryController {
      */
     @Operation(summary = "Add comment to an advisory", tags = { "Advisory" })
     @PostMapping("/{advisoryId}/comments")
-    public long createComment(@PathVariable long advisoryId, @RequestBody AdvisoryCreateCommentRequest commentText) {
+    public AdvisoryCreateResponse createComment(@PathVariable long advisoryId, @RequestBody AdvisoryCreateCommentRequest commentText) {
 
-        return 123124L;
+        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**
@@ -190,9 +194,9 @@ public class AdvisoryController {
      */
     @Operation(summary = "Add answer to an advisory comment", tags = { "Advisory" })
     @PostMapping("/{advisoryId}/comments/{commentId}/answer")
-    public long createAnswer(@PathVariable long advisoryId, @PathVariable long commentId, @RequestBody String answerText) {
+    public AdvisoryCreateResponse createAnswer(@PathVariable long advisoryId, @PathVariable long commentId, @RequestBody String answerText) {
 
-        return 123124l;
+        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**
@@ -200,13 +204,14 @@ public class AdvisoryController {
      * @param advisoryId id of the CSAF document to add the answer
      * @param commentId of the comment to change the answer
      * @param newCommentText new text content of the comment
-     * @return
+     * @return new optimistic locking revision
      */
     @Operation(summary = "Change comment of an advisory", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/comments/{commentId}")
-    public void changeComment(@PathVariable long advisoryId, @PathVariable long commentId
+    public String changeComment(@PathVariable long advisoryId, @PathVariable long commentId
             , @RequestBody String newCommentText) {
 
+        return "2-efaa5db9409b2d4300535c70aaf6a66b";
     }
 
     /**
@@ -215,13 +220,14 @@ public class AdvisoryController {
      * @param commentId commentId of the comment
      * @param answerId id of the answer to change
      * @param newAnswerText new text content of the answer
-     * @return
+     * @return new optimistic locking revision
      */
     @Operation(summary = "Change answer to an advisory comment", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/comments/{commentId}/answer/{answerId}")
-    public void changeAnswer(@PathVariable long advisoryId, @PathVariable long commentId
+    public String changeAnswer(@PathVariable long advisoryId, @PathVariable long commentId
                 , @PathVariable long answerId,  @RequestBody String newAnswerText) {
 
+        return "2-efaa5db9409b2d4300535c70aaf6a66b";
     }
 
 }

@@ -18,7 +18,7 @@ public class AdvisoryCommentResponse {
 
     private final String advisoryVersion;
 
-    private final String jsonName;
+    private final String fieldName;
 
     private final String commentText;
 
@@ -29,13 +29,13 @@ public class AdvisoryCommentResponse {
 
 
     public AdvisoryCommentResponse(long commentId, long advisoryId, String createdBy, LocalDate createdAt
-            , String advisoryVersion, String jsonName, String commentText, long questionId) {
+            , String advisoryVersion, String fieldName, String commentText, long questionId) {
         this.commentId = commentId;
         this.advisoryId = advisoryId;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.advisoryVersion = advisoryVersion;
-        this.jsonName = jsonName;
+        this.fieldName = fieldName;
         this.commentText = commentText;
         this.questionId = questionId;
     }
@@ -75,9 +75,9 @@ public class AdvisoryCommentResponse {
         return commentText;
     }
 
-    @ApiModelProperty(value = "A comment is added to an object in the CSAF document. This name specifies the " +
+    @ApiModelProperty(value = "A comment is added to an object in the CSAF document. This name specifies the field name of the " +
             "concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.", example = "csaf_version")
-    public String getJsonName() {
-        return jsonName;
+    public String getFieldName() {
+        return fieldName;
     }
 }
