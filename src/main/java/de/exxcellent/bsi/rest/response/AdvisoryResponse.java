@@ -10,13 +10,12 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel("AdvisoryDocument")
 public class AdvisoryResponse extends  AdvisoryInformationResponse {
 
-    private final String revision;
-    private final String csafJsonWithComments;
+    private String revision;
+    private String csafJsonWithComments;
 
     public AdvisoryResponse(String advisoryId, WorkflowState status, String csafJsonWithComments) {
         super(advisoryId, status);
         this.csafJsonWithComments = csafJsonWithComments;
-        this.revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
     }
 
     @ApiModelProperty(value = "The current CASF document enhanced with comment ids ", example = "{" +
@@ -25,8 +24,16 @@ public class AdvisoryResponse extends  AdvisoryInformationResponse {
       return this.csafJsonWithComments;
     }
 
+    public void setCsafJsonWithComments(String csafJsonWithComments) {
+        this.csafJsonWithComments = csafJsonWithComments;
+    }
+
     @ApiModelProperty(value = "Document revision for optimistic concurrency", example = "2-efaa5db9409b2d4300535c70aaf6a66b")
     public String getRevision() {
         return revision;
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
     }
 }

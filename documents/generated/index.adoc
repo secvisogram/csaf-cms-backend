@@ -33,11 +33,11 @@ Api Documentation
 
 `GET /api/2.0/advisories/{advisoryId}/`
 
-Show advisory
+Get a single Advisory
 
 ===== Description
 
-
+Get the advisory CSAF document and some additional data for the given id.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/spec.adoc[opts=optional]
@@ -53,7 +53,7 @@ Show advisory
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to read 
 | X
 | null
 | 
@@ -150,19 +150,19 @@ Change answer to an advisory comment
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to change the answer 
 | X
 | null
 | 
 
 | commentId
-| commentId 
+| Id of the comment the answer belongs to 
 | X
 | null
 | 
 
 | answerId
-| answerId 
+| Id of the answer to change 
 | X
 | null
 | 
@@ -185,12 +185,24 @@ Change answer to an advisory comment
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision of the answer 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<String>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -207,7 +219,7 @@ Change answer to an advisory comment
 
 | 200
 | OK
-|  <<String>>
+|  <<AdvisoryUpdateResponse>>
 
 
 | 204
@@ -273,13 +285,13 @@ Change comment of an advisory
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to change the comment 
 | X
 | null
 | 
 
 | commentId
-| commentId 
+| Id of the comment to change 
 | X
 | null
 | 
@@ -302,12 +314,24 @@ Change comment of an advisory
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision of the comment 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<String>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -324,7 +348,7 @@ Change comment of an advisory
 
 | 200
 | OK
-|  <<String>>
+|  <<AdvisoryUpdateResponse>>
 
 
 | 204
@@ -374,7 +398,7 @@ Change advisory
 
 ===== Description
 
-
+Change a CSAF-document in the system
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/spec.adoc[opts=optional]
@@ -390,7 +414,7 @@ Change advisory
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to change 
 | X
 | null
 | 
@@ -413,12 +437,24 @@ Change advisory
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<String>>
+<<AdvisoryCreateResponse>>
 
 
 ===== Content Type
@@ -435,7 +471,7 @@ Change advisory
 
 | 200
 | OK
-|  <<String>>
+|  <<AdvisoryCreateResponse>>
 
 
 | 204
@@ -485,7 +521,7 @@ Change workflow state of an advisory
 
 ===== Description
 
-
+Change the workflow state of the advisory with the given id
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/spec.adoc[opts=optional]
@@ -501,7 +537,7 @@ Change workflow state of an advisory
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to change the workflow state 
 | X
 | null
 | 
@@ -524,12 +560,24 @@ Change workflow state of an advisory
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<String>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -546,7 +594,7 @@ Change workflow state of an advisory
 
 | 200
 | OK
-|  <<String>>
+|  <<AdvisoryUpdateResponse>>
 
 
 | 204
@@ -596,7 +644,7 @@ Show comments and answers of an advisory
 
 ===== Description
 
-
+Show all comments and answers of the advisory with the given id
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/spec.adoc[opts=optional]
@@ -612,7 +660,7 @@ Show comments and answers of an advisory
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to get the comments 
 | X
 | null
 | 
@@ -693,7 +741,7 @@ Add answer to an advisory comment
 
 ===== Description
 
-
+Add a answer to the comment with the given id
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/spec.adoc[opts=optional]
@@ -709,13 +757,13 @@ Add answer to an advisory comment
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to add the answer 
 | X
 | null
 | 
 
 | commentId
-| commentId 
+| Id of the comment to add the answer 
 | X
 | null
 | 
@@ -814,7 +862,7 @@ Add comment to an advisory
 
 ===== Description
 
-
+Add a comment to the advisory with the given id
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/POST/spec.adoc[opts=optional]
@@ -830,7 +878,7 @@ Add comment to an advisory
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to add the comments 
 | X
 | null
 | 
@@ -929,7 +977,7 @@ Create a new Advisory in the system
 
 ===== Description
 
-
+Create a new CSAF-document in the system
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/POST/spec.adoc[opts=optional]
@@ -1027,11 +1075,11 @@ endif::internal-generation[]
 
 `DELETE /api/2.0/advisories/{advisoryId}/`
 
-Delete advisory. All older versions, comments and audit-trails are also deleted.
+Delete advisory.
 
 ===== Description
 
-
+Delete advisory from the system. All older versions, comments and audit-trails are also deleted.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/DELETE/spec.adoc[opts=optional]
@@ -1047,7 +1095,7 @@ Delete advisory. All older versions, comments and audit-trails are also deleted.
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to read 
 | X
 | null
 | 
@@ -1057,6 +1105,19 @@ Delete advisory. All older versions, comments and audit-trails are also deleted.
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
@@ -1122,11 +1183,11 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/{advisoryId}/csaf`
 
-Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON
+Export advisory CSAF document 
 
 ===== Description
 
-
+Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/spec.adoc[opts=optional]
@@ -1142,7 +1203,7 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| advisoryId 
+| Id of the advisory to export 
 | X
 | null
 | 
@@ -1337,7 +1398,7 @@ Get all authorized templates
 
 ===== Description
 
-
+Get all available templates in the system
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/templates/GET/spec.adoc[opts=optional]
@@ -1421,7 +1482,7 @@ Get template content
 
 ===== Description
 
-
+Get the content of the templates with the given templateId
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/templates/\{templateId\}/GET/spec.adoc[opts=optional]
@@ -1437,7 +1498,7 @@ Get template content
 |Name| Description| Required| Default| Pattern
 
 | templateId
-| templateId 
+| Id of the template to read 
 | X
 | null
 | 
@@ -2371,13 +2432,13 @@ endif::internal-generation[]
 | commentText
 | 
 | String 
-| 
+| The text of the comment
 |  
 
 | fieldName
 | 
 | String 
-| 
+| A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
 |  
 
 |===
@@ -2563,6 +2624,25 @@ endif::internal-generation[]
 | Long 
 | Unique Id of the template
 | int64 
+
+|===
+
+
+[#AdvisoryUpdateResponse]
+=== _AdvisoryUpdateResponse_ AdvisoryUpdateResponse
+
+
+
+[.fields-AdvisoryUpdateResponse]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| revision
+| 
+| String 
+| Revision for optimistic concurrency
+|  
 
 |===
 
