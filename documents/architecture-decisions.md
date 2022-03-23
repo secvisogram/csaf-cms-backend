@@ -111,13 +111,13 @@ At the current state a CSAF document will be saved as one object in the database
 
 Holds a version of a CSAF advisory
 
-| Field        | Description                                |
-| ------------ | ------------------------------------------ |
-| advisoryId   | Unique Id of the advisory                  |
-| docVersion   | The current Version String of the advisory |
-| worklowState | The workflow state of the advisory         |
-| owner        | The current owner of the advisory          |
-| csafDocument | The CSAF-Document as Json                  |
+| Field        | Description                                        |
+| ------------ |----------------------------------------------------|
+| advisoryId   | Unique Id of the advisory                          |
+| docVersion   | The current Version String of the advisory         |
+| worklowState | The workflow state of the advisory                 |
+| owner        | The current owner of the advisory                  |
+| csafDocument | The CSAF-Document as Json with additional comments |
 
 ### AdvisoryInformation
 
@@ -150,18 +150,21 @@ But this one has the enum values: `draft, final, interim`
 
 Hold all comments and answers to a CSAF Advisory.
 
-|             |                                                                                                                                                                                                                                  |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Field       | Description                                                                                                                                                                                                                      |
-| commentId   | The unique Id of the comment                                                                                                                                                                                                     |
-| docVersion  | Reference to the version of the CSAF AdvisoryInformation                                                                                                                                                                         |
-| changedBy   | User that created/last changed  the comment                                                                                                                                                                                      |
-| changedAt   | Timestamp when the comment was created / last changed                                                                                                                                                                            |
-| jsonPointer | Reference to the part of the CSAF Advisory the comment  is written for, empty for whole document<br>[RFC 6901 JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901)  [Example](https://rapidjson.org/md_doc_pointer.html) |
-| commentText | The text of the comment as string with CR/LF                                                                                                                                                                                     |
-| answers     | List of answers to the comment                                                                                                                                                                                                   |
+|             |                                                                                                                                                |
+|-------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Field       | Description                                                                                                                                    |
+| commentId   | The unique Id of the comment                                                                                                                   |
+| docVersion  | Reference to the version of the CSAF AdvisoryInformation                                                                                       |
+| changedBy   | User that created/last changed  the comment                                                                                                    |
+| changedAt   | Timestamp when the comment was created / last changed                                                                                          |
+| fieldName   | null - when the comment belong to whole csaf object or the concrete field name in the csaf object, when the comments belong o a specific field |
+| commentText | The text of the comment as string with CR/LF                                                                                                   |
+| answers     | List of answers to the comment                                                                                                                 |
 
 A comment can reference either a document as a whole, a specific object or value in the document. Since the CSAF standard has no concept for unique identifiers inside the document we need to persist this relation somehow without unnecessarily adding identifiers to each object. Furthermore we need to remove these IDs before sending the document to the validator service.
+
+The ids of the Comments are referenced from the CSAF Document objects.
+When the comments belongs to an dedicated field and not the whole object, the fieldName in the objects is used to specify the concrete value.
 
 We archive this by adding a $comment value to the document where the user adds a comment.
 
