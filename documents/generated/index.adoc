@@ -1,0 +1,2643 @@
+= Api Documentation
+team@openapitools.org
+1.0
+:toc: left
+:numbered:
+:toclevels: 3
+:source-highlighter: highlightjs
+:keywords: openapi, rest, Api Documentation
+:specDir: 
+:snippetDir: 
+:generator-template: v1 2019-12-20
+:info-url: https://openapi-generator.tech
+:app-name: Api Documentation
+
+[abstract]
+.Abstract
+Api Documentation
+
+
+// markup not found, no include::{specDir}intro.adoc[opts=optional]
+
+
+
+== Endpoints
+
+
+[.Advisory]
+=== Advisory
+
+
+[.advisoryByIdUsingGET]
+==== advisoryByIdUsingGET
+
+`GET /api/2.0/advisories/{advisoryId}/`
+
+Show advisory
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+<<AdvisoryDocument>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryDocument>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.changeAnswerUsingPATCH]
+==== changeAnswerUsingPATCH
+
+`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}`
+
+Change answer to an advisory comment
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+| commentId
+| commentId 
+| X
+| null
+| 
+
+| answerId
+| answerId 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<String>>
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.changeCommentUsingPATCH]
+==== changeCommentUsingPATCH
+
+`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}`
+
+Change comment of an advisory
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+| commentId
+| commentId 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<String>>
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.changeCsafDocumentUsingPATCH]
+==== changeCsafDocumentUsingPATCH
+
+`PATCH /api/2.0/advisories/{advisoryId}/`
+
+Change advisory
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<String>>
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.changeWorkflowStateUsingPATCH]
+==== changeWorkflowStateUsingPATCH
+
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/`
+
+Change workflow state of an advisory
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<String>>
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.commentsUsingGET]
+==== commentsUsingGET
+
+`GET /api/2.0/advisories/{advisoryId}/comments/`
+
+Show comments and answers of an advisory
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+array[<<AdvisoryCommentResponse>>]
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| List[<<AdvisoryCommentResponse>>] 
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.createAnswerUsingPOST]
+==== createAnswerUsingPOST
+
+`POST /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer`
+
+Add answer to an advisory comment
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+| commentId
+| commentId 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+<<AdvisoryCreateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryCreateResponse>>
+
+
+| 201
+| Created
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.createCommentUsingPOST]
+==== createCommentUsingPOST
+
+`POST /api/2.0/advisories/{advisoryId}/comments`
+
+Add comment to an advisory
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| AdvisoryCreateComment
+|  <<AdvisoryCreateComment>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+<<AdvisoryCreateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryCreateResponse>>
+
+
+| 201
+| Created
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.createCsafDocumentUsingPOST]
+==== createCsafDocumentUsingPOST
+
+`POST /api/2.0/advisories`
+
+Create a new Advisory in the system
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+<<AdvisoryCreateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryCreateResponse>>
+
+
+| 201
+| Created
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.deleteAdvisoryWithIdUsingDELETE]
+==== deleteAdvisoryWithIdUsingDELETE
+
+`DELETE /api/2.0/advisories/{advisoryId}/`
+
+Delete advisory. All older versions, comments and audit-trails are also deleted.
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/DELETE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/DELETE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/DELETE/DELETE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/DELETE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.exportAdvisoryUsingGET]
+==== exportAdvisoryUsingGET
+
+`GET /api/2.0/advisories/{advisoryId}/csaf`
+
+Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| advisoryId 
+| X
+| null
+| 
+
+|===
+
+
+
+
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| format
+| format 
+| -
+| null
+| 
+
+|===
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* text/html
+* application/json
+* application/pdf
+* text/markdown
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<String>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/csaf/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.findAdvisoriesUsingGET]
+==== findAdvisoriesUsingGET
+
+`GET /api/2.0/advisories/`
+
+Get all authorized advisories
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| expression
+| The filter expression in JSON format 
+| -
+| null
+| 
+
+|===
+
+
+===== Return Type
+
+array[<<AdvisoryDocumentInformation>>]
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| List[<<AdvisoryDocumentInformation>>] 
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.getAllTemplatesUsingGET]
+==== getAllTemplatesUsingGET
+
+`GET /api/2.0/advisories/templates`
+
+Get all authorized templates
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/templates/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+array[<<AdvisoryTemplateInformation>>]
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| List[<<AdvisoryTemplateInformation>>] 
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/templates/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/templates/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/templates/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/templates/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.templateByIdUsingGET]
+==== templateByIdUsingGET
+
+`GET /api/2.0/advisories/templates/{templateId}`
+
+Get template content
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/templates/\{templateId\}/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| templateId
+| templateId 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+
+<<Object>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<Object>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/templates/\{templateId\}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/templates/\{templateId\}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/templates/{templateId}/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/templates/\{templateId\}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.BasicErrorController]
+=== BasicErrorController
+
+
+[.errorUsingDELETE]
+==== errorUsingDELETE
+
+`DELETE /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/DELETE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/DELETE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/DELETE/DELETE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/DELETE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingGET]
+==== errorUsingGET
+
+`GET /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingHEAD]
+==== errorUsingHEAD
+
+`HEAD /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/HEAD/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/HEAD/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/HEAD/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/HEAD/HEAD.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/HEAD/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingOPTIONS]
+==== errorUsingOPTIONS
+
+`OPTIONS /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/OPTIONS/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/OPTIONS/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/OPTIONS/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/OPTIONS/OPTIONS.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/OPTIONS/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingPATCH]
+==== errorUsingPATCH
+
+`PATCH /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingPOST]
+==== errorUsingPOST
+
+`POST /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 201
+| Created
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingPUT]
+==== errorUsingPUT
+
+`PUT /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/PUT/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 201
+| Created
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/PUT/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/PUT/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/PUT/PUT.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.errorUsingTRACE]
+==== errorUsingTRACE
+
+`TRACE /error`
+
+error
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}error/TRACE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Map>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| Map[<<>>] 
+
+
+| 204
+| No Content
+|  <<>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}error/TRACE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}error/TRACE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :error/TRACE/TRACE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}error/TRACE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.MainController]
+=== MainController
+
+
+[.aboutUsingGET]
+==== aboutUsingGET
+
+`GET /api/2.0/about`
+
+about
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}api/2.0/about/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<String>>
+
+
+| 401
+| Unauthorized
+|  <<>>
+
+
+| 403
+| Forbidden
+|  <<>>
+
+
+| 404
+| Not Found
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/about/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/about/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/about/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/about/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[#models]
+== Models
+
+
+[#AdvisoryCommentResponse]
+=== _AdvisoryCommentResponse_ AdvisoryCommentResponse
+
+
+
+[.fields-AdvisoryCommentResponse]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| advisoryId
+| 
+| Long 
+| The id advisory
+| int64 
+
+| advisoryVersion
+| 
+| String 
+| The version of the advisory
+|  
+
+| commentId
+| 
+| Long 
+| The unique if of the comment
+| int64 
+
+| commentText
+| 
+| String 
+| The text of the comment
+|  
+
+| createdAt
+| 
+| date 
+| The date when the comment was created
+| date 
+
+| createdBy
+| 
+| String 
+| The user which created the comment
+|  
+
+| fieldName
+| 
+| String 
+| A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
+|  
+
+| questionId
+| 
+| Long 
+| Only in answers. The id of of the comment the answer belongs to
+| int64 
+
+|===
+
+
+[#AdvisoryCreateComment]
+=== _AdvisoryCreateComment_ AdvisoryCreateComment
+
+
+
+[.fields-AdvisoryCreateComment]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| commentText
+| 
+| String 
+| 
+|  
+
+| fieldName
+| 
+| String 
+| 
+|  
+
+|===
+
+
+[#AdvisoryCreateResponse]
+=== _AdvisoryCreateResponse_ AdvisoryCreateResponse
+
+
+
+[.fields-AdvisoryCreateResponse]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| id
+| 
+| String 
+| Unique Id of the create object
+|  
+
+| revision
+| 
+| String 
+| Revision for optimistic concurrency
+|  
+
+|===
+
+
+[#AdvisoryDocument]
+=== _AdvisoryDocument_ AdvisoryDocument
+
+
+
+[.fields-AdvisoryDocument]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| advisoryId
+| 
+| String 
+| Unique Id of the advisory
+|  
+
+| allowedStateChanges
+| 
+| List  of <<string>>
+| Allowed state changes of the logged in user
+|  _Enum:_ 
+
+| changeable
+| 
+| Boolean 
+| Can the logged in user change this advisory?
+|  
+
+| csafJsonWithComments
+| 
+| String 
+| The current CASF document enhanced with comment ids 
+|  
+
+| deletable
+| 
+| Boolean 
+| Can the logged in user delete this advisory?
+|  
+
+| documentTrackingId
+| 
+| String 
+| CSAF tracking id of the advisory
+|  
+
+| owner
+| 
+| String 
+| Current owner of the advisory
+|  
+
+| revision
+| 
+| String 
+| Document revision for optimistic concurrency
+|  
+
+| title
+| 
+| String 
+| CSAF title of the advisory
+|  
+
+| workflowState
+| 
+| String 
+| Current workflow state of the advisory
+|  _Enum:_ Approved, Draft, Published, Review, 
+
+|===
+
+
+[#AdvisoryDocumentInformation]
+=== _AdvisoryDocumentInformation_ AdvisoryDocumentInformation
+
+
+
+[.fields-AdvisoryDocumentInformation]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| advisoryId
+| 
+| String 
+| Unique Id of the advisory
+|  
+
+| allowedStateChanges
+| 
+| List  of <<string>>
+| Allowed state changes of the logged in user
+|  _Enum:_ 
+
+| changeable
+| 
+| Boolean 
+| Can the logged in user change this advisory?
+|  
+
+| deletable
+| 
+| Boolean 
+| Can the logged in user delete this advisory?
+|  
+
+| documentTrackingId
+| 
+| String 
+| CSAF tracking id of the advisory
+|  
+
+| owner
+| 
+| String 
+| Current owner of the advisory
+|  
+
+| title
+| 
+| String 
+| CSAF title of the advisory
+|  
+
+| workflowState
+| 
+| String 
+| Current workflow state of the advisory
+|  _Enum:_ Approved, Draft, Published, Review, 
+
+|===
+
+
+[#AdvisoryTemplateInformation]
+=== _AdvisoryTemplateInformation_ AdvisoryTemplateInformation
+
+
+
+[.fields-AdvisoryTemplateInformation]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| templateDescription
+| 
+| String 
+| Description of the template
+|  
+
+| templateId
+| 
+| Long 
+| Unique Id of the template
+| int64 
+
+|===
+
+
+[#ModelAndView]
+=== _ModelAndView_ ModelAndView
+
+
+
+[.fields-ModelAndView]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| empty
+| 
+| Boolean 
+| 
+|  
+
+| model
+| 
+| Object 
+| 
+|  
+
+| modelMap
+| 
+| Map  of <<object>>
+| 
+|  
+
+| reference
+| 
+| Boolean 
+| 
+|  
+
+| status
+| 
+| String 
+| 
+|  _Enum:_ ACCEPTED, ALREADY_REPORTED, BAD_GATEWAY, BAD_REQUEST, BANDWIDTH_LIMIT_EXCEEDED, CHECKPOINT, CONFLICT, CONTINUE, CREATED, DESTINATION_LOCKED, EXPECTATION_FAILED, FAILED_DEPENDENCY, FORBIDDEN, FOUND, GATEWAY_TIMEOUT, GONE, HTTP_VERSION_NOT_SUPPORTED, IM_USED, INSUFFICIENT_SPACE_ON_RESOURCE, INSUFFICIENT_STORAGE, INTERNAL_SERVER_ERROR, I_AM_A_TEAPOT, LENGTH_REQUIRED, LOCKED, LOOP_DETECTED, METHOD_FAILURE, METHOD_NOT_ALLOWED, MOVED_PERMANENTLY, MOVED_TEMPORARILY, MULTIPLE_CHOICES, MULTI_STATUS, NETWORK_AUTHENTICATION_REQUIRED, NON_AUTHORITATIVE_INFORMATION, NOT_ACCEPTABLE, NOT_EXTENDED, NOT_FOUND, NOT_IMPLEMENTED, NOT_MODIFIED, NO_CONTENT, OK, PARTIAL_CONTENT, PAYLOAD_TOO_LARGE, PAYMENT_REQUIRED, PERMANENT_REDIRECT, PRECONDITION_FAILED, PRECONDITION_REQUIRED, PROCESSING, PROXY_AUTHENTICATION_REQUIRED, REQUESTED_RANGE_NOT_SATISFIABLE, REQUEST_ENTITY_TOO_LARGE, REQUEST_HEADER_FIELDS_TOO_LARGE, REQUEST_TIMEOUT, REQUEST_URI_TOO_LONG, RESET_CONTENT, SEE_OTHER, SERVICE_UNAVAILABLE, SWITCHING_PROTOCOLS, TEMPORARY_REDIRECT, TOO_EARLY, TOO_MANY_REQUESTS, UNAUTHORIZED, UNAVAILABLE_FOR_LEGAL_REASONS, UNPROCESSABLE_ENTITY, UNSUPPORTED_MEDIA_TYPE, UPGRADE_REQUIRED, URI_TOO_LONG, USE_PROXY, VARIANT_ALSO_NEGOTIATES, 
+
+| view
+| 
+| View 
+| 
+|  
+
+| viewName
+| 
+| String 
+| 
+|  
+
+|===
+
+
+[#View]
+=== _View_ View
+
+
+
+[.fields-View]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| contentType
+| 
+| String 
+| 
+|  
+
+|===
+
+
