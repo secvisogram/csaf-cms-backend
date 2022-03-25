@@ -213,14 +213,14 @@ font-style: italic;
   </ul>
   <h4><a href="#BasicErrorController">BasicErrorController</a></h4>
   <ul>
-  <li><a href="#errorUsingDELETE"><code><span class="http-method">delete</span> /error</code></a></li>
-  <li><a href="#errorUsingGET"><code><span class="http-method">get</span> /error</code></a></li>
-  <li><a href="#errorUsingHEAD"><code><span class="http-method">head</span> /error</code></a></li>
-  <li><a href="#errorUsingOPTIONS"><code><span class="http-method">options</span> /error</code></a></li>
-  <li><a href="#errorUsingPATCH"><code><span class="http-method">patch</span> /error</code></a></li>
-  <li><a href="#errorUsingPOST"><code><span class="http-method">post</span> /error</code></a></li>
-  <li><a href="#errorUsingPUT"><code><span class="http-method">put</span> /error</code></a></li>
-  <li><a href="#errorUsingTRACE"><code><span class="http-method">trace</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingDELETE"><code><span class="http-method">delete</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingGET"><code><span class="http-method">get</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingHEAD"><code><span class="http-method">head</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingOPTIONS"><code><span class="http-method">options</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingPATCH"><code><span class="http-method">patch</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingPOST"><code><span class="http-method">post</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingPUT"><code><span class="http-method">put</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingTRACE"><code><span class="http-method">trace</span> /error</code></a></li>
   </ul>
   <h4><a href="#MainController">MainController</a></h4>
   <ul>
@@ -1078,11 +1078,11 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="BasicErrorController">BasicErrorController</a></h1>
-  <div class="method"><a name="errorUsingDELETE"/>
+  <div class="method"><a name="errorHtmlUsingDELETE"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingDELETE</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingDELETE</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1093,24 +1093,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1122,11 +1125,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingGET"/>
+  <div class="method"><a name="errorHtmlUsingGET"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingGET</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingGET</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1137,24 +1140,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">401</h4>
     Unauthorized
         <a href="#"></a>
@@ -1166,11 +1172,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingHEAD"/>
+  <div class="method"><a name="errorHtmlUsingHEAD"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="head"><code class="huge"><span class="http-method">head</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingHEAD</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingHEAD</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1181,24 +1187,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1210,11 +1219,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingOPTIONS"/>
+  <div class="method"><a name="errorHtmlUsingOPTIONS"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="options"><code class="huge"><span class="http-method">options</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingOPTIONS</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingOPTIONS</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1225,24 +1234,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1254,11 +1266,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPATCH"/>
+  <div class="method"><a name="errorHtmlUsingPATCH"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPATCH</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingPATCH</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1269,24 +1281,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1298,11 +1313,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPOST"/>
+  <div class="method"><a name="errorHtmlUsingPOST"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPOST</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingPOST</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1313,24 +1328,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -1345,11 +1363,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPUT"/>
+  <div class="method"><a name="errorHtmlUsingPUT"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="put"><code class="huge"><span class="http-method">put</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPUT</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingPUT</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1360,24 +1378,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -1392,11 +1413,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingTRACE"/>
+  <div class="method"><a name="errorHtmlUsingTRACE"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="trace"><code class="huge"><span class="http-method">trace</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingTRACE</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingTRACE</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1407,24 +1428,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
