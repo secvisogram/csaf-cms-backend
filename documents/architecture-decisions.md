@@ -94,7 +94,6 @@ Additional features and requirements:
 
 ### Business Context
 
-
 ![Business Context](business-context.drawio.png)
 
 [csaf-validator-service GIT repository](https://github.com/secvisogram/csaf-validator-service)
@@ -104,7 +103,6 @@ Additional features and requirements:
 ## Technical Context
 
 ### Datamodel
-
 
 At the current state a CSAF document will be saved as one object in the database.
 This object will also contain the owner as well as the workflow status. Other
