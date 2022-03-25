@@ -1,12 +1,12 @@
 # Architecture decisions
 
-## Introduction and Goals
+## 1 Introduction and Goals
 
 This document describes the architecture decisions for the csaf-cms-backend.
 This software is used to manage CSAF documents and provide a workflow to handle
  different document states like 'draft' or 'published'.
 
-## Requirements Overview
+### Requirements Overview
 
 The system must provide all functionality of a CSAF management system as
 described in [Common Security Advisory Framework Version 2.0](https://docs.oasis-open.org/csaf/csaf/v2.0/csd01/csaf-v2.0-csd01.html#9112-conformance-clause-12-csaf-management-system)
@@ -36,7 +36,7 @@ Additional features and requirements:
  [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) between each CSAF
  document version.
 
-## Quality Goals
+### Quality Goals
 
 - Static code checks
 
@@ -54,7 +54,7 @@ Additional features and requirements:
 
 - Test coverage of at least 95%
 
-## Stakeholders
+### Stakeholders
 
 | Name                                               | Expectations                                               |
 | -------------------------------------------------- | ---------------------------------------------------------- |
@@ -62,7 +62,7 @@ Additional features and requirements:
 | mfd2007                                            | Provides knowledge and insight into the CSAF specification |
 | [eXXcellent solutions GmbH](https://exxcellent.de) | Develops the application                                   |
 
-## Architecture Constraints
+## 2 Constraints
 
 ### Technical Constraints
 
@@ -90,7 +90,7 @@ Additional features and requirements:
 | C2  | Coding conventions         | This project is using .... This is enforced through....                                  |
 | C3  | Language                   | The language used throughout the project is English. (code comments, documentation, ...) |
 
-## System Scope and Context
+## 3 Context & Scope
 
 ### Business Context
 
@@ -101,6 +101,31 @@ Additional features and requirements:
 [csaf-validator-lib GIT repository](https://github.com/secvisogram/csaf-validator-lib)
 
 ## Technical Context
+
+### Export Templates
+
+CSAF documents exporters to the formats html, pdf and markdown have to be
+available. To export a document a [Mustache](https://mustache.github.io/) html
+template is used. This provides the document structure and can be further
+converted into pdf or markdown if needed. This also reduces the maintenance
+since only one template has to be maintained. The template itself is stored as
+a file on the server and can be modified without a redeploy of the backend
+application. A image containing a company logo can also be stored together with
+the export template. It will be rendered on the first page of the document when
+exporting.
+
+### Document Templates
+
+A user of this system should be able to download prefilled CSAF documents as
+templates for new CSAF documents. This first implementation will use a folder
+to store all available templates. All json documents in this folder will be
+available as a template. An API will list all available templates to the user.
+
+## Workflow
+
+todo
+
+## 8 Concepts
 
 ### Datamodel
 
@@ -144,7 +169,7 @@ Possible values:
 
 - Published
 
-The workflow state is not part of the CSAF-Document.  
+The workflow state is not part of the CSAF-Document.
 
 The CSAF-document holds a state in: `/documents/tracking/status`.  
 But this one has the enum values: `draft, final, interim`
@@ -285,30 +310,39 @@ Logs changes in comments or answers
 | commentId  | Reference to the id of the comment        |
 | changeType | Created or Update                         |
 
-## Export Templates
+## 9 Design Decisions
 
-CSAF documents exporters to the formats html, pdf and markdown have to be
-available. To export a document a [Mustache](https://mustache.github.io/) html
-template is used. This provides the document structure and can be further
-converted into pdf or markdown if needed. This also reduces the maintenance
-since only one template has to be maintained. The template itself is stored as
-a file on the server and can be modified without a redeploy of the backend
-application. A image containing a company logo can also be stored together with
-the export template. It will be rendered on the first page of the document when
-exporting.
+### Add comments to CSAF document
 
-## Document Templates
+**Problem**
 
-A user of this system should be able to download prefilled CSAF documents as
-templates for new CSAF documents. This first implementation will use a folder
-to store all available templates. All json documents in this folder will be
-available as a template. An API will list all available templates to the user.
+It should be possible to add comments to the csaf document. The comment could be
+for the whole document or for a specific area in the document.
+Since the CSAF standard has no concept for unique identifiers inside the 
+document we need to persist this relation somehow without unnecessarily adding 
+identifiers to each object.
 
-## Workflow
+**Decision**
 
-todo
+The ids of the Comments are referenced from the CSAF Document objects.
+When the comments belongs to an dedicated field and not the whole object,
+the fieldName in the objects is used to specify the concrete value.
 
-## Risks and Technical Debts
+We archive this by adding a $comment value to the document where the user adds a
+comment.
+
+**Consequences**
+
+- The algorithm to add comments is very simple
+- The comments are referenced proper even some parts of the document are deleted
+- The size of the casf document is only slightly increased be the comments 
+- The comments have to be removed before the csaf document is validated
+- The rest client has to manage the id of the comments
+- The creation of the comments and the save of the the csaf documents are done 
+  in different transaction. We need a job cleanup for accidentally created 
+  comments
+
+## 11 Risks and Technical Debts
 
 ### Document size limit is 8MB
 
