@@ -1,4 +1,4 @@
-# Architecture decisions
+# Secvisogram 2.0 - Architecture decisions Backend and Rest interface
 
 ## 1 Introduction and Goals
 
@@ -37,6 +37,14 @@ Additional features and requirements:
  document version.
 
 ### Quality Goals
+
+| Quality Category | Description                                                                              |
+|------------------|------------------------------------------------------------------------------------------|
+| Security         | web applications should minimize the OWASP Top 10  risks                                 |
+| Security         | only authorized user can interact with the server                                        |
+| Correctness      | only valid CSAF-Dokumente could be published                                             |
+| Correctness      | the code coverage has tobe at least 95%                                                  |
+| Maintainability  | particular attention has to be paid to the maintainability in design and implementation |
 
 - Static code checks
 
@@ -84,11 +92,13 @@ Additional features and requirements:
 
 ### Conventions
 
-|     | Convention                 | Description                                                                              |
-| --- | -------------------------- | ---------------------------------------------------------------------------------------- |
-| C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.      |
-| C2  | Coding conventions         | This project is using .... This is enforced through....                                  |
-| C3  | Language                   | The language used throughout the project is English. (code comments, documentation, ...) |
+|     | Constraint                 | Description                                                                                         |
+|-----|----------------------------|-----------------------------------------------------------------------------------------------------|
+| C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.                 |
+| C2  | Coding conventions         | This project is using .... This is enforced through....                                             |
+| C3  | Language                   | The language used throughout the project is English. (code comments, documentation, ...)            |
+| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages |
+| C5  | License                    | The code should be published with the MIT license                                                   |
 
 ## 3 Context & Scope
 
@@ -96,34 +106,104 @@ Additional features and requirements:
 
 ![Business Context](business-context.drawio.png)
 
+#### Editor
+
+The editor uses the system to add, edit, delete and review CSAF-Documents.
+It should be possible for the editor, to export CSAF-Documents to Markdown,
+HTML or PDF.
+The editor could add comments to the whole CSAF-Documents or parts of it.
+Comments could be answered be other editors.
+All Changes are tracked by the system.
+
+The editor could have one of the following roles:
+
+- Registered
+- Author
+- Editor
+- Publisher
+- Reviewer
+- Auditor
+- Manager
+- Administrator
+
+The Csaf-Document could have one of the following workflow states:
+
+- Draft
+- Review
+- Approved
+- Published
+
 [csaf-validator-service GIT repository](https://github.com/secvisogram/csaf-validator-service)
 
 [csaf-validator-lib GIT repository](https://github.com/secvisogram/csaf-validator-lib)
 
-## Technical Context
+## 4 Solutions Strategy
 
-### Export Templates
+The Frontend enables the user to edit and validate CASF-Documents with different
+editors. The CASF-Documents could be persisted to and retrieved from a backend
+server.
 
-CSAF documents exporters to the formats html, pdf and markdown have to be
-available. To export a document a [Mustache](https://mustache.github.io/) html
-template is used. This provides the document structure and can be further
-converted into pdf or markdown if needed. This also reduces the maintenance
-since only one template has to be maintained. The template itself is stored as
-a file on the server and can be modified without a redeploy of the backend
-application. A image containing a company logo can also be stored together with
-the export template. It will be rendered on the first page of the document when
-exporting.
+The Fontend is implemented in React, runs in the Browser and has access to the
+Backend by a REST-API.
 
-### Document Templates
+The Backend ist implemented in Spring Boot. As persistent storage for the CSAF-
+Documents the open-source document-oriented NoSQL database Apache CouchDB is
+used.
 
-A user of this system should be able to download prefilled CSAF documents as
-templates for new CSAF documents. This first implementation will use a folder
-to store all available templates. All json documents in this folder will be
-available as a template. An API will list all available templates to the user.
+Keycloack and the OAuth2-Proxy are used for authentication and authorization.
+Keycloack  uses an external system like LDAP for the user management.
 
-## Workflow
+## 5 Building Block View
 
-todo
+![data model](BSISecvisogramArchitecture.drawio.svg)
+
+### Components
+
+- In the **CouchDB** all CASF-Advisories and their additional Data like the
+  Audit-Trail are persisted
+- The **CSAF-Validator** is a NodeJs application that provides the "CSAF extended
+  validator" as REST-Service
+- The **CSAF-Backend** is a Spring Boot Application that provides the REST-Services
+  for the functions for the CSAF management system
+- The **CSAF-Backend** uses the CouchDB to persist and read the CSAF-Advisories
+  and the additional data
+- The **CSAF-Backend** uses the CSAF-Validator to validate CSAF-Advisories
+- The Secvisogram **React Application** is hosted on a nginx Webserver that
+  provides the static data for the React Client
+- The **Authentication Proxy** is a OAuth2-Proxy the handles all requests that
+  need authentication
+- The **Keycloak-Authentication** is a Keycloak server, that is responsible for
+  authenticating users
+- The **Keycloak-Authentication** uses the **User Management** to retrieve
+  information about user and roles
+- The **User Management** provides user information to the Keycloak server
+- The **React Client** is a Single Page Application that runs in the browser
+  It uses the CSAF-Backend to save and retrieve CSAF Advisories
+  It uses the CSAF-Validator to validate CSAF Advisories
+
+### Integration keycloack
+
+- The Oauth2-Proxy that serves as a proxy to the backend for all Request that need
+  authentication.
+- The CSAF-Backend and the CSAF-Validator don’t have to implement the necessary
+  OAuth flows and therefore, don’t need to manage the access tokens.
+- The Oauth2-Proxy uses Keycloak to get the authentication Information
+- Keycloak gets the user and role information from LDAP
+- User management is done in LDAP Keycloak handles the login
+- Information about the logged-in user and his role are provided to the
+  CSAF-Backend by JSON Web Tokens (JWT)
+
+## 6 Runtime View
+
+### Create Comments
+
+![data model](WorkflowComments.drawio.svg)
+
+### Workflow Advisory
+
+![data model](WokflowAdvisory.drawio.svg)
+
+## 7. Deployment View
 
 ## 8 Concepts
 
@@ -310,19 +390,40 @@ Logs changes in comments or answers
 | commentId  | Reference to the id of the comment        |
 | changeType | Created or Update                         |
 
+### Export
+
+### Export Templates
+
+CSAF documents exporters to the formats html, pdf and markdown have to be
+available. To export a document a [Mustache](https://mustache.github.io/) html
+template is used. This provides the document structure and can be further
+converted into pdf or markdown if needed. This also reduces the maintenance
+since only one template has to be maintained. The template itself is stored as
+a file on the server and can be modified without a redeploy of the backend
+application. A image containing a company logo can also be stored together with
+the export template. It will be rendered on the first page of the document when
+exporting.
+
+### Document Templates
+
+A user of this system should be able to download prefilled CSAF documents as
+templates for new CSAF documents. This first implementation will use a folder
+to store all available templates. All json documents in this folder will be
+available as a template. An API will list all available templates to the user.
+
 ## 9 Design Decisions
 
 ### Add comments to CSAF document
 
-**Problem**
+#### Problem
 
 It should be possible to add comments to the csaf document. The comment could be
 for the whole document or for a specific area in the document.
-Since the CSAF standard has no concept for unique identifiers inside the 
-document we need to persist this relation somehow without unnecessarily adding 
+Since the CSAF standard has no concept for unique identifiers inside the
+document we need to persist this relation somehow without unnecessarily adding
 identifiers to each object.
 
-**Decision**
+#### Decision
 
 The ids of the Comments are referenced from the CSAF Document objects.
 When the comments belongs to an dedicated field and not the whole object,
@@ -331,15 +432,15 @@ the fieldName in the objects is used to specify the concrete value.
 We archive this by adding a $comment value to the document where the user adds a
 comment.
 
-**Consequences**
+#### Consequences
 
 - The algorithm to add comments is very simple
 - The comments are referenced proper even some parts of the document are deleted
-- The size of the casf document is only slightly increased be the comments 
+- The size of the casf document is only slightly increased be the comments
 - The comments have to be removed before the csaf document is validated
 - The rest client has to manage the id of the comments
-- The creation of the comments and the save of the the csaf documents are done 
-  in different transaction. We need a job cleanup for accidentally created 
+- The creation of the comments and the save of the the csaf documents are done
+  in different transaction. We need a job cleanup for accidentally created
   comments
 
 ## 11 Risks and Technical Debts
