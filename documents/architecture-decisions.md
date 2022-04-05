@@ -4,7 +4,7 @@
 
 This document describes the architecture decisions for the csaf-cms-backend.
 This software is used to manage CSAF documents and provide a workflow to handle
- different document states like 'draft' or 'published'.
+different document states like 'draft' or 'published'.
 
 ### Requirements Overview
 
@@ -20,47 +20,45 @@ Additional features and requirements:
 - The structure of the exported document is described by a mustache html template
 
 - It must be possible to write custom functions that generate further data which
- can then be added to the template.
+  can then be added to the template.
 
 - The ability to provide a company logo that is visible on the exported document
 
 - Use Keycloak for user/group/role management and to allow LDAP integration
 
 - Provide an API where the user can download prefilled Documents as a starting
- point for new documents
+  point for new documents
 
 - Provide workflow functionality for the document states Draft, Review, Approved
- and Published
+  and Published
 
 - Each change in a document has to be traceable. This will be done by saving the
- [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) between each CSAF
- document version.
+  [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) between each CSAF
+  document version.
 
 ### Quality Goals
 
-| Quality Category | Description                                                                              |
-|------------------|------------------------------------------------------------------------------------------|
-| Security         | web applications should minimize the OWASP Top 10  risks                                 |
-| Security         | only authorized user can interact with the server                                        |
-| Correctness      | only valid CSAF-Dokumente could be published                                             |
-| Correctness      | the code coverage has tobe at least 95%                                                  |
+| Quality Category | Description                                                                            |
+|------------------|----------------------------------------------------------------------------------------|
+| Security         | web applications should minimize the OWASP Top 10  risks                               |
+| Security         | only authorized user can interact with the server                                      |
+| Correctness      | only valid CSAF-Document could be published                                            |
+| Correctness      | the code coverage has tobe at least 95%                                                |
 | Maintainability  | particular attention has to be paid to the maintainability in design and implementation |
 
-- Static code checks
+TODO: Functional requirements
 
-- Code reviews for pull requests
 
 - Provide documentation for:
 
-  - Data structures
+    - Data structures
 
-  - API functionality
+    - API functionality
 
-  - How to run/deploy the application
+    - How to run/deploy the application
 
-  - How to change the export template
+    - How to change the export template
 
-- Test coverage of at least 95%
 
 ### Stakeholders
 
@@ -70,16 +68,18 @@ Additional features and requirements:
 | mfd2007                                            | Provides knowledge and insight into the CSAF specification |
 | [eXXcellent solutions GmbH](https://exxcellent.de) | Develops the application                                   |
 
+TODO: User of the system
+
 ## 2 Constraints
 
 ### Technical Constraints
 
-|     | Constraint                   | Description                                                                                                                                                                                  |
-| --- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TC1 | Implementation in Java       | The application is using Java 17 and Spring Boot.                                                                                                                                            |
-| TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                    |
-| TC3 | OS indepentent development   | It should be possible to compile and run this application on all mayor operating systems (Linux, Mac and Windows)                                                                            |
-| TC4 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. |
+|     | Constraint                   | Description                                                                                                                                                                                                                         |
+| --- | ---------------------------- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. 	Therefore Java 17 is used as language for the project.                                                                                     |
+| TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                                      |
+| TC3 | OS indepentent development   | It should be possible to compile and run this application on all mayor operating systems (Linux, Mac and Windows)                                                                                                                   |
+| TC4 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. TODO: auf unterschiedlichen Platformen |
 
 ### Organizational Constraints
 
@@ -92,13 +92,17 @@ Additional features and requirements:
 
 ### Conventions
 
-|     | Constraint                 | Description                                                                                         |
-|-----|----------------------------|-----------------------------------------------------------------------------------------------------|
-| C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.                 |
-| C2  | Coding conventions         | This project is using .... This is enforced through....                                             |
-| C3  | Language                   | The language used throughout the project is English. (code comments, documentation, ...)            |
-| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages |
-| C5  | License                    | The code should be published with the MIT license                                                   |
+|     | Constraint                 | Description                                                                                                                |
+|-----|----------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.                                        |
+| C2  | Coding conventions         | This project is using .... This is enforced through....                                                                    |
+| C3  | Language                   | The language used throughout the project is american English. (code comments, documentation, ...)                          |
+| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages TODO:(wie secvisogram) |
+| C5  | License                    | The code should be published with the MIT license                                                                          |
+| C6  | Markdown Lint              | Markdown file should be checked with Markdown-lint. This should be done in Github Actions                                  |
+| C7  | Eslint                     | Javascript file should be checked with Eslint. This should be done in Github Actions                                       |
+| C7  | Code Reviews               | A pull request has to be reviews by another developer before it is merged to the main branch                               |
+| C8  | Code coverage              | The Test coverage has to be of at least 95%                                                                                |
 
 ## 3 Context & Scope
 
@@ -106,16 +110,17 @@ Additional features and requirements:
 
 ![Business Context](business-context.drawio.png)
 
-#### Editor
+The could be an editor application like the Secvisogram react application but   
+also an external system that is able to access a rest api.
 
-The editor uses the system to add, edit, delete and review CSAF-Documents.
+The Client uses the system to add, edit, delete and review CSAF-Documents.
 It should be possible for the editor, to export CSAF-Documents to Markdown,
 HTML or PDF.
-The editor could add comments to the whole CSAF-Documents or parts of it.
+The Client could add comments to the whole CSAF-Documents or parts of it.
 Comments could be answered be other editors.
 All Changes are tracked by the system.
 
-The editor could have one of the following roles:
+The Client could have one of the following roles:
 
 - Registered
 - Author
@@ -131,27 +136,31 @@ The Csaf-Document could have one of the following workflow states:
 - Draft
 - Review
 - Approved
+- Request for publication
 - Published
-
+  
 [csaf-validator-service GIT repository](https://github.com/secvisogram/csaf-validator-service)
 
 [csaf-validator-lib GIT repository](https://github.com/secvisogram/csaf-validator-lib)
 
 ## 4 Solutions Strategy
 
-The Frontend enables the user to edit and validate CASF-Documents with different
-editors. The CASF-Documents could be persisted to and retrieved from a backend
-server.
+The Backend should be accessible from a wide range of clients implemented in different technologies.
 
-The Fontend is implemented in React, runs in the Browser and has access to the
-Backend by a REST-API.
+Therefore, the Representational state transfer (**REST**) over **HTTP** is used as architectural style. HTTP is supported in nearly every language. 
+For the Request Payload **JSON** is used, because it is also available on a wide range of platforms. 
 
-The Backend ist implemented in Spring Boot. As persistent storage for the CSAF-
-Documents the open-source document-oriented NoSQL database Apache CouchDB is
-used.
+**Java** is used as implementation language because it is one of the most widespread programming languages, and it is well known to the developers.
+
+Spring boot is used as application framework, because it supports  
+REST and JSON out-of-the-box. It is well documented, widely spread and integrates many other frameworks. 
+
+
+As persistent storage for the CSAF-Documents the open-source document-oriented NoSQL database Apache CouchDB is
+used. CouchDB uses the JSON format for storing documents and can filter JSON documents. For this reason it is a good match to CSAF-documents.
 
 Keycloack and the OAuth2-Proxy are used for authentication and authorization.
-Keycloack  uses an external system like LDAP for the user management.
+Keycloack  uses an external system like LDAP for the user management. It is possible to integrate other sources for te user management.
 
 ## 5 Building Block View
 
@@ -309,12 +318,12 @@ comment.
           "number": "0.0.1",
           "summary": "Test rsvSummary"
         },
-       {
-         "$comment": [60, 61],
-         "date": "2022-01-12T11:00:00.000Z",
-         "number": "0.0.1",
-         "summary": "Test rsvSummary"
-       }
+        {
+          "$comment": [60, 61],
+          "date": "2022-01-12T11:00:00.000Z",
+          "number": "0.0.1",
+          "summary": "Test rsvSummary"
+        }
       ],
       "status": "draft",
       "version": "0.0.1",
@@ -411,6 +420,28 @@ templates for new CSAF documents. This first implementation will use a folder
 to store all available templates. All json documents in this folder will be
 available as a template. An API will list all available templates to the user.
 
+### Edit Workflow
+
+#### Wokflow before first release
+
+![data model](workflowBeforeRelease.drawio.svg)
+
+- At first a initial advisory is created which workflow state is set to Draft
+- This advisory could be changed several times in State Draft. Depending on the
+  type of change the version of the advisory is increased as patch or minor
+  release.   
+- When all changes are done, the set workflow state is set to Review
+- After the review was successfully the workflow state is set to Approved.
+  The version is set to 1.0.0-1
+- This Prerelease could be used to distribute the advisory to partners.
+  (restricted use)
+- The advisory could be set to the workflow state draft to add the feedbacks to 
+  the interim version
+- In the state Approved the advisory could also set to workflow state "Request 
+  for Publication"
+- After all the workflow state is set to Published and the version to 1.0.0 
+
+
 ## 9 Design Decisions
 
 ### Add comments to CSAF document
@@ -443,6 +474,8 @@ comment.
   in different transaction. We need a job cleanup for accidentally created
   comments
 
+## 10 Quality Requirements
+
 ## 11 Risks and Technical Debts
 
 ### Document size limit is 8MB
@@ -455,3 +488,5 @@ should be enough.
 
 In the future the documents can be split up and thus remove this restriction.
 This will also require a change to the API.
+
+## 12 Glossary
