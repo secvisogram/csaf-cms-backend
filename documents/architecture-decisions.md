@@ -256,6 +256,8 @@ Possible values:
 
 - Approved
 
+- RfPublication
+
 - Published
 
 The workflow state is not part of the CSAF-Document.
