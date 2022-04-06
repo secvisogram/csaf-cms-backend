@@ -72,7 +72,7 @@ public class AdvisoryInformationResponse {
     }
 
     public void setAllowedStateChanges(List<WorkflowState> allowedStateChanges) {
-        this.allowedStateChanges = allowedStateChanges;
+        this.allowedStateChanges = Collections.unmodifiableList(allowedStateChanges);
     }
 
     @ApiModelProperty(value = "CSAF tracking id of the advisory", example = "RHBA-2019_0024")

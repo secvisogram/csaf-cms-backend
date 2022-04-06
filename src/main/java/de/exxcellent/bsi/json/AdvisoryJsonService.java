@@ -34,7 +34,6 @@ public class AdvisoryJsonService {
         JsonNode csafRootNode = jacksonMapper.readValue(csafJsonStream, JsonNode.class);
 
         ObjectNode rootNode = jacksonMapper.createObjectNode();
-        final UUID uuid= UUID.randomUUID();
         rootNode.put(WORKFLOW_STATE_FIELD, state.name());
         rootNode.put(OWNER_FIELD, userName);
         rootNode.put(TYPE_FIELD, ObjectType.Advisory.name());
