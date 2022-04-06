@@ -53,11 +53,6 @@ public class CouchDbService {
 
     private final ObjectMapper jacksonMapper = new ObjectMapper();
 
-
-    public CouchDbService() {
-
-    }
-
     /**
      * Create a new CouchDB
      * @param nameOfNewDb name of the couchdb database
@@ -80,7 +75,7 @@ public class CouchDbService {
             }
         } catch (ServiceResponseException sre) {
             if (sre.getStatusCode() == 412) {
-                throw new RuntimeException("Cannot create \"" + nameOfNewDb + "\" database, it already exists.");
+                throw new RuntimeException("Cannot create \"" + nameOfNewDb + "\" database, it already exists.", sre);
             }
         }
     }
@@ -236,7 +231,7 @@ public class CouchDbService {
      * @param uuid id of the object to delete
      * @param revision revision of the document to delete
      */
-    public void deleteCsafDokument(final String uuid, final String revision) {
+    public void deleteCsafDokument(final String uuid, final String revision) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
         DeleteDocumentOptions documentOptions =
@@ -249,12 +244,12 @@ public class CouchDbService {
         try {
             DocumentResult response = client.deleteDocument(documentOptions).execute().getResult();
             if (!response.isOk()) {
-                throw new RuntimeException(response.getError());
+                throw new DatabaseException(response.getError());
             }
         } catch (BadRequestException ex){
-            throw new RuntimeException("Possible wrong revision");
+            throw new DatabaseException("Possible wrong revision",ex);
         } catch (NotFoundException ex2){
-            throw new RuntimeException("Possible wrong uuid");
+            throw new DatabaseException("Possible wrong uuid",ex2);
         }
 
     }

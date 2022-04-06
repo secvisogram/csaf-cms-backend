@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import de.exxcellent.bsi.coudb.CouchDbService;
+import de.exxcellent.bsi.coudb.DatabaseException;
 import de.exxcellent.bsi.json.AdvisoryJsonService;
 import de.exxcellent.bsi.model.WorkflowState;
 import de.exxcellent.bsi.rest.response.AdvisoryInformationResponse;
@@ -82,7 +83,7 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void deleteCsafDocumentToDb() throws IOException {
+    public void deleteCsafDocumentToDb() throws IOException, DatabaseException {
 
         long countBefore = this.couchdDbService.getDocumentCount();
         final UUID uuid= UUID.randomUUID();

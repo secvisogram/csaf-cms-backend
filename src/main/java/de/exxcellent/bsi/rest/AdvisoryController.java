@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.exxcellent.bsi.SecvisogramApplication;
 import de.exxcellent.bsi.coudb.CouchDbService;
+import de.exxcellent.bsi.coudb.DatabaseException;
 import de.exxcellent.bsi.json.AdvisoryJsonService;
 import de.exxcellent.bsi.model.ExportFormat;
 import de.exxcellent.bsi.model.WorkflowState;
@@ -46,9 +47,6 @@ public class AdvisoryController {
     @Autowired
     private CouchDbService couchdDbService;
 
-    @Value("${couchdb.dbname}")
-    private String dbname;
-
     /**
      * Read all searched advisories
      * @param expression serach expression as json string
@@ -64,7 +62,7 @@ public class AdvisoryController {
                                         format = "json",
                                         description = "filter expression")) String expression) {
 
-
+        LOG.info("findAdvisories");
         return this.couchdDbService.readAllCsafDocuments();
     }
 
@@ -133,7 +131,8 @@ public class AdvisoryController {
     @DeleteMapping("/{advisoryId}/")
     public void deleteAdvisoryWithId(
                 @Parameter(description = "Id of the advisory to read") @PathVariable String advisoryId
-            ,   @Parameter(description = "Optimistic locking revision") @RequestParam String revision  ) {
+            ,   @Parameter(description = "Optimistic locking revision") @RequestParam String revision  ) throws DatabaseException {
+
         this.couchdDbService.deleteCsafDokument(advisoryId, revision);
     }
 
