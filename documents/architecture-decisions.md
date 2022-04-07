@@ -1,4 +1,4 @@
-# Secvisogram 2.0 - Architecture decisions Backend and Rest interface
+# Secvisogram 2.0 - Architecture and REST interface
 
 ## 1 Introduction and Goals
 
@@ -48,17 +48,12 @@ Additional features and requirements:
 
 TODO: Functional requirements
 
-
-- Provide documentation for:
+Provide documentation for:
 
     - Data structures
-
     - API functionality
-
     - How to run/deploy the application
-
     - How to change the export template
-
 
 ### Stakeholders
 
@@ -76,7 +71,7 @@ TODO: User of the system
 
 |     | Constraint                   | Description                                                                                                                                                                                                                         |
 | --- | ---------------------------- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. 	Therefore Java 17 is used as language for the project.                                                                                     |
+| TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. Therefore Java 17 is used as language for the project.|
 | TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                                      |
 | TC3 | OS indepentent development   | It should be possible to compile and run this application on all mayor operating systems (Linux, Mac and Windows)                                                                                                                   |
 | TC4 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. TODO: auf unterschiedlichen Platformen |
@@ -110,7 +105,7 @@ TODO: User of the system
 
 ![Business Context](business-context.drawio.png)
 
-The could be an editor application like the Secvisogram react application but   
+The could be an editor application like the Secvisogram react application but
 also an external system that is able to access a rest api.
 
 The Client uses the system to add, edit, delete and review CSAF-Documents.
@@ -120,47 +115,149 @@ The Client could add comments to the whole CSAF-Documents or parts of it.
 Comments could be answered be other editors.
 All Changes are tracked by the system.
 
+#### Roles
+
 The Client could have one of the following roles:
 
-- Registered
-- Author
-- Editor
-- Publisher
-- Reviewer
-- Auditor
-- Manager
-- Administrator
+##### Role: Registered
+
+- is allowed to list and view all CSAF documents in published status
+
+##### Role: Author
+
+- inherits the rights of the "Registered" role
+- may list, view, edit and delete own (by the user) CSAF documents in "Draft"
+  status and delete them.
+- may view and reply to comments on CSAF documents that he/she is allowed to
+  view and edit. reply to them.
+- may create new CSAF documents
+- may change the status of own CSAF document from "Draft" to "Review".
+- may view the status of own CSAF documents.
+
+##### Role: Editor
+
+- inherits the rights of the "Author" role
+- may list, view, edit and delete all Advisories in "Draft" status.
+- may change the status of all CSAF documents from "Draft" to "Review".
+- may view the status of all CSAF documents.
+
+##### Role: Publisher
+
+- inherits the rights of the "Editor" role
+- may list and view all CSAF documents in "approved" status.
+- may change the status of all CSAF documents from "Approved" to "Published"
+  (also time-based).
+
+##### Role: Reviewer
+
+- inherits the rights of the "Registered" role
+- may list and view all CSAF documents in the status "review" and not created by
+  the user, list and view them.
+- May view and create comments on CSAF documents.
+- may change the status from "review" to "draft" or "approved".
+
+##### Role: Auditor
+
+- can list and view all CSAF document
+- can list and view all versions of CSAF documents
+- can list and view all comments and replies to CSAF documents
+- can list and view all status changes to CSAF documents
+- may list and view the audit trail for all CSAF documents.
+
+##### Role:  Manager
+
+- inherits the rights of the "Publisher" role
+- may delete all Advisories (regardless of status).
+- may perform user management (including changing the ownership of CSAF documents)
+  up to and including the "Publisher" role
+
+##### Role:  Administrator
+
+- may create users, roles
+- may configure settings
+- may change the template
+- may perform user management (including change of ownership of CSAF documents)
+  for all roles
+
+#### Workflow States
 
 The Csaf-Document could have one of the following workflow states:
 
 - Draft
 - Review
 - Approved
-- Request for publication
+- RfPublication
 - Published
-  
+
+#### Audit Trail recording
+
+An audit trail shall be maintained for each CSAF document. The audit trail
+records who made which changes to the who made which changes to the CSAF
+document and when. This includes creation, editing, status changes,
+Comments and responses to them, including the performing user.
+
+#### Comments
+
+There must be the ability to post comments for a CSAF document. In the comment
+must contain at least the user who created it, the time and a free text. A comment
+can be general to the CSAF document or refer to a line or area of a CSAF document.
+document. There must be a possibility to reply to the comment.
+
+#### Export
+
+There must be transformations available for export to the following formats:
+HTML, PDF amd Markdown. These allow the user to convert the CSAF document into
+different formats. As a configuration option at least, the company logo is
+available and a template. The Contractor must create a template.
+The template must be must be able to be adapted as required.
+Detailed documentation is required for this purpose.
+
 [csaf-validator-service GIT repository](https://github.com/secvisogram/csaf-validator-service)
 
 [csaf-validator-lib GIT repository](https://github.com/secvisogram/csaf-validator-lib)
 
 ## 4 Solutions Strategy
 
-The Backend should be accessible from a wide range of clients implemented in different technologies.
+The Backend should be accessible from a wide range of clients implemented in
+different technologies.
 
-Therefore, the Representational state transfer (**REST**) over **HTTP** is used as architectural style. HTTP is supported in nearly every language. 
-For the Request Payload **JSON** is used, because it is also available on a wide range of platforms. 
+Therefore, the Representational state transfer (**REST**) over **HTTP** is used
+as architectural style. HTTP is supported in nearly every language.
+For the Request Payload **JSON** is used, because it is also available on
+a wide range of platforms.
 
-**Java** is used as implementation language because it is one of the most widespread programming languages, and it is well known to the developers.
+**Java** is used as implementation language because it is one of the most
+widespread programming languages, and it is well known to the developers.
 
 Spring boot is used as application framework, because it supports  
-REST and JSON out-of-the-box. It is well documented, widely spread and integrates many other frameworks. 
+REST and JSON out-of-the-box. It is well documented, widely spread and
+integrates many other frameworks.
 
+### Persistent storage
 
-As persistent storage for the CSAF-Documents the open-source document-oriented NoSQL database Apache CouchDB is
-used. CouchDB uses the JSON format for storing documents and can filter JSON documents. For this reason it is a good match to CSAF-documents.
+As persistent storage for the CSAF-Documents the open-source document-oriented
+NoSQL database Apache CouchDB is
+used. CouchDB uses the JSON format for storing documents and can filter JSON
+documents. For this reason it is a good match to CSAF-documents.
+
+### Authorization, User management
 
 Keycloack and the OAuth2-Proxy are used for authentication and authorization.
-Keycloack  uses an external system like LDAP for the user management. It is possible to integrate other sources for te user management.
+Keycloack  uses an external system like LDAP for the user management.
+It is possible to integrate other sources for te user management.
+
+### Export with Mustache
+
+For the export of the documents we use Mustache.
+Mustache is a template-based language available in many programming languages.
+It is planned to use one template for all export types to minimize the
+maintenance effort and to avoid inconsistencies.
+
+### Audit trail
+
+For the audit trail, only the changes between the csaf documents are logged.
+We use [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) to track
+differences between JSON documents.
 
 ## 5 Building Block View
 
@@ -228,13 +325,14 @@ relevant information like Comments or the audit trail will be stored separately.
 
 Holds the current version of a CSAF advisory
 
-| Field        | Description                                        |
-| ------------ |----------------------------------------------------|
-| advisoryId   | Unique Id of the advisory                          |
-| docVersion   | The current Version String of the advisory         |
-| worklowState | The workflow state of the advisory                 |
-| owner        | The current owner of the advisory                  |
-| csafDocument | The CSAF-Document as Json with additional comments |
+| Field          | Description                                        |
+|----------------|----------------------------------------------------|
+| advisoryId     | Unique Id of the advisory                          |
+| docVersion     | The current Version String of the advisory         |
+| publishingDate | From this date, the state: "Published" is valid    |
+| worklowState   | The workflow state of the advisory                 |
+| owner          | The current owner of the advisory                  |
+| csafDocument   | The CSAF-Document as Json with additional comments |
 
 #### AdvisoryVersion
 
@@ -401,7 +499,7 @@ Logs changes in comments or answers
 | commentId  | Reference to the id of the comment        |
 | changeType | Created or Update                         |
 
-### Export
+### Exports
 
 ### Export Templates
 
@@ -415,6 +513,73 @@ application. A image containing a company logo can also be stored together with
 the export template. It will be rendered on the first page of the document when
 exporting.
 
+#### Example: Generation of HTML with Mustache
+
+##### Mustache Template
+
+```html
+<div class="starter-template">
+    {{#document}}
+        <h1>{{title}}</h1>
+        <h3>{{category}}</h3>
+        <h3>{{csaf_version}}</h3>
+        {{#acknowledgments}}
+            <h4>{{organization}}</h4>
+            <div>{{summary}}</div>
+            {{#urls}}
+                <a>{{this}}</a>
+            {{/urls}}
+        {{/acknowledgments}}
+    {{/document}}
+</div>
+```
+
+##### CSAF Document
+
+```json
+{
+  "document": {
+    "category": "generic_csaf",
+    "csaf_version": "2.0",
+    "publisher": {
+    "category": "coordinator",
+    "name": "exccellent",
+    "namespace": "https://exccellent.de"
+  },
+  "title": "TestRSc",
+  "tracking": {
+  },
+  "acknowledgments": [
+    {
+      "names": [],
+      "organization": "exxcellent contribute",
+      "summary": "Summary 1234",
+      "urls": [
+        "https://exccellent.de",
+        "https:/heise.de"
+      ]
+    }
+  ]
+  }
+}
+```
+
+##### Generated result
+
+```html
+<div class="container">
+  <div class="starter-template">
+        <h1>TestRSc</h1>
+        <h3>generic_csaf</h3>
+        <h3>2.0</h3>
+            <h4>exxcellent contribute</h4>
+            <div>Summary 1234</div>
+                <a>https://exccellent.de/</a>
+                <a>https:/heise.de/</a>
+  </div>
+</div>
+```
+
 ### Document Templates
 
 A user of this system should be able to download prefilled CSAF documents as
@@ -422,7 +587,7 @@ templates for new CSAF documents. This first implementation will use a folder
 to store all available templates. All json documents in this folder will be
 available as a template. An API will list all available templates to the user.
 
-### Edit Workflow
+### Advisory Workflow
 
 #### Wokflow before first release
 
@@ -431,18 +596,147 @@ available as a template. An API will list all available templates to the user.
 - At first a initial advisory is created which workflow state is set to Draft
 - This advisory could be changed several times in State Draft. Depending on the
   type of change the version of the advisory is increased as patch or minor
-  release.   
+  release.
 - When all changes are done, the set workflow state is set to Review
 - After the review was successfully the workflow state is set to Approved.
   The version is set to 1.0.0-1
 - This Prerelease could be used to distribute the advisory to partners.
   (restricted use)
-- The advisory could be set to the workflow state draft to add the feedbacks to 
+- The advisory could be set to the workflow state draft to add the feedbacks to
   the interim version
-- In the state Approved the advisory could also set to workflow state "Request 
+- In the state Approved the advisory could also set to workflow state "Request
   for Publication"
-- After all the workflow state is set to Published and the version to 1.0.0 
+- After all the workflow state is set to Published and the version to 1.0.0
 
+#### Versioning
+
+The backend is using Semantic versioning in the form X.Y.Z.
+see:
+[CSAF semantic version](https://docs.oasis-open.org/csaf/csaf/v2.0/cs01/csaf-v2.0-cs01.html#31112-version-type---semantic-versioning)
+X is the major version, Y is the minor version, and Z is the patch version.
+Major version zero (0.y.z) is for initial development before the initial_release_date.
+Version 1.0.0 defines the initial public release
+
+A pre-release version is denoted by appending a hyphen and a number
+A pre-release version indicates that the version is unstable and might not
+satisfy the intended compatibility requirements as denoted by its associated
+normal version.
+
+#### Workflow Step: Create new Advisory
+
+The editor loads a template from the server and starts editing a new advisory.
+Afterwards the new advisory is push on the server.
+
+| workflow state | relase state         |
+|----------------|----------------------|
+| Not created    | not public released  |
+
+| Rest Transition    | Actions on server                                                                         |
+|--------------------|-------------------------------------------------------------------------------------------|
+| createCsafDocument | create new advisory in db <br/>  set version to 0.0.1 <br/> set workflow state to "Draft" |
+
+#### Workflow Step: Edit the Advisory
+
+The editor edits the advisory several times, add comments and answers questions.
+
+| workflow state  | relase state         |
+|-----------------|----------------------|
+| Draft           | not public released  |
+
+| Rest Transition                         | Actions on server                                                              |
+|-----------------------------------------|--------------------------------------------------------------------------------|
+| changeCsafDocument                      | save changes in db <br/>  increase minor or patch version depending on changes |
+| changeWorkflowState to "Review"         | change workflow state to "Review"                                              |
+| changeWorkflowState other than "Review" | -not possible-                                                                 |
+| add, change comment                     | create/update comment for advisory                                             |
+| deleteAdvisory                          | removes advisory from system                                                   |
+
+#### Workflow Step: Review the Advisory
+
+When the editor has finished editing the advisory it gives the document to the review.
+The Reviewer could approve the advisory or give the document back to the editor.
+When the document is put to the step "Approved" a Prerelease version is created.
+
+| workflow state | relase state         |
+|----------------|----------------------|
+| Review         | not public released  |
+
+| Rest Transition                                 | Actions on server                                                              |
+|-------------------------------------------------|--------------------------------------------------------------------------------|
+| changeCsafDocument                              | save changes in db <br/>  increase minor or patch version depending on changes |
+| changeWorkflowState to "Approved"               | change workflow state to "Approved", set version to 1.0.0-1                    |
+| changeWorkflowState to "Draft"                  | change workflow state to "Draft"                                               |
+| changeWorkflowState other than "Approve, Draft" | -not possible-                                                                 |
+| add, change comment                             | create/update comment for advisory                                             |
+| deleteAdvisory                                  | removes advisory from system                                                   |
+
+#### Workflow Step: Approve the Advisory
+
+In the state Approved the Publisher has 2 opportunities.
+
+First: He distributes the prerelease version of the advisory to partners and sets
+   the workflow state back to "Draft".
+Second: It sets the state of the advisory to RfPublication.
+
+| workflow state | relase state         |
+|----------------|----------------------|
+| Approve        | pre-release  |
+
+| Rest Transition                                 | Actions on server                                        |
+|-------------------------------------------------|----------------------------------------------------------|
+| changeCsafDocument                              | save changes in db <br/>                                 |
+| changeWorkflowState to "Draft"                  | change workflow state to "Draft", set version to 1.0.0-x |
+| changeWorkflowState to "RfPublication"          | change workflow state to "RfPublication"                 |
+| changeWorkflowState other than "Draft, RfPublication" | <not possible>                                           |
+| add, change comment                             | create/update comment for advisory                       |
+| deleteAdvisory                                  | removes advisory from system                             |
+
+#### Workflow Step: Request for publication
+
+| workflow state | relase state         |
+|----------------|----------------------|
+| RfPublication        | pre-release  |
+
+| Rest Transition                                 | Actions on server                                        |
+|-------------------------------------------------|----------------------------------------------------------|
+| changeCsafDocument                              | save changes in db <br/>                                 |
+| changeWorkflowState to "Draft"                  | change workflow state to "Draft", set version to 1.0.0-x |
+| changeWorkflowState to "RfPublication"          | change workflow state to "RfPublication"                 |
+| changeWorkflowState other than "Draft, RfPublication" | <not possible>                                           |
+| add, change comment                             | create/update comment for advisory                       |
+| deleteAdvisory                                  | removes advisory from system                             |
+
+#### Workflow Step: Publish the Advisory
+
+| workflow state | relase state |
+|----------------|--------------|
+| RfPublication        | pre-release  |
+
+| Rest Transition                                 | Actions on server                                        |
+|-------------------------------------------------|----------------------------------------------------------|
+| changeCsafDocument                              | save changes in db <br/>                                 |
+| changeWorkflowState to "Draft"                  | change workflow state to "Draft", set version to 1.0.0-x |
+| changeWorkflowState to "RfPublication"          | change workflow state to "RfPublication"                 |
+| changeWorkflowState other than "Draft, RfPublication" | <not possible>                                           |
+| add, change comment                             | create/update comment for advisory                       |
+| deleteAdvisory                                  | removes advisory from system                             |
+
+TODO REST-API:
+Service: create/save advisory, change workflow state.
+Beim Speichern kann sich die Version des Dokument ändern. Deswegen muss nach
+ dem Ändern das Dokument im Client neu geladen werden. Die zu vergebende Version
+  ist abhängig von den Änderungen im dokument und dem aktuellen Status bzw. der
+   aktuellen Version des Dokuments.
+
+Service: change workflow state
+
+Beim Statusübergang nach approved wird eine prerelease Versionsnummer vergeben.
+Falls die bisherige version < 1.0.0 war,
+ist die neue Version 1.0.0-1.
+Falls die bisherige Version >= 1.0.0 war,
+wird unterschieden, ob die bisherige Version bereits eine prerelease Version
+ war oder nicht. Falls ja, wird der Prerelease Counter um 1 erhöht, falls
+ nicht wird der Prerelease Counter auf 1 gesetzt.
 
 ## 9 Design Decisions
 
