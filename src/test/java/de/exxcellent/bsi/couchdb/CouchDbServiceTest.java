@@ -9,7 +9,6 @@ import de.exxcellent.bsi.json.AdvisoryJsonService;
 import de.exxcellent.bsi.model.WorkflowState;
 import de.exxcellent.bsi.rest.response.AdvisoryInformationResponse;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,58 +24,58 @@ import java.util.UUID;
  */
 
 @SpringBootTest
-@Disabled("Needs CouchDb to run")
+//@Disabled("Needs CouchDb to run")
 public class CouchDbServiceTest {
 
     @Autowired
-    private CouchDbService couchdDbService;
+    private CouchDbService couchDbService;
     private final AdvisoryJsonService jsonService = new AdvisoryJsonService();
 
 
     @Test
     public void getServerVersionTest() {
 
-        Assertions.assertEquals("3.2.1", this.couchdDbService.getServerVersion());
+        Assertions.assertEquals("3.2.1", this.couchDbService.getServerVersion());
     }
 
     @Test
     public void writeNewCsafDocumentToDb() throws IOException {
 
-        long countBefore = this.couchdDbService.getDocumentCount();
+        long countBefore = this.couchDbService.getDocumentCount();
         final String jsonFileName = "exxcellent-2021AB123.json";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
 
             final String owner = "Musterman";
             ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
             final UUID uuid = UUID.randomUUID();
-            final String revision = this.couchdDbService.writeCsafDocument(uuid, objectNode);
+            final String revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
             Assertions.assertNotNull(revision);
         }
-        Assertions.assertEquals(countBefore + 1, this.couchdDbService.getDocumentCount());
+        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
     }
 
     @Test
     public void updateCsafDocumentToDb() throws IOException {
 
-        long countBefore = this.couchdDbService.getDocumentCount();
+        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
             final String owner = "Musterman";
             ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchdDbService.writeCsafDocument(uuid, objectNode);
+            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
             Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchdDbService.getDocumentCount());
+            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
         }
 
         try (InputStream csafChangeJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
             final String owner = "Musterfrau";
             ObjectNode objectNode = jsonService.convertCsafToJson(csafChangeJsonStream, owner, WorkflowState.Draft);
-            this.couchdDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
-            Assertions.assertEquals(countBefore + 1, this.couchdDbService.getDocumentCount());
+            this.couchDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
+            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
         }
-        final JsonNode response = this.couchdDbService.readCsafDokument(uuid.toString());
+        final JsonNode response = this.couchDbService.readCsafDokument(uuid.toString());
         JsonNode changedTrekingId = response.at("/csaf/document/tracking/id");
         Assertions.assertEquals("exxcellent-2022CC", changedTrekingId.asText());
 
@@ -85,63 +84,63 @@ public class CouchDbServiceTest {
     @Test
     public void deleteCsafDocumentToDb() throws IOException, DatabaseException {
 
-        long countBefore = this.couchdDbService.getDocumentCount();
+        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid= UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
             final String owner = "Musterman";
             ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchdDbService.writeCsafDocument(uuid, objectNode);
+            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
             Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchdDbService.getDocumentCount());
+            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
-            this.couchdDbService.deleteCsafDokument(uuid.toString(), revision);
+            this.couchDbService.deleteCsafDokument(uuid.toString(), revision);
         }
     }
 
     @Test
     public void deleteCsafDocumentToDb_invalidRevision() throws IOException {
 
-        long countBefore = this.couchdDbService.getDocumentCount();
+        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid= UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
             final String owner = "Musterman";
             ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchdDbService.writeCsafDocument(uuid, objectNode);
+            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
             Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchdDbService.getDocumentCount());
+            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
             Assertions.assertThrows(RuntimeException.class
-                    , () -> this.couchdDbService.deleteCsafDokument(uuid.toString(), "invalid revision"));
+                    , () -> this.couchDbService.deleteCsafDokument(uuid.toString(), "invalid revision"));
         }
     }
 
     @Test
     public void deleteCsafDocumentToDb_invalidUuid() throws IOException {
 
-        long countBefore = this.couchdDbService.getDocumentCount();
+        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid= UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
             final String owner = "Musterman";
             ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchdDbService.writeCsafDocument(uuid, objectNode);
+            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
             Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchdDbService.getDocumentCount());
+            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
             Assertions.assertThrows(RuntimeException.class
-                    , () -> this.couchdDbService.deleteCsafDokument("invalid user id", revision));
+                    , () -> this.couchDbService.deleteCsafDokument("invalid user id", revision));
         }
     }
 
     @Test
     public void readAllCsafDocumentsFromDbTest() {
 
-        final List<AdvisoryInformationResponse> revisions = this.couchdDbService.readAllCsafDocuments();
+        final List<AdvisoryInformationResponse> revisions = this.couchDbService.readAllCsafDocuments();
         System.out.println(revisions.size());
         System.out.println(revisions.get(0).getTitle());
     }
@@ -149,9 +148,9 @@ public class CouchDbServiceTest {
     @Test
     public void readCsafDokumentTest() throws IOException {
 
-        final List<AdvisoryInformationResponse> revisions = this.couchdDbService.readAllCsafDocuments();
+        final List<AdvisoryInformationResponse> revisions = this.couchDbService.readAllCsafDocuments();
 
-        final JsonNode response = this.couchdDbService.readCsafDokument(revisions.get(0).getAdvisoryId());
+        final JsonNode response = this.couchDbService.readCsafDokument(revisions.get(0).getAdvisoryId());
         System.out.println(response);
     }
 

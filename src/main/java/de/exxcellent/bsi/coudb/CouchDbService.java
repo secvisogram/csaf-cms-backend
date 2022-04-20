@@ -39,19 +39,34 @@ public class CouchDbService {
     private static final Logger LOG = LoggerFactory.getLogger(CouchDbService.class);
     private static final String CLOUDANT_SERVICE_NAME = "SECVISOGRAM";
 
-    private static final String[] DOKUMENT_TITLE = {"csaf","document", "title"};
-    private static final String[] DOKUMENT_TRACKING_ID = {"csaf","document","tracking", "id"};
+    private static final String[] DOCUMENT_TITLE = {"csaf","document", "title"};
+    private static final String[] DOCUMENT_TRACKING_ID = {"csaf","document","tracking", "id"};
 
-    @Value("${couchdb.dbname}")
-    private String dbname;
+    @Value("${csaf.couchdb.host}")
+    private String dbHost;
 
-    @Value("${couchdb.username}")
-    private String dbUserName;
+    @Value("${csaf.couchdb.ssl}")
+    private Boolean dbSsl;
 
-    @Value("${couchdb.password}")
+    @Value("${csaf.couchdb.port}")
+    private int dbPort;
+
+    @Value("${csaf.couchdb.user}")
+    private String dbUser;
+
+    @Value("${csaf.couchdb.password}")
     private String dbPassword;
 
     private final ObjectMapper jacksonMapper = new ObjectMapper();
+
+    /**
+     * Get the CouchDB connection string
+     * @return CouchDB connection string
+     */
+    private String getDbUrl() {
+        String protocol = this.dbSsl ? "https://" : "http://";
+        return protocol + dbHost + ":" + dbPort;
+    }
 
     /**
      * Create a new CouchDB
@@ -103,7 +118,7 @@ public class CouchDbService {
 
         Cloudant client = createCloudantClient();
         GetDatabaseInformationOptions dbInformationOptions =
-                new GetDatabaseInformationOptions.Builder(this.dbname).build();
+                new GetDatabaseInformationOptions.Builder(this.dbHost).build();
 
         DatabaseInformation dbInformationResponse = client
                 .getDatabaseInformation(dbInformationOptions)
@@ -129,7 +144,7 @@ public class CouchDbService {
         String createString = writer.writeValueAsString(rootNode);
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
-                .db(dbname)
+                .db(dbHost)
                 .docId(uuid.toString())
                 .contentType("application/json")
                 .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
@@ -160,7 +175,7 @@ public class CouchDbService {
         String updateString = writer.writeValueAsString(rootNode);
         PostDocumentOptions updateDocumentOptions =
                 new PostDocumentOptions.Builder()
-                        .db("secvisogram-db")
+                        .db(dbHost)
                         .contentType("application/json")
                         .body(new ByteArrayInputStream(updateString.getBytes(StandardCharsets.UTF_8)))
                         .build();
@@ -183,7 +198,7 @@ public class CouchDbService {
         Cloudant client = createCloudantClient();
         GetDocumentOptions documentOptions =
                 new GetDocumentOptions.Builder()
-                        .db(dbname)
+                        .db(dbHost)
                         .docId(uuid)
                         .build();
 
@@ -203,13 +218,13 @@ public class CouchDbService {
 
         Cloudant client = createCloudantClient();
 
-        String titlePath = String.join(".", DOKUMENT_TITLE);
-        String trackIdPath = String.join(".", DOKUMENT_TRACKING_ID);
+        String titlePath = String.join(".", DOCUMENT_TITLE);
+        String trackIdPath = String.join(".", DOCUMENT_TRACKING_ID);
 
         Map<String, Object> selector = new HashMap<>();
         selector.put("type", Map.of("$eq", AdvisoryJsonService.ObjectType.Advisory.name()));
         PostFindOptions findOptions = new PostFindOptions.Builder()
-                .db(dbname)
+                .db(dbHost)
                 .selector(selector)
                 .fields(Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, AdvisoryJsonService.TYPE_FIELD
                         , COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath))
@@ -236,7 +251,7 @@ public class CouchDbService {
         Cloudant client = createCloudantClient();
         DeleteDocumentOptions documentOptions =
                 new DeleteDocumentOptions.Builder()
-                        .db(dbname)
+                        .db(dbHost)
                         .docId(uuid)
                         .rev(revision)
                         .build();
@@ -260,7 +275,9 @@ public class CouchDbService {
      */
     private Cloudant createCloudantClient() {
         BasicAuthenticator authenticator = createBasicAuthenticator();
-        return new Cloudant(CLOUDANT_SERVICE_NAME, authenticator);
+        Cloudant cloudant = new Cloudant(CLOUDANT_SERVICE_NAME, authenticator);
+        cloudant.setServiceUrl(getDbUrl());
+        return cloudant;
     }
 
     /**
@@ -270,8 +287,9 @@ public class CouchDbService {
     private BasicAuthenticator createBasicAuthenticator() {
 
         return new BasicAuthenticator.Builder()
-                .username(this.dbUserName)
-                .password(this.dbPassword).build();
+                .username(this.dbUser)
+                .password(this.dbPassword)
+                .build();
     }
 
 
@@ -280,8 +298,8 @@ public class CouchDbService {
         AdvisoryInformationResponse response = new AdvisoryInformationResponse();
         response.setAdvisoryId(document.getId());
         response.setOwner(getStringFieldValue(OWNER_FIELD, document));
-        response.setTitle(getStringFieldValue(DOKUMENT_TITLE, document));
-        response.setDocumentTrackingId(getStringFieldValue(DOKUMENT_TRACKING_ID, document));
+        response.setTitle(getStringFieldValue(DOCUMENT_TITLE, document));
+        response.setDocumentTrackingId(getStringFieldValue(DOCUMENT_TRACKING_ID, document));
         String workflowState = getStringFieldValue(WORKFLOW_STATE_FIELD, document);
         response.setWorkflowState(WorkflowState.valueOf(WorkflowState.class, workflowState));
         response.setAllowedStateChanges(Collections.emptyList());

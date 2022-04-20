@@ -1,0 +1,17 @@
+services:
+  csaf-couchdb:
+    image: couchdb:3.2
+    container_name: csaf-couchdb
+    restart: on-failure
+    env_file: .env
+    environment:
+      COUCHDB_USER: ${CSAF_COUCHDB_USER}
+      COUCHDB_PASSWORD: ${CSAF_COUCHDB_PASSWORD}
+    volumes:
+      - csaf-couchdb-data:/opt/couchdb/data
+    ports:
+      - "${CSAF_COUCHDB_PORT}:5984"
+
+volumes:
+  csaf-couchdb-data:
+    driver: local
