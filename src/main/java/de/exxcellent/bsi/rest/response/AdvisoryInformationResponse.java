@@ -15,14 +15,22 @@ import java.util.UUID;
 @ApiModel("AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
-    private final String advisoryId;
-    private final WorkflowState workflowState;
-    private final String documentTrackingId;
-    private final String title;
-    private final String owner;
-    private final boolean changeable;
-    private final boolean deletable;
+    private String advisoryId;
+    private WorkflowState workflowState;
+    private String documentTrackingId;
+    private String title;
+    private String owner;
+    private boolean changeable;
+    private boolean deletable;
     private List<WorkflowState> allowedStateChanges;
+
+
+    public AdvisoryInformationResponse() {
+
+        this.changeable = false;
+        this.deletable = false;
+
+    }
 
     public AdvisoryInformationResponse(String advisoryId, WorkflowState status) {
         this(advisoryId, status, "");
@@ -50,9 +58,21 @@ public class AdvisoryInformationResponse {
         return advisoryId;
     }
 
+    public void setAdvisoryId(String advisoryId) {
+        this.advisoryId = advisoryId;
+    }
+
     @ApiModelProperty(value = "Current workflow state of the advisory", example = "Approved")
     public WorkflowState getWorkflowState() {
         return workflowState;
+    }
+
+    public void setWorkflowState(WorkflowState workflowState) {
+        this.workflowState = workflowState;
+    }
+
+    public void setAllowedStateChanges(List<WorkflowState> allowedStateChanges) {
+        this.allowedStateChanges = Collections.unmodifiableList(allowedStateChanges);
     }
 
     @ApiModelProperty(value = "CSAF tracking id of the advisory", example = "RHBA-2019_0024")
@@ -60,14 +80,26 @@ public class AdvisoryInformationResponse {
         return documentTrackingId;
     }
 
+    public void setDocumentTrackingId(String documentTrackingId) {
+        this.documentTrackingId = documentTrackingId;
+    }
+
     @ApiModelProperty(value = "CSAF title of the advisory", example = "Cisco IPv6 Crafted Packet Denial of Service Vulnerability")
     public String getTitle() {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     @ApiModelProperty(value = "Current owner of the advisory", example = "Mustermann")
     public String getOwner() {
         return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     @ApiModelProperty(value = "Can the logged in user change this advisory?", example = "true")

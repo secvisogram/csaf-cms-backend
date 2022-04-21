@@ -2,6 +2,7 @@ package de.exxcellent.bsi.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,6 @@ public class Csaf2MapReader {
     public Object readCasfDocument(Reader casfDokumnet) throws IOException {
 
         JsonNode rootNode = mapper.readValue(casfDokumnet, JsonNode.class);
-
         return convertToObject(rootNode);
     }
 

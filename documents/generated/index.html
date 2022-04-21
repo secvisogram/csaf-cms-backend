@@ -213,14 +213,14 @@ font-style: italic;
   </ul>
   <h4><a href="#BasicErrorController">BasicErrorController</a></h4>
   <ul>
-  <li><a href="#errorUsingDELETE"><code><span class="http-method">delete</span> /error</code></a></li>
-  <li><a href="#errorUsingGET"><code><span class="http-method">get</span> /error</code></a></li>
-  <li><a href="#errorUsingHEAD"><code><span class="http-method">head</span> /error</code></a></li>
-  <li><a href="#errorUsingOPTIONS"><code><span class="http-method">options</span> /error</code></a></li>
-  <li><a href="#errorUsingPATCH"><code><span class="http-method">patch</span> /error</code></a></li>
-  <li><a href="#errorUsingPOST"><code><span class="http-method">post</span> /error</code></a></li>
-  <li><a href="#errorUsingPUT"><code><span class="http-method">put</span> /error</code></a></li>
-  <li><a href="#errorUsingTRACE"><code><span class="http-method">trace</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingDELETE"><code><span class="http-method">delete</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingGET"><code><span class="http-method">get</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingHEAD"><code><span class="http-method">head</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingOPTIONS"><code><span class="http-method">options</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingPATCH"><code><span class="http-method">patch</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingPOST"><code><span class="http-method">post</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingPUT"><code><span class="http-method">put</span> /error</code></a></li>
+  <li><a href="#errorHtmlUsingTRACE"><code><span class="http-method">trace</span> /error</code></a></li>
   </ul>
   <h4><a href="#MainController">MainController</a></h4>
   <ul>
@@ -232,14 +232,14 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Show advisory (<span class="nickname">advisoryByIdUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-summary">Get a single Advisory (<span class="nickname">advisoryByIdUsingGET</span>)</div>
+    <div class="method-notes">Get the advisory CSAF document and some additional data for the given id.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to read default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -303,11 +303,11 @@ font-style: italic;
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div><div class="param">commentId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the answer default: null format: int64</div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; commentId default: null format: int64</div><div class="param">answerId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment the answer belongs to default: null format: int64</div><div class="param">answerId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; answerId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the answer to change default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -325,16 +325,27 @@ font-style: italic;
     </div>  <!-- field-items -->
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the answer default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      String
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -346,7 +357,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#String">String</a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -369,9 +380,9 @@ font-style: italic;
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div><div class="param">commentId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the comment default: null format: int64</div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; commentId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment to change default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -389,16 +400,27 @@ font-style: italic;
     </div>  <!-- field-items -->
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the comment default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      String
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -410,7 +432,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#String">String</a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -427,13 +449,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
     <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocumentUsingPATCH</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Change a CSAF-document in the system</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change default: null </div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -451,16 +473,28 @@ font-style: italic;
     </div>  <!-- field-items -->
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
       
-      String
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -472,7 +506,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#String">String</a>
+        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -489,13 +523,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/</code></pre></div>
     <div class="method-summary">Change workflow state of an advisory (<span class="nickname">changeWorkflowStateUsingPATCH</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -513,16 +547,27 @@ font-style: italic;
     </div>  <!-- field-items -->
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      String
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -534,7 +579,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        <a href="#String">String</a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -551,13 +596,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></pre></div>
     <div class="method-summary">Show comments and answers of an advisory (<span class="nickname">commentsUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Show all comments and answers of the advisory with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to get the comments default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -613,15 +658,15 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
     <div class="method-summary">Add answer to an advisory comment (<span class="nickname">createAnswerUsingPOST</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Add a answer to the comment with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div><div class="param">commentId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to add the answer default: null format: int64</div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; commentId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment to add the answer default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -686,13 +731,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
     <div class="method-summary">Add comment to an advisory (<span class="nickname">createCommentUsingPOST</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Add a comment to the advisory with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to add the comments default: null </div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -757,7 +802,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories</code></pre></div>
     <div class="method-summary">Create a new Advisory in the system (<span class="nickname">createCsafDocumentUsingPOST</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Create a new CSAF-document in the system</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -821,19 +866,25 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Delete advisory. All older versions, comments and audit-trails are also deleted. (<span class="nickname">deleteAdvisoryWithIdUsingDELETE</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-summary">Delete advisory. (<span class="nickname">deleteAdvisoryWithIdUsingDELETE</span>)</div>
+    <div class="method-notes">Delete advisory from the system. All older versions, comments and audit-trails are also deleted.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to read default: null </div>
     </div>  <!-- field-items -->
 
 
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+    </div>  <!-- field-items -->
 
 
 
@@ -860,14 +911,14 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></pre></div>
-    <div class="method-summary">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON (<span class="nickname">exportAdvisoryUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-summary">Export advisory CSAF document (<span class="nickname">exportAdvisoryUsingGET</span>)</div>
+    <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; advisoryId default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to export default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -982,7 +1033,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates</code></pre></div>
     <div class="method-summary">Get all authorized templates (<span class="nickname">getAllTemplatesUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Get all available templates in the system</div>
 
 
 
@@ -1032,13 +1083,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></pre></div>
     <div class="method-summary">Get template content (<span class="nickname">templateByIdUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Get the content of the templates with the given templateId</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">templateId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; templateId default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the template to read default: null format: int64</div>
     </div>  <!-- field-items -->
 
 
@@ -1078,11 +1129,11 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="BasicErrorController">BasicErrorController</a></h1>
-  <div class="method"><a name="errorUsingDELETE"/>
+  <div class="method"><a name="errorHtmlUsingDELETE"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingDELETE</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingDELETE</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1093,24 +1144,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1122,11 +1176,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingGET"/>
+  <div class="method"><a name="errorHtmlUsingGET"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingGET</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingGET</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1137,24 +1191,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">401</h4>
     Unauthorized
         <a href="#"></a>
@@ -1166,11 +1223,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingHEAD"/>
+  <div class="method"><a name="errorHtmlUsingHEAD"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="head"><code class="huge"><span class="http-method">head</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingHEAD</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingHEAD</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1181,24 +1238,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1210,11 +1270,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingOPTIONS"/>
+  <div class="method"><a name="errorHtmlUsingOPTIONS"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="options"><code class="huge"><span class="http-method">options</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingOPTIONS</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingOPTIONS</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1225,24 +1285,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1254,11 +1317,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPATCH"/>
+  <div class="method"><a name="errorHtmlUsingPATCH"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPATCH</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingPATCH</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1269,24 +1332,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1298,11 +1364,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPOST"/>
+  <div class="method"><a name="errorHtmlUsingPOST"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPOST</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingPOST</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1313,24 +1379,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -1345,11 +1414,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPUT"/>
+  <div class="method"><a name="errorHtmlUsingPUT"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="put"><code class="huge"><span class="http-method">put</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPUT</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingPUT</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1360,24 +1429,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">201</h4>
     Created
         <a href="#"></a>
@@ -1392,11 +1464,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingTRACE"/>
+  <div class="method"><a name="errorHtmlUsingTRACE"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="trace"><code class="huge"><span class="http-method">trace</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingTRACE</span>)</div>
+    <div class="method-summary">errorHtml (<span class="nickname">errorHtmlUsingTRACE</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1407,24 +1479,27 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#ModelAndView">ModelAndView</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: </div>
+    <pre class="example"><code></code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
+        <a href="#ModelAndView">ModelAndView</a>
     <h4 class="field-label">204</h4>
     No Content
         <a href="#"></a>
@@ -1493,6 +1568,7 @@ font-style: italic;
     <li><a href="#AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a></li>
     <li><a href="#AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a></li>
     <li><a href="#AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - AdvisoryTemplateInformation</a></li>
+    <li><a href="#AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - AdvisoryUpdateResponse</a></li>
     <li><a href="#ModelAndView"><code>ModelAndView</code> - ModelAndView</a></li>
     <li><a href="#View"><code>View</code> - View</a></li>
   </ol>
@@ -1515,8 +1591,8 @@ font-style: italic;
     <h3><a name="AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - AdvisoryCreateComment</a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
+<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -1571,6 +1647,13 @@ font-style: italic;
     <div class="field-items">
       <div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Description of the template </div>
 <div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the template format: int64</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - AdvisoryUpdateResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
