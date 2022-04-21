@@ -42,6 +42,9 @@ public class CouchDbService {
     private static final String[] DOCUMENT_TITLE = {"csaf","document", "title"};
     private static final String[] DOCUMENT_TRACKING_ID = {"csaf","document","tracking", "id"};
 
+    @Value("${csaf.couchdb.dbname}")
+    private String dbName;
+
     @Value("${csaf.couchdb.host}")
     private String dbHost;
 
@@ -118,7 +121,7 @@ public class CouchDbService {
 
         Cloudant client = createCloudantClient();
         GetDatabaseInformationOptions dbInformationOptions =
-                new GetDatabaseInformationOptions.Builder(this.dbHost).build();
+                new GetDatabaseInformationOptions.Builder(this.dbName).build();
 
         DatabaseInformation dbInformationResponse = client
                 .getDatabaseInformation(dbInformationOptions)
@@ -144,7 +147,7 @@ public class CouchDbService {
         String createString = writer.writeValueAsString(rootNode);
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
-                .db(dbHost)
+                .db(this.dbName)
                 .docId(uuid.toString())
                 .contentType("application/json")
                 .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
@@ -175,7 +178,7 @@ public class CouchDbService {
         String updateString = writer.writeValueAsString(rootNode);
         PostDocumentOptions updateDocumentOptions =
                 new PostDocumentOptions.Builder()
-                        .db(dbHost)
+                        .db(this.dbName)
                         .contentType("application/json")
                         .body(new ByteArrayInputStream(updateString.getBytes(StandardCharsets.UTF_8)))
                         .build();
@@ -198,7 +201,7 @@ public class CouchDbService {
         Cloudant client = createCloudantClient();
         GetDocumentOptions documentOptions =
                 new GetDocumentOptions.Builder()
-                        .db(dbHost)
+                        .db(this.dbName)
                         .docId(uuid)
                         .build();
 
@@ -224,7 +227,7 @@ public class CouchDbService {
         Map<String, Object> selector = new HashMap<>();
         selector.put("type", Map.of("$eq", AdvisoryJsonService.ObjectType.Advisory.name()));
         PostFindOptions findOptions = new PostFindOptions.Builder()
-                .db(dbHost)
+                .db(this.dbName)
                 .selector(selector)
                 .fields(Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, AdvisoryJsonService.TYPE_FIELD
                         , COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath))
@@ -251,7 +254,7 @@ public class CouchDbService {
         Cloudant client = createCloudantClient();
         DeleteDocumentOptions documentOptions =
                 new DeleteDocumentOptions.Builder()
-                        .db(dbHost)
+                        .db(this.dbName)
                         .docId(uuid)
                         .rev(revision)
                         .build();

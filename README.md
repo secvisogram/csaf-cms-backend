@@ -6,6 +6,24 @@
 
 ##  Getting started
 
+### Create .env file and setup CouchDB
+
+The Configuration is done in the **.env** file in the root path.
+The file has to be created for every developer, for example by 
+ copying the file **.env.example**.    
+
+The Spring Boot application needs also a running CouchDb.
+The configuration for the couchdb has to be set in the .env file.
+
+A CouchDb could be startet with docker by executing the docker compose file in the directory <project_root>/docker.
+
+In the couchdb a database for the advisories has to be created and configured with the Parameter CSAF_COUCHDB_DBNAME in the .env file. 
+
+It is also recommended create a database tihe the name _users.
+
+s. [CouchDb Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html)
+
+
 ### gradle: build and execute tests
 
 ./gradlew clean build

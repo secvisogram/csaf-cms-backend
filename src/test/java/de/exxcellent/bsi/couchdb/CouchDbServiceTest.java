@@ -9,6 +9,7 @@ import de.exxcellent.bsi.json.AdvisoryJsonService;
 import de.exxcellent.bsi.model.WorkflowState;
 import de.exxcellent.bsi.rest.response.AdvisoryInformationResponse;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +25,7 @@ import java.util.UUID;
  */
 
 @SpringBootTest
-//@Disabled("Needs CouchDb to run")
+@Disabled("Needs CouchDb to run")
 public class CouchDbServiceTest {
 
     @Autowired
@@ -113,7 +114,7 @@ public class CouchDbServiceTest {
             Assertions.assertNotNull(revision);
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
-            Assertions.assertThrows(RuntimeException.class
+            Assertions.assertThrows(DatabaseException.class
                     , () -> this.couchDbService.deleteCsafDokument(uuid.toString(), "invalid revision"));
         }
     }
@@ -132,7 +133,7 @@ public class CouchDbServiceTest {
             Assertions.assertNotNull(revision);
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
-            Assertions.assertThrows(RuntimeException.class
+            Assertions.assertThrows(DatabaseException.class
                     , () -> this.couchDbService.deleteCsafDokument("invalid user id", revision));
         }
     }
