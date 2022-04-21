@@ -51,13 +51,6 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Pull the current stage (if it changed)
-        run: |
-          git config --global user.name 'secvisogram tech user'
-          git config --global user.email 'rainer-exxcellent@users.noreply.github.com'
-          if [[ `git status --porcelain` ]]; then
-            git pull
-          fi
       - name: Run Coverage
         run: |
           chmod +x gradlew
@@ -89,6 +82,7 @@ jobs:
             git push
           fi
   generateSwaggerDocumentation:
+    needs: testCoverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
