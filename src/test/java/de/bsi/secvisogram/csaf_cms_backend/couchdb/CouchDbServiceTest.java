@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 
 @SpringBootTest
-Disabled("Needs CouchDb to run")
+@Disabled("Needs CouchDb to run")
 public class CouchDbServiceTest {
 
     private final String[] DOKUMENT_TITLE = {"csaf","document", "title"};
