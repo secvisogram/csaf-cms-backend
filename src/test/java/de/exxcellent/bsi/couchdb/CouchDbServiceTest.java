@@ -8,6 +8,7 @@ import de.exxcellent.bsi.coudb.DatabaseException;
 import de.exxcellent.bsi.json.AdvisoryJsonService;
 import de.exxcellent.bsi.model.WorkflowState;
 import de.exxcellent.bsi.rest.response.AdvisoryInformationResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ import java.util.UUID;
 @SpringBootTest
 @Disabled("Needs CouchDb to run")
 public class CouchDbServiceTest {
+
+    private final String[] DOKUMENT_TITLE = {"csaf","document", "title"};
 
     @Autowired
     private CouchDbService couchDbService;
@@ -56,6 +59,7 @@ public class CouchDbServiceTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void updateCsafDocumentToDb() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
@@ -83,6 +87,7 @@ public class CouchDbServiceTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void deleteCsafDocumentToDb() throws IOException, DatabaseException {
 
         long countBefore = this.couchDbService.getDocumentCount();
@@ -101,6 +106,7 @@ public class CouchDbServiceTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void deleteCsafDocumentToDb_invalidRevision() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
@@ -120,6 +126,7 @@ public class CouchDbServiceTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void deleteCsafDocumentToDb_invalidUuid() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
@@ -159,7 +166,6 @@ public class CouchDbServiceTest {
     @Test
     public void getStringFieldValueTest() {
 
-        final String[] DOKUMENT_TITLE = {"csaf","document", "title"};
         Document document = new Document.Builder().build();
         Assertions.assertNull( CouchDbService.getStringFieldValue(DOKUMENT_TITLE, document));
         document = new Document.Builder().add("csaf",null).build();

@@ -23,6 +23,7 @@ dependencies {
 	implementation 'io.springfox:springfox-boot-starter:3.0.0'
 	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 	implementation 'com.ibm.cloud:cloudant:0.1.1'
+	implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.6.0'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -77,12 +78,27 @@ spotbugsMain {
 	reports {
 		html {
 			required = true
-			outputLocation = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+			outputLocation = file("$buildDir/reports/spotbugs/main/spotbugsMain.html")
 			stylesheet = 'fancy-hist.xsl'
 		}
 		xml {
 			required = true
-			outputLocation = file("$buildDir/reports/spotbugs/xml/spotbugs.xml")
+			outputLocation = file("$buildDir/reports/spotbugs/xml/spotbugsMain.xml")
+		}
+
+	}
+}
+
+spotbugsTest {
+	reports {
+		html {
+			required = true
+			outputLocation = file("$buildDir/reports/spotbugs/main/spotbugsTest.html")
+			stylesheet = 'fancy-hist.xsl'
+		}
+		xml {
+			required = true
+			outputLocation = file("$buildDir/reports/spotbugs/xml/spotbugsTest.xml")
 		}
 
 	}
