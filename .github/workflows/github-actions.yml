@@ -53,9 +53,9 @@ jobs:
           java-version: 11
       - name: Pull the current stage (if it changed)
         run: |
+          git config --global user.name 'secvisogram tech user'
+          git config --global user.email 'rainer-exxcellent@users.noreply.github.com'
           if [[ `git status --porcelain` ]]; then
-            git config --global user.name 'secvisogram tech user'
-            git config --global user.email 'rainer-exxcellent@users.noreply.github.com'
             git pull
           fi
       - name: Run Coverage
