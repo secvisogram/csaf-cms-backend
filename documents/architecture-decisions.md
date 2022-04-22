@@ -591,7 +591,7 @@ available as a template. An API will list all available templates to the user.
 
 #### Wokflow before first release
 
-![data model](workflowBeforeRelease.drawio.svg)
+![workflow](workflowBeforeRelease.drawio.svg)
 
 - At first a initial advisory is created which workflow state is set to Draft
 - This advisory could be changed several times in State Draft. Depending on the
@@ -622,104 +622,93 @@ A pre-release version indicates that the version is unstable and might not
 satisfy the intended compatibility requirements as denoted by its associated
 normal version.
 
-#### Workflow Step: Create new Advisory
+#### Backend States
+
+![state maschine](CSAF-Backend-States.drawio.svg)
+
+##### Workflow Status: Not Created 
 
 The editor loads a template from the server and starts editing a new advisory.
 Afterwards the new advisory is push on the server.
 
-| workflow state | relase state         |
-|----------------|----------------------|
-| Not created    | not public released  |
+_Possible actions_
 
-| Rest Transition    | Actions on server                                                                         |
-|--------------------|-------------------------------------------------------------------------------------------|
-| createCsafDocument | create new advisory in db <br/>  set version to 0.0.1 <br/> set workflow state to "Draft" |
+- _createCsafDocument_
+  - create new advisory in db 
+  - set version to 0.0.1 
+  - set workflow state to "Draft"
 
-#### Workflow Step: Edit the Advisory
+#### Workflow State: Draft
 
-The editor edits the advisory several times, add comments and answers questions.
+The editor could edit the advisory several times.
 
-| workflow state  | relase state         |
-|-----------------|----------------------|
-| Draft           | not public released  |
+_Possible actions_
 
-| Rest Transition                         | Actions on server                                                              |
-|-----------------------------------------|--------------------------------------------------------------------------------|
-| changeCsafDocument                      | save changes in db <br/>  increase minor or patch version depending on changes |
-| changeWorkflowState to "Review"         | change workflow state to "Review"                                              |
-| changeWorkflowState other than "Review" | -not possible-                                                                 |
-| add, change comment                     | create/update comment for advisory                                             |
-| deleteAdvisory                          | removes advisory from system                                                   |
+- _changeCsafDocument_
+  - save changes in db
+  - increase minor or patch version depending on changes
+- _changeWorkflowState to "Review"_
+  -  set workflow state of the advisory "Review"
+- _deleteAdvisory_
+  - removes advisory from system
 
-#### Workflow Step: Review the Advisory
+
+#### Workflow State: Review
 
 When the editor has finished editing the advisory it gives the document to the review.
 The Reviewer could approve the advisory or give the document back to the editor.
 When the document is put to the step "Approved" a Prerelease version is created.
 
-| workflow state | relase state         |
-|----------------|----------------------|
-| Review         | not public released  |
+_Possible actions_
 
-| Rest Transition                                 | Actions on server                                                              |
-|-------------------------------------------------|--------------------------------------------------------------------------------|
-| changeCsafDocument                              | save changes in db <br/>  increase minor or patch version depending on changes |
-| changeWorkflowState to "Approved"               | change workflow state to "Approved", set version to 1.0.0-1                    |
-| changeWorkflowState to "Draft"                  | change workflow state to "Draft"                                               |
-| changeWorkflowState other than "Approve, Draft" | -not possible-                                                                 |
-| add, change comment                             | create/update comment for advisory                                             |
-| deleteAdvisory                                  | removes advisory from system                                                   |
+- _changeWorkflowState to "Draft"_
+  - change workflow state to "Approved"
+- _changeWorkflowState to "Review"_
+  -  set workflow state of the advisory "Approved", Set version (see below)
+- _add and change comments and answers_
+  - create/update comment/answer for an advisory
 
-#### Workflow Step: Approve the Advisory
+
+A prerelease version number is assigned during the status transition to approved.
+If the previous version was < 1.0.0, the new version is 1.0.0-1.
+If the previous version was >= 1.0.0, a distinction is made between whether the previous
+version was already a prerelease version or not.
+If yes, the prerelease counter will be increased by 1, if
+not, the prerelease counter is set to 1.
+
+
+#### Workflow State: Approved
 
 In the state Approved the Publisher has 2 opportunities.
 
 First: He distributes the prerelease version of the advisory to partners and sets
    the workflow state back to "Draft".
-Second: It sets the state of the advisory to RfPublication.
+Second: Sets the state of the advisory to RfPublication.
 
-| workflow state | relase state         |
-|----------------|----------------------|
-| Approve        | pre-release  |
+_Possible actions_
 
-| Rest Transition                                 | Actions on server                                        |
-|-------------------------------------------------|----------------------------------------------------------|
-| changeCsafDocument                              | save changes in db <br/>                                 |
-| changeWorkflowState to "Draft"                  | change workflow state to "Draft", set version to 1.0.0-x |
-| changeWorkflowState to "RfPublication"          | change workflow state to "RfPublication"                 |
-| changeWorkflowState other than "Draft, RfPublication" | <not possible>                                           |
-| add, change comment                             | create/update comment for advisory                       |
-| deleteAdvisory                                  | removes advisory from system                             |
+- _changeWorkflowState to "Draft"_
+  - change workflow state to "Draft", set version to 1.0.0-x
+- _changeWorkflowState to "RfPublication"_
+  -  set workflow state of the advisory "RfPublication"
+- _createNew DocVersion_
+  - set the version of the advisory to  
 
-#### Workflow Step: Request for publication
 
-| workflow state | relase state         |
-|----------------|----------------------|
-| RfPublication        | pre-release  |
+#### Workflow State: RfPublication
 
-| Rest Transition                                 | Actions on server                                        |
-|-------------------------------------------------|----------------------------------------------------------|
-| changeCsafDocument                              | save changes in db <br/>                                 |
-| changeWorkflowState to "Draft"                  | change workflow state to "Draft", set version to 1.0.0-x |
-| changeWorkflowState to "RfPublication"          | change workflow state to "RfPublication"                 |
-| changeWorkflowState other than "Draft, RfPublication" | <not possible>                                           |
-| add, change comment                             | create/update comment for advisory                       |
-| deleteAdvisory                                  | removes advisory from system                             |
+_Possible actions_
 
-#### Workflow Step: Publish the Advisory
+- _publish (changeWorkflowState to "Published")_
+  - change workflow state to "Published"
 
-| workflow state | relase state |
-|----------------|--------------|
-| RfPublication        | pre-release  |
 
-| Rest Transition                                 | Actions on server                                        |
-|-------------------------------------------------|----------------------------------------------------------|
-| changeCsafDocument                              | save changes in db <br/>                                 |
-| changeWorkflowState to "Draft"                  | change workflow state to "Draft", set version to 1.0.0-x |
-| changeWorkflowState to "RfPublication"          | change workflow state to "RfPublication"                 |
-| changeWorkflowState other than "Draft, RfPublication" | <not possible>                                           |
-| add, change comment                             | create/update comment for advisory                       |
-| deleteAdvisory                                  | removes advisory from system                             |
+#### Workflow Step: Published
+
+
+- _createNewDocVersion (changeWorkflowState to "Draft")_
+  - change workflow state to "Published"
+
 
 TODO REST-API:
 Service: create/save advisory, change workflow state.
@@ -730,13 +719,6 @@ Beim Speichern kann sich die Version des Dokument ändern. Deswegen muss nach
 
 Service: change workflow state
 
-Beim Statusübergang nach approved wird eine prerelease Versionsnummer vergeben.
-Falls die bisherige version < 1.0.0 war,
-ist die neue Version 1.0.0-1.
-Falls die bisherige Version >= 1.0.0 war,
-wird unterschieden, ob die bisherige Version bereits eine prerelease Version
- war oder nicht. Falls ja, wird der Prerelease Counter um 1 erhöht, falls
- nicht wird der Prerelease Counter auf 1 gesetzt.
 
 ## 9 Design Decisions
 
