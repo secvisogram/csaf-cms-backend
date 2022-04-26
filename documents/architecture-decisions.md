@@ -213,9 +213,14 @@ available and a template. The Contractor must create a template.
 It must be possible to adapt a template as required.
 Detailed documentation is required for this purpose.
 
-[csaf-validator-service GIT repository](https://github.com/secvisogram/csaf-validator-service)
+#### Validation of CSAF Documents
 
-[csaf-validator-lib GIT repository](https://github.com/secvisogram/csaf-validator-lib)
+The CSAF validator service shall be used to validate CSAF documents.
+For this, the CSAF validator service is used.
+Further details on this is supplied in the documentation of the
+[csaf-validator-service](https://github.com/secvisogram/csaf-validator-service)
+which provides an interface for the
+[csaf-validator-lib](https://github.com/secvisogram/csaf-validator-lib).
 
 ## 4 Solutions Strategy
 
@@ -355,7 +360,7 @@ Possible values:
 - `RfPublication`
 - `Published`
 
-The workflow state is not part of the CSAF-Document.
+The workflow state is not part of the CSAF document.
 
 The CSAF document also holds a state in: `/documents/tracking/status`.
 This field has the enum values: `draft`, `final`, `interim` which are not
