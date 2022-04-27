@@ -1,40 +1,37 @@
 # Secvisogram 2.0 - Architecture and REST interface
 
 ## 1 Introduction and Goals
-
-This document describes the architecture decisions for the csaf-cms-backend.
-This software is used to manage CSAF documents and provide a workflow to handle
-different document states like `Draft` or `Published`.
+An application has to be created that allows the management of CSAF document.This application should have an interface according to the REST paradigm.
 
 ### Requirements Overview
 
-The system must provide all functionality of a CSAF management system as
-described in [Common Security Advisory Framework Version 2.0](https://docs.oasis-open.org/csaf/csaf/v2.0/csd01/csaf-v2.0-csd01.html#9112-conformance-clause-12-csaf-management-system)
+The system must provide all functionality described in the `Leistungsbeschreibung Secvisogram 2.0`. This includes the functionality of a CSAF management system as
+described in [Common Security Advisory Framework Version 2.0](https://docs.oasis-open.org/csaf/csaf/v2.0/csd01/csaf-v2.0-csd01.html#9112-conformance-clause-12-csaf-management-system). 
 
-Additional features and requirements:
+This includes:
 
-- Use a document database
+- list all CSAF documents within the system
+- search for CSAF documents
+- delete CSAF documents from the system
+- add new CSAF documents to the system
+- comment on CSAF documents and answer to these comments in the system
+- export CSAF documents to HTML, Markdown and PDF. 
+  - Provide a customisable template for the export  
+  - The template should provide at least the company logo as a configuration option
 
-- Export documents as HTML, Markdown and PDF
+Additional features and requirements are:
 
-- The structure of the exported document is described by a mustache html template
-
-- It must be possible to write custom functions that generate further data which
-  can then be added to the template.
-
-- The ability to provide a company logo that is visible on the exported document
-
-- Use Keycloak for user/group/role management and to allow LDAP integration
-
+- Provide workflow functionality for the CSAF documents with states like `Draft`, `Review`,`Approved` and `Published`
 - Provide an API where the user can download prefilled documents as a starting
-  point for new documents
-
-- Provide workflow functionality for the document states `Draft`, `Review`,
-  `Approved` and `Published`
-
-- Each change in a document has to be traceable. This will be done by saving the
-  [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) between each CSAF
-  document version.
+    point for new documents
+- CSAF documents should be  persisted in a document oriented database
+- All actions may only be performed by authenticated and authorized users
+- - Only authorized documents may be displayed to a user
+- Therefore, an open source user management like Keycloak should be used, 
+  that allows a simple integration of an existing rights management systems
+  such as LDAP
+- The required roles and groups must be be created automatically during installation
+- Each change in a document has to be traceable (Audit trail).
 
 ### Quality Goals
 
@@ -46,14 +43,6 @@ Additional features and requirements:
 | Correctness      | the code coverage has to be at least 95%                                                |
 | Maintainability  | particular attention has to be paid to the maintainability in design and implementation |
 
-TODO: Functional requirements
-
-Provide documentation for:
-
-- [ ] Data structures
-- [ ] API functionality
-- [ ] How to run/deploy the application
-- [ ] How to change the export template
 
 ### Stakeholders
 
@@ -63,7 +52,6 @@ Provide documentation for:
 | mfd2007                                            | Provides knowledge and insight into the CSAF specification |
 | [eXXcellent solutions GmbH](https://exxcellent.de) | Develops the application                                   |
 
-TODO: User of the system
 
 ## 2 Constraints
 
@@ -74,7 +62,8 @@ TODO: User of the system
 | TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. Therefore Java 17 is used as language for the project.                                                                                                      |
 | TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                                                           |
 | TC3 | OS independent development   | It should be possible to compile and run this application on all mayor operating systems (Linux, Mac and Windows).                                                                                                                  |
-| TC4 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. TODO: auf unterschiedlichen Platformen |
+| TC4 | Document-oriented database   |    CSAF documents shall be stored in a document-oriented database.                                                                                                                                                                                                                                 |
+| TC5 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. TODO: auf unterschiedlichen Platformen |
 
 ### Organizational Constraints
 
@@ -87,17 +76,18 @@ TODO: User of the system
 
 ### Conventions
 
-|     | Constraint                 | Description                                                                                                                                                                                              |
-|-----|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.                                                                                                                      |
-| C2  | Coding conventions         | This project is using .... This is enforced through....                                                                                                                                                  |
-| C3  | Language                   | The language used throughout the project is american English. (code comments, documentation, ...)                                                                                                        |
-| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages TODO:(wie secvisogram). <br/> GitHub issues shall be referenced in commit messages where applicable. |
-| C5  | License                    | The code should be published under the MIT license                                                                                                                                                       |
-| C6  | Markdown Lint              | Markdown files should be checked with Markdown-lint. This should be done in Github Actions                                                                                                               |
-| C7  | Eslint                     | Javascript files should be checked with Eslint. This should be done in Github Actions                                                                                                                    |
-| C7  | Code Reviews               | A pull request has to be reviewed by another developer before it is merged to the main branch                                                                                                            |
-| C8  | Code coverage              | The Test coverage has to be of at least 95%                                                                                                                                                              |
+|     | Constraint                 | Description                                                                                                                                                                       |
+|-----|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.                                                                                               |
+| C2  | Coding conventions         | This project is using the [oracle coding conventions](https://www.oracle.com/java/technologies/javase/codeconventions-introduction.html)                                          |
+| C3  | Language                   | The language used throughout the project is american English. (code comments, documentation, ...)                                                                                 |
+| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages. <br/> GitHub issues shall be referenced in commit messages where applicable. |
+| C5  | License                    | The code should be published under the MIT license                                                                                                                                |
+| C6  | Markdown Lint              | Markdown files should be checked with Markdown-lint. This should be done in Github Actions                                                                                        |
+| C7  | Eslint                     | Javascript files should be checked with Eslint. This should be done in Github Actions                                                                                             |
+| C7  | Code Reviews               | A pull request has to be reviewed by another developer before it is merged to the main branch                                                                                     |
+| C8  | Code coverage              | The Test coverage has to be of at least 95%                                                                                                                                       |
+| C9  | Static analysis            | SpotBugs is used for static analysis of bugs in the java code                                                                                                                     |
 
 ## 3 Context & Scope
 
@@ -107,7 +97,7 @@ TODO: User of the system
 
 There could be an editor application like the
 [secvisogram](https://github.com/secvisogram/secvisogram/) react application
-but also an external system that is able to access a REST API.
+but also every other external system that is able to access a REST API.
 
 The client uses the system to add, edit, delete and review CSAF-Documents.
 It should be possible for the editor to export CSAF documents to Markdown,
@@ -210,8 +200,8 @@ There must be transformations available for export to the following formats:
 HTML, PDF amd Markdown. These allow the user to convert the CSAF document into
 different formats. As a configuration option at least, the company logo is
 available and a template. The Contractor must create a template.
-It must be possible to adapt a template as required.
-Detailed documentation is required for this purpose.
+It must be possible to adapt the template as required.
+
 
 #### Validation of CSAF Documents
 
@@ -265,6 +255,7 @@ For the audit trail, only the changes between the CSAF documents are logged.
 We use [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) to track
 differences between JSON documents.
 
+
 ## 5 Building Block View
 
 ![data model](BSISecvisogramArchitecture.drawio.svg)
@@ -307,13 +298,15 @@ differences between JSON documents.
 
 ## 6 Runtime View
 
+### Edit Advisory
+
+In the picture below depicts the access to the Rest backend and the object that are created in the database.
+
+![data model](WokflowAdvisory.drawio.svg)
+
 ### Create Comments
 
 ![data model](WorkflowComments.drawio.svg)
-
-### Workflow Advisory
-
-![data model](WokflowAdvisory.drawio.svg)
 
 ## 7. Deployment View
 
@@ -635,34 +628,24 @@ Afterwards the new advisory is pushed to the server.
 
 _Possible actions_
 
-- _createCsafDocument_
+- _`createCsafDocument`_
   - create new advisory in db 
   - set version to 0.0.1 
-  - set workflow state to "Draft"
+  - set workflow state to `Draft`
 
 #### Workflow State: Draft
 
-The editor edits the advisory several times, adds comments and answers questions.
+The editor edits the advisory several times.
 
 _Possible actions_
-| workflow state  | release state         |
-|-----------------|-----------------------|
-| `Draft`         | not publicly released |
 
-- _changeCsafDocument_
+- `changeCsafDocument`
   - save changes in db
   - increase minor or patch version depending on changes
-- _changeWorkflowState to "Review"_
-  -  set workflow state of the advisory "Review"
-- _deleteAdvisory_
+- `changeWorkflowState` to `Review`
+  -  set workflow state of the advisory `Review`
+- `deleteAdvisory`
   - removes advisory from system
-| REST Transition                           | Actions on server                                                             |
-|-------------------------------------------|-------------------------------------------------------------------------------|
-| `changeCsafDocument`                      | save changes in db <br/> increase minor or patch version depending on changes |
-| `changeWorkflowState` to `Review`         | change workflow state to `Review`                                             |
-| `changeWorkflowState` other than `Review` | - not possible -                                                              |
-| add or change comment                     | create/update comment for advisory                                            |
-| `deleteAdvisory`                          | removes advisory from system                                                  |
 
 
 #### Workflow State: Review
@@ -673,7 +656,7 @@ When the document is in workflow state `Approved` a pre-release version is creat
 
 _Possible actions_
 
-- _changeWorkflowState to "Draft"_
+- _changeWorkflowState to `Draft`_
   - change workflow state to "Approved"
 - _changeWorkflowState to "Review"_
   -  set workflow state of the advisory "Approved", Set version (see below)
@@ -701,9 +684,9 @@ _Possible actions_
 
 - _`changeWorkflowState` to `Draft`_
   - change workflow state to `Draft`, set version to 1.0.0-x
-- _changeWorkflowState to "RfPublication"_
+- _`changeWorkflowState` to `RfPublication`_
   -  set workflow state of the advisory `RfPublication`
-- _createNew DocVersion_
+- _`createNew` DocVersion_
   - set the version of the advisory to  
 
 
@@ -711,15 +694,15 @@ _Possible actions_
 
 _Possible actions_
 
-- _publish (changeWorkflowState to "Published")_
-  - change workflow state to "Published"
+- _`publish` (changeWorkflowState to `Published`)_
+  - change workflow state to `Published`
 
 
 #### Workflow Step: Published
 
 
-- _createNewDocVersion (changeWorkflowState to "Draft")_
-  - change workflow state to "Published"
+- _createNewDocVersion (changeWorkflowState to `Draft`)_
+  - change workflow state to `Published`
 
 
 TODO REST-API:
@@ -728,8 +711,6 @@ Beim Speichern kann sich die Version des Dokuments ändern. Deswegen muss nach
  dem Ändern das Dokument im Client neu geladen werden. Die zu vergebende Version
   ist abhängig von den Änderungen im dokument und dem aktuellen Status bzw. der
    aktuellen Version des Dokuments.
-
-Service: change workflow state
 
 
 ## 9 Design Decisions
