@@ -393,9 +393,9 @@ a comment.
 
 ```json
 {
-  "$comment": [22, 34],
+  "$comment": [22, 28, 34],
   "document": {
-    "$comment": [44, 55],
+    "$comment": [55],
     "category": "generic_csaf",
     "csaf_version": "2.0",
     "publisher": {
