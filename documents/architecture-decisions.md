@@ -631,10 +631,10 @@ Afterwards the new advisory is pushed to the server.
 
 _Possible actions_
 
-- _`createCsafDocument`_
+- `createCsafDocument`
   - create new advisory in db 
   - set version to 0.0.1 
-  - set workflow state to `Draft`
+  - set workflow state of the advisory to `Draft`
 
 #### Workflow State: Draft
 
@@ -645,9 +645,9 @@ _Possible actions_
 - `changeCsafDocument`
   - save changes in db
   - increase minor or patch version depending on changes
-- `changeWorkflowState` to `Review`
-  -  set workflow state of the advisory `Review`
-- `deleteAdvisory`
+- `setWkfStateReview`
+  - set workflow state of the advisory to `Review`
+- `deleteCsafDocument`
   - removes advisory from system
 
 
@@ -659,20 +659,21 @@ When the document is in workflow state `Approved` a pre-release version is creat
 
 _Possible actions_
 
-- _changeWorkflowState to `Draft`_
-  - change workflow state to "Approved"
-- _changeWorkflowState to "Review"_
-  -  set workflow state of the advisory "Approved", Set version (see below)
+- `setWkfStateDraft`
+  - set workflow state of the advisory to `Draft`
+- `setWkfStateApproved`
+  - set workflow state of the advisory to `Approved`
+  - set version as described below
 - _add and change comments and answers_
-  - create/update comment/answer for an advisory
+  - `addComment`, `readComment`, `addAnswer`, `readAnswer`
 
 
-A prerelease version number is assigned during the status transition to approved.
-If the previous version was < 1.0.0, the new version is 1.0.0-1.
-If the previous version was >= 1.0.0, a distinction is made between whether the previous
+A prerelease version number is assigned during the status transition to `Approved`.
+If the previous version was `< 1.0.0`, the new version is `1.0.0-1`.
+If the previous version was `>= 1.0.0`, a distinction is made between whether the previous
 version was already a prerelease version or not.
-If yes, the prerelease counter will be increased by 1, if
-not, the prerelease counter is set to 1.
+If yes, the prerelease counter will be increased by `1`, if
+not, the prerelease counter is set to `1`.
 
 
 #### Workflow State: Approved
@@ -685,36 +686,29 @@ In the state `Approved` the Publisher has 2 options:
 
 _Possible actions_
 
-- _`changeWorkflowState` to `Draft`_
-  - change workflow state to `Draft`, set version to 1.0.0-x
-- _`changeWorkflowState` to `RfPublication`_
-  -  set workflow state of the advisory `RfPublication`
-- _`createNew` DocVersion_
-  - set the version of the advisory to  
+- `setWkfStateDraft`
+  - change workflow state to `Draft`, set version to `1.0.0-x`
+- `setWkfStateRfPublication`
+  - set workflow state of the advisory `RfPublication`
+  - optionally set a time for then the publication should take place
 
 
 #### Workflow State: RfPublication
 
 _Possible actions_
 
-- _`publish` (changeWorkflowState to `Published`)_
+- `publish` / `setWkfStatePublish`
   - change workflow state to `Published`
+  - set version to `1.0.0`
 
 
 #### Workflow Step: Published
 
+_Possible actions_
 
-- _createNewDocVersion (changeWorkflowState to `Draft`)_
-  - change workflow state to `Published`
-
-
-TODO REST-API:
-Service: create/save advisory, change workflow state.
-Beim Speichern kann sich die Version des Dokuments ändern. Deswegen muss nach
- dem Ändern das Dokument im Client neu geladen werden. Die zu vergebende Version
-  ist abhängig von den Änderungen im dokument und dem aktuellen Status bzw. der
-   aktuellen Version des Dokuments.
-
+- `createNewDocVersion` / `changeWorkflowStateDraft`
+  - change workflow state to `Draft`
+  - set version to `X.0.0` where `X` is the major version increased by `1`
 
 ## 9 Design Decisions
 
