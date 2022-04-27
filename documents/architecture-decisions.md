@@ -1,7 +1,9 @@
 # Secvisogram 2.0 - Architecture and REST interface
 
 ## 1 Introduction and Goals
-An application has to be created that allows the management of CSAF document.This application should have an interface according to the REST paradigm.
+
+An application has to be created that allows the management of CSAF document.
+This application should have an interface according to the REST paradigm.
 
 ### Requirements Overview
 
@@ -26,11 +28,11 @@ Additional features and requirements are:
     point for new documents
 - CSAF documents should be  persisted in a document oriented database
 - All actions may only be performed by authenticated and authorized users
-- - Only authorized documents may be displayed to a user
+  - Only authorized documents may be displayed to a user
 - Therefore, an open source user management like Keycloak should be used, 
   that allows a simple integration of an existing rights management systems
   such as LDAP
-- The required roles and groups must be be created automatically during installation
+- The required roles and groups must be created automatically during installation
 - Each change in a document has to be traceable (Audit trail).
 
 ### Quality Goals
@@ -39,7 +41,7 @@ Additional features and requirements are:
 |------------------|-----------------------------------------------------------------------------------------|
 | Security         | web applications should minimize the OWASP Top 10 risks                                 |
 | Security         | only authorized users can interact with the server                                      |
-| Correctness      | only valid CSAF-Document can be published                                               |
+| Correctness      | only valid CSAF documents can be published                                              |
 | Correctness      | the code coverage has to be at least 95%                                                |
 | Maintainability  | particular attention has to be paid to the maintainability in design and implementation |
 
@@ -61,8 +63,8 @@ Additional features and requirements are:
 |-----|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. Therefore Java 17 is used as language for the project.                                                                                                      |
 | TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                                                           |
-| TC3 | OS independent development   | It should be possible to compile and run this application on all mayor operating systems (Linux, Mac and Windows).                                                                                                                  |
-| TC4 | Document-oriented database   |    CSAF documents shall be stored in a document-oriented database.                                                                                                                                                                                                                                 |
+| TC3 | OS independent development   | It should be possible to compile and run this application on all major operating systems (Linux, Mac and Windows).                                                                                                                  |
+| TC4 | Document-oriented database   | CSAF documents shall be stored in a document-oriented database.                                                                                                                                                                     |
 | TC5 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. TODO: auf unterschiedlichen Platformen |
 
 ### Organizational Constraints
@@ -99,12 +101,12 @@ There could be an editor application like the
 [secvisogram](https://github.com/secvisogram/secvisogram/) react application
 but also every other external system that is able to access a REST API.
 
-The client uses the system to add, edit, delete and review CSAF-Documents.
+The client uses the system to add, edit, delete and review CSAF documents.
 It should be possible for the editor to export CSAF documents to Markdown,
 HTML or PDF.
-The Client could add comments to the whole CSAF document or parts of it.
+The client could add comments to the whole CSAF document or parts of it.
 Comments could be answered by other editors.
-All Changes are tracked by the system.
+All changes to documents are tracked by the system.
 
 #### Roles
 
@@ -117,8 +119,8 @@ The Client could have one of the following roles:
 ##### Role: Author
 
 - inherits the rights of the "Registered" role
-- may list, view, edit and delete own (by the user) CSAF documents in `Draft`
-  status and delete them
+- may list, view and edit and delete own (by the user) CSAF documents in `Draft`
+  status
 - may view and reply to comments on CSAF documents that he/she is allowed to
   view and edit
 - may create new CSAF documents
@@ -135,15 +137,16 @@ The Client could have one of the following roles:
 ##### Role: Publisher
 
 - inherits the rights of the "Editor" role
-- may list and view all CSAF documents in `Approved` status.
+- may list and view all CSAF documents in `Approved` status
 - may change the status of all CSAF documents from `Approved` to `Published`
-  (this change of status may also happen time-based, i.e. by setting a publishing date).
+  (this change of status may also happen time-based, i.e. by setting a
+  publishing date)
 
 ##### Role: Reviewer
 
 - inherits the rights of the "Registered" role
 - may list and view all CSAF documents in the status `Review` and not created by
-  the user, list and view them.
+  the user
 - May view and create comments on CSAF documents.
 - may change the status from `Review` to `Draft` or `Approved`.
 
@@ -185,28 +188,27 @@ The CSAF document could have one of the following workflow states:
 An audit trail shall be maintained for each CSAF document. The audit trail
 records who made which changes to the CSAF document and when.
 This includes creation, editing, status changes, comments and responses to
-them, including the performing user.
+them, and info on which user performed the action.
 
 #### Comments
 
 There must be the option to post comments for a CSAF document. A comment
-must contain at least the user who created it, the time and a free text. A comment
-can be general to the CSAF document or refer to a line or area of a CSAF document.
-There must be a possibility to reply to the comment.
+must contain at least the user who created the comment, the time and a free
+text. A comment can be general to the CSAF document or refer to a line or area
+of a CSAF document. There must be a possibility to reply to the comment.
 
 #### Export
 
-There must be transformations available for export to the following formats:
-HTML, PDF amd Markdown. These allow the user to convert the CSAF document into
-different formats. As a configuration option at least, the company logo is
-available and a template. The Contractor must create a template.
-It must be possible to adapt the template as required.
-
+There must be transformations available to export the CSAF document to the
+following formats: HTML, PDF amd Markdown. These allow the user to convert the
+CSAF document into different formats. As a configuration option at least, the
+company logo is available and a template. The Contractor must create a template.
+It must be possible to adapt a template as required.
+Detailed documentation is required for this purpose.
 
 #### Validation of CSAF Documents
 
 The CSAF validator service shall be used to validate CSAF documents.
-For this, the CSAF validator service is used.
 Further details on this is supplied in the documentation of the
 [csaf-validator-service](https://github.com/secvisogram/csaf-validator-service)
 which provides an interface for the
@@ -234,7 +236,7 @@ documented, widely spread and integrates many other frameworks.
 As persistent storage for the CSAF-Documents the open-source document-oriented
 NoSQL database [Apache CouchDB](https://couchdb.apache.org/) is used. CouchDB
 uses the JSON format for storing documents and can filter JSON documents. For
-this reason it is a good match to CSAF-documents.
+this reason it is a good match to CSAF documents.
 
 ### Authorization, User management
 
@@ -251,9 +253,9 @@ maintenance effort and to avoid inconsistencies.
 
 ### Audit trail
 
-For the audit trail, only the changes between the CSAF documents are logged.
-We use [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) to track
-differences between JSON documents.
+For the audit trail, only the changes between versions of a CSAF document are
+logged.  We use [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) to
+track differences between JSON documents.
 
 
 ## 5 Building Block View
@@ -262,15 +264,15 @@ differences between JSON documents.
 
 ### Components
 
-- In the **CouchDB** all CASF-Advisories and additional data like the audit trail
+- In the **CouchDB** all CSAF advisories and additional data like the audit trail
   are persisted
 - The **CSAF-Validator** is a NodeJs application that provides the "CSAF extended
   validator" as REST-Service
 - The **CSAF-Backend** is a Spring Boot Application that provides the REST-Services
   for the functions for the CSAF management system
-- The **CSAF-Backend** uses the CouchDB to persist and read the CSAF-Advisories
+- The **CSAF-Backend** uses the CouchDB to persist and read the CSAF advisories
   and the additional data
-- The **CSAF-Backend** uses the CSAF-Validator to validate CSAF-Advisories
+- The **CSAF-Backend** uses the CSAF-Validator to validate CSAF advisories
 - The Secvisogram **React Application** is hosted on a nginx Webserver that
   provides the static data for the React Client
 - The **Authentication Proxy** is an OAuth2-Proxy that handles all requests that
@@ -281,15 +283,15 @@ differences between JSON documents.
   information about users and roles
 - The **User Management** provides user information to the Keycloak server
 - The **React Client** is a Single Page Application that runs in the browser
-  It uses the CSAF-Backend to save and retrieve CSAF Advisories 
-  It uses the CSAF-Validator to validate CSAF Advisories
+  It uses the **CSAF-Backend** to save and retrieve CSAF advisories 
+  It uses the **CSAF-Validator** to validate CSAF advisories
 
 ### Integration keycloak
 
 - Keycloak is used as Oauth2-Proxy that serves as a proxy to the backend for
   all Request that need authentication
 - The CSAF-Backend and the CSAF-Validator don’t have to implement the necessary
-  OAuth flows and therefor don’t need to manage the access tokens.
+  OAuth flows and therefore don’t need to manage the access tokens.
 - The Oauth2-Proxy uses Keycloak to get the authentication Information
 - Keycloak gets the user and role information from LDAP
 - User management is done in LDAP, Keycloak handles the login
@@ -300,7 +302,8 @@ differences between JSON documents.
 
 ### Edit Advisory
 
-In the picture below depicts the access to the Rest backend and the object that are created in the database.
+The picture below depicts the access to the Rest backend and the objects that
+are created in the database.
 
 ![data model](WokflowAdvisory.drawio.svg)
 
@@ -377,7 +380,7 @@ A comment can reference either a document as a whole, a specific object or value
 in the document. Since the CSAF standard has no concept for unique identifiers
 inside the document we need to persist this relation somehow, without
 unnecessarily adding identifiers to each object. Furthermore, we need to remove
-these IDs before sending the document to the validator service.
+these IDs before sending the document to the validator service or exporting it.
 
 The IDs of the Comments are referenced from the CSAF document objects.
 When the comment belongs to a dedicated field and not the whole object,
@@ -738,7 +741,7 @@ comment.
 
 - The algorithm to add comments is very simple
 - The comments are referenced proper even some parts of the document are deleted
-- The size of the casf document is only slightly increased be the comments
+- The size of the CSAF document is only slightly increased be the comments
 - The comments have to be removed before the CSAF document is validated
 - The rest client has to manage the id of the comments
 - The creation of comments and saving the CSAF documents is done in different
