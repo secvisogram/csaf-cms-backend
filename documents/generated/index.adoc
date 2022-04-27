@@ -1575,12 +1575,12 @@ endif::internal-generation[]
 === BasicErrorController
 
 
-[.errorUsingDELETE]
-==== errorUsingDELETE
+[.errorHtmlUsingDELETE]
+==== errorHtmlUsingDELETE
 
 `DELETE /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -1601,13 +1601,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -1619,7 +1618,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 204
@@ -1660,12 +1659,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingGET]
-==== errorUsingGET
+[.errorHtmlUsingGET]
+==== errorHtmlUsingGET
 
 `GET /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -1686,13 +1685,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -1704,7 +1702,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 401
@@ -1745,12 +1743,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingHEAD]
-==== errorUsingHEAD
+[.errorHtmlUsingHEAD]
+==== errorHtmlUsingHEAD
 
 `HEAD /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -1771,13 +1769,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -1789,7 +1786,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 204
@@ -1830,12 +1827,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingOPTIONS]
-==== errorUsingOPTIONS
+[.errorHtmlUsingOPTIONS]
+==== errorHtmlUsingOPTIONS
 
 `OPTIONS /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -1856,13 +1853,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -1874,7 +1870,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 204
@@ -1915,12 +1911,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingPATCH]
-==== errorUsingPATCH
+[.errorHtmlUsingPATCH]
+==== errorHtmlUsingPATCH
 
 `PATCH /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -1941,13 +1937,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -1959,7 +1954,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 204
@@ -2000,12 +1995,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingPOST]
-==== errorUsingPOST
+[.errorHtmlUsingPOST]
+==== errorHtmlUsingPOST
 
 `POST /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -2026,13 +2021,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -2044,7 +2038,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 201
@@ -2090,12 +2084,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingPUT]
-==== errorUsingPUT
+[.errorHtmlUsingPUT]
+==== errorHtmlUsingPUT
 
 `PUT /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -2116,13 +2110,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -2134,7 +2127,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 201
@@ -2180,12 +2173,12 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.errorUsingTRACE]
-==== errorUsingTRACE
+[.errorHtmlUsingTRACE]
+==== errorHtmlUsingTRACE
 
 `TRACE /error`
 
-error
+errorHtml
 
 ===== Description
 
@@ -2206,13 +2199,12 @@ error
 
 ===== Return Type
 
-
-<<Map>>
+<<ModelAndView>>
 
 
 ===== Content Type
 
-* */*
+* text/html
 
 ===== Responses
 
@@ -2224,7 +2216,7 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
+|  <<ModelAndView>>
 
 
 | 204
