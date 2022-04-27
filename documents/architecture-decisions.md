@@ -71,7 +71,7 @@ Additional features and requirements are:
 
 |     | Constraint       | Description                                                                                                                                           |
 |-----|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| OC1 | Time schedule    | The application should be finished until ...                                                                                                          |
+| OC1 | Time schedule    | The application should be finished until November 2022                                                                                                |
 | OC2 | IDE independence | No special IDE should be required. Use whatever fits your workflow. The repository should therefore not contain any IDE specific configuration files. |
 | OC3 | Testing          | Provide tests to ensure functional correctness. At least 95% test coverage is required.                                                               |
 | OC4 | Licensing        | The software must be available under the [MIT License](https://opensource.org/licenses/MIT).                                                          |
