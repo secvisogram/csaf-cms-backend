@@ -743,6 +743,7 @@ comment.
 - The comments are referenced proper even some parts of the document are deleted
 - The size of the CSAF document is only slightly increased be the comments
 - The comments have to be removed before the CSAF document is validated
+- The comments have to be removed / ignored when exporting the document
 - The rest client has to manage the id of the comments
 - The creation of comments and saving the CSAF documents is done in different
   transaction. We need a job cleanup for accidentally created comments
