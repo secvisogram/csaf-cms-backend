@@ -298,6 +298,15 @@ track differences between JSON documents.
 - Information about the logged-in user and his role are provided to the
   CSAF-Backend by JSON Web Tokens (JWT)
 
+### REST API Calls
+
+TODO: Link to REST API Documentation
+
+On saving a document its version may change. Thus after changing a document,
+it must be reloaded on the client side.
+The version to be set depends on the change in the document the current workflow
+state, respectively the current version of the document.
+
 ## 6 Runtime View
 
 ### Edit Advisory
