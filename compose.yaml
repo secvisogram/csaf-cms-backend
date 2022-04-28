@@ -67,8 +67,9 @@ services:
       - csaf-keycloak
 
   csaf-oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy
+    image: bitnami/oauth2-proxy:7
     container_name: csaf-oauth2-proxy
+    command: [""]
     env_file: .env
     environment:
       # listening address and proxy target
