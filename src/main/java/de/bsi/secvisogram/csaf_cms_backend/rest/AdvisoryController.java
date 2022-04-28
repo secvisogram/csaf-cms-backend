@@ -13,6 +13,8 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -92,7 +94,11 @@ public class AdvisoryController {
      */
     @PostMapping(name="/", consumes = "application/json")
     @Operation(summary = "Create a new Advisory in the system.", description = "Create a new CSAF-document in the system.", tags = { "Advisory" }
-            ,requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Advisory in CSAF JSON Format with comments.", required = true))
+            ,requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Advisory in CSAF JSON Format with comments.", required = true
+                ,content = @Content(mediaType="application/json"
+                                    ,schema = @Schema(title = "Common Security Advisory Framework with Comments", description="http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json")
+                                    , examples = {@ExampleObject(name="CSAF with comments"
+                                                , value = "{ \"$comment\": [22, 28, 34],\"document\": {...}}", description="")})))
     public AdvisoryCreateResponse createCsafDocument(
             @RequestBody String newCsafJson) throws IOException {
 
