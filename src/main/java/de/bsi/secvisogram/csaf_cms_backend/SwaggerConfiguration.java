@@ -12,7 +12,7 @@ public class SwaggerConfiguration {
 
     @Bean
     public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2).apiInfo(ApiInfo.DEFAULT)
+        return new Docket(DocumentationType.OAS_30).apiInfo(ApiInfo.DEFAULT)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("de.bsi.secvisogram.csaf_cms_backend.rest"))
                 .build();
