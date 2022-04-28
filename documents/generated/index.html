@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Api Documentation</title>
+    <title>Secvisogram 2.0 CSAF-Backend API</title>
     <style type="text/css">
       body {
 	font-family: Trebuchet MS, sans-serif;
@@ -179,14 +179,14 @@ font-style: italic;
     </style>
   </head>
   <body>
-  <h1>Api Documentation</h1>
-    <div class="app-desc">Api Documentation</div>
+  <h1>Secvisogram 2.0 CSAF-Backend API</h1>
+    <div class="app-desc">CSAF Content Management Systems: Secvisogram 2.0</div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
     <div class="app-desc">Contact Info: <a href="team@openapitools.org">team@openapitools.org</a></div>
-    <div class="app-desc">Version: 1.0</div>
+    <div class="app-desc">Version: v0.5.0</div>
     <div class="app-desc">BasePath:</div>
-    <div class="license-info">Apache 2.0</div>
-    <div class="license-url">http://www.apache.org/licenses/LICENSE-2.0</div>
+    <div class="license-info">MIT</div>
+    <div class="license-url">https://mit-license.org/</div>
   <h2>Access</h2>
 
   <h2><a name="__Methods">Methods</a></h2>
@@ -196,32 +196,32 @@ font-style: italic;
   <div class="method-summary"></div>
   <h4><a href="#Advisory">Advisory</a></h4>
   <ul>
-  <li><a href="#advisoryByIdUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
-  <li><a href="#changeAnswerUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></a></li>
-  <li><a href="#changeCommentUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></a></li>
-  <li><a href="#changeCsafDocumentUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
-  <li><a href="#changeWorkflowStateUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/</code></a></li>
-  <li><a href="#commentsUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></a></li>
-  <li><a href="#createAnswerUsingPOST"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></a></li>
-  <li><a href="#createCommentUsingPOST"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
-  <li><a href="#createCsafDocumentUsingPOST"><code><span class="http-method">post</span> /api/2.0/advisories</code></a></li>
-  <li><a href="#deleteAdvisoryWithIdUsingDELETE"><code><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
-  <li><a href="#exportAdvisoryUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></a></li>
-  <li><a href="#findAdvisoriesUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/</code></a></li>
-  <li><a href="#getAllTemplatesUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/templates</code></a></li>
-  <li><a href="#templateByIdUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></a></li>
+  <li><a href="#advisoryById"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
+  <li><a href="#changeAnswer"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></a></li>
+  <li><a href="#changeComment"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></a></li>
+  <li><a href="#changeCsafDocument"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
+  <li><a href="#changeWorkflowState"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/</code></a></li>
+  <li><a href="#comments"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></a></li>
+  <li><a href="#createAnswer"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></a></li>
+  <li><a href="#createComment"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
+  <li><a href="#createCsafDocument"><code><span class="http-method">post</span> /api/2.0/advisories</code></a></li>
+  <li><a href="#deleteAdvisoryWithId"><code><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
+  <li><a href="#exportAdvisory"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></a></li>
+  <li><a href="#findAdvisories"><code><span class="http-method">get</span> /api/2.0/advisories/</code></a></li>
+  <li><a href="#getAllTemplates"><code><span class="http-method">get</span> /api/2.0/advisories/templates</code></a></li>
+  <li><a href="#templateById"><code><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></a></li>
   </ul>
   <h4><a href="#MainController">MainController</a></h4>
   <ul>
-  <li><a href="#aboutUsingGET"><code><span class="http-method">get</span> /api/2.0/about</code></a></li>
+  <li><a href="#about"><code><span class="http-method">get</span> /api/2.0/about</code></a></li>
   </ul>
 
   <h1><a name="Advisory">Advisory</a></h1>
-  <div class="method"><a name="advisoryByIdUsingGET"/>
+  <div class="method"><a name="advisoryById"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Get a single Advisory (<span class="nickname">advisoryByIdUsingGET</span>)</div>
+    <div class="method-summary">Get a single Advisory (<span class="nickname">advisoryById</span>)</div>
     <div class="method-notes">Get the advisory CSAF document and some additional data for the given id.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -270,22 +270,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryDocument">AdvisoryDocument</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="changeAnswerUsingPATCH"/>
+  <div class="method"><a name="changeAnswer"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></pre></div>
-    <div class="method-summary">Change answer to an advisory comment (<span class="nickname">changeAnswerUsingPATCH</span>)</div>
+    <div class="method-summary">Change answer to an advisory comment (<span class="nickname">changeAnswer</span>)</div>
     <div class="method-notes"></div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -307,7 +298,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -347,22 +338,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="changeCommentUsingPATCH"/>
+  <div class="method"><a name="changeComment"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></pre></div>
-    <div class="method-summary">Change comment of an advisory (<span class="nickname">changeCommentUsingPATCH</span>)</div>
+    <div class="method-summary">Change comment of an advisory (<span class="nickname">changeComment</span>)</div>
     <div class="method-notes"></div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -382,7 +364,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -422,23 +404,14 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="changeCsafDocumentUsingPATCH"/>
+  <div class="method"><a name="changeCsafDocument"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocumentUsingPATCH</span>)</div>
-    <div class="method-notes">Change a CSAF-document in the system</div>
+    <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocument</span>)</div>
+    <div class="method-notes">Change a CSAF-document in the system. On saving a document itscontent may change, e.g. the document version. Thus after changing a document , it must be reloaded on the client side.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -455,7 +428,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -496,22 +469,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="changeWorkflowStateUsingPATCH"/>
+  <div class="method"><a name="changeWorkflowState"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory (<span class="nickname">changeWorkflowStateUsingPATCH</span>)</div>
+    <div class="method-summary">Change workflow state of an advisory (<span class="nickname">changeWorkflowState</span>)</div>
     <div class="method-notes">Change the workflow state of the advisory with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -529,7 +493,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -569,22 +533,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="commentsUsingGET"/>
+  <div class="method"><a name="comments"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></pre></div>
-    <div class="method-summary">Show comments and answers of an advisory (<span class="nickname">commentsUsingGET</span>)</div>
+    <div class="method-summary">Show comments and answers of an advisory (<span class="nickname">comments</span>)</div>
     <div class="method-notes">Show all comments and answers of the advisory with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -631,22 +586,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="createAnswerUsingPOST"/>
+  <div class="method"><a name="createAnswer"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
-    <div class="method-summary">Add answer to an advisory comment (<span class="nickname">createAnswerUsingPOST</span>)</div>
+    <div class="method-summary">Add answer to an advisory comment (<span class="nickname">createAnswer</span>)</div>
     <div class="method-notes">Add a answer to the comment with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -666,7 +612,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -701,25 +647,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="createCommentUsingPOST"/>
+  <div class="method"><a name="createComment"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
-    <div class="method-summary">Add comment to an advisory (<span class="nickname">createCommentUsingPOST</span>)</div>
+    <div class="method-summary">Add comment to an advisory (<span class="nickname">createComment</span>)</div>
     <div class="method-notes">Add a comment to the advisory with the given id</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -737,7 +671,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">AdvisoryCreateComment <a href="#AdvisoryCreateComment">AdvisoryCreateComment</a> (optional)</div>
+      <div class="param">AdvisoryCreateComment <a href="#AdvisoryCreateComment">AdvisoryCreateComment</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -772,26 +706,14 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="createCsafDocumentUsingPOST"/>
+  <div class="method"><a name="createCsafDocument"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories</code></pre></div>
-    <div class="method-summary">Create a new Advisory in the system (<span class="nickname">createCsafDocumentUsingPOST</span>)</div>
-    <div class="method-notes">Create a new CSAF-document in the system</div>
+    <div class="method-summary">Create a new Advisory in the system. (<span class="nickname">createCsafDocument</span>)</div>
+    <div class="method-notes">Create a new CSAF-document in the system.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -802,7 +724,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -837,25 +759,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="deleteAdvisoryWithIdUsingDELETE"/>
+  <div class="method"><a name="deleteAdvisoryWithId"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Delete advisory. (<span class="nickname">deleteAdvisoryWithIdUsingDELETE</span>)</div>
+    <div class="method-summary">Delete advisory. (<span class="nickname">deleteAdvisoryWithId</span>)</div>
     <div class="method-notes">Delete advisory from the system. All older versions, comments and audit-trails are also deleted.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -885,22 +795,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#"></a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="exportAdvisoryUsingGET"/>
+  <div class="method"><a name="exportAdvisory"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></pre></div>
-    <div class="method-summary">Export advisory CSAF document (<span class="nickname">exportAdvisoryUsingGET</span>)</div>
+    <div class="method-summary">Export advisory CSAF document (<span class="nickname">exportAdvisory</span>)</div>
     <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -917,7 +818,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">format (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; format default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -934,33 +835,24 @@ font-style: italic;
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>text/html</code></li>
       <li><code>application/json</code></li>
-      <li><code>application/pdf</code></li>
+      <li><code>text/html</code></li>
       <li><code>text/markdown</code></li>
+      <li><code>application/pdf</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
         <a href="#String">String</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="findAdvisoriesUsingGET"/>
+  <div class="method"><a name="findAdvisories"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/</code></pre></div>
-    <div class="method-summary">Get all authorized advisories (<span class="nickname">findAdvisoriesUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-summary">Get all authorized advisories (<span class="nickname">findAdvisories</span>)</div>
+    <div class="method-notes">All CSAF documents for which the logged-in user is authorized are returned. This depends on the user's role and the state of the CSAF document.</div>
 
 
 
@@ -970,7 +862,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">expression (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format default: null format: json</div>
     </div>  <!-- field-items -->
 
 
@@ -1006,22 +898,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="getAllTemplatesUsingGET"/>
+  <div class="method"><a name="getAllTemplates"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates</code></pre></div>
-    <div class="method-summary">Get all authorized templates (<span class="nickname">getAllTemplatesUsingGET</span>)</div>
+    <div class="method-summary">Get all authorized templates (<span class="nickname">getAllTemplates</span>)</div>
     <div class="method-notes">Get all available templates in the system</div>
 
 
@@ -1056,22 +939,13 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="templateByIdUsingGET"/>
+  <div class="method"><a name="templateById"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></pre></div>
-    <div class="method-summary">Get template content (<span class="nickname">templateByIdUsingGET</span>)</div>
+    <div class="method-summary">Get template content (<span class="nickname">templateById</span>)</div>
     <div class="method-notes">Get the content of the templates with the given templateId</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -1106,23 +980,14 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#Object">Object</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="MainController">MainController</a></h1>
-  <div class="method"><a name="aboutUsingGET"/>
+  <div class="method"><a name="about"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/about</code></pre></div>
-    <div class="method-summary">about (<span class="nickname">aboutUsingGET</span>)</div>
+    <div class="method-summary"> (<span class="nickname">about</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1151,15 +1016,6 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#String">String</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
 
@@ -1168,39 +1024,39 @@ font-style: italic;
 
   <h3>Table of Contents</h3>
   <ol>
-    <li><a href="#AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - AdvisoryCommentResponse</a></li>
-    <li><a href="#AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - AdvisoryCreateComment</a></li>
-    <li><a href="#AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - AdvisoryCreateResponse</a></li>
-    <li><a href="#AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a></li>
-    <li><a href="#AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a></li>
-    <li><a href="#AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - AdvisoryTemplateInformation</a></li>
-    <li><a href="#AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - AdvisoryUpdateResponse</a></li>
+    <li><a href="#AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - </a></li>
+    <li><a href="#AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - </a></li>
+    <li><a href="#AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - </a></li>
+    <li><a href="#AdvisoryDocument"><code>AdvisoryDocument</code> - </a></li>
+    <li><a href="#AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - </a></li>
+    <li><a href="#AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - </a></li>
+    <li><a href="#AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - </a></li>
   </ol>
 
   <div class="model">
-    <h3><a name="AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - AdvisoryCommentResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The id advisory format: int64</div>
-<div class="param">advisoryVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The version of the advisory </div>
-<div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique if of the comment format: int64</div>
-<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
-<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created format: date</div>
+      <div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique if of the comment format: int64</div>
+<div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The id advisory format: int64</div>
 <div class="param">createdBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user which created the comment </div>
+<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created format: date</div>
+<div class="param">advisoryVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The version of the advisory </div>
 <div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
 <div class="param">questionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Only in answers. The id of of the comment the answer belongs to format: int64</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - AdvisoryCreateComment</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
-<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+      <div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - AdvisoryCreateResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the create object </div>
@@ -1208,53 +1064,53 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryDocument"><code>AdvisoryDocument</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">Draft</div><div class="param-enum">Review</div><div class="param-enum">Approved</div><div class="param-enum">Published</div>
+<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
 <div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
         <div class="param-enum-header">Enum:</div>
         
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
-<div class="param">csafJsonWithComments (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current CASF document enhanced with comment ids </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
-<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
 <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Document revision for optimistic concurrency </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
-<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">Approved</div><div class="param-enum">Draft</div><div class="param-enum">Published</div><div class="param-enum">Review</div>
+<div class="param">csafJsonWithComments (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current CASF document enhanced with comment ids </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">Draft</div><div class="param-enum">Review</div><div class="param-enum">Approved</div><div class="param-enum">Published</div>
+<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
 <div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
         <div class="param-enum-header">Enum:</div>
         
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
-<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
-<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">Approved</div><div class="param-enum">Draft</div><div class="param-enum">Published</div><div class="param-enum">Review</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - AdvisoryTemplateInformation</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Description of the template </div>
-<div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the template format: int64</div>
+      <div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the template format: int64</div>
+<div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Description of the template </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - AdvisoryUpdateResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>

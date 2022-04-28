@@ -1,20 +1,20 @@
-= Api Documentation
+= Secvisogram 2.0 CSAF-Backend API
 team@openapitools.org
-1.0
+v0.5.0
 :toc: left
 :numbered:
 :toclevels: 3
 :source-highlighter: highlightjs
-:keywords: openapi, rest, Api Documentation
+:keywords: openapi, rest, Secvisogram 2.0 CSAF-Backend API
 :specDir: 
 :snippetDir: 
 :generator-template: v1 2019-12-20
 :info-url: https://openapi-generator.tech
-:app-name: Api Documentation
+:app-name: Secvisogram 2.0 CSAF-Backend API
 
 [abstract]
 .Abstract
-Api Documentation
+CSAF Content Management Systems: Secvisogram 2.0
 
 
 // markup not found, no include::{specDir}intro.adoc[opts=optional]
@@ -28,8 +28,8 @@ Api Documentation
 === Advisory
 
 
-[.advisoryByIdUsingGET]
-==== advisoryByIdUsingGET
+[.advisoryById]
+==== advisoryById
 
 `GET /api/2.0/advisories/{advisoryId}/`
 
@@ -86,21 +86,6 @@ Get the advisory CSAF document and some additional data for the given id.
 | OK
 |  <<AdvisoryDocument>>
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -125,8 +110,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.changeAnswerUsingPATCH]
-==== changeAnswerUsingPATCH
+[.changeAnswer]
+==== changeAnswer
 
 `PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}`
 
@@ -177,7 +162,7 @@ Change answer to an advisory comment
 
 | body
 |  <<string>>
-| -
+| X
 | 
 | 
 
@@ -221,21 +206,6 @@ Change answer to an advisory comment
 | OK
 |  <<AdvisoryUpdateResponse>>
 
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
 |===
 
 ===== Samples
@@ -260,8 +230,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.changeCommentUsingPATCH]
-==== changeCommentUsingPATCH
+[.changeComment]
+==== changeComment
 
 `PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}`
 
@@ -306,7 +276,7 @@ Change comment of an advisory
 
 | body
 |  <<string>>
-| -
+| X
 | 
 | 
 
@@ -350,21 +320,6 @@ Change comment of an advisory
 | OK
 |  <<AdvisoryUpdateResponse>>
 
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
 |===
 
 ===== Samples
@@ -389,8 +344,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.changeCsafDocumentUsingPATCH]
-==== changeCsafDocumentUsingPATCH
+[.changeCsafDocument]
+==== changeCsafDocument
 
 `PATCH /api/2.0/advisories/{advisoryId}/`
 
@@ -398,7 +353,7 @@ Change advisory
 
 ===== Description
 
-Change a CSAF-document in the system
+Change a CSAF-document in the system. On saving a document itscontent may change, e.g. the document version. Thus after changing a document , it must be reloaded on the client side.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/spec.adoc[opts=optional]
@@ -428,8 +383,8 @@ Change a CSAF-document in the system
 |Name| Description| Required| Default| Pattern
 
 | body
-|  <<string>>
-| -
+| Advisory in CSAF JSON Format with comments. <<string>>
+| X
 | 
 | 
 
@@ -473,21 +428,6 @@ Change a CSAF-document in the system
 | OK
 |  <<AdvisoryCreateResponse>>
 
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
 |===
 
 ===== Samples
@@ -512,8 +452,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.changeWorkflowStateUsingPATCH]
-==== changeWorkflowStateUsingPATCH
+[.changeWorkflowState]
+==== changeWorkflowState
 
 `PATCH /api/2.0/advisories/{advisoryId}/workflowstate/`
 
@@ -552,7 +492,7 @@ Change the workflow state of the advisory with the given id
 
 | body
 |  <<string>>
-| -
+| X
 | 
 | 
 
@@ -596,21 +536,6 @@ Change the workflow state of the advisory with the given id
 | OK
 |  <<AdvisoryUpdateResponse>>
 
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
 |===
 
 ===== Samples
@@ -635,8 +560,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.commentsUsingGET]
-==== commentsUsingGET
+[.comments]
+==== comments
 
 `GET /api/2.0/advisories/{advisoryId}/comments/`
 
@@ -693,21 +618,6 @@ array[<<AdvisoryCommentResponse>>]
 | OK
 | List[<<AdvisoryCommentResponse>>] 
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -732,8 +642,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.createAnswerUsingPOST]
-==== createAnswerUsingPOST
+[.createAnswer]
+==== createAnswer
 
 `POST /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer`
 
@@ -778,7 +688,7 @@ Add a answer to the comment with the given id
 
 | body
 |  <<string>>
-| -
+| X
 | 
 | 
 
@@ -809,26 +719,6 @@ Add a answer to the comment with the given id
 | OK
 |  <<AdvisoryCreateResponse>>
 
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -853,8 +743,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.createCommentUsingPOST]
-==== createCommentUsingPOST
+[.createComment]
+==== createComment
 
 `POST /api/2.0/advisories/{advisoryId}/comments`
 
@@ -893,7 +783,7 @@ Add a comment to the advisory with the given id
 
 | AdvisoryCreateComment
 |  <<AdvisoryCreateComment>>
-| -
+| X
 | 
 | 
 
@@ -923,26 +813,6 @@ Add a comment to the advisory with the given id
 | 200
 | OK
 |  <<AdvisoryCreateResponse>>
-
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
 
 |===
 
@@ -968,16 +838,16 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.createCsafDocumentUsingPOST]
-==== createCsafDocumentUsingPOST
+[.createCsafDocument]
+==== createCsafDocument
 
 `POST /api/2.0/advisories`
 
-Create a new Advisory in the system
+Create a new Advisory in the system.
 
 ===== Description
 
-Create a new CSAF-document in the system
+Create a new CSAF-document in the system.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/POST/spec.adoc[opts=optional]
@@ -994,8 +864,8 @@ Create a new CSAF-document in the system
 |Name| Description| Required| Default| Pattern
 
 | body
-|  <<string>>
-| -
+| Advisory in CSAF JSON Format with comments. <<string>>
+| X
 | 
 | 
 
@@ -1026,26 +896,6 @@ Create a new CSAF-document in the system
 | OK
 |  <<AdvisoryCreateResponse>>
 
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1070,8 +920,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.deleteAdvisoryWithIdUsingDELETE]
-==== deleteAdvisoryWithIdUsingDELETE
+[.deleteAdvisoryWithId]
+==== deleteAdvisoryWithId
 
 `DELETE /api/2.0/advisories/{advisoryId}/`
 
@@ -1139,21 +989,6 @@ Delete advisory from the system. All older versions, comments and audit-trails a
 | OK
 |  <<>>
 
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1178,8 +1013,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.exportAdvisoryUsingGET]
-==== exportAdvisoryUsingGET
+[.exportAdvisory]
+==== exportAdvisory
 
 `GET /api/2.0/advisories/{advisoryId}/csaf`
 
@@ -1220,7 +1055,7 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 |Name| Description| Required| Default| Pattern
 
 | format
-| format 
+|  
 | -
 | null
 | 
@@ -1236,10 +1071,10 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 
 ===== Content Type
 
-* text/html
 * application/json
-* application/pdf
+* text/html
 * text/markdown
+* application/pdf
 
 ===== Responses
 
@@ -1252,21 +1087,6 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 | 200
 | OK
 |  <<String>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
 
 |===
 
@@ -1292,8 +1112,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.findAdvisoriesUsingGET]
-==== findAdvisoriesUsingGET
+[.findAdvisories]
+==== findAdvisories
 
 `GET /api/2.0/advisories/`
 
@@ -1301,7 +1121,7 @@ Get all authorized advisories
 
 ===== Description
 
-
+All CSAF documents for which the logged-in user is authorized are returned. This depends on the user's role and the state of the CSAF document.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/GET/spec.adoc[opts=optional]
@@ -1350,21 +1170,6 @@ array[<<AdvisoryDocumentInformation>>]
 | OK
 | List[<<AdvisoryDocumentInformation>>] 
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1389,8 +1194,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.getAllTemplatesUsingGET]
-==== getAllTemplatesUsingGET
+[.getAllTemplates]
+==== getAllTemplates
 
 `GET /api/2.0/advisories/templates`
 
@@ -1434,21 +1239,6 @@ array[<<AdvisoryTemplateInformation>>]
 | OK
 | List[<<AdvisoryTemplateInformation>>] 
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1473,8 +1263,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.templateByIdUsingGET]
-==== templateByIdUsingGET
+[.templateById]
+==== templateById
 
 `GET /api/2.0/advisories/templates/{templateId}`
 
@@ -1532,21 +1322,6 @@ Get the content of the templates with the given templateId
 | OK
 |  <<Object>>
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1575,12 +1350,12 @@ endif::internal-generation[]
 === MainController
 
 
-[.aboutUsingGET]
-==== aboutUsingGET
+[.about]
+==== about
 
 `GET /api/2.0/about`
 
-about
+
 
 ===== Description
 
@@ -1621,21 +1396,6 @@ about
 | OK
 |  <<String>>
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1665,7 +1425,7 @@ endif::internal-generation[]
 
 
 [#AdvisoryCommentResponse]
-=== _AdvisoryCommentResponse_ AdvisoryCommentResponse
+=== _AdvisoryCommentResponse_ 
 
 
 
@@ -1674,28 +1434,22 @@ endif::internal-generation[]
 |===
 | Field Name| Required| Type| Description| Format
 
-| advisoryId
-| 
-| Long 
-| The id advisory
-| int64 
-
-| advisoryVersion
-| 
-| String 
-| The version of the advisory
-|  
-
 | commentId
 | 
 | Long 
 | The unique if of the comment
 | int64 
 
-| commentText
+| advisoryId
+| 
+| Long 
+| The id advisory
+| int64 
+
+| createdBy
 | 
 | String 
-| The text of the comment
+| The user which created the comment
 |  
 
 | createdAt
@@ -1704,16 +1458,22 @@ endif::internal-generation[]
 | The date when the comment was created
 | date 
 
-| createdBy
+| advisoryVersion
 | 
 | String 
-| The user which created the comment
+| The version of the advisory
 |  
 
 | fieldName
 | 
 | String 
 | A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
+|  
+
+| commentText
+| 
+| String 
+| The text of the comment
 |  
 
 | questionId
@@ -1726,7 +1486,7 @@ endif::internal-generation[]
 
 
 [#AdvisoryCreateComment]
-=== _AdvisoryCreateComment_ AdvisoryCreateComment
+=== _AdvisoryCreateComment_ 
 
 
 
@@ -1735,23 +1495,23 @@ endif::internal-generation[]
 |===
 | Field Name| Required| Type| Description| Format
 
-| commentText
-| 
-| String 
-| The text of the comment
-|  
-
 | fieldName
 | 
 | String 
 | A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
 |  
 
+| commentText
+| 
+| String 
+| The text of the comment
+|  
+
 |===
 
 
 [#AdvisoryCreateResponse]
-=== _AdvisoryCreateResponse_ AdvisoryCreateResponse
+=== _AdvisoryCreateResponse_ 
 
 
 
@@ -1776,7 +1536,7 @@ endif::internal-generation[]
 
 
 [#AdvisoryDocument]
-=== _AdvisoryDocument_ AdvisoryDocument
+=== _AdvisoryDocument_ 
 
 
 
@@ -1791,46 +1551,16 @@ endif::internal-generation[]
 | Unique Id of the advisory
 |  
 
-| allowedStateChanges
-| 
-| List  of <<string>>
-| Allowed state changes of the logged in user
-|  _Enum:_ 
-
-| changeable
-| 
-| Boolean 
-| Can the logged in user change this advisory?
-|  
-
-| csafJsonWithComments
+| workflowState
 | 
 | String 
-| The current CASF document enhanced with comment ids 
-|  
-
-| deletable
-| 
-| Boolean 
-| Can the logged in user delete this advisory?
-|  
+| Current workflow state of the advisory
+|  _Enum:_ Draft, Review, Approved, Published, 
 
 | documentTrackingId
 | 
 | String 
 | CSAF tracking id of the advisory
-|  
-
-| owner
-| 
-| String 
-| Current owner of the advisory
-|  
-
-| revision
-| 
-| String 
-| Document revision for optimistic concurrency
 |  
 
 | title
@@ -1839,17 +1569,47 @@ endif::internal-generation[]
 | CSAF title of the advisory
 |  
 
-| workflowState
+| owner
 | 
 | String 
-| Current workflow state of the advisory
-|  _Enum:_ Approved, Draft, Published, Review, 
+| Current owner of the advisory
+|  
+
+| changeable
+| 
+| Boolean 
+| Can the logged in user change this advisory?
+|  
+
+| deletable
+| 
+| Boolean 
+| Can the logged in user delete this advisory?
+|  
+
+| allowedStateChanges
+| 
+| List  of <<string>>
+| Allowed state changes of the logged in user
+|  _Enum:_ 
+
+| revision
+| 
+| String 
+| Document revision for optimistic concurrency
+|  
+
+| csafJsonWithComments
+| 
+| String 
+| The current CASF document enhanced with comment ids 
+|  
 
 |===
 
 
 [#AdvisoryDocumentInformation]
-=== _AdvisoryDocumentInformation_ AdvisoryDocumentInformation
+=== _AdvisoryDocumentInformation_ 
 
 
 
@@ -1864,11 +1624,29 @@ endif::internal-generation[]
 | Unique Id of the advisory
 |  
 
-| allowedStateChanges
+| workflowState
 | 
-| List  of <<string>>
-| Allowed state changes of the logged in user
-|  _Enum:_ 
+| String 
+| Current workflow state of the advisory
+|  _Enum:_ Draft, Review, Approved, Published, 
+
+| documentTrackingId
+| 
+| String 
+| CSAF tracking id of the advisory
+|  
+
+| title
+| 
+| String 
+| CSAF title of the advisory
+|  
+
+| owner
+| 
+| String 
+| Current owner of the advisory
+|  
 
 | changeable
 | 
@@ -1882,35 +1660,17 @@ endif::internal-generation[]
 | Can the logged in user delete this advisory?
 |  
 
-| documentTrackingId
+| allowedStateChanges
 | 
-| String 
-| CSAF tracking id of the advisory
-|  
-
-| owner
-| 
-| String 
-| Current owner of the advisory
-|  
-
-| title
-| 
-| String 
-| CSAF title of the advisory
-|  
-
-| workflowState
-| 
-| String 
-| Current workflow state of the advisory
-|  _Enum:_ Approved, Draft, Published, Review, 
+| List  of <<string>>
+| Allowed state changes of the logged in user
+|  _Enum:_ 
 
 |===
 
 
 [#AdvisoryTemplateInformation]
-=== _AdvisoryTemplateInformation_ AdvisoryTemplateInformation
+=== _AdvisoryTemplateInformation_ 
 
 
 
@@ -1919,23 +1679,23 @@ endif::internal-generation[]
 |===
 | Field Name| Required| Type| Description| Format
 
-| templateDescription
-| 
-| String 
-| Description of the template
-|  
-
 | templateId
 | 
 | Long 
 | Unique Id of the template
 | int64 
 
+| templateDescription
+| 
+| String 
+| Description of the template
+|  
+
 |===
 
 
 [#AdvisoryUpdateResponse]
-=== _AdvisoryUpdateResponse_ AdvisoryUpdateResponse
+=== _AdvisoryUpdateResponse_ 
 
 
 
