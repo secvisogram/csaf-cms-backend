@@ -7,8 +7,10 @@ This application should have an interface according to the REST paradigm.
 
 ### Requirements Overview
 
-The system must provide all functionality described in the `Leistungsbeschreibung Secvisogram 2.0`. This includes the functionality of a CSAF management system as
-described in [Common Security Advisory Framework Version 2.0](https://docs.oasis-open.org/csaf/csaf/v2.0/csd01/csaf-v2.0-csd01.html#9112-conformance-clause-12-csaf-management-system). 
+The system must provide all functionality described in the
+`Leistungsbeschreibung Secvisogram 2.0`. This includes the functionality of a
+CSAF management system as
+described in [Common Security Advisory Framework Version 2.0](https://docs.oasis-open.org/csaf/csaf/v2.0/csd01/csaf-v2.0-csd01.html#9112-conformance-clause-12-csaf-management-system).
 
 This includes:
 
@@ -17,19 +19,20 @@ This includes:
 - delete CSAF documents from the system
 - add new CSAF documents to the system
 - comment on CSAF documents and answer to these comments in the system
-- export CSAF documents to HTML, Markdown and PDF. 
+- export CSAF documents to HTML, Markdown and PDF.
   - Provide a customisable template for the export  
   - The template should provide at least the company logo as a configuration option
 
 Additional features and requirements are:
 
-- Provide workflow functionality for the CSAF documents with states like `Draft`, `Review`,`Approved` and `Published`
+- Provide workflow functionality for the CSAF documents with states like
+  `Draft`, `Review`,`Approved` and `Published`
 - Provide an API where the user can download prefilled documents as a starting
     point for new documents
 - CSAF documents should be  persisted in a document oriented database
 - All actions may only be performed by authenticated and authorized users
   - Only authorized documents may be displayed to a user
-- Therefore, an open source user management like Keycloak should be used, 
+- Therefore, an open source user management like Keycloak should be used,
   that allows a simple integration of an existing rights management systems
   such as LDAP
 - The required roles and groups must be created automatically during installation
@@ -45,7 +48,6 @@ Additional features and requirements are:
 | Correctness      | the code coverage has to be at least 95%                                                |
 | Maintainability  | particular attention has to be paid to the maintainability in design and implementation |
 
-
 ### Stakeholders
 
 | Name                                               | Expectations                                               |
@@ -53,7 +55,6 @@ Additional features and requirements are:
 | tschmidtb51                                        | Provides knowledge and insight into the CSAF specification |
 | mfd2007                                            | Provides knowledge and insight into the CSAF specification |
 | [eXXcellent solutions GmbH](https://exxcellent.de) | Develops the application                                   |
-
 
 ## 2 Constraints
 
@@ -83,7 +84,7 @@ Additional features and requirements are:
 | C1  | Architecture documentation | Provide architecture documentation by using the [arc42](https://arc42.org/) method.                                                                                               |
 | C2  | Coding conventions         | This project is using the [oracle coding conventions](https://www.oracle.com/java/technologies/javase/codeconventions-introduction.html)                                          |
 | C3  | Language                   | The language used throughout the project is american English. (code comments, documentation, ...)                                                                                 |
-| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages. <br/> GitHub issues shall be referenced in commit messages where applicable. |
+| C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages. GitHub issues shall be referenced in commit messages where applicable.       |
 | C5  | License                    | The code should be published under the MIT license                                                                                                                                |
 | C6  | Markdown Lint              | Markdown files should be checked with Markdown-lint. This should be done in Github Actions                                                                                        |
 | C7  | Eslint                     | Javascript files should be checked with Eslint. This should be done in Github Actions                                                                                             |
@@ -257,7 +258,6 @@ For the audit trail, only the changes between versions of a CSAF document are
 logged.  We use [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) to
 track differences between JSON documents.
 
-
 ## 5 Building Block View
 
 ![data model](BSISecvisogramArchitecture.drawio.svg)
@@ -283,7 +283,7 @@ track differences between JSON documents.
   information about users and roles
 - The **User Management** provides user information to the Keycloak server
 - The **React Client** is a Single Page Application that runs in the browser
-  It uses the **CSAF-Backend** to save and retrieve CSAF advisories 
+  It uses the **CSAF-Backend** to save and retrieve CSAF advisories
   It uses the **CSAF-Validator** to validate CSAF advisories
 
 ### Integration keycloak
@@ -613,7 +613,8 @@ available as a template. An API will list all available templates to the user.
   the interim version
 - In the state `Approved` the advisory could also set to workflow state `RfPublication`
   ("Request for Publication")
-- In the end, the workflow state is set to `Published` and the version is set to `1.0.0`
+- In the end, the workflow state is set to `Published` and the version is set
+  to `1.0.0`
 
 #### Versioning
 
@@ -633,23 +634,23 @@ normal version.
 
 ![state maschine](CSAF-Backend-States.drawio.svg)
 
-##### Workflow Status: Not Created 
+##### Workflow Status: Not Created
 
 The editor loads a template from the server and starts editing a new advisory.
 Afterwards the new advisory is pushed to the server.
 
-_Possible actions_
+`Possible actions`
 
 - `createCsafDocument`
-  - create new advisory in db 
-  - set version to 0.0.1 
+  - create new advisory in db
+  - set version to 0.0.1
   - set workflow state of the advisory to `Draft`
 
 #### Workflow State: Draft
 
 The editor edits the advisory several times.
 
-_Possible actions_
+`Possible actions`
 
 - `changeCsafDocument`
   - save changes in db
@@ -659,14 +660,13 @@ _Possible actions_
 - `deleteCsafDocument`
   - removes advisory from system
 
-
 #### Workflow State: Review
 
 When the editor has finished editing the advisory the document is ready for review.
 The Reviewer could approve the advisory or give the document back to the editor.
 When the document is in workflow state `Approved` a pre-release version is created.
 
-_Possible actions_
+`Possible actions`
 
 - `setWkfStateDraft`
   - set workflow state of the advisory to `Draft`
@@ -676,14 +676,12 @@ _Possible actions_
 - _add and change comments and answers_
   - `addComment`, `readComment`, `addAnswer`, `readAnswer`
 
-
 A prerelease version number is assigned during the status transition to `Approved`.
 If the previous version was `< 1.0.0`, the new version is `1.0.0-1`.
-If the previous version was `>= 1.0.0`, a distinction is made between whether the previous
-version was already a prerelease version or not.
+If the previous version was `>= 1.0.0`, a distinction is made between whether
+the previous version was already a prerelease version or not.
 If yes, the prerelease counter will be increased by `1`, if
 not, the prerelease counter is set to `1`.
-
 
 #### Workflow State: Approved
 
@@ -693,7 +691,7 @@ In the state `Approved` the Publisher has 2 options:
    and set the workflow state back to `Draft`
 2. set the state of the advisory to `RfPublication`
 
-_Possible actions_
+`Possible actions`
 
 - `setWkfStateDraft`
   - change workflow state to `Draft`, set version to `1.0.0-x`
@@ -701,19 +699,17 @@ _Possible actions_
   - set workflow state of the advisory `RfPublication`
   - optionally set a time for then the publication should take place
 
-
 #### Workflow State: RfPublication
 
-_Possible actions_
+`Possible actions`
 
 - `publish` / `setWkfStatePublish`
   - change workflow state to `Published`
   - set version to `1.0.0`
 
-
 #### Workflow Step: Published
 
-_Possible actions_
+`Possible actions`
 
 - `createNewDocVersion` / `changeWorkflowStateDraft`
   - change workflow state to `Draft`
