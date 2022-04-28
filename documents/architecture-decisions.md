@@ -60,13 +60,13 @@ Additional features and requirements are:
 
 ### Technical Constraints
 
-|     | Constraint                   | Description                                                                                                                                                                                                                         |
-|-----|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. Therefore Java 17 is used as language for the project.                                                                                                      |
-| TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                                                           |
-| TC3 | OS independent development   | It should be possible to compile and run this application on all major operating systems (Linux, Mac and Windows).                                                                                                                  |
-| TC4 | Document-oriented database   | CSAF documents shall be stored in a document-oriented database.                                                                                                                                                                     |
-| TC5 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. TODO: auf unterschiedlichen Platformen |
+|     | Constraint                   | Description                                                                                                                                                                                  |
+|-----|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| TC1 | Implementation in Java       | Code should be implemented in a common and secure programming language. Therefore Java 17 is used as language for the project.                                                               |
+| TC2 | Rest API                     | The API should be language and framework agnostic, however. It should be possible that clients can be implemented using various frameworks and languages.                                    |
+| TC3 | OS independent development   | It should be possible to compile and run this application on all major operating systems (Linux, Mac and Windows).                                                                           |
+| TC4 | Document-oriented database   | CSAF documents shall be stored in a document-oriented database.                                                                                                                              |
+| TC5 | Deployable to a Linux server | The target platform for deployment is Linux. There must be documentation available on how to deploy and run the application. Docker is not strictly required but should be provided as well. |
 
 ### Organizational Constraints
 
