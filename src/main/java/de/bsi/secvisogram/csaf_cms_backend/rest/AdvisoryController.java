@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +54,11 @@ public class AdvisoryController {
      * @return filtered advisories
      */
     @GetMapping("/")
-    @Operation(summary = "Get all authorized advisories", tags = { "Advisory" })
+    @Operation(operationId = "find-advisories"
+            , summary = "Get all authorized advisories"
+            , description = "All CSAF documents for which the logged-in user is authorized are returned." +
+            " This depends on the user's role and the state of the CSAF document."
+            , tags = { "Advisory" })
     public List<AdvisoryInformationResponse> findAdvisories(@RequestParam(required = false)
                         @Parameter(in = ParameterIn.QUERY, name = "expression",
                                 description = "The filter expression in JSON format",
@@ -85,7 +91,7 @@ public class AdvisoryController {
      * @param newCsafJson content of the new CSAF document
      */
     @PostMapping(name="/", consumes = "application/json")
-    @Operation(summary = "Create a new Advisory in the system", description = "Create a new CSAF-document in the system", tags = { "Advisory" }
+    @Operation(summary = "Create a new Advisory in the system.", description = "Create a new CSAF-document in the system.", tags = { "Advisory" }
             ,requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Advisory in CSAF JSON Format with comments.", required = true))
     public AdvisoryCreateResponse createCsafDocument(
             @RequestBody String newCsafJson) throws IOException {
@@ -104,7 +110,8 @@ public class AdvisoryController {
      * @param revision optimistic locking revision
      * @return new optimistic locking revision
      */
-    @Operation(summary = "Change advisory", description = "Change a CSAF-document in the system", tags = { "Advisory" })
+    @Operation(summary = "Change advisory", description = "Change a CSAF-document in the system. On saving a document its" +
+            "content may change, e.g. the document version. Thus after changing a document , it must be reloaded on the client side.", tags = { "Advisory" })
     @PatchMapping("/{advisoryId}/")
     public AdvisoryCreateResponse changeCsafDocument(
             @Parameter(description = "Id of the advisory to change") @PathVariable String advisoryId

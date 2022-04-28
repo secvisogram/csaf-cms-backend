@@ -1,10 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel("AdvisoryCreateComment")
+@Schema(name="AdvisoryCreateComment")
 public class AdvisoryCreateCommentRequest {
 
    @Schema(description = "A comment is added to an object in the CSAF document. This name specifies the " +
@@ -18,13 +16,13 @@ public class AdvisoryCreateCommentRequest {
       this.commentText = commentText;
    }
 
-   @ApiModelProperty(value = "A comment is added to an object in the CSAF document. This name specifies the " +
+   @Schema(description  = "A comment is added to an object in the CSAF document. This name specifies the " +
            "concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.", example = "csaf_version")
    public String getFieldName() {
       return fieldName;
    }
 
-   @ApiModelProperty(value = "The text of the comment", example = "Is this value correct?")
+   @Schema(description  = "The text of the comment", example = "Is this value correct?")
    public String getCommentText() {
       return commentText;
    }
