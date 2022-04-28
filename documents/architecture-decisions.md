@@ -309,14 +309,16 @@ state, respectively the current version of the document.
 
 ## 6 Runtime View
 
-### Edit Advisory
+### Creation of the audit trail when editing the Advirory
 
 The picture below depicts the access to the Rest backend and the objects that
-are created in the database.
+are created in the database. Each time the document is modified, an audit trail entry is created. This also happens when a comment is created or when the workflow state is changed. 
 
 ![data model](WokflowAdvisory.drawio.svg)
 
 ### Create Comments
+
+The comments are generated independently of the CSAF document. The IDs of the comments are inserted into the CSAF document and saved with the document.
 
 ![data model](WorkflowComments.drawio.svg)
 
