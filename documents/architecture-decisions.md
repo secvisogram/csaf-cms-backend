@@ -312,13 +312,16 @@ state, respectively the current version of the document.
 ### Creation of the audit trail when editing the Advirory
 
 The picture below depicts the access to the Rest backend and the objects that
-are created in the database. Each time the document is modified, an audit trail entry is created. This also happens when a comment is created or when the workflow state is changed. 
+are created in the database. Each time the document is modified, an audit trail
+entry is created. This also happens when a comment is created or when the workflow
+state is changed.
 
 ![data model](WokflowAdvisory.drawio.svg)
 
 ### Create Comments
 
-The comments are generated independently of the CSAF document. The IDs of the comments are inserted into the CSAF document and saved with the document.
+The comments are generated independently of the CSAF document. The IDs of the
+comments are inserted into the CSAF document and saved with the document.
 
 ![data model](WorkflowComments.drawio.svg)
 
@@ -750,6 +753,24 @@ comment.
   transaction. We need a job cleanup for accidentally created comments
 
 ## 10 Quality Requirements
+
+### Coverage
+
+Test coverage of 95% is verified by Jacoco during development and during build
+in the github actions.
+
+### Correctness of Markdown
+
+The correctness of the markdown files is checked in the github actions during build.
+
+### Static analysis of Java Files
+
+SpotBugs is used for static analysis in the github actions during build.
+
+### Code Reviews
+
+A pull request has to be reviewed by another developer before it is merged to
+the main branch
 
 ## 11 Risks and Technical Debts
 
