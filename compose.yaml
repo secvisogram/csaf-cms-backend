@@ -1,0 +1,116 @@
+services:
+  csaf-couchdb:
+    image: couchdb:3.2
+    container_name: csaf-couchdb
+    restart: on-failure
+    env_file: .env
+    environment:
+      COUCHDB_USER: ${CSAF_COUCHDB_USER}
+      COUCHDB_PASSWORD: ${CSAF_COUCHDB_PASSWORD}
+    volumes:
+      - csaf-couchdb-data:/opt/couchdb/data
+    ports:
+      - "${CSAF_COUCHDB_PORT}:5984"
+
+  csaf-keycloak-db:
+    image: postgres:14.2
+    container_name: csaf-keycloak-db
+    volumes:
+      - csaf-keycloak-db-data:/var/lib/postgresql/data
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${CSAF_KEYCLOAK_DATABASE_NAME}
+      POSTGRES_USER: ${CSAF_KEYCLOAK_DATABASE_USER}
+      POSTGRES_PASSWORD: ${CSAF_KEYCLOAK_DATABASE_PASSWORD}
+    restart: on-failure
+    ports:
+      - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
+
+  csaf-keycloak:
+    image: bitnami/keycloak:16
+    container_name: csaf-keycloak
+    env_file: .env
+    environment:
+      KEYCLOAK_DATABASE_HOST: csaf-keycloak-db
+      KEYCLOAK_DATABASE_PORT: ${CSAF_KEYCLOAK_DATABASE_PORT}
+      KEYCLOAK_DATABASE_NAME: ${CSAF_KEYCLOAK_DATABASE_NAME}
+      KEYCLOAK_DATABASE_USER: ${CSAF_KEYCLOAK_DATABASE_USER}
+      KEYCLOAK_DATABASE_PASSWORD: ${CSAF_KEYCLOAK_DATABASE_PASSWORD}
+      KEYCLOAK_DATABASE_SCHEMA: public
+      # KEYCLOAK_JDBC_PARAMS:
+      KEYCLOAK_CREATE_ADMIN_USER: "true"
+      KEYCLOAK_ADMIN_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak/export:/tmp/export:z
+    depends_on:
+      - csaf-keycloak-db
+    restart: on-failure
+    ports:
+      - "${CSAF_KEYCLOAK_PORT}:8080"
+
+  # Run this manually to import the default keycloak config since 'depends_on' is currently broken.
+  csaf-keycloak-cli:
+    image: bitnami/keycloak-config-cli:4
+    container_name: csaf-keycloak-cli
+    profiles: [ "run_manually" ]
+    env_file: .env
+    environment:
+      KEYCLOAK_URL: "http://csaf-keycloak:8080/auth"
+      KEYCLOAK_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+      IMPORT_PATH: "/tmp/import/csaf-realm.json"
+    volumes:
+      - ./keycloak:/tmp/import:z
+    restart: on-failure
+    depends_on:
+      - csaf-keycloak
+
+  csaf-oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    container_name: csaf-oauth2-proxy
+    env_file: .env
+    environment:
+      # listening address and proxy target
+      OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
+      OAUTH2_PROXY_UPSTREAMS: "http://host.docker.internal:8080/api/"
+
+      # Security related config
+      OAUTH2_PROXY_COOKIE_SECURE: "false"
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
+
+      # OIDC provider config
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "CSAF OIDC Provider"
+      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://csaf-keycloak:8080/auth/realms/${CSAF_REALM}"
+      OAUTH2_PROXY_REDIRECT_URL: "${CSAF_APP_EXTERNAL_PROTOCOL}://${CSAF_APP_EXTERNAL_HOSTNAME}:${CSAF_APP_EXTERNAL_PORT}/oauth2/callback"
+      OAUTH2_PROXY_LOGIN_URL: "${CSAF_KEYCLOAK_EXTERNAL_PROTOCOL}://${CSAF_KEYCLOAK_EXTERNAL_HOSTNAME}:${CSAF_KEYCLOAK_EXTERNAL_PORT}/auth/realms/${CSAF_REALM}/protocol/openid-connect/auth"
+      OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180"
+
+      # Client credentials
+      OAUTH2_PROXY_CLIENT_ID: ${CSAF_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_SECRET: ${CSAF_CLIENT_SECRET}
+      OAUTH2_PROXY_COOKIE_SECRET: ${CSAF_COOKIE_SECRET}
+      OAUTH2_PROXY_INSECURE_OIDC_ALLOW_UNVERIFIED_EMAIL: "true"
+
+      # Pass ID token to upstream
+      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
+      OAUTH2_PROXY_PASS_BASIC_AUTH: "false"
+      OAUTH2_PROXY_PASS_ACCESS_TOKEN: "true"
+
+      # Built-in authorization checks (disabled)
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+    ports:
+      - "${CSAF_APP_EXTERNAL_PORT}:4180"
+    depends_on:
+      - csaf-keycloak
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: on-failure
+
+volumes:
+  csaf-couchdb-data:
+    driver: local
+  csaf-keycloak-db-data:
+    driver: local
