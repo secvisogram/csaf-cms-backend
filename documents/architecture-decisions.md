@@ -651,7 +651,6 @@ normal version.
 - `listAllTemplates`
   - List all possible CSAF Document templates in the system
 
-
 ##### Workflow Status: Not Created
 
 The editor loads a template from the server and starts editing a new advisory.
