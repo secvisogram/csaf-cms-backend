@@ -348,6 +348,7 @@ Holds the current version of a CSAF advisory
 | `publishingDate` | from this date, the state `Published` is valid            |
 | `workflowState`  | the workflow state of the advisory                        |
 | `owner`          | the current owner of the advisory                         |
+| `publicationDate`| optionally time at which the the publication should take place|
 | `csafDocument`   | the CSAF document in JSON format with additional comments |
 
 #### AdvisoryVersion
@@ -639,6 +640,18 @@ normal version.
 
 ![state maschine](CSAF-Backend-States.drawio.svg)
 
+##### Possible actions in every state
+
+- `listCsafDocuments`
+  - Read all documents for which the user is authorized
+- `exportAdvisory`
+  - Read all documents for which the user is authorized
+- `readTemplate`
+  - Read CSAF Document template
+- `listAllTemplates`
+  - List all possible CSAF Document templates in the system
+
+
 ##### Workflow Status: Not Created
 
 The editor loads a template from the server and starts editing a new advisory.
@@ -679,7 +692,7 @@ When the document is in workflow state `Approved` a pre-release version is creat
   - set workflow state of the advisory to `Approved`
   - set version as described below
 - _add and change comments and answers_
-  - `addComment`, `readComment`, `addAnswer`, `readAnswer`
+  - `listComments`, `addComment`, `addAnswer`, `changeComment`, `changeAnswer`,
 
 A prerelease version number is assigned during the status transition to `Approved`.
 If the previous version was `< 1.0.0`, the new version is `1.0.0-1`.
@@ -702,7 +715,9 @@ In the state `Approved` the Publisher has 2 options:
   - change workflow state to `Draft`, set version to `1.0.0-x`
 - `setWkfStateRfPublication`
   - set workflow state of the advisory `RfPublication`
-  - optionally set a time for then the publication should take place
+  - optionally set a time for when the publication should take place
+- `createNewCsafDocumentVersion`
+  - create new Version of the CSAF document
 
 #### Workflow State: RfPublication
 
@@ -719,6 +734,8 @@ In the state `Approved` the Publisher has 2 options:
 - `createNewDocVersion` / `changeWorkflowStateDraft`
   - change workflow state to `Draft`
   - set version to `X.0.0` where `X` is the major version increased by `1`
+- `createNewCsafDocumentVersion`
+  - create new Version of the CSAF document
 
 ## 9 Design Decisions
 

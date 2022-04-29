@@ -48,7 +48,7 @@ public class AdvisoryJsonService {
         JsonNode csafNode = document.get(CSAF_FIELD);
         ObjectWriter writer = this.jacksonMapper.writer();
         String updateString = writer.writeValueAsString(csafNode);
-        response.setCsafJsonWithComments(updateString);
+        response.setCsaf(updateString);
 
         return response;
     }
