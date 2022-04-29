@@ -67,7 +67,7 @@ public class AdvisoryController {
                                         format = "json",
                                         description = "filter expression")) String expression) {
 
-        LOG.info("findAdvisories {} ", expression);
+        LOG.info("findAdvisories {} ", sanitize(expression));
         return this.couchdDbService.readAllCsafDocuments();
     }
 
@@ -146,7 +146,8 @@ public class AdvisoryController {
             @Parameter(description = "Id of the advisory to change") @PathVariable String advisoryId
             , @Parameter(description = "Optimistic locking revision") @RequestParam String revision) {
 
-        LOG.info("createNewCsafDocumentVersion {} {}", advisoryId, revision);
+        // only for debugging, remove when implemented
+        LOG.info("createNewCsafDocumentVersion {} {}", sanitize(advisoryId), sanitize(revision));
 
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
@@ -194,7 +195,8 @@ public class AdvisoryController {
     public AdvisoryTemplateResponse readTemplate(
             @Parameter(description = "Id of the template to read") @PathVariable long templateId) {
 
-        LOG.info("readTemplate {}", templateId);
+        // only for debugging, remove when implemented
+        LOG.info("readTemplate {}", sanitize(templateId));
         return null;
     }
 
@@ -212,7 +214,8 @@ public class AdvisoryController {
             @Parameter(description = "Id of the advisory to export") @PathVariable String advisoryId
             , @RequestParam(required = false) ExportFormat format) {
 
-        LOG.info("exportAdvisory to format: {} {}", advisoryId, format);
+        // only for debugging, remove when implemented
+        LOG.info("exportAdvisory to format: {} {}", sanitize(advisoryId), sanitize(format) );
         return "";
     }
 
@@ -229,7 +232,8 @@ public class AdvisoryController {
               @Parameter(description = "Id of the advisory to change the workflow state")  @PathVariable String advisoryId
             , @Parameter(description = "Optimistic locking revision") @RequestParam String revision) {
 
-        LOG.info("setWorkflowStateToDraft {} {}", advisoryId, revision);
+        // only for debugging, remove when implemented
+        LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -246,7 +250,8 @@ public class AdvisoryController {
             @Parameter(description = "Id of the advisory to change the workflow state")  @PathVariable String advisoryId
             , @Parameter(description = "Optimistic locking revision") @RequestParam String revision) {
 
-        LOG.info("setWorkflowStateToReview {} {}", advisoryId, revision);
+        // only for debugging, remove when implemented
+        LOG.info("setWorkflowStateToReview {} {}", sanitize(advisoryId), sanitize(revision));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -263,7 +268,8 @@ public class AdvisoryController {
             @Parameter(description = "Id of the advisory to change the workflow state")  @PathVariable String advisoryId
             , @Parameter(description = "Optimistic locking revision") @RequestParam String revision) {
 
-        LOG.info("setWorkflowStateToApprove {} {}", advisoryId, revision);
+        // only for debugging, remove when implemented
+        LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -281,7 +287,9 @@ public class AdvisoryController {
             , @Parameter(description = "Optimistic locking revision") @RequestParam String revision
             , @Parameter(description = "Proposed Time at which the publication should take place") @RequestParam(required=false) String proposedTime) {
 
-        LOG.info("setWorkflowStateToPublish {} {} {}",advisoryId, revision, proposedTime );
+        // only for debugging, remove when implemented
+        LOG.info("setWorkflowStateToPublish {} {} {}",sanitize(advisoryId), sanitize(revision)
+                , sanitize(proposedTime) );
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -302,7 +310,9 @@ public class AdvisoryController {
             , @Parameter(description = "Proposed Time at which the publication should take place") @RequestParam(required=false) String proposedTime
             , @Parameter(description = "The new Document Tracking Status of the CSAF Document. Only interim and final are allowed") @RequestParam DocumentTrackingStatus documentTrackingStatus) {
 
-        LOG.info("setWorkflowStateToPublish {} {} {} {}",advisoryId, revision, proposedTime, documentTrackingStatus );
+        // only for debugging, remove when implemented
+        LOG.info("setWorkflowStateToPublish {} {} {} {}",sanitize(advisoryId), sanitize(revision), sanitize(proposedTime)
+                , sanitize(documentTrackingStatus) );
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -317,7 +327,8 @@ public class AdvisoryController {
     public List<AdvisoryCommentResponse> listComments(
             @Parameter(description = "Id of the advisory to get the comments") @PathVariable String advisoryId) {
 
-        LOG.info("listComments {}", advisoryId);
+        // only for debugging, remove when implemented
+        LOG.info("listComments {}", sanitize(advisoryId));
         return Collections.emptyList();
     }
 
@@ -334,7 +345,8 @@ public class AdvisoryController {
             @Parameter(description = "AdvisoryId of the advisory to add the comments") @PathVariable String advisoryId
             , @RequestBody AdvisoryCreateCommentRequest commentText) {
 
-        LOG.info("createComment {} {}", advisoryId, commentText);
+        // only for debugging, remove when implemented
+        LOG.info("createComment {} {}", sanitize(advisoryId), sanitize(commentText));
         return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -353,7 +365,8 @@ public class AdvisoryController {
             , @Parameter(description = "Id of the comment to add the answer") @PathVariable long commentId
             , @RequestBody String answerText) {
 
-        LOG.info("addAnswer {} {} {}", advisoryId, commentId, answerText);
+        // only for debugging, remove when implemented
+        LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(answerText));
         return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -373,7 +386,9 @@ public class AdvisoryController {
             , @Parameter(description = "Optimistic locking revision of the comment")  @RequestParam String revision
             , @RequestBody String newCommentText) {
 
-        LOG.info("changeComment {} {} {} {}", advisoryId, commentId,revision, newCommentText);
+        // only for debugging, remove when implemented
+        LOG.info("changeComment {} {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(revision)
+                , sanitize(newCommentText));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -395,8 +410,16 @@ public class AdvisoryController {
                 , @Parameter(description = "Optimistic locking revision of the answer")  @RequestParam String revision
                 , @RequestBody String newAnswerText) {
 
-        LOG.info("changeAnswer {} {} {} {} {}", advisoryId, commentId, answerId, revision, newAnswerText );
+        // only for debugging, remove when implemented
+        LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId)
+                , sanitize(answerId), sanitize(revision), sanitize(newAnswerText) );
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
+    /**
+     * Sanitize request parameter
+     */
+    private String sanitize(Object value) {
+        return (value != null) ? value.toString().replaceAll("[\r\n]","") : "";
+    }
 }
