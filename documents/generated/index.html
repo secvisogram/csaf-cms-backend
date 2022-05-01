@@ -226,16 +226,16 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
-    <div class="method-summary">Add answer to an advisory comment (<span class="nickname">addAnswer</span>)</div>
-    <div class="method-notes">Add a answer to the comment with the given id</div>
+    <div class="method-summary">Add an answer to an advisory comment (<span class="nickname">addAnswer</span>)</div>
+    <div class="method-notes">Add a answer to the comment with the given ID</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to add the answer default: null format: int64</div><div class="param">commentId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory the answered comment belongs to. default: null </div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment to add the answer default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to add the answer to. default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -288,17 +288,17 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></pre></div>
     <div class="method-summary">Change answer text to an advisory comment (<span class="nickname">changeAnswer</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Change the text of an answer to a comment.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the answer default: null format: int64</div><div class="param">commentId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory the answered comment belongs to. default: null </div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment the answer belongs to default: null format: int64</div><div class="param">answerId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to change an answer of. default: null format: int64</div><div class="param">answerId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the answer to change default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the answer to change. default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -355,80 +355,16 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></pre></div>
-    <div class="method-summary">Change comment text of an advisory (<span class="nickname">changeComment</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-summary">Change the text of a comment. (<span class="nickname">changeComment</span>)</div>
+    <div class="method-notes">Change the text of the comment with the given ID.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the comment default: null format: int64</div><div class="param">commentId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory a comment of. default: null </div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment to change default: null format: int64</div>
-    </div>  <!-- field-items -->
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">revision (required)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the comment default: null </div>
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="changeCsafDocument"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocument</span>)</div>
-    <div class="method-notes">Change a CSAF-document in the system. On saving a document itscontent may change, e.g. the document version. Thus after changing a document , it must be reloaded on the client side.</div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to change. default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -481,18 +417,82 @@ font-style: italic;
         <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="createComment"/>
+  <div class="method"><a name="changeCsafDocument"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
-    <div class="method-summary">Add comment to an advisory (<span class="nickname">createComment</span>)</div>
-    <div class="method-notes">Add a comment to the advisory with the given id.</div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
+    <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocument</span>)</div>
+    <div class="method-notes">Change a CSAF document in the system. On saving a document its content (version) may change  Thus, after changing a document, it must be reloaded on the client side.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; AdvisoryId of the advisory to add the comments default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change. default: null </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#string">string</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="createComment"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
+    <div class="method-summary">Add a comment to an advisory (<span class="nickname">createComment</span>)</div>
+    <div class="method-notes">Add a comment to the advisory with the given ID.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to add the comment to. default: null </div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -544,8 +544,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories</code></pre></div>
-    <div class="method-summary">Create a new Advisory in the system. (<span class="nickname">createCsafDocument</span>)</div>
-    <div class="method-notes">Create a new CSAF-document in the system.</div>
+    <div class="method-summary">Create a new Advisory (<span class="nickname">createCsafDocument</span>)</div>
+    <div class="method-notes">Create a new CSAF document with optional comments in the system.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -597,25 +597,31 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version</code></pre></div>
-    <div class="method-summary">Increase version of the CSAF document (<span class="nickname">createNewCsafDocumentVersion</span>)</div>
-    <div class="method-notes">Increase the version of the the CSAF document</div>
+    <div class="method-summary">Increase version of an advisory (<span class="nickname">createNewCsafDocumentVersion</span>)</div>
+    <div class="method-notes">Increase the version of a CSAF document</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change. default: null </div>
     </div>  <!-- field-items -->
 
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
-
-
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">revision (required)</div>
+      <div class="param">body <a href="#string">string</a> (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
     </div>  <!-- field-items -->
+
+
 
 
     <h3 class="field-label">Return type</h3>
@@ -649,25 +655,31 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Delete advisory. (<span class="nickname">deleteCsafDocument</span>)</div>
-    <div class="method-notes">Delete advisory from the system. All older versions, comments and audit-trails are also deleted.</div>
+    <div class="method-summary">Delete an advisory (<span class="nickname">deleteCsafDocument</span>)</div>
+    <div class="method-notes">Delete a CSAF document from the system. All older versions, comments and audit-trails are also deleted.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to delete default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change. default: null </div>
     </div>  <!-- field-items -->
 
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
-
-
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">revision (required)</div>
+      <div class="param">body <a href="#string">string</a> (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
     </div>  <!-- field-items -->
+
+
 
 
 
@@ -685,14 +697,14 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></pre></div>
-    <div class="method-summary">Export advisory CSAF document (<span class="nickname">exportAdvisory</span>)</div>
+    <div class="method-summary">Export a CSAF document (<span class="nickname">exportAdvisory</span>)</div>
     <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to export default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to export. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -702,7 +714,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">format (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The format in which the document shall be exported. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -736,7 +748,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates</code></pre></div>
     <div class="method-summary">Get all authorized templates (<span class="nickname">listAllTemplates</span>)</div>
-    <div class="method-notes">Get all available templates in the system</div>
+    <div class="method-notes">Get all available templates in the system.</div>
 
 
 
@@ -755,7 +767,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
-  "templateDescription" : "Template for profile ",
+  "templateDescription" : "Template for the profile CSAF base.",
   "templateId" : 33476793
 }</code></pre>
 
@@ -783,7 +795,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to get the comments default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to get the comments of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -804,7 +816,7 @@ font-style: italic;
     <pre class="example"><code>{
   "createdAt" : "2000-01-23",
   "advisoryId" : 6677234,
-  "fieldName" : "csaf_version",
+  "fieldName" : "document.csaf_version",
   "questionId" : 923873,
   "createdBy" : "Mustermann",
   "commentId" : 238745,
@@ -830,7 +842,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/</code></pre></div>
     <div class="method-summary">Get all authorized advisories (<span class="nickname">listCsafDocuments</span>)</div>
-    <div class="method-notes">All CSAF documents for which the logged-in user is authorized are returned. This depends on the user's role and the state of the CSAF document.</div>
+    <div class="method-notes">All CSAF documents for which the logged in user is authorized are returned. This depends on the user's role and the state of the CSAF document.</div>
 
 
 
@@ -840,7 +852,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">expression (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format default: null format: json</div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format. default: null format: json</div>
     </div>  <!-- field-items -->
 
 
@@ -856,7 +868,7 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
   "owner" : "Mustermann",
-  "allowedStateChanges" : "Published",
+  "allowedStateChanges" : [ "Approved", "Published" ],
   "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "documentTrackingId" : "RHBA-2019_0024",
   "workflowState" : "Approved",
@@ -889,7 +901,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to read default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to read. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -909,13 +921,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
   "owner" : "Mustermann",
-  "allowedStateChanges" : "Published",
+  "allowedStateChanges" : [ "Approved", "Published" ],
   "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "documentTrackingId" : "RHBA-2019_0024",
   "workflowState" : "Approved",
   "deletable" : false,
   "changeable" : true,
-  "csaf" : "{document: { $comment: [23454], category: generic_csaf,...",
+  "csaf" : "{document: { $comment: [23454], category: \"generic_csaf\",...",
   "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
@@ -944,7 +956,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">templateId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the template to read default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the template to read. default: null format: int64</div>
     </div>  <!-- field-items -->
 
 
@@ -979,13 +991,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approve</code></pre></div>
     <div class="method-summary">Change workflow state of an advisory to Approve (<span class="nickname">setWorkflowStateToApprove</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to Approve</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Approve.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -995,7 +1007,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1031,13 +1043,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Draft</code></pre></div>
     <div class="method-summary">Change workflow state of an advisory to Draft (<span class="nickname">setWorkflowStateToDraft</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to Draft</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Draft.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1047,7 +1059,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1082,14 +1094,14 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Publish</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Publish (<span class="nickname">setWorkflowStateToPublish</span>)</div>
+    <div class="method-summary">Change workflow state of an advisory to Publish. (<span class="nickname">setWorkflowStateToPublish</span>)</div>
     <div class="method-notes">Change the workflow state of the advisory with the given id to Publish</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1138,14 +1150,14 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Review</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Review (<span class="nickname">setWorkflowStateToReview</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to Review</div>
+    <div class="method-summary">Change workflow state of an advisory to Draft (<span class="nickname">setWorkflowStateToReview</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Review.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1155,7 +1167,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1197,7 +1209,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1209,7 +1221,7 @@ font-style: italic;
 
       <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div><div class="param">proposedTime (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1295,66 +1307,66 @@ font-style: italic;
     <h3><a name="AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique if of the comment format: int64</div>
-<div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The id advisory format: int64</div>
-<div class="param">createdBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user which created the comment </div>
-<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created format: date</div>
-<div class="param">advisoryVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The version of the advisory </div>
-<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
-<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
-<div class="param">questionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Only in answers. The id of of the comment the answer belongs to format: int64</div>
+      <div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique ID of the comment. format: int64</div>
+<div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The ID of the advisory. format: int64</div>
+<div class="param">createdBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user who created the comment. </div>
+<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created. format: date</div>
+<div class="param">advisoryVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The version of the advisory. </div>
+<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When it is empty, the comment belongs to the whole object. </div>
+<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment. </div>
+<div class="param">questionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Only present if the comment is an answer. The ID of the comment the answer belongs to. format: int64</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
-<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
+      <div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the create object </div>
-<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the create object. </div>
+<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AdvisoryDocument"><code>AdvisoryDocument</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
-<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
+      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the advisory. </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current workflow state of the advisory. </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">Draft</div><div class="param-enum">Review</div><div class="param-enum">Approved</div><div class="param-enum">RfPublication</div><div class="param-enum">Published</div>
-<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
-<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
+<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF tracking ID of the advisory. </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF title of the advisory. </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the advisory. </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this advisory. </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this advisory. </div>
+<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A list of allowed state changes of the logged in user. </div>
         <div class="param-enum-header">Enum:</div>
         
-<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Document revision for optimistic concurrency </div>
-<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current CASF document enhanced with comment ids </div>
+<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency. </div>
+<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current CSAF document enhanced with comment IDs. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
-<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
+      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the advisory. </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current workflow state of the advisory. </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">Draft</div><div class="param-enum">Review</div><div class="param-enum">Approved</div><div class="param-enum">RfPublication</div><div class="param-enum">Published</div>
-<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
-<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
+<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF tracking ID of the advisory. </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF title of the advisory. </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the advisory. </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this advisory. </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this advisory. </div>
+<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A list of allowed state changes of the logged in user. </div>
         <div class="param-enum-header">Enum:</div>
         
     </div>  <!-- field-items -->
@@ -1363,15 +1375,15 @@ font-style: italic;
     <h3><a name="AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the template format: int64</div>
-<div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Description of the template </div>
+      <div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique ID of the template. format: int64</div>
+<div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The description of the template. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>
+      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency </div>
     </div>  <!-- field-items -->
   </div>
   </body>
