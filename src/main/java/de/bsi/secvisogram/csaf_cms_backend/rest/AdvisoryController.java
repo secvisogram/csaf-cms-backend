@@ -41,7 +41,7 @@ import java.util.UUID;
 @RequestMapping(SecvisogramApplication.BASE_ROUTE + "advisories")
 @Tag(
         name = "Advisory",
-        description = "API for for Creating, Retrieving, Updating and Deleting of CSAF Dokuments," +
+        description = "API for for Creating, Retrieving, Updating and Deleting of CSAF documents," +
                 " including their Versions, Comments and Workflow States."
 )
 public class AdvisoryController {
@@ -106,7 +106,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("readCsafDocument");
-        JsonNode document = this.couchDbService.readCsafDokument(advisoryId);
+        JsonNode document = this.couchDbService.readCsafDocument(advisoryId);
         return jsonService.covertCoudbCsafToAdvisory(document, advisoryId);
     }
 
@@ -253,7 +253,7 @@ public class AdvisoryController {
     ) throws DatabaseException {
 
         LOG.info("deleteCsafDocument");
-        this.couchDbService.deleteCsafDokument(advisoryId, revision);
+        this.couchDbService.deleteCsafDocument(advisoryId, revision);
     }
 
     /**

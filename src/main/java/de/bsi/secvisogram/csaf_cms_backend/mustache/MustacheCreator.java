@@ -37,7 +37,7 @@ public class MustacheCreator {
                 throw new RuntimeException("Invalid Template: " + templateName);
             }
             Template htmlTemplate = compiler.compile(new InputStreamReader(templateStream, StandardCharsets.UTF_8));
-            Object result = new Csaf2MapReader().readCasfDocument(jsonReader);
+            Object result = new Csaf2MapReader().readCsafDocument(jsonReader);
             return htmlTemplate.execute(result);
         }
     }
