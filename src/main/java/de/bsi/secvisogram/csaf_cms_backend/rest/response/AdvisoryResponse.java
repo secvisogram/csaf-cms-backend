@@ -6,8 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /**
  * Advisory content response
  */
-@Schema(name="AdvisoryDocument")
-public class AdvisoryResponse extends  AdvisoryInformationResponse {
+@Schema(name = "AdvisoryDocument")
+public class AdvisoryResponse extends AdvisoryInformationResponse {
 
     private String revision;
     private String csaf;
@@ -17,17 +17,22 @@ public class AdvisoryResponse extends  AdvisoryInformationResponse {
         this.csaf = csafJsonWithComments;
     }
 
-    @Schema(description  = "The current CASF document enhanced with comment ids ", example = "{" +
-            "document: { $comment: [23454], category: generic_csaf,...")
+    @Schema(
+            description = "The current CSAF document enhanced with comment IDs.",
+            example = "{document: { $comment: [23454], category: \"generic_csaf\",..."
+    )
     public String getCsaf() {
-      return this.csaf;
+        return this.csaf;
     }
 
     public void setCsaf(String csaf) {
         this.csaf = csaf;
     }
 
-    @Schema(description  = "Document revision for optimistic concurrency", example = "2-efaa5db9409b2d4300535c70aaf6a66b")
+    @Schema(
+            description = "The document revision for optimistic concurrency.",
+            example = "2-efaa5db9409b2d4300535c70aaf6a66b"
+    )
     public String getRevision() {
         return revision;
     }
