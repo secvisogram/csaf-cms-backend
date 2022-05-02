@@ -532,7 +532,9 @@ public class AdvisoryController {
     @PostMapping("/{advisoryId}/comments")
     @Operation(
             summary = "Add a comment to an advisory",
-            description = "Add a comment to the advisory with the given ID.",
+            description = "Add a comment to the advisory with the given ID. The comments are generated independently" +
+                    " of the CSAF document. The IDs of the comments must be added manually to the appropriate place in " +
+                    "the CSAF document and then saved with the document.",
             tags = {"Advisory"}
     )
     public AdvisoryCreateResponse createComment(
