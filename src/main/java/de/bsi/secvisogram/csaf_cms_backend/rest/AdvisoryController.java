@@ -61,7 +61,7 @@ public class AdvisoryController {
      */
     @GetMapping("/")
     @Operation(
-            summary = "Get all authorized advisories",
+            summary = "Get all authorized advisories.",
             description = "All CSAF documents for which the logged in user is authorized are returned." +
                     " This depends on the user's role and the state of the CSAF document.",
             tags = {"Advisory"}
@@ -93,7 +93,7 @@ public class AdvisoryController {
      */
     @GetMapping("/{advisoryId}/")
     @Operation(
-            summary = "Get a single Advisory",
+            summary = "Get a single Advisory.",
             description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
             tags = {"Advisory"}
     )
@@ -117,7 +117,7 @@ public class AdvisoryController {
      */
     @PostMapping(name = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            summary = "Create a new Advisory",
+            summary = "Create a new Advisory.",
             description = "Create a new CSAF document with optional comments in the system.",
             tags = {"Advisory"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -126,8 +126,8 @@ public class AdvisoryController {
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with comments",
-                                    description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json"
+                                    title = "Common Security Advisory Framework schema extended with comments.",
+                                    description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
                             ),
                             examples = {@ExampleObject(
                                     name = "A CSAF document in JSON format including comments.",
@@ -156,7 +156,7 @@ public class AdvisoryController {
      */
     @PatchMapping("/{advisoryId}/")
     @Operation(
-            summary = "Change advisory",
+            summary = "Change advisory.",
             description = "Change a CSAF document in the system. On saving a document its content (version) may change " +
                     " Thus, after changing a document, it must be reloaded on the client side.",
             tags = {"Advisory"}
@@ -177,8 +177,8 @@ public class AdvisoryController {
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with comments",
-                                    description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json"
+                                    title = "Common Security Advisory Framework schema extended with comments.",
+                                    description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
                             ),
                             examples = {@ExampleObject(
                                     name = "A CSAF document in JSON format including comments.",
@@ -206,8 +206,8 @@ public class AdvisoryController {
      */
     @PatchMapping("/{advisoryId}/csaf/document/tracking/version")
     @Operation(
-            summary = "Increase version of an advisory",
-            description = "Increase the version of a CSAF document",
+            summary = "Increase version of an advisory.",
+            description = "Increase the version of a CSAF document.",
             tags = {"Advisory"}
     )
     public AdvisoryUpdateResponse createNewCsafDocumentVersion(
@@ -236,7 +236,7 @@ public class AdvisoryController {
      */
     @DeleteMapping("/{advisoryId}/")
     @Operation(
-            summary = "Delete an advisory",
+            summary = "Delete an advisory.",
             description = "Delete a CSAF document from the system. All older versions, comments and audit-trails are" +
                     " also deleted.",
             tags = {"Advisory"}
@@ -263,7 +263,7 @@ public class AdvisoryController {
      */
     @GetMapping("/templates")
     @Operation(
-            summary = "Get all authorized templates",
+            summary = "Get all authorized templates.",
             description = "Get all available templates in the system.",
             tags = {"Advisory"}
     )
@@ -285,8 +285,8 @@ public class AdvisoryController {
      */
     @GetMapping("/templates/{templateId}")
     @Operation(
-            summary = "Get template content",
-            description = "Get the content of the templates with the given templateId",
+            summary = "Get template content.",
+            description = "Get the content of the templates with the given templateId.",
             tags = {"Advisory"}
     )
     public AdvisoryTemplateResponse readTemplate(
@@ -318,8 +318,8 @@ public class AdvisoryController {
                     MediaType.APPLICATION_PDF_VALUE
             })
     @Operation(
-            summary = "Export a CSAF document ",
-            description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON",
+            summary = "Export a CSAF document.",
+            description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.",
             tags = {"Advisory"}
     )
     public String exportAdvisory(
@@ -348,7 +348,7 @@ public class AdvisoryController {
      */
     @PatchMapping("/{advisoryId}/workflowstate/Draft")
     @Operation(
-            summary = "Change workflow state of an advisory to Draft",
+            summary = "Change workflow state of an advisory to Draft.",
             description = "Change the workflow state of the advisory with the given id to Draft.",
             tags = {"Advisory"}
     )
@@ -378,7 +378,7 @@ public class AdvisoryController {
      */
     @PatchMapping("/{advisoryId}/workflowstate/Review")
     @Operation(
-            summary = "Change workflow state of an advisory to Draft",
+            summary = "Change workflow state of an advisory to Draft.",
             description = "Change the workflow state of the advisory with the given id to Review.",
             tags = {"Advisory"}
     )
@@ -408,7 +408,7 @@ public class AdvisoryController {
      */
     @PatchMapping("/{advisoryId}/workflowstate/Approve")
     @Operation(
-            summary = "Change workflow state of an advisory to Approve",
+            summary = "Change workflow state of an advisory to Approve.",
             description = "Change the workflow state of the advisory with the given id to Approve.",
             tags = {"Advisory"}
     )
@@ -438,9 +438,9 @@ public class AdvisoryController {
      */
     @PatchMapping("/{advisoryId}/workflowstate/RfPublication")
     @Operation(
-            summary = "Change workflow state of an advisory to RfPublication",
+            summary = "Change workflow state of an advisory to RfPublication.",
             description = "Change the workflow state of the advisory with the given id to RfPublication" +
-                    " (Request for Publication)",
+                    " (Request for Publication).",
             tags = {"Advisory"}
     )
     public AdvisoryUpdateResponse setWorkflowStateToRfPublication(
@@ -449,7 +449,7 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to change the workflow state of."
             ) String advisoryId,
-            @RequestParam @Parameter(description = "Optimistic locking revision") String revision,
+            @RequestParam @Parameter(description = "The optimistic locking revision.") String revision,
             @RequestParam(required = false)
             @Parameter(
                     description = "Proposed Time at which the publication should take place.")
@@ -472,7 +472,7 @@ public class AdvisoryController {
      */
     @Operation(
             summary = "Change workflow state of an advisory to Publish.",
-            description = "Change the workflow state of the advisory with the given id to Publish",
+            description = "Change the workflow state of the advisory with the given id to Publish.",
             tags = {"Advisory"}
     )
     @PatchMapping("/{advisoryId}/workflowstate/Publish")
@@ -482,13 +482,13 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to change the workflow state of."
             ) String advisoryId,
-            @RequestParam @Parameter(description = "Optimistic locking revision") String revision,
+            @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
             @RequestParam(required = false)
-            @Parameter(description = "Proposed Time at which the publication should take place") String proposedTime,
+            @Parameter(description = "Proposed Time at which the publication should take place.") String proposedTime,
             @RequestParam
             @Parameter(
                     description = "The new Document Tracking Status of the CSAF Document." +
-                            " Only interim and final are allowed"
+                            " Only interim and final are allowed."
             ) DocumentTrackingStatus documentTrackingStatus
     ) {
 
@@ -505,8 +505,8 @@ public class AdvisoryController {
      * @return list of comments and their metadata
      */
     @Operation(
-            summary = "Show comments and answers of an advisory",
-            description = "Show all comments and answers of the advisory with the given advisoryId",
+            summary = "Show comments and answers of an advisory.",
+            description = "Show all comments and answers of the advisory with the given advisoryId.",
             tags = {"Advisory"}
     )
     @GetMapping("/{advisoryId}/comments/")
@@ -531,7 +531,7 @@ public class AdvisoryController {
      */
     @PostMapping("/{advisoryId}/comments")
     @Operation(
-            summary = "Add a comment to an advisory",
+            summary = "Add a comment to an advisory.",
             description = "Add a comment to the advisory with the given ID. The comments are generated independently" +
                     " of the CSAF document. The IDs of the comments must be added manually to the appropriate place in " +
                     "the CSAF document and then saved with the document.",
@@ -559,8 +559,8 @@ public class AdvisoryController {
      * @param answerText new text content of the answer
      */
     @Operation(
-            summary = "Add an answer to an advisory comment",
-            description = "Add a answer to the comment with the given ID",
+            summary = "Add an answer to an advisory comment.",
+            description = "Add a answer to the comment with the given ID.",
             tags = {"Advisory"}
     )
     @PostMapping("/{advisoryId}/comments/{commentId}/answer")
@@ -609,7 +609,7 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change."
             )  long commentId,
-            @RequestParam @Parameter(description = "Optimistic locking revision") String revision,
+            @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
             @RequestBody String newCommentText
     ) {
 
@@ -630,7 +630,7 @@ public class AdvisoryController {
      * @return new optimistic locking revision
      */
     @Operation(
-            summary = "Change answer text to an advisory comment",
+            summary = "Change answer text to an advisory comment.",
             description = "Change the text of an answer to a comment.",
             tags = {"Advisory"}
     )
@@ -652,7 +652,7 @@ public class AdvisoryController {
                     description = "The ID of the answer to change."
             )  long answerId,
             @RequestParam
-            @Parameter(description = "Optimistic locking revision of the answer") String revision,
+            @Parameter(description = "Optimistic locking revision of the answer.") String revision,
             @RequestBody String newAnswerText
     ) {
 

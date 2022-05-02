@@ -12,7 +12,7 @@ public class AdvisoryUpdateResponse {
     }
 
     @Schema(
-            description = "The document revision for optimistic concurrency",
+            description = "The document revision for optimistic concurrency.",
             example = "2-efaa5db9409b2d4300535c70aaf6a66b"
     )
     public String getRevision() {
