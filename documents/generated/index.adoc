@@ -480,7 +480,7 @@ Add a comment to an advisory
 
 ===== Description
 
-Add a comment to the advisory with the given ID.
+Add a comment to the advisory with the given ID. The comments are generated independently of the CSAF document. The IDs of the comments must be added manually to the appropriate place in the CSAF document and then saved with the document.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/POST/spec.adoc[opts=optional]
