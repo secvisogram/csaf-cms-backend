@@ -226,8 +226,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
-    <div class="method-summary">Add an answer to an advisory comment (<span class="nickname">addAnswer</span>)</div>
-    <div class="method-notes">Add a answer to the comment with the given ID</div>
+    <div class="method-summary">Add an answer to an advisory comment. (<span class="nickname">addAnswer</span>)</div>
+    <div class="method-notes">Add a answer to the comment with the given ID.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -287,7 +287,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></pre></div>
-    <div class="method-summary">Change answer text to an advisory comment (<span class="nickname">changeAnswer</span>)</div>
+    <div class="method-summary">Change answer text to an advisory comment. (<span class="nickname">changeAnswer</span>)</div>
     <div class="method-notes">Change the text of an answer to a comment.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -320,7 +320,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the answer default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the answer. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -386,7 +386,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -421,7 +421,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocument</span>)</div>
+    <div class="method-summary">Change advisory. (<span class="nickname">changeCsafDocument</span>)</div>
     <div class="method-notes">Change a CSAF document in the system. On saving a document its content (version) may change  Thus, after changing a document, it must be reloaded on the client side.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -485,7 +485,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
-    <div class="method-summary">Add a comment to an advisory (<span class="nickname">createComment</span>)</div>
+    <div class="method-summary">Add a comment to an advisory. (<span class="nickname">createComment</span>)</div>
     <div class="method-notes">Add a comment to the advisory with the given ID. The comments are generated independently of the CSAF document. The IDs of the comments must be added manually to the appropriate place in the CSAF document and then saved with the document.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -544,7 +544,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories</code></pre></div>
-    <div class="method-summary">Create a new Advisory (<span class="nickname">createCsafDocument</span>)</div>
+    <div class="method-summary">Create a new Advisory. (<span class="nickname">createCsafDocument</span>)</div>
     <div class="method-notes">Create a new CSAF document with optional comments in the system.</div>
 
 
@@ -597,8 +597,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version</code></pre></div>
-    <div class="method-summary">Increase version of an advisory (<span class="nickname">createNewCsafDocumentVersion</span>)</div>
-    <div class="method-notes">Increase the version of a CSAF document</div>
+    <div class="method-summary">Increase version of an advisory. (<span class="nickname">createNewCsafDocumentVersion</span>)</div>
+    <div class="method-notes">Increase the version of a CSAF document.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -655,7 +655,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Delete an advisory (<span class="nickname">deleteCsafDocument</span>)</div>
+    <div class="method-summary">Delete an advisory. (<span class="nickname">deleteCsafDocument</span>)</div>
     <div class="method-notes">Delete a CSAF document from the system. All older versions, comments and audit-trails are also deleted.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -697,8 +697,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></pre></div>
-    <div class="method-summary">Export a CSAF document (<span class="nickname">exportAdvisory</span>)</div>
-    <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON</div>
+    <div class="method-summary">Export a CSAF document. (<span class="nickname">exportAdvisory</span>)</div>
+    <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -747,7 +747,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates</code></pre></div>
-    <div class="method-summary">Get all authorized templates (<span class="nickname">listAllTemplates</span>)</div>
+    <div class="method-summary">Get all authorized templates. (<span class="nickname">listAllTemplates</span>)</div>
     <div class="method-notes">Get all available templates in the system.</div>
 
 
@@ -788,8 +788,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></pre></div>
-    <div class="method-summary">Show comments and answers of an advisory (<span class="nickname">listComments</span>)</div>
-    <div class="method-notes">Show all comments and answers of the advisory with the given advisoryId</div>
+    <div class="method-summary">Show comments and answers of an advisory. (<span class="nickname">listComments</span>)</div>
+    <div class="method-notes">Show all comments and answers of the advisory with the given advisoryId.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -841,7 +841,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/</code></pre></div>
-    <div class="method-summary">Get all authorized advisories (<span class="nickname">listCsafDocuments</span>)</div>
+    <div class="method-summary">Get all authorized advisories. (<span class="nickname">listCsafDocuments</span>)</div>
     <div class="method-notes">All CSAF documents for which the logged in user is authorized are returned. This depends on the user's role and the state of the CSAF document.</div>
 
 
@@ -894,7 +894,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Get a single Advisory (<span class="nickname">readCsafDocument</span>)</div>
+    <div class="method-summary">Get a single Advisory. (<span class="nickname">readCsafDocument</span>)</div>
     <div class="method-notes">Get the advisory CSAF document and some additional data for the given advisoryId.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -949,8 +949,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></pre></div>
-    <div class="method-summary">Get template content (<span class="nickname">readTemplate</span>)</div>
-    <div class="method-notes">Get the content of the templates with the given templateId</div>
+    <div class="method-summary">Get template content. (<span class="nickname">readTemplate</span>)</div>
+    <div class="method-notes">Get the content of the templates with the given templateId.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -990,7 +990,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approve</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Approve (<span class="nickname">setWorkflowStateToApprove</span>)</div>
+    <div class="method-summary">Change workflow state of an advisory to Approve. (<span class="nickname">setWorkflowStateToApprove</span>)</div>
     <div class="method-notes">Change the workflow state of the advisory with the given id to Approve.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -1042,7 +1042,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Draft</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Draft (<span class="nickname">setWorkflowStateToDraft</span>)</div>
+    <div class="method-summary">Change workflow state of an advisory to Draft. (<span class="nickname">setWorkflowStateToDraft</span>)</div>
     <div class="method-notes">Change the workflow state of the advisory with the given id to Draft.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -1095,7 +1095,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Publish</code></pre></div>
     <div class="method-summary">Change workflow state of an advisory to Publish. (<span class="nickname">setWorkflowStateToPublish</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to Publish</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Publish.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -1111,11 +1111,11 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div><div class="param">proposedTime (optional)</div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision. default: null </div><div class="param">proposedTime (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place default: null </div><div class="param">documentTrackingStatus (required)</div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place. default: null </div><div class="param">documentTrackingStatus (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The new Document Tracking Status of the CSAF Document. Only interim and final are allowed default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The new Document Tracking Status of the CSAF Document. Only interim and final are allowed. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -1150,7 +1150,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Review</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Draft (<span class="nickname">setWorkflowStateToReview</span>)</div>
+    <div class="method-summary">Change workflow state of an advisory to Draft. (<span class="nickname">setWorkflowStateToReview</span>)</div>
     <div class="method-notes">Change the workflow state of the advisory with the given id to Review.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -1202,8 +1202,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to RfPublication (<span class="nickname">setWorkflowStateToRfPublication</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to RfPublication (Request for Publication)</div>
+    <div class="method-summary">Change workflow state of an advisory to RfPublication. (<span class="nickname">setWorkflowStateToRfPublication</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to RfPublication (Request for Publication).</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -1219,7 +1219,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div><div class="param">proposedTime (optional)</div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div><div class="param">proposedTime (optional)</div>
 
       <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place. default: null </div>
     </div>  <!-- field-items -->
@@ -1383,7 +1383,7 @@ font-style: italic;
     <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency </div>
+      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency. </div>
     </div>  <!-- field-items -->
   </div>
   </body>

@@ -33,11 +33,11 @@ CSAF Content Management Systems: Secvisogram 2.0
 
 `POST /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer`
 
-Add an answer to an advisory comment
+Add an answer to an advisory comment.
 
 ===== Description
 
-Add a answer to the comment with the given ID
+Add a answer to the comment with the given ID.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/spec.adoc[opts=optional]
@@ -134,7 +134,7 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}`
 
-Change answer text to an advisory comment
+Change answer text to an advisory comment.
 
 ===== Description
 
@@ -196,7 +196,7 @@ Change the text of an answer to a comment.
 |Name| Description| Required| Default| Pattern
 
 | revision
-| Optimistic locking revision of the answer 
+| Optimistic locking revision of the answer. 
 | X
 | null
 | 
@@ -310,7 +310,7 @@ Change the text of the comment with the given ID.
 |Name| Description| Required| Default| Pattern
 
 | revision
-| Optimistic locking revision 
+| Optimistic locking revision. 
 | X
 | null
 | 
@@ -368,7 +368,7 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/`
 
-Change advisory
+Change advisory.
 
 ===== Description
 
@@ -476,7 +476,7 @@ endif::internal-generation[]
 
 `POST /api/2.0/advisories/{advisoryId}/comments`
 
-Add a comment to an advisory
+Add a comment to an advisory.
 
 ===== Description
 
@@ -571,7 +571,7 @@ endif::internal-generation[]
 
 `POST /api/2.0/advisories`
 
-Create a new Advisory
+Create a new Advisory.
 
 ===== Description
 
@@ -653,11 +653,11 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version`
 
-Increase version of an advisory
+Increase version of an advisory.
 
 ===== Description
 
-Increase the version of a CSAF document
+Increase the version of a CSAF document.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/spec.adoc[opts=optional]
@@ -748,7 +748,7 @@ endif::internal-generation[]
 
 `DELETE /api/2.0/advisories/{advisoryId}/`
 
-Delete an advisory
+Delete an advisory.
 
 ===== Description
 
@@ -841,11 +841,11 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/{advisoryId}/csaf`
 
-Export a CSAF document 
+Export a CSAF document.
 
 ===== Description
 
-Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON
+Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/spec.adoc[opts=optional]
@@ -940,7 +940,7 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/templates`
 
-Get all authorized templates
+Get all authorized templates.
 
 ===== Description
 
@@ -1009,11 +1009,11 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/{advisoryId}/comments/`
 
-Show comments and answers of an advisory
+Show comments and answers of an advisory.
 
 ===== Description
 
-Show all comments and answers of the advisory with the given advisoryId
+Show all comments and answers of the advisory with the given advisoryId.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/spec.adoc[opts=optional]
@@ -1091,7 +1091,7 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/`
 
-Get all authorized advisories
+Get all authorized advisories.
 
 ===== Description
 
@@ -1173,7 +1173,7 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/{advisoryId}/`
 
-Get a single Advisory
+Get a single Advisory.
 
 ===== Description
 
@@ -1255,11 +1255,11 @@ endif::internal-generation[]
 
 `GET /api/2.0/advisories/templates/{templateId}`
 
-Get template content
+Get template content.
 
 ===== Description
 
-Get the content of the templates with the given templateId
+Get the content of the templates with the given templateId.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/templates/\{templateId\}/GET/spec.adoc[opts=optional]
@@ -1338,7 +1338,7 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Approve`
 
-Change workflow state of an advisory to Approve
+Change workflow state of an advisory to Approve.
 
 ===== Description
 
@@ -1433,7 +1433,7 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Draft`
 
-Change workflow state of an advisory to Draft
+Change workflow state of an advisory to Draft.
 
 ===== Description
 
@@ -1532,7 +1532,7 @@ Change workflow state of an advisory to Publish.
 
 ===== Description
 
-Change the workflow state of the advisory with the given id to Publish
+Change the workflow state of the advisory with the given id to Publish.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/spec.adoc[opts=optional]
@@ -1565,19 +1565,19 @@ Change the workflow state of the advisory with the given id to Publish
 |Name| Description| Required| Default| Pattern
 
 | revision
-| Optimistic locking revision 
+| Optimistic locking revision. 
 | X
 | null
 | 
 
 | proposedTime
-| Proposed Time at which the publication should take place 
+| Proposed Time at which the publication should take place. 
 | -
 | null
 | 
 
 | documentTrackingStatus
-| The new Document Tracking Status of the CSAF Document. Only interim and final are allowed 
+| The new Document Tracking Status of the CSAF Document. Only interim and final are allowed. 
 | X
 | null
 | 
@@ -1635,7 +1635,7 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Review`
 
-Change workflow state of an advisory to Draft
+Change workflow state of an advisory to Draft.
 
 ===== Description
 
@@ -1730,11 +1730,11 @@ endif::internal-generation[]
 
 `PATCH /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication`
 
-Change workflow state of an advisory to RfPublication
+Change workflow state of an advisory to RfPublication.
 
 ===== Description
 
-Change the workflow state of the advisory with the given id to RfPublication (Request for Publication)
+Change the workflow state of the advisory with the given id to RfPublication (Request for Publication).
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/RfPublication/PATCH/spec.adoc[opts=optional]
@@ -1767,7 +1767,7 @@ Change the workflow state of the advisory with the given id to RfPublication (Re
 |Name| Description| Required| Default| Pattern
 
 | revision
-| Optimistic locking revision 
+| The optimistic locking revision. 
 | X
 | null
 | 
@@ -2187,7 +2187,7 @@ endif::internal-generation[]
 | revision
 | 
 | String 
-| The document revision for optimistic concurrency
+| The document revision for optimistic concurrency.
 |  
 
 |===
