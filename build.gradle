@@ -43,8 +43,17 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+	filter {
+		excludeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
+	}
 }
 
+task apiDocumentation(type: Test, description: "generates the API documentation") {
+	useJUnitPlatform()
+	filter {
+		includeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
+	}
+}
 
 
 jacoco {

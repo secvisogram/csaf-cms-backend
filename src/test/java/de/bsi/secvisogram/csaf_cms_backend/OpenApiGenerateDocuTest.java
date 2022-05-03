@@ -31,6 +31,6 @@ public class OpenApiGenerateDocuTest {
 
         OpenAPIGenerator.main(Arrays.array("generate", "-i", url, "-g", "html", "-o", "documents/generated"));
         OpenAPIGenerator.main(Arrays.array("generate", "-i", url, "-g", "asciidoc", "-o", "documents/generated"));
-   }
+    }
 
 }
