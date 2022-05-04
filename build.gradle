@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.6'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id "com.github.spotbugs" version "5.0.5"
+	id 'com.github.spotbugs' version '5.0.5'
 	id 'jacoco'
 }
 
@@ -17,16 +17,18 @@ repositories {
 
 
 dependencies {
-
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'io.springfox:springfox-boot-starter:3.0.0'
 	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 	implementation 'com.ibm.cloud:cloudant:0.1.1'
 	implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.6.0'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation group: 'org.openapitools', name: 'openapi-generator', version: '5.4.0'
 	testImplementation group: 'org.openapitools', name: 'openapi-generator-cli', version: '5.4.0'
 
