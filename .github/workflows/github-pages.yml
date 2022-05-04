@@ -1,5 +1,8 @@
 name: Generate API Documentation
-on: push  # TODO only on push to main (i.e. successful PR to main)
+on:
+  push:
+    branches:
+      - main
 jobs:
   sync-gh-pages-branch:
     runs-on: ubuntu-latest
