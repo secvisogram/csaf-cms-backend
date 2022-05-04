@@ -98,7 +98,7 @@ services:
       # Pass ID token to upstream
       OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
       OAUTH2_PROXY_PASS_BASIC_AUTH: "false"
-      OAUTH2_PROXY_PASS_ACCESS_TOKEN: "true"
+      OAUTH2_PROXY_PASS_ACCESS_TOKEN: "false"
 
       # Built-in authorization checks (disabled)
       OAUTH2_PROXY_EMAIL_DOMAINS: "*"
