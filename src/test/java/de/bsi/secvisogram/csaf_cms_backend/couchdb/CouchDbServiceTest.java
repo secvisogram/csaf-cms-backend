@@ -29,7 +29,7 @@ import java.util.UUID;
 @Disabled("Needs CouchDb to run")
 public class CouchDbServiceTest {
 
-    private final String[] DOKUMENT_TITLE = {"csaf","document", "title"};
+    private final String[] DOCUMENT_TITLE = {"csaf","document", "title"};
 
     @Autowired
     private CouchDbService couchDbService;
@@ -80,7 +80,7 @@ public class CouchDbServiceTest {
             this.couchDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
         }
-        final JsonNode response = this.couchDbService.readCsafDokument(uuid.toString());
+        final JsonNode response = this.couchDbService.readCsafDocument(uuid.toString());
         JsonNode changedTrekingId = response.at("/csaf/document/tracking/id");
         Assertions.assertEquals("exxcellent-2022CC", changedTrekingId.asText());
 
@@ -101,7 +101,7 @@ public class CouchDbServiceTest {
             Assertions.assertNotNull(revision);
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
-            this.couchDbService.deleteCsafDokument(uuid.toString(), revision);
+            this.couchDbService.deleteCsafDocument(uuid.toString(), revision);
         }
     }
 
@@ -121,7 +121,7 @@ public class CouchDbServiceTest {
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
             Assertions.assertThrows(DatabaseException.class
-                    , () -> this.couchDbService.deleteCsafDokument(uuid.toString(), "invalid revision"));
+                    , () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
         }
     }
 
@@ -141,7 +141,7 @@ public class CouchDbServiceTest {
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
             Assertions.assertThrows(DatabaseException.class
-                    , () -> this.couchDbService.deleteCsafDokument("invalid user id", revision));
+                    , () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
         }
     }
 
@@ -154,11 +154,11 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void readCsafDokumentTest() throws IOException {
+    public void readCsafDocumentTest() throws IOException {
 
         final List<AdvisoryInformationResponse> revisions = this.couchDbService.readAllCsafDocuments();
 
-        final JsonNode response = this.couchDbService.readCsafDokument(revisions.get(0).getAdvisoryId());
+        final JsonNode response = this.couchDbService.readCsafDocument(revisions.get(0).getAdvisoryId());
         System.out.println(response);
     }
 
@@ -167,10 +167,10 @@ public class CouchDbServiceTest {
     public void getStringFieldValueTest() {
 
         Document document = new Document.Builder().build();
-        Assertions.assertNull( CouchDbService.getStringFieldValue(DOKUMENT_TITLE, document));
+        Assertions.assertNull( CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
         document = new Document.Builder().add("csaf",null).build();
-        Assertions.assertNull( CouchDbService.getStringFieldValue(DOKUMENT_TITLE, document));
+        Assertions.assertNull( CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
         document = new Document.Builder().add("csaf",Map.of("document", Map.of("title", "TestTitle"))).build();
-        Assertions.assertEquals( CouchDbService.getStringFieldValue(DOKUMENT_TITLE, document), "TestTitle");
+        Assertions.assertEquals( CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document), "TestTitle");
     }
 }

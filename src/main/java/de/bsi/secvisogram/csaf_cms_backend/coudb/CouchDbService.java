@@ -196,7 +196,7 @@ public class CouchDbService {
      * @return the document
      * @throws IOException error read document
      */
-    public JsonNode readCsafDokument(final String uuid) throws IOException {
+    public JsonNode readCsafDocument(final String uuid) throws IOException {
 
         Cloudant client = createCloudantClient();
         GetDocumentOptions documentOptions =
@@ -249,7 +249,7 @@ public class CouchDbService {
      * @param uuid id of the object to delete
      * @param revision revision of the document to delete
      */
-    public void deleteCsafDokument(final String uuid, final String revision) throws DatabaseException {
+    public void deleteCsafDocument(final String uuid, final String revision) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
         DeleteDocumentOptions documentOptions =

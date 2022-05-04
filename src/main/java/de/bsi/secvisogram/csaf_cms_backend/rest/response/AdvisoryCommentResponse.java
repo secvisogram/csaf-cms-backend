@@ -1,11 +1,10 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 
-@ApiModel("AdvisoryCommentResponse")
+@Schema(name = "AdvisoryCommentResponse")
 public class AdvisoryCommentResponse {
 
     private final long commentId;
@@ -23,13 +22,21 @@ public class AdvisoryCommentResponse {
     private final String commentText;
 
     /**
-     * an Answers references it's question
+     * An answer needs to reference the question it answers.
      */
     private final long questionId;
 
 
-    public AdvisoryCommentResponse(long commentId, long advisoryId, String createdBy, LocalDate createdAt
-            , String advisoryVersion, String fieldName, String commentText, long questionId) {
+    public AdvisoryCommentResponse(
+            long commentId,
+            long advisoryId,
+            String createdBy,
+            LocalDate createdAt,
+            String advisoryVersion,
+            String fieldName,
+            String commentText,
+            long questionId
+    ) {
         this.commentId = commentId;
         this.advisoryId = advisoryId;
         this.createdBy = createdBy;
@@ -40,43 +47,50 @@ public class AdvisoryCommentResponse {
         this.questionId = questionId;
     }
 
-    @ApiModelProperty(value = "The unique if of the comment", example = "238745")
+    @Schema(description = "The unique ID of the comment.", example = "238745")
     public long getCommentId() {
         return commentId;
     }
 
-    @ApiModelProperty(value = "Only in answers. The id of of the comment the answer belongs to", example = "923873")
+    @Schema(
+            description = "Only present if the comment is an answer. The ID of the comment the answer belongs to.",
+            example = "923873"
+    )
     public long getQuestionId() {
         return questionId;
     }
 
-    @ApiModelProperty(value = "The id advisory", example = "6677234")
+    @Schema(description = "The ID of the advisory.", example = "6677234")
     public long getAdvisoryId() {
         return advisoryId;
     }
 
-    @ApiModelProperty(value = "The user which created the comment", example = "Mustermann")
+    @Schema(description = "The user who created the comment.", example = "Mustermann")
     public String getCreatedBy() {
         return createdBy;
     }
 
-    @ApiModelProperty(value = "The date when the comment was created", example = "2022-01-12T11:00:00.000Z")
+    @Schema(description = "The date when the comment was created.", example = "2022-01-12T11:00:00.000Z")
     public LocalDate getCreatedAt() {
         return createdAt;
     }
 
-    @ApiModelProperty(value = "The version of the advisory", example = "0.1.3")
+    @Schema(description = "The version of the advisory.", example = "0.1.3")
     public String getAdvisoryVersion() {
         return advisoryVersion;
     }
 
-    @ApiModelProperty(value = "The text of the comment", example = "Is this value correct?")
+    @Schema(description = "The text of the comment.", example = "Is this value correct?")
     public String getCommentText() {
         return commentText;
     }
 
-    @ApiModelProperty(value = "A comment is added to an object in the CSAF document. This name specifies the field name of the " +
-            "concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.", example = "csaf_version")
+    @Schema(
+            description = "A comment is added to an object in the CSAF document." +
+                    " This name specifies the concrete value and its path in the object the comment belongs to." +
+                    " When it is empty, the comment belongs to the whole object.",
+            example = "document.csaf_version"
+    )
     public String getFieldName() {
         return fieldName;
     }

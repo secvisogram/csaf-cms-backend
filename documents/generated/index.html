@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Api Documentation</title>
+    <title>Secvisogram 2.0 CSAF-Backend API</title>
     <style type="text/css">
       body {
 	font-family: Trebuchet MS, sans-serif;
@@ -179,14 +179,14 @@ font-style: italic;
     </style>
   </head>
   <body>
-  <h1>Api Documentation</h1>
-    <div class="app-desc">Api Documentation</div>
+  <h1>Secvisogram 2.0 CSAF-Backend API</h1>
+    <div class="app-desc">CSAF Content Management Systems: Secvisogram 2.0</div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
     <div class="app-desc">Contact Info: <a href="team@openapitools.org">team@openapitools.org</a></div>
-    <div class="app-desc">Version: 1.0</div>
+    <div class="app-desc">Version: v0.5.0</div>
     <div class="app-desc">BasePath:</div>
-    <div class="license-info">Apache 2.0</div>
-    <div class="license-url">http://www.apache.org/licenses/LICENSE-2.0</div>
+    <div class="license-info">MIT</div>
+    <div class="license-url">https://mit-license.org/</div>
   <h2>Access</h2>
 
   <h2><a name="__Methods">Methods</a></h2>
@@ -196,118 +196,46 @@ font-style: italic;
   <div class="method-summary"></div>
   <h4><a href="#Advisory">Advisory</a></h4>
   <ul>
-  <li><a href="#advisoryByIdUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
-  <li><a href="#changeAnswerUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></a></li>
-  <li><a href="#changeCommentUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></a></li>
-  <li><a href="#changeCsafDocumentUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
-  <li><a href="#changeWorkflowStateUsingPATCH"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/</code></a></li>
-  <li><a href="#commentsUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></a></li>
-  <li><a href="#createAnswerUsingPOST"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></a></li>
-  <li><a href="#createCommentUsingPOST"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
-  <li><a href="#createCsafDocumentUsingPOST"><code><span class="http-method">post</span> /api/2.0/advisories</code></a></li>
-  <li><a href="#deleteAdvisoryWithIdUsingDELETE"><code><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
-  <li><a href="#exportAdvisoryUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></a></li>
-  <li><a href="#findAdvisoriesUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/</code></a></li>
-  <li><a href="#getAllTemplatesUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/templates</code></a></li>
-  <li><a href="#templateByIdUsingGET"><code><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></a></li>
-  </ul>
-  <h4><a href="#BasicErrorController">BasicErrorController</a></h4>
-  <ul>
-  <li><a href="#errorUsingDELETE"><code><span class="http-method">delete</span> /error</code></a></li>
-  <li><a href="#errorUsingGET"><code><span class="http-method">get</span> /error</code></a></li>
-  <li><a href="#errorUsingHEAD"><code><span class="http-method">head</span> /error</code></a></li>
-  <li><a href="#errorUsingOPTIONS"><code><span class="http-method">options</span> /error</code></a></li>
-  <li><a href="#errorUsingPATCH"><code><span class="http-method">patch</span> /error</code></a></li>
-  <li><a href="#errorUsingPOST"><code><span class="http-method">post</span> /error</code></a></li>
-  <li><a href="#errorUsingPUT"><code><span class="http-method">put</span> /error</code></a></li>
-  <li><a href="#errorUsingTRACE"><code><span class="http-method">trace</span> /error</code></a></li>
+  <li><a href="#addAnswer"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></a></li>
+  <li><a href="#changeAnswer"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></a></li>
+  <li><a href="#changeComment"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></a></li>
+  <li><a href="#changeCsafDocument"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
+  <li><a href="#createComment"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
+  <li><a href="#createCsafDocument"><code><span class="http-method">post</span> /api/2.0/advisories</code></a></li>
+  <li><a href="#createNewCsafDocumentVersion"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version</code></a></li>
+  <li><a href="#deleteCsafDocument"><code><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
+  <li><a href="#exportAdvisory"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></a></li>
+  <li><a href="#listAllTemplates"><code><span class="http-method">get</span> /api/2.0/advisories/templates</code></a></li>
+  <li><a href="#listComments"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></a></li>
+  <li><a href="#listCsafDocuments"><code><span class="http-method">get</span> /api/2.0/advisories/</code></a></li>
+  <li><a href="#readCsafDocument"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></a></li>
+  <li><a href="#readTemplate"><code><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></a></li>
+  <li><a href="#setWorkflowStateToApprove"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approve</code></a></li>
+  <li><a href="#setWorkflowStateToDraft"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Draft</code></a></li>
+  <li><a href="#setWorkflowStateToPublish"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Publish</code></a></li>
+  <li><a href="#setWorkflowStateToReview"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Review</code></a></li>
+  <li><a href="#setWorkflowStateToRfPublication"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication</code></a></li>
   </ul>
   <h4><a href="#MainController">MainController</a></h4>
   <ul>
-  <li><a href="#aboutUsingGET"><code><span class="http-method">get</span> /api/2.0/about</code></a></li>
+  <li><a href="#about"><code><span class="http-method">get</span> /api/2.0/about</code></a></li>
   </ul>
 
   <h1><a name="Advisory">Advisory</a></h1>
-  <div class="method"><a name="advisoryByIdUsingGET"/>
+  <div class="method"><a name="addAnswer"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Get a single Advisory (<span class="nickname">advisoryByIdUsingGET</span>)</div>
-    <div class="method-notes">Get the advisory CSAF document and some additional data for the given id.</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
+    <div class="method-summary">Add an answer to an advisory comment. (<span class="nickname">addAnswer</span>)</div>
+    <div class="method-notes">Add a answer to the comment with the given ID.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to read default: null </div>
-    </div>  <!-- field-items -->
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory the answered comment belongs to. default: null </div><div class="param">commentId (required)</div>
 
-
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryDocument">AdvisoryDocument</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "owner" : "Mustermann",
-  "allowedStateChanges" : "Published",
-  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
-  "documentTrackingId" : "RHBA-2019_0024",
-  "workflowState" : "Approved",
-  "deletable" : false,
-  "changeable" : true,
-  "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
-  "csafJsonWithComments" : "{document: { $comment: [23454], category: generic_csaf,...",
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryDocument">AdvisoryDocument</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="changeAnswerUsingPATCH"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></pre></div>
-    <div class="method-summary">Change answer to an advisory comment (<span class="nickname">changeAnswerUsingPATCH</span>)</div>
-    <div class="method-notes"></div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the answer default: null format: int64</div><div class="param">commentId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment the answer belongs to default: null format: int64</div><div class="param">answerId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the answer to change default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to add the answer to. default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -318,167 +246,13 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">revision (required)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the answer default: null </div>
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="changeCommentUsingPATCH"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></pre></div>
-    <div class="method-summary">Change comment of an advisory (<span class="nickname">changeCommentUsingPATCH</span>)</div>
-    <div class="method-notes"></div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the comment default: null format: int64</div><div class="param">commentId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment to change default: null format: int64</div>
-    </div>  <!-- field-items -->
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">revision (required)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the comment default: null </div>
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="changeCsafDocumentUsingPATCH"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Change advisory (<span class="nickname">changeCsafDocumentUsingPATCH</span>)</div>
-    <div class="method-notes">Change a CSAF-document in the system</div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change default: null </div>
-    </div>  <!-- field-items -->
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">revision (required)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
-    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -507,29 +281,24 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="changeWorkflowStateUsingPATCH"/>
+  <div class="method"><a name="changeAnswer"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory (<span class="nickname">changeWorkflowStateUsingPATCH</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id</div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></pre></div>
+    <div class="method-summary">Change answer text to an advisory comment. (<span class="nickname">changeAnswer</span>)</div>
+    <div class="method-notes">Change the text of an answer to a comment.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to change the workflow state default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory the answered comment belongs to. default: null </div><div class="param">commentId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to change an answer of. default: null format: int64</div><div class="param">answerId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the answer to change. default: null format: int64</div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -540,7 +309,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
+      <div class="param">body <a href="#string">string</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -551,7 +320,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">revision (required)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision of the answer. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -580,29 +349,453 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="commentsUsingGET"/>
+  <div class="method"><a name="changeComment"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></pre></div>
-    <div class="method-summary">Show comments and answers of an advisory (<span class="nickname">commentsUsingGET</span>)</div>
-    <div class="method-notes">Show all comments and answers of the advisory with the given id</div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></pre></div>
+    <div class="method-summary">Change the text of a comment. (<span class="nickname">changeComment</span>)</div>
+    <div class="method-notes">Change the text of the comment with the given ID.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">advisoryId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to get the comments default: null </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory a comment of. default: null </div><div class="param">commentId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to change. default: null format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#string">string</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision. default: null </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="changeCsafDocument"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
+    <div class="method-summary">Change advisory. (<span class="nickname">changeCsafDocument</span>)</div>
+    <div class="method-notes">Change a CSAF document in the system. On saving a document its content (version) may change  Thus, after changing a document, it must be reloaded on the client side.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change. default: null </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#string">string</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="createComment"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
+    <div class="method-summary">Add a comment to an advisory. (<span class="nickname">createComment</span>)</div>
+    <div class="method-notes">Add a comment to the advisory with the given ID. The comments are generated independently of the CSAF document. The IDs of the comments must be added manually to the appropriate place in the CSAF document and then saved with the document.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to add the comment to. default: null </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">AdvisoryCreateComment <a href="#AdvisoryCreateComment">AdvisoryCreateComment</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="createCsafDocument"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories</code></pre></div>
+    <div class="method-summary">Create a new Advisory. (<span class="nickname">createCsafDocument</span>)</div>
+    <div class="method-notes">Create a new CSAF document with optional comments in the system.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#string">string</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="createNewCsafDocumentVersion"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version</code></pre></div>
+    <div class="method-summary">Increase version of an advisory. (<span class="nickname">createNewCsafDocumentVersion</span>)</div>
+    <div class="method-notes">Increase the version of a CSAF document.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change. default: null </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#string">string</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteCsafDocument"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
+    <div class="method-summary">Delete an advisory. (<span class="nickname">deleteCsafDocument</span>)</div>
+    <div class="method-notes">Delete a CSAF document from the system. All older versions, comments and audit-trails are also deleted.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change. default: null </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#string">string</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="exportAdvisory"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></pre></div>
+    <div class="method-summary">Export a CSAF document. (<span class="nickname">exportAdvisory</span>)</div>
+    <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to export. default: null </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">format (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The format in which the document shall be exported. default: null </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      String
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+      <li><code>text/html</code></li>
+      <li><code>text/markdown</code></li>
+      <li><code>application/pdf</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#String">String</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listAllTemplates"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates</code></pre></div>
+    <div class="method-summary">Get all authorized templates. (<span class="nickname">listAllTemplates</span>)</div>
+    <div class="method-notes">Get all available templates in the system.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#AdvisoryTemplateInformation">AdvisoryTemplateInformation</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "templateDescription" : "Template for the profile CSAF base.",
+  "templateId" : 33476793
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listComments"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/</code></pre></div>
+    <div class="method-summary">Show comments and answers of an advisory. (<span class="nickname">listComments</span>)</div>
+    <div class="method-notes">Show all comments and answers of the advisory with the given advisoryId.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to get the comments of. default: null </div>
     </div>  <!-- field-items -->
 
 
@@ -623,7 +816,7 @@ font-style: italic;
     <pre class="example"><code>{
   "createdAt" : "2000-01-23",
   "advisoryId" : 6677234,
-  "fieldName" : "csaf_version",
+  "fieldName" : "document.csaf_version",
   "questionId" : 923873,
   "createdBy" : "Mustermann",
   "commentId" : 238745,
@@ -642,336 +835,14 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="createAnswerUsingPOST"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
-    <div class="method-summary">Add answer to an advisory comment (<span class="nickname">createAnswerUsingPOST</span>)</div>
-    <div class="method-notes">Add a answer to the comment with the given id</div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to add the answer default: null format: int64</div><div class="param">commentId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the comment to add the answer default: null format: int64</div>
-    </div>  <!-- field-items -->
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="createCommentUsingPOST"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
-    <div class="method-summary">Add comment to an advisory (<span class="nickname">createCommentUsingPOST</span>)</div>
-    <div class="method-notes">Add a comment to the advisory with the given id</div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to add the comments default: null </div>
-    </div>  <!-- field-items -->
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">AdvisoryCreateComment <a href="#AdvisoryCreateComment">AdvisoryCreateComment</a> (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="createCsafDocumentUsingPOST"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories</code></pre></div>
-    <div class="method-summary">Create a new Advisory in the system (<span class="nickname">createCsafDocumentUsingPOST</span>)</div>
-    <div class="method-notes">Create a new CSAF-document in the system</div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
-  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#AdvisoryCreateResponse">AdvisoryCreateResponse</a>
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="deleteAdvisoryWithIdUsingDELETE"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
-    <div class="method-summary">Delete advisory. (<span class="nickname">deleteAdvisoryWithIdUsingDELETE</span>)</div>
-    <div class="method-notes">Delete advisory from the system. All older versions, comments and audit-trails are also deleted.</div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to read default: null </div>
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">revision (required)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision default: null </div>
-    </div>  <!-- field-items -->
-
-
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#"></a>
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="exportAdvisoryUsingGET"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></pre></div>
-    <div class="method-summary">Export advisory CSAF document (<span class="nickname">exportAdvisoryUsingGET</span>)</div>
-    <div class="method-notes">Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON</div>
-
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">advisoryId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the advisory to export default: null </div>
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">format (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; format default: null </div>
-    </div>  <!-- field-items -->
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>text/html</code></li>
-      <li><code>application/json</code></li>
-      <li><code>application/pdf</code></li>
-      <li><code>text/markdown</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        <a href="#String">String</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="findAdvisoriesUsingGET"/>
+  <div class="method"><a name="listCsafDocuments"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/</code></pre></div>
-    <div class="method-summary">Get all authorized advisories (<span class="nickname">findAdvisoriesUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-summary">Get all authorized advisories. (<span class="nickname">listCsafDocuments</span>)</div>
+    <div class="method-notes">All CSAF documents for which the logged in user is authorized are returned. This depends on the user's role and the state of the CSAF document.</div>
 
 
 
@@ -981,7 +852,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">expression (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format default: null </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format. default: null format: json</div>
     </div>  <!-- field-items -->
 
 
@@ -997,7 +868,7 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
   "owner" : "Mustermann",
-  "allowedStateChanges" : "Published",
+  "allowedStateChanges" : [ "Approved", "Published" ],
   "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "documentTrackingId" : "RHBA-2019_0024",
   "workflowState" : "Approved",
@@ -1017,24 +888,21 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="getAllTemplatesUsingGET"/>
+  <div class="method"><a name="readCsafDocument"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates</code></pre></div>
-    <div class="method-summary">Get all authorized templates (<span class="nickname">getAllTemplatesUsingGET</span>)</div>
-    <div class="method-notes">Get all available templates in the system</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/</code></pre></div>
+    <div class="method-summary">Get a single Advisory. (<span class="nickname">readCsafDocument</span>)</div>
+    <div class="method-notes">Get the advisory CSAF document and some additional data for the given advisoryId.</div>
 
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to read. default: null </div>
+    </div>  <!-- field-items -->
 
 
 
@@ -1043,7 +911,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      array[<a href="#AdvisoryTemplateInformation">AdvisoryTemplateInformation</a>]
+      <a href="#AdvisoryDocument">AdvisoryDocument</a>
       
     </div>
 
@@ -1052,8 +920,16 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
-  "templateDescription" : "Template for profile ",
-  "templateId" : 33476793
+  "owner" : "Mustermann",
+  "allowedStateChanges" : [ "Approved", "Published" ],
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "documentTrackingId" : "RHBA-2019_0024",
+  "workflowState" : "Approved",
+  "deletable" : false,
+  "changeable" : true,
+  "csaf" : "{document: { $comment: [23454], category: \"generic_csaf\",...",
+  "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -1066,30 +942,21 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
+        <a href="#AdvisoryDocument">AdvisoryDocument</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="templateByIdUsingGET"/>
+  <div class="method"><a name="readTemplate"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></pre></div>
-    <div class="method-summary">Get template content (<span class="nickname">templateByIdUsingGET</span>)</div>
-    <div class="method-notes">Get the content of the templates with the given templateId</div>
+    <div class="method-summary">Get template content. (<span class="nickname">readTemplate</span>)</div>
+    <div class="method-notes">Get the content of the templates with the given templateId.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">templateId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Id of the template to read default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the template to read. default: null format: int64</div>
     </div>  <!-- field-items -->
 
 
@@ -1117,39 +984,46 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#Object">Object</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="BasicErrorController">BasicErrorController</a></h1>
-  <div class="method"><a name="errorUsingDELETE"/>
+  <div class="method"><a name="setWorkflowStateToApprove"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingDELETE</span>)</div>
-    <div class="method-notes"></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approve</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to Approve. (<span class="nickname">setWorkflowStateToApprove</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Approve.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
+    </div>  <!-- field-items -->
 
 
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
 
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -1161,39 +1035,47 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingGET"/>
+  <div class="method"><a name="setWorkflowStateToDraft"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingGET</span>)</div>
-    <div class="method-notes"></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Draft</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to Draft. (<span class="nickname">setWorkflowStateToDraft</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Draft.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
+    </div>  <!-- field-items -->
 
 
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
 
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -1205,39 +1087,51 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingHEAD"/>
+  <div class="method"><a name="setWorkflowStateToPublish"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="head"><code class="huge"><span class="http-method">head</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingHEAD</span>)</div>
-    <div class="method-notes"></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Publish</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to Publish. (<span class="nickname">setWorkflowStateToPublish</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Publish.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
+    </div>  <!-- field-items -->
 
 
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
 
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Optimistic locking revision. default: null </div><div class="param">proposedTime (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place. default: null </div><div class="param">documentTrackingStatus (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The new Document Tracking Status of the CSAF Document. Only interim and final are allowed. default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -1249,39 +1143,47 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingOPTIONS"/>
+  <div class="method"><a name="setWorkflowStateToReview"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="options"><code class="huge"><span class="http-method">options</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingOPTIONS</span>)</div>
-    <div class="method-notes"></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Review</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to Draft. (<span class="nickname">setWorkflowStateToReview</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Review.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
+    </div>  <!-- field-items -->
 
 
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
 
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -1293,39 +1195,49 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="errorUsingPATCH"/>
+  <div class="method"><a name="setWorkflowStateToRfPublication"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPATCH</span>)</div>
-    <div class="method-notes"></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to RfPublication. (<span class="nickname">setWorkflowStateToRfPublication</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to RfPublication (Request for Publication).</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to change the workflow state of. default: null </div>
+    </div>  <!-- field-items -->
 
 
 
 
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">revision (required)</div>
 
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The optimistic locking revision. default: null </div><div class="param">proposedTime (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Proposed Time at which the publication should take place. default: null </div>
+    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
+      <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
       
-      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -1337,162 +1249,15 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     OK
-        
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="errorUsingPOST"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPOST</span>)</div>
-    <div class="method-notes"></div>
-
-
-
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      map[String, Object]
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="errorUsingPUT"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="put"><code class="huge"><span class="http-method">put</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingPUT</span>)</div>
-    <div class="method-notes"></div>
-
-
-
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      map[String, Object]
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        
-    <h4 class="field-label">201</h4>
-    Created
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="errorUsingTRACE"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="trace"><code class="huge"><span class="http-method">trace</span> /error</code></pre></div>
-    <div class="method-summary">error (<span class="nickname">errorUsingTRACE</span>)</div>
-    <div class="method-notes"></div>
-
-
-
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      map[String, Object]
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>*/*</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
-        
-    <h4 class="field-label">204</h4>
-    No Content
-        <a href="#"></a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
+        <a href="#AdvisoryUpdateResponse">AdvisoryUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="MainController">MainController</a></h1>
-  <div class="method"><a name="aboutUsingGET"/>
+  <div class="method"><a name="about"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/about</code></pre></div>
-    <div class="method-summary">about (<span class="nickname">aboutUsingGET</span>)</div>
+    <div class="method-summary"> (<span class="nickname">about</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1521,15 +1286,6 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#String">String</a>
-    <h4 class="field-label">401</h4>
-    Unauthorized
-        <a href="#"></a>
-    <h4 class="field-label">403</h4>
-    Forbidden
-        <a href="#"></a>
-    <h4 class="field-label">404</h4>
-    Not Found
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
 
@@ -1538,120 +1294,96 @@ font-style: italic;
 
   <h3>Table of Contents</h3>
   <ol>
-    <li><a href="#AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - AdvisoryCommentResponse</a></li>
-    <li><a href="#AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - AdvisoryCreateComment</a></li>
-    <li><a href="#AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - AdvisoryCreateResponse</a></li>
-    <li><a href="#AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a></li>
-    <li><a href="#AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a></li>
-    <li><a href="#AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - AdvisoryTemplateInformation</a></li>
-    <li><a href="#AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - AdvisoryUpdateResponse</a></li>
-    <li><a href="#ModelAndView"><code>ModelAndView</code> - ModelAndView</a></li>
-    <li><a href="#View"><code>View</code> - View</a></li>
+    <li><a href="#AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - </a></li>
+    <li><a href="#AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - </a></li>
+    <li><a href="#AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - </a></li>
+    <li><a href="#AdvisoryDocument"><code>AdvisoryDocument</code> - </a></li>
+    <li><a href="#AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - </a></li>
+    <li><a href="#AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - </a></li>
+    <li><a href="#AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - </a></li>
   </ol>
 
   <div class="model">
-    <h3><a name="AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - AdvisoryCommentResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryCommentResponse"><code>AdvisoryCommentResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The id advisory format: int64</div>
-<div class="param">advisoryVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The version of the advisory </div>
-<div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique if of the comment format: int64</div>
-<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
-<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created format: date</div>
-<div class="param">createdBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user which created the comment </div>
-<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
-<div class="param">questionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Only in answers. The id of of the comment the answer belongs to format: int64</div>
+      <div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique ID of the comment. format: int64</div>
+<div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The ID of the advisory. format: int64</div>
+<div class="param">createdBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user who created the comment. </div>
+<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when the comment was created. format: date</div>
+<div class="param">advisoryVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The version of the advisory. </div>
+<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When it is empty, the comment belongs to the whole object. </div>
+<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment. </div>
+<div class="param">questionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Only present if the comment is an answer. The ID of the comment the answer belongs to. format: int64</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - AdvisoryCreateComment</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryCreateComment"><code>AdvisoryCreateComment</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment </div>
-<div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+      <div class="param">fieldName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When its empty, the comment belongs to the whole object. </div>
+<div class="param">commentText (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the comment. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - AdvisoryCreateResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryCreateResponse"><code>AdvisoryCreateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the create object </div>
-<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the create object. </div>
+<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryDocument"><code>AdvisoryDocument</code> - AdvisoryDocument</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryDocument"><code>AdvisoryDocument</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
-<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
+      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the advisory. </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current workflow state of the advisory. </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">Draft</div><div class="param-enum">Review</div><div class="param-enum">Approved</div><div class="param-enum">RfPublication</div><div class="param-enum">Published</div>
+<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF tracking ID of the advisory. </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF title of the advisory. </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the advisory. </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this advisory. </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this advisory. </div>
+<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A list of allowed state changes of the logged in user. </div>
         <div class="param-enum-header">Enum:</div>
         
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
-<div class="param">csafJsonWithComments (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current CASF document enhanced with comment ids </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
-<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
-<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Document revision for optimistic concurrency </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
-<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">Approved</div><div class="param-enum">Draft</div><div class="param-enum">Published</div><div class="param-enum">Review</div>
+<div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency. </div>
+<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current CSAF document enhanced with comment IDs. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - AdvisoryDocumentInformation</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryDocumentInformation"><code>AdvisoryDocumentInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique Id of the advisory </div>
-<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Allowed state changes of the logged in user </div>
+      <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the advisory. </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current workflow state of the advisory. </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">Draft</div><div class="param-enum">Review</div><div class="param-enum">Approved</div><div class="param-enum">RfPublication</div><div class="param-enum">Published</div>
+<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF tracking ID of the advisory. </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The CSAF title of the advisory. </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the advisory. </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this advisory. </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this advisory. </div>
+<div class="param">allowedStateChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A list of allowed state changes of the logged in user. </div>
         <div class="param-enum-header">Enum:</div>
         
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user change this advisory? </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Can the logged in user delete this advisory? </div>
-<div class="param">documentTrackingId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF tracking id of the advisory </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current owner of the advisory </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> CSAF title of the advisory </div>
-<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Current workflow state of the advisory </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">Approved</div><div class="param-enum">Draft</div><div class="param-enum">Published</div><div class="param-enum">Review</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - AdvisoryTemplateInformation</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryTemplateInformation"><code>AdvisoryTemplateInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Description of the template </div>
-<div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> Unique Id of the template format: int64</div>
+      <div class="param">templateId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> The unique ID of the template. format: int64</div>
+<div class="param">templateDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The description of the template. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - AdvisoryUpdateResponse</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AdvisoryUpdateResponse"><code>AdvisoryUpdateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Revision for optimistic concurrency </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="ModelAndView"><code>ModelAndView</code> - ModelAndView</a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">empty (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">model (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
-<div class="param">modelMap (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
-<div class="param">reference (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">ACCEPTED</div><div class="param-enum">ALREADY_REPORTED</div><div class="param-enum">BAD_GATEWAY</div><div class="param-enum">BAD_REQUEST</div><div class="param-enum">BANDWIDTH_LIMIT_EXCEEDED</div><div class="param-enum">CHECKPOINT</div><div class="param-enum">CONFLICT</div><div class="param-enum">CONTINUE</div><div class="param-enum">CREATED</div><div class="param-enum">DESTINATION_LOCKED</div><div class="param-enum">EXPECTATION_FAILED</div><div class="param-enum">FAILED_DEPENDENCY</div><div class="param-enum">FORBIDDEN</div><div class="param-enum">FOUND</div><div class="param-enum">GATEWAY_TIMEOUT</div><div class="param-enum">GONE</div><div class="param-enum">HTTP_VERSION_NOT_SUPPORTED</div><div class="param-enum">IM_USED</div><div class="param-enum">INSUFFICIENT_SPACE_ON_RESOURCE</div><div class="param-enum">INSUFFICIENT_STORAGE</div><div class="param-enum">INTERNAL_SERVER_ERROR</div><div class="param-enum">I_AM_A_TEAPOT</div><div class="param-enum">LENGTH_REQUIRED</div><div class="param-enum">LOCKED</div><div class="param-enum">LOOP_DETECTED</div><div class="param-enum">METHOD_FAILURE</div><div class="param-enum">METHOD_NOT_ALLOWED</div><div class="param-enum">MOVED_PERMANENTLY</div><div class="param-enum">MOVED_TEMPORARILY</div><div class="param-enum">MULTIPLE_CHOICES</div><div class="param-enum">MULTI_STATUS</div><div class="param-enum">NETWORK_AUTHENTICATION_REQUIRED</div><div class="param-enum">NON_AUTHORITATIVE_INFORMATION</div><div class="param-enum">NOT_ACCEPTABLE</div><div class="param-enum">NOT_EXTENDED</div><div class="param-enum">NOT_FOUND</div><div class="param-enum">NOT_IMPLEMENTED</div><div class="param-enum">NOT_MODIFIED</div><div class="param-enum">NO_CONTENT</div><div class="param-enum">OK</div><div class="param-enum">PARTIAL_CONTENT</div><div class="param-enum">PAYLOAD_TOO_LARGE</div><div class="param-enum">PAYMENT_REQUIRED</div><div class="param-enum">PERMANENT_REDIRECT</div><div class="param-enum">PRECONDITION_FAILED</div><div class="param-enum">PRECONDITION_REQUIRED</div><div class="param-enum">PROCESSING</div><div class="param-enum">PROXY_AUTHENTICATION_REQUIRED</div><div class="param-enum">REQUESTED_RANGE_NOT_SATISFIABLE</div><div class="param-enum">REQUEST_ENTITY_TOO_LARGE</div><div class="param-enum">REQUEST_HEADER_FIELDS_TOO_LARGE</div><div class="param-enum">REQUEST_TIMEOUT</div><div class="param-enum">REQUEST_URI_TOO_LONG</div><div class="param-enum">RESET_CONTENT</div><div class="param-enum">SEE_OTHER</div><div class="param-enum">SERVICE_UNAVAILABLE</div><div class="param-enum">SWITCHING_PROTOCOLS</div><div class="param-enum">TEMPORARY_REDIRECT</div><div class="param-enum">TOO_EARLY</div><div class="param-enum">TOO_MANY_REQUESTS</div><div class="param-enum">UNAUTHORIZED</div><div class="param-enum">UNAVAILABLE_FOR_LEGAL_REASONS</div><div class="param-enum">UNPROCESSABLE_ENTITY</div><div class="param-enum">UNSUPPORTED_MEDIA_TYPE</div><div class="param-enum">UPGRADE_REQUIRED</div><div class="param-enum">URI_TOO_LONG</div><div class="param-enum">USE_PROXY</div><div class="param-enum">VARIANT_ALSO_NEGOTIATES</div>
-<div class="param">view (optional)</div><div class="param-desc"><span class="param-type"><a href="#View">View</a></span>  </div>
-<div class="param">viewName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="View"><code>View</code> - View</a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">contentType (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">revision (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The document revision for optimistic concurrency. </div>
     </div>  <!-- field-items -->
   </div>
   </body>

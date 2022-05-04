@@ -3,7 +3,9 @@ package de.bsi.secvisogram.csaf_cms_backend;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.openapitools.codegen.OpenAPIGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,20 +1,20 @@
-= Api Documentation
+= Secvisogram 2.0 CSAF-Backend API
 team@openapitools.org
-1.0
+v0.5.0
 :toc: left
 :numbered:
 :toclevels: 3
 :source-highlighter: highlightjs
-:keywords: openapi, rest, Api Documentation
+:keywords: openapi, rest, Secvisogram 2.0 CSAF-Backend API
 :specDir: 
 :snippetDir: 
 :generator-template: v1 2019-12-20
 :info-url: https://openapi-generator.tech
-:app-name: Api Documentation
+:app-name: Secvisogram 2.0 CSAF-Backend API
 
 [abstract]
 .Abstract
-Api Documentation
+CSAF Content Management Systems: Secvisogram 2.0
 
 
 // markup not found, no include::{specDir}intro.adoc[opts=optional]
@@ -28,720 +28,16 @@ Api Documentation
 === Advisory
 
 
-[.advisoryByIdUsingGET]
-==== advisoryByIdUsingGET
-
-`GET /api/2.0/advisories/{advisoryId}/`
-
-Get a single Advisory
-
-===== Description
-
-Get the advisory CSAF document and some additional data for the given id.
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-====== Path Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| advisoryId
-| Id of the advisory to read 
-| X
-| null
-| 
-
-|===
-
-
-
-
-
-
-===== Return Type
-
-<<AdvisoryDocument>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-|  <<AdvisoryDocument>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.changeAnswerUsingPATCH]
-==== changeAnswerUsingPATCH
-
-`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}`
-
-Change answer to an advisory comment
-
-===== Description
-
-
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-====== Path Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| advisoryId
-| Id of the advisory to change the answer 
-| X
-| null
-| 
-
-| commentId
-| Id of the comment the answer belongs to 
-| X
-| null
-| 
-
-| answerId
-| Id of the answer to change 
-| X
-| null
-| 
-
-|===
-
-====== Body Parameter
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| body
-|  <<string>>
-| -
-| 
-| 
-
-|===
-
-
-
-====== Query Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| revision
-| Optimistic locking revision of the answer 
-| X
-| null
-| 
-
-|===
-
-
-===== Return Type
-
-<<AdvisoryUpdateResponse>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-|  <<AdvisoryUpdateResponse>>
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}/PATCH/PATCH.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.changeCommentUsingPATCH]
-==== changeCommentUsingPATCH
-
-`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}`
-
-Change comment of an advisory
-
-===== Description
-
-
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-====== Path Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| advisoryId
-| Id of the advisory to change the comment 
-| X
-| null
-| 
-
-| commentId
-| Id of the comment to change 
-| X
-| null
-| 
-
-|===
-
-====== Body Parameter
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| body
-|  <<string>>
-| -
-| 
-| 
-
-|===
-
-
-
-====== Query Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| revision
-| Optimistic locking revision of the comment 
-| X
-| null
-| 
-
-|===
-
-
-===== Return Type
-
-<<AdvisoryUpdateResponse>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-|  <<AdvisoryUpdateResponse>>
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/PATCH/PATCH.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.changeCsafDocumentUsingPATCH]
-==== changeCsafDocumentUsingPATCH
-
-`PATCH /api/2.0/advisories/{advisoryId}/`
-
-Change advisory
-
-===== Description
-
-Change a CSAF-document in the system
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-====== Path Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| advisoryId
-| Id of the advisory to change 
-| X
-| null
-| 
-
-|===
-
-====== Body Parameter
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| body
-|  <<string>>
-| -
-| 
-| 
-
-|===
-
-
-
-====== Query Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| revision
-| Optimistic locking revision 
-| X
-| null
-| 
-
-|===
-
-
-===== Return Type
-
-<<AdvisoryCreateResponse>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-|  <<AdvisoryCreateResponse>>
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/PATCH/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/PATCH/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/PATCH/PATCH.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.changeWorkflowStateUsingPATCH]
-==== changeWorkflowStateUsingPATCH
-
-`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/`
-
-Change workflow state of an advisory
-
-===== Description
-
-Change the workflow state of the advisory with the given id
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-====== Path Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| advisoryId
-| Id of the advisory to change the workflow state 
-| X
-| null
-| 
-
-|===
-
-====== Body Parameter
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| body
-|  <<string>>
-| -
-| 
-| 
-
-|===
-
-
-
-====== Query Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| revision
-| Optimistic locking revision 
-| X
-| null
-| 
-
-|===
-
-
-===== Return Type
-
-<<AdvisoryUpdateResponse>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-|  <<AdvisoryUpdateResponse>>
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/PATCH/PATCH.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/PATCH/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.commentsUsingGET]
-==== commentsUsingGET
-
-`GET /api/2.0/advisories/{advisoryId}/comments/`
-
-Show comments and answers of an advisory
-
-===== Description
-
-Show all comments and answers of the advisory with the given id
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-====== Path Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| advisoryId
-| Id of the advisory to get the comments 
-| X
-| null
-| 
-
-|===
-
-
-
-
-
-
-===== Return Type
-
-array[<<AdvisoryCommentResponse>>]
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-| List[<<AdvisoryCommentResponse>>] 
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.createAnswerUsingPOST]
-==== createAnswerUsingPOST
+[.addAnswer]
+==== addAnswer
 
 `POST /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer`
 
-Add answer to an advisory comment
+Add an answer to an advisory comment.
 
 ===== Description
 
-Add a answer to the comment with the given id
+Add a answer to the comment with the given ID.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/spec.adoc[opts=optional]
@@ -757,13 +53,13 @@ Add a answer to the comment with the given id
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| Id of the advisory to add the answer 
+| The ID of the advisory the answered comment belongs to. 
 | X
 | null
 | 
 
 | commentId
-| Id of the comment to add the answer 
+| The ID of the comment to add the answer to. 
 | X
 | null
 | 
@@ -778,7 +74,7 @@ Add a answer to the comment with the given id
 
 | body
 |  <<string>>
-| -
+| X
 | 
 | 
 
@@ -808,26 +104,6 @@ Add a answer to the comment with the given id
 | 200
 | OK
 |  <<AdvisoryCreateResponse>>
-
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
 
 |===
 
@@ -853,16 +129,358 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.createCommentUsingPOST]
-==== createCommentUsingPOST
+[.changeAnswer]
+==== changeAnswer
 
-`POST /api/2.0/advisories/{advisoryId}/comments`
+`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}`
 
-Add comment to an advisory
+Change answer text to an advisory comment.
 
 ===== Description
 
-Add a comment to the advisory with the given id
+Change the text of an answer to a comment.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory the answered comment belongs to. 
+| X
+| null
+| 
+
+| commentId
+| The ID of the comment to change an answer of. 
+| X
+| null
+| 
+
+| answerId
+| The ID of the answer to change. 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| X
+| 
+| 
+
+|===
+
+
+
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision of the answer. 
+| X
+| null
+| 
+
+|===
+
+
+===== Return Type
+
+<<AdvisoryUpdateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryUpdateResponse>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.changeComment]
+==== changeComment
+
+`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}`
+
+Change the text of a comment.
+
+===== Description
+
+Change the text of the comment with the given ID.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory a comment of. 
+| X
+| null
+| 
+
+| commentId
+| The ID of the comment to change. 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| X
+| 
+| 
+
+|===
+
+
+
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision. 
+| X
+| null
+| 
+
+|===
+
+
+===== Return Type
+
+<<AdvisoryUpdateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryUpdateResponse>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.changeCsafDocument]
+==== changeCsafDocument
+
+`PATCH /api/2.0/advisories/{advisoryId}/`
+
+Change advisory.
+
+===== Description
+
+Change a CSAF document in the system. On saving a document its content (version) may change  Thus, after changing a document, it must be reloaded on the client side.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change. 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+| An advisory in CSAF JSON format including comments. <<string>>
+| X
+| 
+| 
+
+|===
+
+
+
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| The optimistic locking revision. 
+| X
+| null
+| 
+
+|===
+
+
+===== Return Type
+
+<<AdvisoryUpdateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryUpdateResponse>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.createComment]
+==== createComment
+
+`POST /api/2.0/advisories/{advisoryId}/comments`
+
+Add a comment to an advisory.
+
+===== Description
+
+Add a comment to the advisory with the given ID. The comments are generated independently of the CSAF document. The IDs of the comments must be added manually to the appropriate place in the CSAF document and then saved with the document.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/POST/spec.adoc[opts=optional]
@@ -878,7 +496,7 @@ Add a comment to the advisory with the given id
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| Id of the advisory to add the comments 
+| The ID of the advisory to add the comment to. 
 | X
 | null
 | 
@@ -893,7 +511,7 @@ Add a comment to the advisory with the given id
 
 | AdvisoryCreateComment
 |  <<AdvisoryCreateComment>>
-| -
+| X
 | 
 | 
 
@@ -923,26 +541,6 @@ Add a comment to the advisory with the given id
 | 200
 | OK
 |  <<AdvisoryCreateResponse>>
-
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
 
 |===
 
@@ -968,16 +566,16 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.createCsafDocumentUsingPOST]
-==== createCsafDocumentUsingPOST
+[.createCsafDocument]
+==== createCsafDocument
 
 `POST /api/2.0/advisories`
 
-Create a new Advisory in the system
+Create a new Advisory.
 
 ===== Description
 
-Create a new CSAF-document in the system
+Create a new CSAF document with optional comments in the system.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/POST/spec.adoc[opts=optional]
@@ -994,8 +592,8 @@ Create a new CSAF-document in the system
 |Name| Description| Required| Default| Pattern
 
 | body
-|  <<string>>
-| -
+| An advisory in CSAF JSON format including comments. <<string>>
+| X
 | 
 | 
 
@@ -1026,26 +624,6 @@ Create a new CSAF-document in the system
 | OK
 |  <<AdvisoryCreateResponse>>
 
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1070,16 +648,111 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.deleteAdvisoryWithIdUsingDELETE]
-==== deleteAdvisoryWithIdUsingDELETE
+[.createNewCsafDocumentVersion]
+==== createNewCsafDocumentVersion
 
-`DELETE /api/2.0/advisories/{advisoryId}/`
+`PATCH /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version`
 
-Delete advisory.
+Increase version of an advisory.
 
 ===== Description
 
-Delete advisory from the system. All older versions, comments and audit-trails are also deleted.
+Increase the version of a CSAF document.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change. 
+| X
+| null
+| 
+
+|===
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+<<AdvisoryUpdateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryUpdateResponse>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/csaf/document/tracking/version/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.deleteCsafDocument]
+==== deleteCsafDocument
+
+`DELETE /api/2.0/advisories/{advisoryId}/`
+
+Delete an advisory.
+
+===== Description
+
+Delete a CSAF document from the system. All older versions, comments and audit-trails are also deleted.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/DELETE/spec.adoc[opts=optional]
@@ -1095,29 +768,29 @@ Delete advisory from the system. All older versions, comments and audit-trails a
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| Id of the advisory to read 
+| The ID of the advisory to change. 
 | X
 | null
 | 
 
 |===
 
-
-
-
-====== Query Parameters
+====== Body Parameter
 
 [cols="2,3,1,1,1"]
 |===
 |Name| Description| Required| Default| Pattern
 
-| revision
-| Optimistic locking revision 
-| X
-| null
+| body
+|  <<string>>
+| -
+| 
 | 
 
 |===
+
+
+
 
 
 ===== Return Type
@@ -1137,21 +810,6 @@ Delete advisory from the system. All older versions, comments and audit-trails a
 
 | 200
 | OK
-|  <<>>
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
 |  <<>>
 
 |===
@@ -1178,16 +836,16 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.exportAdvisoryUsingGET]
-==== exportAdvisoryUsingGET
+[.exportAdvisory]
+==== exportAdvisory
 
 `GET /api/2.0/advisories/{advisoryId}/csaf`
 
-Export advisory CSAF document 
+Export a CSAF document.
 
 ===== Description
 
-Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON
+Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/GET/spec.adoc[opts=optional]
@@ -1203,7 +861,7 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| Id of the advisory to export 
+| The ID of the advisory to export. 
 | X
 | null
 | 
@@ -1220,7 +878,7 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 |Name| Description| Required| Default| Pattern
 
 | format
-| format 
+| The format in which the document shall be exported. 
 | -
 | null
 | 
@@ -1236,10 +894,10 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 
 ===== Content Type
 
-* text/html
 * application/json
-* application/pdf
+* text/html
 * text/markdown
+* application/pdf
 
 ===== Responses
 
@@ -1252,21 +910,6 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 | 200
 | OK
 |  <<String>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
 
 |===
 
@@ -1292,113 +935,16 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.findAdvisoriesUsingGET]
-==== findAdvisoriesUsingGET
-
-`GET /api/2.0/advisories/`
-
-Get all authorized advisories
-
-===== Description
-
-
-
-
-// markup not found, no include::{specDir}api/2.0/advisories/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-====== Query Parameters
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| expression
-| The filter expression in JSON format 
-| -
-| null
-| 
-
-|===
-
-
-===== Return Type
-
-array[<<AdvisoryDocumentInformation>>]
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-| List[<<AdvisoryDocumentInformation>>] 
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}api/2.0/advisories/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :api/2.0/advisories/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}api/2.0/advisories/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getAllTemplatesUsingGET]
-==== getAllTemplatesUsingGET
+[.listAllTemplates]
+==== listAllTemplates
 
 `GET /api/2.0/advisories/templates`
 
-Get all authorized templates
+Get all authorized templates.
 
 ===== Description
 
-Get all available templates in the system
+Get all available templates in the system.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/templates/GET/spec.adoc[opts=optional]
@@ -1434,21 +980,6 @@ array[<<AdvisoryTemplateInformation>>]
 | OK
 | List[<<AdvisoryTemplateInformation>>] 
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1473,16 +1004,262 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.templateByIdUsingGET]
-==== templateByIdUsingGET
+[.listComments]
+==== listComments
 
-`GET /api/2.0/advisories/templates/{templateId}`
+`GET /api/2.0/advisories/{advisoryId}/comments/`
 
-Get template content
+Show comments and answers of an advisory.
 
 ===== Description
 
-Get the content of the templates with the given templateId
+Show all comments and answers of the advisory with the given advisoryId.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to get the comments of. 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+array[<<AdvisoryCommentResponse>>]
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| List[<<AdvisoryCommentResponse>>] 
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.listCsafDocuments]
+==== listCsafDocuments
+
+`GET /api/2.0/advisories/`
+
+Get all authorized advisories.
+
+===== Description
+
+All CSAF documents for which the logged in user is authorized are returned. This depends on the user's role and the state of the CSAF document.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| expression
+| The filter expression in JSON format. 
+| -
+| null
+| 
+
+|===
+
+
+===== Return Type
+
+array[<<AdvisoryDocumentInformation>>]
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| List[<<AdvisoryDocumentInformation>>] 
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.readCsafDocument]
+==== readCsafDocument
+
+`GET /api/2.0/advisories/{advisoryId}/`
+
+Get a single Advisory.
+
+===== Description
+
+Get the advisory CSAF document and some additional data for the given advisoryId.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to read. 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+<<AdvisoryDocument>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<AdvisoryDocument>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.readTemplate]
+==== readTemplate
+
+`GET /api/2.0/advisories/templates/{templateId}`
+
+Get template content.
+
+===== Description
+
+Get the content of the templates with the given templateId.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/templates/\{templateId\}/GET/spec.adoc[opts=optional]
@@ -1498,7 +1275,7 @@ Get the content of the templates with the given templateId
 |Name| Description| Required| Default| Pattern
 
 | templateId
-| Id of the template to read 
+| The ID of the template to read. 
 | X
 | null
 | 
@@ -1532,21 +1309,6 @@ Get the content of the templates with the given templateId
 | OK
 |  <<Object>>
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -1571,38 +1333,59 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.BasicErrorController]
-=== BasicErrorController
+[.setWorkflowStateToApprove]
+==== setWorkflowStateToApprove
 
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Approve`
 
-[.errorUsingDELETE]
-==== errorUsingDELETE
-
-`DELETE /error`
-
-error
+Change workflow state of an advisory to Approve.
 
 ===== Description
 
+Change the workflow state of the advisory with the given id to Approve.
 
 
-
-// markup not found, no include::{specDir}error/DELETE/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change the workflow state of. 
+| X
+| null
+| 
+
+|===
 
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| The optimistic locking revision. 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<Map>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -1619,75 +1402,85 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
+|  <<AdvisoryUpdateResponse>>
 
 |===
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}error/DELETE/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}error/DELETE/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :error/DELETE/DELETE.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Approve/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}error/DELETE/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.errorUsingGET]
-==== errorUsingGET
+[.setWorkflowStateToDraft]
+==== setWorkflowStateToDraft
 
-`GET /error`
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Draft`
 
-error
+Change workflow state of an advisory to Draft.
 
 ===== Description
 
+Change the workflow state of the advisory with the given id to Draft.
 
 
-
-// markup not found, no include::{specDir}error/GET/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Draft/PATCH/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change the workflow state of. 
+| X
+| null
+| 
+
+|===
 
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| The optimistic locking revision. 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<Map>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -1704,75 +1497,97 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
+|  <<AdvisoryUpdateResponse>>
 
 |===
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}error/GET/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Draft/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}error/GET/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Draft/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :error/GET/GET.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Draft/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}error/GET/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Draft/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.errorUsingHEAD]
-==== errorUsingHEAD
+[.setWorkflowStateToPublish]
+==== setWorkflowStateToPublish
 
-`HEAD /error`
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Publish`
 
-error
+Change workflow state of an advisory to Publish.
 
 ===== Description
 
+Change the workflow state of the advisory with the given id to Publish.
 
 
-
-// markup not found, no include::{specDir}error/HEAD/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change the workflow state of. 
+| X
+| null
+| 
+
+|===
 
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| Optimistic locking revision. 
+| X
+| null
+| 
+
+| proposedTime
+| Proposed Time at which the publication should take place. 
+| -
+| null
+| 
+
+| documentTrackingStatus
+| The new Document Tracking Status of the CSAF Document. Only interim and final are allowed. 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<Map>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -1789,75 +1604,85 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
+|  <<AdvisoryUpdateResponse>>
 
 |===
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}error/HEAD/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}error/HEAD/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :error/HEAD/HEAD.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Publish/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}error/HEAD/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.errorUsingOPTIONS]
-==== errorUsingOPTIONS
+[.setWorkflowStateToReview]
+==== setWorkflowStateToReview
 
-`OPTIONS /error`
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Review`
 
-error
+Change workflow state of an advisory to Draft.
 
 ===== Description
 
+Change the workflow state of the advisory with the given id to Review.
 
 
-
-// markup not found, no include::{specDir}error/OPTIONS/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Review/PATCH/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change the workflow state of. 
+| X
+| null
+| 
+
+|===
 
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| The optimistic locking revision. 
+| X
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<Map>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -1874,75 +1699,91 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
+|  <<AdvisoryUpdateResponse>>
 
 |===
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}error/OPTIONS/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Review/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}error/OPTIONS/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Review/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :error/OPTIONS/OPTIONS.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Review/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}error/OPTIONS/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Review/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.errorUsingPATCH]
-==== errorUsingPATCH
+[.setWorkflowStateToRfPublication]
+==== setWorkflowStateToRfPublication
 
-`PATCH /error`
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication`
 
-error
+Change workflow state of an advisory to RfPublication.
 
 ===== Description
 
+Change the workflow state of the advisory with the given id to RfPublication (Request for Publication).
 
 
-
-// markup not found, no include::{specDir}error/PATCH/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/RfPublication/PATCH/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to change the workflow state of. 
+| X
+| null
+| 
+
+|===
 
 
 
 
+====== Query Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| revision
+| The optimistic locking revision. 
+| X
+| null
+| 
+
+| proposedTime
+| Proposed Time at which the publication should take place. 
+| -
+| null
+| 
+
+|===
 
 
 ===== Return Type
 
-
-<<Map>>
+<<AdvisoryUpdateResponse>>
 
 
 ===== Content Type
@@ -1959,307 +1800,27 @@ error
 
 | 200
 | OK
-| Map[<<>>] 
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
+|  <<AdvisoryUpdateResponse>>
 
 |===
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}error/PATCH/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/RfPublication/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}error/PATCH/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :error/PATCH/PATCH.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}error/PATCH/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.errorUsingPOST]
-==== errorUsingPOST
-
-`POST /error`
-
-error
-
-===== Description
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/RfPublication/PATCH/http-response.adoc[opts=optional]
 
 
 
-
-// markup not found, no include::{specDir}error/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-
-<<Map>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-| Map[<<>>] 
-
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}error/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}error/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :error/POST/POST.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/RfPublication/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}error/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.errorUsingPUT]
-==== errorUsingPUT
-
-`PUT /error`
-
-error
-
-===== Description
-
-
-
-
-// markup not found, no include::{specDir}error/PUT/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-
-<<Map>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-| Map[<<>>] 
-
-
-| 201
-| Created
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}error/PUT/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}error/PUT/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :error/PUT/PUT.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}error/PUT/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.errorUsingTRACE]
-==== errorUsingTRACE
-
-`TRACE /error`
-
-error
-
-===== Description
-
-
-
-
-// markup not found, no include::{specDir}error/TRACE/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-
-<<Map>>
-
-
-===== Content Type
-
-* */*
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===
-| Code | Message | Datatype
-
-
-| 200
-| OK
-| Map[<<>>] 
-
-
-| 204
-| No Content
-|  <<>>
-
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-|===
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}error/TRACE/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}error/TRACE/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :error/TRACE/TRACE.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}error/TRACE/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/RfPublication/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -2269,12 +1830,12 @@ endif::internal-generation[]
 === MainController
 
 
-[.aboutUsingGET]
-==== aboutUsingGET
+[.about]
+==== about
 
 `GET /api/2.0/about`
 
-about
+
 
 ===== Description
 
@@ -2315,21 +1876,6 @@ about
 | OK
 |  <<String>>
 
-
-| 401
-| Unauthorized
-|  <<>>
-
-
-| 403
-| Forbidden
-|  <<>>
-
-
-| 404
-| Not Found
-|  <<>>
-
 |===
 
 ===== Samples
@@ -2359,7 +1905,7 @@ endif::internal-generation[]
 
 
 [#AdvisoryCommentResponse]
-=== _AdvisoryCommentResponse_ AdvisoryCommentResponse
+=== _AdvisoryCommentResponse_ 
 
 
 
@@ -2368,59 +1914,59 @@ endif::internal-generation[]
 |===
 | Field Name| Required| Type| Description| Format
 
-| advisoryId
-| 
-| Long 
-| The id advisory
-| int64 
-
-| advisoryVersion
-| 
-| String 
-| The version of the advisory
-|  
-
 | commentId
 | 
 | Long 
-| The unique if of the comment
+| The unique ID of the comment.
 | int64 
 
-| commentText
+| advisoryId
+| 
+| Long 
+| The ID of the advisory.
+| int64 
+
+| createdBy
 | 
 | String 
-| The text of the comment
+| The user who created the comment.
 |  
 
 | createdAt
 | 
 | date 
-| The date when the comment was created
+| The date when the comment was created.
 | date 
 
-| createdBy
+| advisoryVersion
 | 
 | String 
-| The user which created the comment
+| The version of the advisory.
 |  
 
 | fieldName
 | 
 | String 
-| A comment is added to an object in the CSAF document. This name specifies the field name of the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
+| A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When it is empty, the comment belongs to the whole object.
+|  
+
+| commentText
+| 
+| String 
+| The text of the comment.
 |  
 
 | questionId
 | 
 | Long 
-| Only in answers. The id of of the comment the answer belongs to
+| Only present if the comment is an answer. The ID of the comment the answer belongs to.
 | int64 
 
 |===
 
 
 [#AdvisoryCreateComment]
-=== _AdvisoryCreateComment_ AdvisoryCreateComment
+=== _AdvisoryCreateComment_ 
 
 
 
@@ -2429,23 +1975,23 @@ endif::internal-generation[]
 |===
 | Field Name| Required| Type| Description| Format
 
-| commentText
-| 
-| String 
-| The text of the comment
-|  
-
 | fieldName
 | 
 | String 
-| A comment is added to an object in the CSAF document. This name specifies the concrete value in the object the comment belongs to. When its empty, the comment belongs to the whole object.
+| A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When its empty, the comment belongs to the whole object.
+|  
+
+| commentText
+| 
+| String 
+| The text of the comment.
 |  
 
 |===
 
 
 [#AdvisoryCreateResponse]
-=== _AdvisoryCreateResponse_ AdvisoryCreateResponse
+=== _AdvisoryCreateResponse_ 
 
 
 
@@ -2457,20 +2003,20 @@ endif::internal-generation[]
 | id
 | 
 | String 
-| Unique Id of the create object
+| The unique ID of the create object.
 |  
 
 | revision
 | 
 | String 
-| Revision for optimistic concurrency
+| The document revision for optimistic concurrency.
 |  
 
 |===
 
 
 [#AdvisoryDocument]
-=== _AdvisoryDocument_ AdvisoryDocument
+=== _AdvisoryDocument_ 
 
 
 
@@ -2482,68 +2028,68 @@ endif::internal-generation[]
 | advisoryId
 | 
 | String 
-| Unique Id of the advisory
-|  
-
-| allowedStateChanges
-| 
-| List  of <<string>>
-| Allowed state changes of the logged in user
-|  _Enum:_ 
-
-| changeable
-| 
-| Boolean 
-| Can the logged in user change this advisory?
-|  
-
-| csafJsonWithComments
-| 
-| String 
-| The current CASF document enhanced with comment ids 
-|  
-
-| deletable
-| 
-| Boolean 
-| Can the logged in user delete this advisory?
-|  
-
-| documentTrackingId
-| 
-| String 
-| CSAF tracking id of the advisory
-|  
-
-| owner
-| 
-| String 
-| Current owner of the advisory
-|  
-
-| revision
-| 
-| String 
-| Document revision for optimistic concurrency
-|  
-
-| title
-| 
-| String 
-| CSAF title of the advisory
+| The unique ID of the advisory.
 |  
 
 | workflowState
 | 
 | String 
-| Current workflow state of the advisory
-|  _Enum:_ Approved, Draft, Published, Review, 
+| The current workflow state of the advisory.
+|  _Enum:_ Draft, Review, Approved, RfPublication, Published, 
+
+| documentTrackingId
+| 
+| String 
+| The CSAF tracking ID of the advisory.
+|  
+
+| title
+| 
+| String 
+| The CSAF title of the advisory.
+|  
+
+| owner
+| 
+| String 
+| The current owner of the advisory.
+|  
+
+| changeable
+| 
+| Boolean 
+| Indicates if the currently logged in user can change this advisory.
+|  
+
+| deletable
+| 
+| Boolean 
+| Indicates if the logged in user can delete this advisory.
+|  
+
+| allowedStateChanges
+| 
+| List  of <<string>>
+| A list of allowed state changes of the logged in user.
+|  _Enum:_ 
+
+| revision
+| 
+| String 
+| The document revision for optimistic concurrency.
+|  
+
+| csaf
+| 
+| String 
+| The current CSAF document enhanced with comment IDs.
+|  
 
 |===
 
 
 [#AdvisoryDocumentInformation]
-=== _AdvisoryDocumentInformation_ AdvisoryDocumentInformation
+=== _AdvisoryDocumentInformation_ 
 
 
 
@@ -2555,56 +2101,56 @@ endif::internal-generation[]
 | advisoryId
 | 
 | String 
-| Unique Id of the advisory
-|  
-
-| allowedStateChanges
-| 
-| List  of <<string>>
-| Allowed state changes of the logged in user
-|  _Enum:_ 
-
-| changeable
-| 
-| Boolean 
-| Can the logged in user change this advisory?
-|  
-
-| deletable
-| 
-| Boolean 
-| Can the logged in user delete this advisory?
-|  
-
-| documentTrackingId
-| 
-| String 
-| CSAF tracking id of the advisory
-|  
-
-| owner
-| 
-| String 
-| Current owner of the advisory
-|  
-
-| title
-| 
-| String 
-| CSAF title of the advisory
+| The unique ID of the advisory.
 |  
 
 | workflowState
 | 
 | String 
-| Current workflow state of the advisory
-|  _Enum:_ Approved, Draft, Published, Review, 
+| The current workflow state of the advisory.
+|  _Enum:_ Draft, Review, Approved, RfPublication, Published, 
+
+| documentTrackingId
+| 
+| String 
+| The CSAF tracking ID of the advisory.
+|  
+
+| title
+| 
+| String 
+| The CSAF title of the advisory.
+|  
+
+| owner
+| 
+| String 
+| The current owner of the advisory.
+|  
+
+| changeable
+| 
+| Boolean 
+| Indicates if the currently logged in user can change this advisory.
+|  
+
+| deletable
+| 
+| Boolean 
+| Indicates if the logged in user can delete this advisory.
+|  
+
+| allowedStateChanges
+| 
+| List  of <<string>>
+| A list of allowed state changes of the logged in user.
+|  _Enum:_ 
 
 |===
 
 
 [#AdvisoryTemplateInformation]
-=== _AdvisoryTemplateInformation_ AdvisoryTemplateInformation
+=== _AdvisoryTemplateInformation_ 
 
 
 
@@ -2613,23 +2159,23 @@ endif::internal-generation[]
 |===
 | Field Name| Required| Type| Description| Format
 
-| templateDescription
-| 
-| String 
-| Description of the template
-|  
-
 | templateId
 | 
 | Long 
-| Unique Id of the template
+| The unique ID of the template.
 | int64 
+
+| templateDescription
+| 
+| String 
+| The description of the template.
+|  
 
 |===
 
 
 [#AdvisoryUpdateResponse]
-=== _AdvisoryUpdateResponse_ AdvisoryUpdateResponse
+=== _AdvisoryUpdateResponse_ 
 
 
 
@@ -2641,81 +2187,7 @@ endif::internal-generation[]
 | revision
 | 
 | String 
-| Revision for optimistic concurrency
-|  
-
-|===
-
-
-[#ModelAndView]
-=== _ModelAndView_ ModelAndView
-
-
-
-[.fields-ModelAndView]
-[cols="2,1,2,4,1"]
-|===
-| Field Name| Required| Type| Description| Format
-
-| empty
-| 
-| Boolean 
-| 
-|  
-
-| model
-| 
-| Object 
-| 
-|  
-
-| modelMap
-| 
-| Map  of <<object>>
-| 
-|  
-
-| reference
-| 
-| Boolean 
-| 
-|  
-
-| status
-| 
-| String 
-| 
-|  _Enum:_ ACCEPTED, ALREADY_REPORTED, BAD_GATEWAY, BAD_REQUEST, BANDWIDTH_LIMIT_EXCEEDED, CHECKPOINT, CONFLICT, CONTINUE, CREATED, DESTINATION_LOCKED, EXPECTATION_FAILED, FAILED_DEPENDENCY, FORBIDDEN, FOUND, GATEWAY_TIMEOUT, GONE, HTTP_VERSION_NOT_SUPPORTED, IM_USED, INSUFFICIENT_SPACE_ON_RESOURCE, INSUFFICIENT_STORAGE, INTERNAL_SERVER_ERROR, I_AM_A_TEAPOT, LENGTH_REQUIRED, LOCKED, LOOP_DETECTED, METHOD_FAILURE, METHOD_NOT_ALLOWED, MOVED_PERMANENTLY, MOVED_TEMPORARILY, MULTIPLE_CHOICES, MULTI_STATUS, NETWORK_AUTHENTICATION_REQUIRED, NON_AUTHORITATIVE_INFORMATION, NOT_ACCEPTABLE, NOT_EXTENDED, NOT_FOUND, NOT_IMPLEMENTED, NOT_MODIFIED, NO_CONTENT, OK, PARTIAL_CONTENT, PAYLOAD_TOO_LARGE, PAYMENT_REQUIRED, PERMANENT_REDIRECT, PRECONDITION_FAILED, PRECONDITION_REQUIRED, PROCESSING, PROXY_AUTHENTICATION_REQUIRED, REQUESTED_RANGE_NOT_SATISFIABLE, REQUEST_ENTITY_TOO_LARGE, REQUEST_HEADER_FIELDS_TOO_LARGE, REQUEST_TIMEOUT, REQUEST_URI_TOO_LONG, RESET_CONTENT, SEE_OTHER, SERVICE_UNAVAILABLE, SWITCHING_PROTOCOLS, TEMPORARY_REDIRECT, TOO_EARLY, TOO_MANY_REQUESTS, UNAUTHORIZED, UNAVAILABLE_FOR_LEGAL_REASONS, UNPROCESSABLE_ENTITY, UNSUPPORTED_MEDIA_TYPE, UPGRADE_REQUIRED, URI_TOO_LONG, USE_PROXY, VARIANT_ALSO_NEGOTIATES, 
-
-| view
-| 
-| View 
-| 
-|  
-
-| viewName
-| 
-| String 
-| 
-|  
-
-|===
-
-
-[#View]
-=== _View_ View
-
-
-
-[.fields-View]
-[cols="2,1,2,4,1"]
-|===
-| Field Name| Required| Type| Description| Format
-
-| contentType
-| 
-| String 
-| 
+| The document revision for optimistic concurrency.
 |  
 
 |===

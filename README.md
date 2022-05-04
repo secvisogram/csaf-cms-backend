@@ -46,9 +46,7 @@ http://localhost:8080/api/2.0/about
 
 Swagger UI
 
-
-
-http://localhost:8080/swagger-ui/
+http://localhost:8080/swagger-ui/index.html#
 
 OpenAPI Spezifikation
 

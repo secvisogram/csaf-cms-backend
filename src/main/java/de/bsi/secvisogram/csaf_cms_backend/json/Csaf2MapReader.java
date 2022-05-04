@@ -30,9 +30,9 @@ public class Csaf2MapReader {
     }
 
 
-    public Object readCasfDocument(Reader casfDokumnet) throws IOException {
+    public Object readCsafDocument(Reader csafDocument) throws IOException {
 
-        JsonNode rootNode = mapper.readValue(casfDokumnet, JsonNode.class);
+        JsonNode rootNode = mapper.readValue(csafDocument, JsonNode.class);
         return convertToObject(rootNode);
     }
 
@@ -70,7 +70,7 @@ public class Csaf2MapReader {
 
             if(csafJsonStream != null) {
                 Object result = new Csaf2MapReader()
-                        .readCasfDocument(new InputStreamReader(csafJsonStream, StandardCharsets.UTF_8));
+                        .readCsafDocument(new InputStreamReader(csafJsonStream, StandardCharsets.UTF_8));
                 System.out.println(result);
             } else {
                 System.out.println("Invalid Json File: "+ jsonFileName);
