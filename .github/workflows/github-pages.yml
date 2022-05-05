@@ -1,0 +1,44 @@
+name: Generate API Documentation
+on:
+  push:
+    branches:
+      - main
+jobs:
+  sync-gh-pages-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Sync gh-pages branch with main branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge origin/main
+          git push
+  generate-and-update-swagger-documentation:
+    needs: sync-gh-pages-branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from branch gh-pages
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Generate Documentation (via test)
+        run: |
+          chmod +x gradlew
+          ./gradlew clean apiDocumentation
+      - name: Commit the HTML page (if it changed)
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if [[ `git diff --exit-code docs/` ]]; then
+            git add docs/
+            git commit -m "Update API Documentation"
+            git push
+          fi
