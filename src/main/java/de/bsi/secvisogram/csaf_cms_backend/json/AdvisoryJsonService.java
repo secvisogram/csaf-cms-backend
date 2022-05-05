@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -41,8 +40,8 @@ public class AdvisoryJsonService {
     public AdvisoryResponse covertCoudbCsafToAdvisory(JsonNode document, String advisoryId) throws IOException {
 
         JsonNode workflowState = document.get(WORKFLOW_STATE_FIELD);
-        final AdvisoryResponse response =  new AdvisoryResponse(advisoryId, WorkflowState.valueOf(workflowState.asText())
-                , "");
+        final AdvisoryResponse response = new AdvisoryResponse(
+                advisoryId, WorkflowState.valueOf(workflowState.asText()), "");
         response.setOwner(document.get(OWNER_FIELD).asText());
         response.setRevision(document.get(COUCHDB_REVISON_FIELD).asText());
         JsonNode csafNode = document.get(CSAF_FIELD);

@@ -2,7 +2,6 @@ package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

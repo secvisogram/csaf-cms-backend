@@ -18,12 +18,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -493,8 +492,8 @@ public class AdvisoryController {
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("setWorkflowStateToPublish {} {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime)
-                , sanitize(documentTrackingStatus));
+        LOG.info("setWorkflowStateToPublish {} {} {} {}",
+                sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -608,14 +607,14 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change."
-            )  long commentId,
+            ) long commentId,
             @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
             @RequestBody String newCommentText
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("changeComment {} {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(revision)
-                , sanitize(newCommentText));
+        LOG.info("changeComment {} {} {} {}",
+                sanitize(advisoryId), sanitize(commentId), sanitize(revision), sanitize(newCommentText));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -645,20 +644,20 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change an answer of."
-            )  long commentId,
+            ) long commentId,
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the answer to change."
-            )  long answerId,
+            ) long answerId,
             @RequestParam
             @Parameter(description = "Optimistic locking revision of the answer.") String revision,
             @RequestBody String newAnswerText
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId)
-                , sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
+        LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId),
+                sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
