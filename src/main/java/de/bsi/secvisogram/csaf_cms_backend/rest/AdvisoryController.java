@@ -106,7 +106,7 @@ public class AdvisoryController {
 
         LOG.info("readCsafDocument");
         JsonNode document = this.couchDbService.readCsafDocument(advisoryId);
-        return jsonService.covertCoudbCsafToAdvisory(document, advisoryId);
+        return jsonService.covertCouchDbCsafToAdvisory(document, advisoryId);
     }
 
     /**

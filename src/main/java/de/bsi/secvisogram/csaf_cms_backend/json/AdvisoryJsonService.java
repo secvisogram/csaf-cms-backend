@@ -37,7 +37,7 @@ public class AdvisoryJsonService {
         return rootNode;
     }
 
-    public AdvisoryResponse covertCoudbCsafToAdvisory(JsonNode document, String advisoryId) throws IOException {
+    public AdvisoryResponse covertCouchDbCsafToAdvisory(JsonNode document, String advisoryId) throws IOException {
 
         JsonNode workflowState = document.get(WORKFLOW_STATE_FIELD);
         final AdvisoryResponse response = new AdvisoryResponse(
