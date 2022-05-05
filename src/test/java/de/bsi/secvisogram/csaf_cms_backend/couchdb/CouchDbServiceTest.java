@@ -3,8 +3,6 @@ package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
-import de.bsi.secvisogram.csaf_cms_backend.coudb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.coudb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
