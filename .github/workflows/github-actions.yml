@@ -28,6 +28,20 @@ jobs:
         uses: nosborn/github-action-markdown-cli@v3.0.1
         with:
           files: '**/*.md'
+  checkstyle:
+    runs-on: ubuntu-latest
+    name: Run CheckStyle
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Run CheckStyle
+        uses: nikitasavinov/checkstyle-action@master
+        with:
+          checkstyle_config: checkstyle.xml
+          level: error
+          fail_on_error: true
+          reporter: 'github-check'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
   spot-bugs:
     name: Run SpotBugs
     runs-on: ubuntu-latest
