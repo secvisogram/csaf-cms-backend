@@ -9,21 +9,29 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResp
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.xml.bind.DatatypeConverter;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Test for the CouchDB service. Needs couchDB running to succeed
+ * Test for the CouchDB service. Starts up a couchDB container via testcontainers (https://www.testcontainers.org/)
  */
-
 @SpringBootTest
-@Disabled("Needs CouchDb to run")
+@Testcontainers
 public class CouchDbServiceTest {
 
     private final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
@@ -32,11 +40,45 @@ public class CouchDbServiceTest {
     private CouchDbService couchDbService;
     private final AdvisoryJsonService jsonService = new AdvisoryJsonService();
 
+    static final String couchDbVersion = "3.2.2";
+    static final String user = "testUser";
+    static final String password = "testPassword";
+    static final String dbName = "test-db";
+    static final int initialPort = 5984;
+
+    @Container
+    static GenericContainer<?> couchDb = new GenericContainer<>("couchdb:" + couchDbVersion)
+            .withEnv("COUCHDB_USER", user)
+            .withEnv("COUCHDB_PASSWORD", password)
+            .withCommand()
+            .withExposedPorts(initialPort);
+
+    @DynamicPropertySource
+    static void registerCouchDbProperties(DynamicPropertyRegistry registry) {
+        registry.add("csaf.couchdb.host", () -> couchDb.getHost());
+        registry.add("csaf.couchdb.port", () -> couchDb.getMappedPort(initialPort));
+        registry.add("csaf.couchdb.ssl", () -> false);
+        registry.add("csaf.couchdb.user", () -> user);
+        registry.add("csaf.couchdb.password", () -> password);
+        registry.add("csaf.couchdb.dbname", () -> dbName);
+    }
+
+    @BeforeAll
+    private static void createTestDB() throws IOException {
+        // initializes a DB for testing purposes via PUT request to couchDB API
+        URL url = new URL("http://" + user + ":" + password + "@" + couchDb.getHost() + ":" + couchDb.getMappedPort(initialPort) + "/" + dbName);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("PUT");
+        String auth = user + ":" + password;
+        String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8));
+        connection.setRequestProperty("Authorization", basicAuth);
+        connection.getResponseCode();
+    }
 
     @Test
     public void getServerVersionTest() {
 
-        Assertions.assertEquals("3.2.1", this.couchDbService.getServerVersion());
+        Assertions.assertEquals(couchDbVersion, this.couchDbService.getServerVersion());
     }
 
     @Test
@@ -78,14 +120,14 @@ public class CouchDbServiceTest {
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
         }
         final JsonNode response = this.couchDbService.readCsafDocument(uuid.toString());
-        JsonNode changedTrekingId = response.at("/csaf/document/tracking/id");
-        Assertions.assertEquals("exxcellent-2022CC", changedTrekingId.asText());
+        JsonNode changedTrackingId = response.at("/csaf/document/tracking/id");
+        Assertions.assertEquals("exxcellent-2022CC", changedTrackingId.asText());
 
     }
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
-    public void deleteCsafDocumentToDb() throws IOException, DatabaseException {
+    public void deleteCsafDocumentFromDb() throws IOException, DatabaseException {
 
         long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
@@ -104,7 +146,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
-    public void deleteCsafDocumentToDb_invalidRevision() throws IOException {
+    public void deleteCsafDocumentFromDb_invalidRevision() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
@@ -124,7 +166,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
-    public void deleteCsafDocumentToDb_invalidUuid() throws IOException {
+    public void deleteCsafDocumentFromDb_invalidUuid() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
