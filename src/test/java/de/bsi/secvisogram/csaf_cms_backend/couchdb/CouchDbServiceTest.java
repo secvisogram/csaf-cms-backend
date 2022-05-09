@@ -64,9 +64,13 @@ public class CouchDbServiceTest {
     }
 
     @BeforeAll
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "URL is built from dynamic values but not user input")
     private static void createTestDB() throws IOException {
         // initializes a DB for testing purposes via PUT request to couchDB API
-        URL url = new URL("http://" + user + ":" + password + "@" + couchDb.getHost() + ":" + couchDb.getMappedPort(initialPort) + "/" + dbName);
+        URL url = new URL("http://"
+                + couchDb.getHost() + ":"
+                + couchDb.getMappedPort(initialPort)
+                + "/" + dbName);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("PUT");
         String auth = user + ":" + password;
