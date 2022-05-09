@@ -142,6 +142,7 @@ public class CouchDbServiceTest {
 
             this.couchDbService.deleteCsafDocument(uuid.toString(), revision);
         }
+        Assertions.assertEquals(countBefore, this.couchDbService.getDocumentCount());
     }
 
     @Test
@@ -187,18 +188,30 @@ public class CouchDbServiceTest {
     @Test
     public void readAllCsafDocumentsFromDbTest() {
 
-        final List<AdvisoryInformationResponse> revisions = this.couchDbService.readAllCsafDocuments();
-        System.out.println(revisions.size());
-        System.out.println(revisions.get(0).getTitle());
+        long docCount = this.couchDbService.getDocumentCount();
+
+        final List<AdvisoryInformationResponse> infos = this.couchDbService.readAllCsafDocuments();
+        Assertions.assertEquals(docCount, infos.size());
     }
 
     @Test
     public void readCsafDocumentTest() throws IOException {
 
-        final List<AdvisoryInformationResponse> revisions = this.couchDbService.readAllCsafDocuments();
+        long countBefore = this.couchDbService.getDocumentCount();
+        final UUID uuid = UUID.randomUUID();
+        final String revision;
+        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
-        final JsonNode response = this.couchDbService.readCsafDocument(revisions.get(0).getAdvisoryId());
-        System.out.println(response);
+            final String owner = "Musterman";
+            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
+            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
+            Assertions.assertNotNull(revision);
+            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+        }
+
+        final JsonNode response = this.couchDbService.readCsafDocument(uuid.toString());
+        JsonNode readTitle = response.at("/csaf/document/title");
+        Assertions.assertEquals("TestRSc", readTitle.asText());
     }
 
 
