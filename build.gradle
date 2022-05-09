@@ -8,13 +8,17 @@ plugins {
 
 group = 'de.exxcellent'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
 
 repositories {
 	mavenCentral()
 }
 
-
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+		vendor = JvmVendorSpec.ADOPTIUM
+	}
+}
 
 dependencies {
 
