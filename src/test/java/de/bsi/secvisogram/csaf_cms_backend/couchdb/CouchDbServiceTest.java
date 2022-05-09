@@ -57,7 +57,7 @@ public class CouchDbServiceTest {
     static void registerCouchDbProperties(DynamicPropertyRegistry registry) {
         registry.add("csaf.couchdb.host", () -> couchDb.getHost());
         registry.add("csaf.couchdb.port", () -> couchDb.getMappedPort(initialPort));
-        registry.add("csaf.couchdb.ssl", () -> false);
+        registry.add("csaf.couchdb.ssl", () -> Boolean.FALSE);
         registry.add("csaf.couchdb.user", () -> user);
         registry.add("csaf.couchdb.password", () -> password);
         registry.add("csaf.couchdb.dbname", () -> dbName);
@@ -82,107 +82,79 @@ public class CouchDbServiceTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
     public void writeNewCsafDocumentToDb() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
-        final String jsonFileName = "exxcellent-2021AB123.json";
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
 
-            final String owner = "Musterman";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            final UUID uuid = UUID.randomUUID();
-            final String revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
-            Assertions.assertNotNull(revision);
-        }
+        UUID uuid = UUID.randomUUID();
+        String revision = insertTestDocument(uuid);
+
+        Assertions.assertNotNull(revision);
+
         Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
     }
 
     @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void updateCsafDocumentToDb() throws IOException {
 
-        long countBefore = this.couchDbService.getDocumentCount();
+
         final UUID uuid = UUID.randomUUID();
-        final String revision;
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
+        String revision = insertTestDocument(uuid);
 
-            final String owner = "Musterman";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
-            Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
-        }
+        long countBeforeUpdate = this.couchDbService.getDocumentCount();
+        final JsonNode responseBeforeUpdate = this.couchDbService.readCsafDocument(uuid.toString());
+        JsonNode trackingIdBeforeUpdate = responseBeforeUpdate.at("/csaf/document/tracking/id");
+        Assertions.assertEquals("exxcellent-2021AB123", trackingIdBeforeUpdate.asText());
 
-        try (InputStream csafChangeJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
-            final String owner = "Musterfrau";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafChangeJsonStream, owner, WorkflowState.Draft);
+        String newOwner = "Musterfrau";
+        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
+            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, newOwner, WorkflowState.Draft);
             this.couchDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
-            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
         }
-        final JsonNode response = this.couchDbService.readCsafDocument(uuid.toString());
-        JsonNode changedTrackingId = response.at("/csaf/document/tracking/id");
-        Assertions.assertEquals("exxcellent-2022CC", changedTrackingId.asText());
+
+        long countAfterUpdate = this.couchDbService.getDocumentCount();
+        final JsonNode responseAfterUpdate = this.couchDbService.readCsafDocument(uuid.toString());
+        Assertions.assertEquals(countBeforeUpdate, countAfterUpdate);
+
+        JsonNode trackingIdAfterUpdate = responseAfterUpdate.at("/csaf/document/tracking/id");
+        Assertions.assertEquals("exxcellent-2022CC", trackingIdAfterUpdate.asText());
 
     }
 
     @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
     public void deleteCsafDocumentFromDb() throws IOException, DatabaseException {
 
         long countBefore = this.couchDbService.getDocumentCount();
+
         final UUID uuid = UUID.randomUUID();
-        final String revision;
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
+        String revision = insertTestDocument(uuid);
 
-            final String owner = "Musterman";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
-            Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+        this.couchDbService.deleteCsafDocument(uuid.toString(), revision);
 
-            this.couchDbService.deleteCsafDocument(uuid.toString(), revision);
-        }
         Assertions.assertEquals(countBefore, this.couchDbService.getDocumentCount());
     }
 
     @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void deleteCsafDocumentFromDb_invalidRevision() throws IOException {
 
-        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
-        final String revision;
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
+        insertTestDocument(uuid);
 
-            final String owner = "Musterman";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
-            Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
-
-            Assertions.assertThrows(DatabaseException.class,
-                    () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
-        }
+        Assertions.assertThrows(DatabaseException.class,
+                () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
     }
 
     @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "getDocumentCount is increased")
     public void deleteCsafDocumentFromDb_invalidUuid() throws IOException {
 
-        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
-        final String revision;
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
+        final String revision = insertTestDocument(uuid);
 
-            final String owner = "Musterman";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
-            Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
-
-            Assertions.assertThrows(DatabaseException.class,
-                    () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
-        }
+        Assertions.assertThrows(DatabaseException.class,
+                () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
     }
 
     @Test
@@ -197,23 +169,23 @@ public class CouchDbServiceTest {
     @Test
     public void readCsafDocumentTest() throws IOException {
 
-        long countBefore = this.couchDbService.getDocumentCount();
         final UUID uuid = UUID.randomUUID();
-        final String revision;
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
-
-            final String owner = "Musterman";
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
-            revision = this.couchDbService.writeCsafDocument(uuid, objectNode);
-            Assertions.assertNotNull(revision);
-            Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
-        }
+        insertTestDocument(uuid);
 
         final JsonNode response = this.couchDbService.readCsafDocument(uuid.toString());
         JsonNode readTitle = response.at("/csaf/document/title");
         Assertions.assertEquals("TestRSc", readTitle.asText());
     }
 
+
+    private String insertTestDocument(UUID documentUuid) throws IOException {
+        String owner = "Mustermann";
+        String jsonFileName = "exxcellent-2021AB123.json";
+        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
+            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
+            return this.couchDbService.writeCsafDocument(documentUuid, objectNode);
+        }
+    }
 
     @Test
     public void getStringFieldValueTest() {
