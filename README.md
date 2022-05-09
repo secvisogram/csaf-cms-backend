@@ -8,21 +8,53 @@
 
 ### Create .env file and setup CouchDB
 
+#### Create .env file
+
 The Configuration is done in the **.env** file in the root path.
 The file has to be created for every developer, for example by 
  copying the file **.env.example**.    
 
-The Spring Boot application needs also a running CouchDb.
+#### Start and configure CouchDb
+
+The Spring Boot application needs a running CouchDb.
 The configuration for the couchdb has to be set in the .env file.
 
-A CouchDb could be startet with docker by executing the docker compose file in the directory <project_root>/docker.
+A CouchDb could be startet with docker by executing the docker compose file 
+in the project root.
 
-In the couchdb a database for the advisories has to be created and configured with the Parameter CSAF_COUCHDB_DBNAME in the .env file. 
+In the couchdb a database for the advisories has to be created manually and configured with the Parameter CSAF_COUCHDB_DBNAME in the .env file. 
 
-It is also recommended create a database tihe the name _users.
+It is also recommended to create a database with name `_users`.
 
 s. [CouchDb Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html)
 
+#### Initialize and start Keycloak
+
+Start docker compose and initialize Keycloak
+
+`docker-compose --profile run_manually up`
+
+Copy from Keycloak (Realm csaf) -> Clients -> Secvisogram -> Tab: Credentials -> Secret to env 
+
+`CSAF_CLIENT_SECRET=TlrmX2mgEzdOH9vNprVqNSuOA1bOUy6n`
+
+Create key like described in  [enerating-a-cookie-secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret) 
+and copy it to .env
+
+`CSAF_COOKIE_SECRET=P0dVJDRYYSQmaGNOJmU4MzBCb0pvdVkoYXZZN1kyNmw=`
+
+Start docker compose again
+
+`docker-compose up`
+
+##### keycloak Url
+
+http://localhost:9000/auth/
+
+
+##### csaf-oauth2-proxy Url
+
+http://localhost:4180/api/2.0/about
 
 ### gradle: build and execute tests
 
@@ -45,8 +77,6 @@ with main class: de.exxcellent.bsi.SecvisogramApplication
 http://localhost:8080/api/2.0/about
 
 Swagger UI
-
-
 
 http://localhost:8080/swagger-ui/
 
