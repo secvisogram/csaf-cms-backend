@@ -24,11 +24,11 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'com.ibm.cloud:cloudant:0.1.1'
-	implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.6.0'
+	implementation 'com.ibm.cloud:cloudant:0.1.2'
+	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.0'
 
-	implementation group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.0'
-	implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.8'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.8'
 
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -39,10 +39,10 @@ dependencies {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
 
-	spotbugsSlf4j group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36'
+	spotbugsSlf4j 'org.slf4j:slf4j-simple:1.7.36'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
 
-	spotbugsPlugins group: 'com.mebigfatguy.sb-contrib', name: 'sb-contrib', version: '7.4.7'
+	spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.4.7'
 }
 
 test {
