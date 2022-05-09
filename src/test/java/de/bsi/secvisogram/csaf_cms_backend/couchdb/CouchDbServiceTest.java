@@ -3,23 +3,20 @@ package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
-import de.bsi.secvisogram.csaf_cms_backend.coudb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.coudb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * Test for the CouchDB service. Needs couchDB running to succeed
@@ -29,7 +26,7 @@ import java.util.UUID;
 @Disabled("Needs CouchDb to run")
 public class CouchDbServiceTest {
 
-    private final String[] DOCUMENT_TITLE = {"csaf","document", "title"};
+    private final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
 
     @Autowired
     private CouchDbService couchDbService;
@@ -91,7 +88,7 @@ public class CouchDbServiceTest {
     public void deleteCsafDocumentToDb() throws IOException, DatabaseException {
 
         long countBefore = this.couchDbService.getDocumentCount();
-        final UUID uuid= UUID.randomUUID();
+        final UUID uuid = UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
@@ -110,7 +107,7 @@ public class CouchDbServiceTest {
     public void deleteCsafDocumentToDb_invalidRevision() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
-        final UUID uuid= UUID.randomUUID();
+        final UUID uuid = UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
@@ -120,8 +117,8 @@ public class CouchDbServiceTest {
             Assertions.assertNotNull(revision);
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
-            Assertions.assertThrows(DatabaseException.class
-                    , () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
+            Assertions.assertThrows(DatabaseException.class,
+                    () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
         }
     }
 
@@ -130,7 +127,7 @@ public class CouchDbServiceTest {
     public void deleteCsafDocumentToDb_invalidUuid() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
-        final UUID uuid= UUID.randomUUID();
+        final UUID uuid = UUID.randomUUID();
         final String revision;
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2021AB123.json")) {
 
@@ -140,8 +137,8 @@ public class CouchDbServiceTest {
             Assertions.assertNotNull(revision);
             Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
 
-            Assertions.assertThrows(DatabaseException.class
-                    , () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
+            Assertions.assertThrows(DatabaseException.class,
+                    () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
         }
     }
 
@@ -167,10 +164,10 @@ public class CouchDbServiceTest {
     public void getStringFieldValueTest() {
 
         Document document = new Document.Builder().build();
-        Assertions.assertNull( CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
-        document = new Document.Builder().add("csaf",null).build();
-        Assertions.assertNull( CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
-        document = new Document.Builder().add("csaf",Map.of("document", Map.of("title", "TestTitle"))).build();
-        Assertions.assertEquals( CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document), "TestTitle");
+        Assertions.assertNull(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
+        document = new Document.Builder().add("csaf", null).build();
+        Assertions.assertNull(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
+        document = new Document.Builder().add("csaf", Map.of("document", Map.of("title", "TestTitle"))).build();
+        Assertions.assertEquals(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document), "TestTitle");
     }
 }

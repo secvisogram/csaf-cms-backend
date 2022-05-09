@@ -1,4 +1,6 @@
-package de.bsi.secvisogram.csaf_cms_backend.coudb;
+package de.bsi.secvisogram.csaf_cms_backend.couchdb;
+
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -16,19 +18,16 @@ import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to create, update and delete objects in a couchDB
@@ -39,8 +38,8 @@ public class CouchDbService {
     private static final Logger LOG = LoggerFactory.getLogger(CouchDbService.class);
     private static final String CLOUDANT_SERVICE_NAME = "SECVISOGRAM";
 
-    private static final String[] DOCUMENT_TITLE = {"csaf","document", "title"};
-    private static final String[] DOCUMENT_TRACKING_ID = {"csaf","document","tracking", "id"};
+    private static final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
+    private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
 
     @Value("${csaf.couchdb.dbname}")
     private String dbName;
@@ -64,6 +63,7 @@ public class CouchDbService {
 
     /**
      * Get the CouchDB connection string
+     *
      * @return CouchDB connection string
      */
     private String getDbUrl() {
@@ -73,6 +73,7 @@ public class CouchDbService {
 
     /**
      * Create a new CouchDB
+     *
      * @param nameOfNewDb name of the couchdb database
      */
     public void createDatabase(String nameOfNewDb) {
@@ -89,7 +90,7 @@ public class CouchDbService {
                     .getResult();
 
             if (putDatabaseResult.isOk()) {
-                LOG.info( "{}' database created.", nameOfNewDb);
+                LOG.info("{}' database created.", nameOfNewDb);
             }
         } catch (ServiceResponseException sre) {
             if (sre.getStatusCode() == 412) {
@@ -100,6 +101,7 @@ public class CouchDbService {
 
     /**
      * Get the Version of the couchdb server
+     *
      * @return server version
      */
     public String getServerVersion() {
@@ -115,6 +117,7 @@ public class CouchDbService {
 
     /**
      * Get the count of documents in the couchDB
+     *
      * @return count of documents
      */
     public Long getDocumentCount() {
@@ -135,7 +138,8 @@ public class CouchDbService {
 
     /**
      * Write a new CSAF document to the couchDB
-     * @param uuid id fo the new document
+     *
+     * @param uuid     id fo the new document
      * @param rootNode rootNode of the document
      * @return revsion for concurrent control
      * @throws JsonProcessingException error in processing rootNode
@@ -162,7 +166,8 @@ public class CouchDbService {
 
     /**
      * Change a CSAF document in the coudDB
-     * @param uuid id of the object to change
+     *
+     * @param uuid     id of the object to change
      * @param revision old revision of the document
      * @param rootNode new root node
      * @return new revision for concurrent control
@@ -191,7 +196,6 @@ public class CouchDbService {
     }
 
     /**
-     *
      * @param uuid id of the object to read
      * @return the document
      * @throws IOException error read document
@@ -215,6 +219,7 @@ public class CouchDbService {
 
     /**
      * read the information of all CSAF documents
+     *
      * @return list of all document information
      */
     public List<AdvisoryInformationResponse> readAllCsafDocuments() {
@@ -229,8 +234,8 @@ public class CouchDbService {
         PostFindOptions findOptions = new PostFindOptions.Builder()
                 .db(this.dbName)
                 .selector(selector)
-                .fields(Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, AdvisoryJsonService.TYPE_FIELD
-                        , COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath))
+                .fields(Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, AdvisoryJsonService.TYPE_FIELD,
+                        COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath))
                 .build();
 
         FindResult updateDocumentResponse = client
@@ -246,7 +251,8 @@ public class CouchDbService {
 
     /**
      * Delete a CSAF document from the database
-     * @param uuid id of the object to delete
+     *
+     * @param uuid     id of the object to delete
      * @param revision revision of the document to delete
      */
     public void deleteCsafDocument(final String uuid, final String revision) throws DatabaseException {
@@ -264,16 +270,17 @@ public class CouchDbService {
             if (!response.isOk()) {
                 throw new DatabaseException(response.getError());
             }
-        } catch (BadRequestException ex){
-            throw new DatabaseException("Possible wrong revision",ex);
-        } catch (NotFoundException ex2){
-            throw new DatabaseException("Possible wrong uuid",ex2);
+        } catch (BadRequestException ex) {
+            throw new DatabaseException("Possible wrong revision", ex);
+        } catch (NotFoundException ex2) {
+            throw new DatabaseException("Possible wrong uuid", ex2);
         }
 
     }
 
     /**
      * Create a client to access couchDB
+     *
      * @return the new client
      */
     private Cloudant createCloudantClient() {
@@ -285,6 +292,7 @@ public class CouchDbService {
 
     /**
      * Create authenticator for the couchDB
+     *
      * @return a new base authenticato
      */
     private BasicAuthenticator createBasicAuthenticator() {
@@ -312,27 +320,29 @@ public class CouchDbService {
     /**
      * Convenience Method for {@link #getStringFieldValue(String[], Document)}
      * Get the string value for the given path from the given document
-     * @param path the path to the value
+     *
+     * @param path     the path to the value
      * @param document the document
      * @return the value at the path
      */
     private static String getStringFieldValue(String path, Document document) {
 
-        return getStringFieldValue( new String[]{path}, document);
+        return getStringFieldValue(new String[] {path}, document);
     }
 
     /**
      * Get the string value for the given path from the given document
-     * @param path the path to the value
+     *
+     * @param path     the path to the value
      * @param document the document
      * @return the value at the path
      */
     public static String getStringFieldValue(String[] path, Document document) {
 
         String result = null;
-        if(path.length == 1 ) {
+        if (path.length == 1) {
             Object value = document.get(path[0]);
-            if (value instanceof  String) {
+            if (value instanceof String) {
                 result = (String) value;
             } else if (value != null) {
                 throw new RuntimeException("Value is not of type String");
@@ -344,24 +354,22 @@ public class CouchDbService {
                 object = (Map<Object, Object>) value;
             } else if (value == null) {
                 object = null;
-            }
-            else {
+            } else {
                 throw new RuntimeException("Value is not of type Object");
             }
-            for (int i = 1; i < path.length-1 && object != null; i++) {
+            for (int i = 1; i < path.length - 1 && object != null; i++) {
                 value = object.get(path[i]);
                 if (value instanceof Map) {
                     object = (Map<Object, Object>) value;
                 } else if (value == null) {
                     object = null;
-                }
-                else {
+                } else {
                     throw new RuntimeException("Value is not of type Object");
                 }
             }
-            if(object != null) {
-                value =object.get(path[path.length-1]);
-                if (value instanceof  String) {
+            if (object != null) {
+                value = object.get(path[path.length - 1]);
+                if (value instanceof String) {
                     result = (String) value;
                 } else if (value != null) {
                     throw new RuntimeException("Value is not of type String");
