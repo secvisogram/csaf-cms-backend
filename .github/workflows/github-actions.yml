@@ -17,6 +17,11 @@ jobs:
         run: chmod +x ./gradlew
       - name: Execute Gradle build
         run: ./gradlew clean build
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always() # clause guarantees that this action always runs, even if earlier steps (e.g., the unit test step) in your workflow fail.
+        with:
+          files: "build/test-results/**/*.xml"
 
   lint-markdown:
     name: Lint all markdown files in project
