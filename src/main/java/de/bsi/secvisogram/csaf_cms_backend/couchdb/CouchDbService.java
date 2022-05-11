@@ -2,12 +2,9 @@ package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
 import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
@@ -141,14 +138,12 @@ public class CouchDbService {
      *
      * @param uuid     id fo the new document
      * @param rootNode rootNode of the document
-     * @return revsion for concurrent control
-     * @throws JsonProcessingException error in processing rootNode
+     * @return revision for concurrent control
      */
-    public String writeCsafDocument(final UUID uuid, ObjectNode rootNode) throws JsonProcessingException {
+    public String writeCsafDocument(final UUID uuid, ObjectNode rootNode) {
 
         Cloudant client = createCloudantClient();
-        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
-        String createString = writer.writeValueAsString(rootNode);
+        String createString = rootNode.toPrettyString();
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
                 .db(this.dbName)
@@ -165,22 +160,22 @@ public class CouchDbService {
     }
 
     /**
-     * Change a CSAF document in the coudDB
+     * Change a CSAF document in the couchDB
      *
      * @param uuid     id of the object to change
      * @param revision old revision of the document
      * @param rootNode new root node
      * @return new revision for concurrent control
-     * @throws JsonProcessingException error in processing rootNode
      */
-    public String updateCsafDocument(final String uuid, final String revision, ObjectNode rootNode) throws JsonProcessingException {
+    public String updateCsafDocument(final String uuid, final String revision, ObjectNode rootNode) {
 
         Cloudant client = createCloudantClient();
-        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
 
         rootNode.put(COUCHDB_REVISON_FIELD, revision);
         rootNode.put(COUCHDB_ID_FIELD, uuid);
-        String updateString = writer.writeValueAsString(rootNode);
+
+        String updateString = rootNode.toPrettyString();
+
         PostDocumentOptions updateDocumentOptions =
                 new PostDocumentOptions.Builder()
                         .db(this.dbName)
