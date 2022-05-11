@@ -1,14 +1,18 @@
 package de.bsi.secvisogram.csaf_cms_backend.model.filter;
 
 /**
- * Expression which compares a Property with a Value by a defined Operator
+ * Expression which describes an Expression that compares a Property with a Value by a defined Operator
  */
-public class OperatorExpression {
+public class OperatorExpression implements Expression {
 
-    private final String[] pathInJson;
-    private final TypeOfOperator operatorType;
-    private final String value;
-    private final TypeOfValue valueType;
+    private String[] pathInJson;
+    private TypeOfOperator operatorType;
+    private String value;
+    private TypeOfValue valueType;
+
+    public OperatorExpression() {
+
+    }
 
     public OperatorExpression(String[] pathInJson, TypeOfOperator operatorType, String value, TypeOfValue valueType) {
         super();

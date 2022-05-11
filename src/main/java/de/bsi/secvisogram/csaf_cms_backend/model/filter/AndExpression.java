@@ -7,29 +7,30 @@ import java.util.List;
 /**
  * Expression which concatenates all added expressions with the And Operator
  */
-public class AndExpression {
+public class AndExpression implements Expression {
 
-    private final List<FilterExpression> expressions;
+    private final List<Expression> expressions;
 
     public AndExpression() {
 
         this.expressions = new ArrayList<>();
+
     }
 
-    public AndExpression(FilterExpression... operatorExpressions) {
+    public AndExpression(Expression... expressions) {
         this.expressions = new ArrayList<>();
-        Collections.addAll(this.expressions, operatorExpressions);
+        Collections.addAll(this.expressions, expressions);
     }
 
-    public AndExpression(List<FilterExpression> operatorExpressions) {
+    public AndExpression(List<Expression> expressions) {
         this.expressions = new ArrayList<>();
-        this.expressions.addAll(operatorExpressions);
+        this.expressions.addAll(expressions);
     }
 
     /**
      * Get all expression the of this and expresion
      */
-    public List<FilterExpression> getExpressions() {
+    public List<Expression> getExpressions() {
 
         return Collections.unmodifiableList(this.expressions);
     }
