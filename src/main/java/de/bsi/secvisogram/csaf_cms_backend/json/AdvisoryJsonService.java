@@ -22,9 +22,10 @@ public class AdvisoryJsonService {
         Advisory
     }
 
-    private final ObjectMapper jacksonMapper = new ObjectMapper();
+    private static final ObjectMapper jacksonMapper = new ObjectMapper();
+    private static final ObjectWriter jacksonWriter = jacksonMapper.writer();
 
-    public ObjectNode convertCsafToJson(InputStream csafJsonStream, String userName, WorkflowState state) throws IOException {
+    public static ObjectNode convertCsafToJson(InputStream csafJsonStream, String userName, WorkflowState state) throws IOException {
 
         JsonNode csafRootNode = jacksonMapper.readValue(csafJsonStream, JsonNode.class);
 
@@ -37,7 +38,7 @@ public class AdvisoryJsonService {
         return rootNode;
     }
 
-    public AdvisoryResponse covertCouchDbCsafToAdvisory(JsonNode document, String advisoryId) throws IOException {
+    public static AdvisoryResponse covertCouchDbCsafToAdvisory(JsonNode document, String advisoryId) throws IOException {
 
         JsonNode workflowState = document.get(WORKFLOW_STATE_FIELD);
         final AdvisoryResponse response = new AdvisoryResponse(
@@ -45,8 +46,7 @@ public class AdvisoryJsonService {
         response.setOwner(document.get(OWNER_FIELD).asText());
         response.setRevision(document.get(COUCHDB_REVISON_FIELD).asText());
         JsonNode csafNode = document.get(CSAF_FIELD);
-        ObjectWriter writer = this.jacksonMapper.writer();
-        String updateString = writer.writeValueAsString(csafNode);
+        String updateString = jacksonWriter.writeValueAsString(csafNode);
         response.setCsaf(updateString);
 
         return response;

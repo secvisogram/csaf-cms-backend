@@ -1,5 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.convertCsafToJson;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.covertCouchDbCsafToAdvisory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,7 +15,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-
 
 public class AdvisoryJsonServiceTest {
 
@@ -32,29 +35,26 @@ public class AdvisoryJsonServiceTest {
 
     @Test
     public void convertCsafToJsonTest() throws IOException {
-        AdvisoryJsonService jsonService = new AdvisoryJsonService();
 
         InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
 
-        ObjectNode node = jsonService.convertCsafToJson(csafStream, "Mustermann", WorkflowState.Draft);
+        ObjectNode node = convertCsafToJson(csafStream, "Mustermann", WorkflowState.Draft);
 
         Assertions.assertEquals("Mustermann", node.at("/owner").asText());
         Assertions.assertEquals("Advisory", node.at("/type").asText());
         Assertions.assertEquals("Draft", node.at("/workflowState").asText());
         Assertions.assertEquals(csafJson.replaceAll("\\s+", ""), node.at("/csaf").toString());
-        Assertions.assertEquals("CSAF_BASE", node.at("/csaf/document/category").toString());
+        Assertions.assertEquals("CSAF_BASE", node.at("/csaf/document/category").asText());
     }
 
     @Test
     public void covertCouchDbCsafToAdvisoryTest() throws IOException {
-        AdvisoryJsonService jsonService = new AdvisoryJsonService();
-
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(fullAdvisoryJson);
         String advisoryId = "anId";
 
-        AdvisoryResponse response = jsonService.covertCouchDbCsafToAdvisory(jsonNode, advisoryId);
+        AdvisoryResponse response = covertCouchDbCsafToAdvisory(jsonNode, advisoryId);
 
         Assertions.assertEquals(advisoryId, response.getAdvisoryId());
         Assertions.assertEquals("Musterfrau", response.getOwner());

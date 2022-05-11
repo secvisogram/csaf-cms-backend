@@ -1,12 +1,14 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.convertCsafToJson;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.covertCouchDbCsafToAdvisory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -46,8 +48,6 @@ import org.springframework.web.bind.annotation.*;
 public class AdvisoryController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryController.class);
-
-    private final AdvisoryJsonService jsonService = new AdvisoryJsonService();
 
     @Autowired
     private CouchDbService couchDbService;
@@ -106,7 +106,7 @@ public class AdvisoryController {
 
         LOG.info("readCsafDocument");
         JsonNode document = this.couchDbService.readCsafDocument(advisoryId);
-        return jsonService.covertCouchDbCsafToAdvisory(document, advisoryId);
+        return covertCouchDbCsafToAdvisory(document, advisoryId);
     }
 
     /**
@@ -140,7 +140,7 @@ public class AdvisoryController {
         LOG.info("createCsafDocument");
         final InputStream csafStream = new ByteArrayInputStream(newCsafJson.getBytes(StandardCharsets.UTF_8));
         final String owner = "Musterman";
-        ObjectNode objectNode = jsonService.convertCsafToJson(csafStream, owner, WorkflowState.Draft);
+        ObjectNode objectNode = convertCsafToJson(csafStream, owner, WorkflowState.Draft);
         final UUID uuid = UUID.randomUUID();
         final String revision = couchDbService.writeCsafDocument(uuid, objectNode);
         return new AdvisoryCreateResponse(uuid.toString(), revision);
@@ -190,7 +190,7 @@ public class AdvisoryController {
         LOG.info("changeCsafDocument");
         final InputStream csafStream = new ByteArrayInputStream(changedCsafJson.getBytes(StandardCharsets.UTF_8));
         final String owner = "Musterman";
-        ObjectNode objectNode = jsonService.convertCsafToJson(csafStream, owner, WorkflowState.Draft);
+        ObjectNode objectNode = convertCsafToJson(csafStream, owner, WorkflowState.Draft);
         final String newRevision = couchDbService.updateCsafDocument(advisoryId, revision, objectNode);
 
         return new AdvisoryUpdateResponse(newRevision);

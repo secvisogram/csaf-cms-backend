@@ -1,9 +1,11 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.convertCsafToJson;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
+
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -38,7 +40,6 @@ public class CouchDbServiceTest {
 
     @Autowired
     private CouchDbService couchDbService;
-    private final AdvisoryJsonService jsonService = new AdvisoryJsonService();
 
     static final String couchDbVersion = "3.2.2";
     static final String user = "testUser";
@@ -113,7 +114,7 @@ public class CouchDbServiceTest {
 
         String newOwner = "Musterfrau";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, newOwner, WorkflowState.Draft);
+            ObjectNode objectNode = convertCsafToJson(csafJsonStream, newOwner, WorkflowState.Draft);
             this.couchDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
         }
 
@@ -186,7 +187,7 @@ public class CouchDbServiceTest {
         String owner = "Mustermann";
         String jsonFileName = "exxcellent-2021AB123.json";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
-            ObjectNode objectNode = jsonService.convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
+            ObjectNode objectNode = convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
             return this.couchDbService.writeCsafDocument(documentUuid, objectNode);
         }
     }
