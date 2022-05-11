@@ -51,4 +51,16 @@ public class AdvisoryJsonService {
 
         return response;
     }
+
+    /**
+     * change the workflow state of an advisory object inplace
+     *
+     * @param advisory         the advisory to change the workflow state of
+     * @param newWorkflowState the new workflow state to set
+     * @return the initial advisory with changed workflow state
+     */
+    public static ObjectNode changeWorkflowState(ObjectNode advisory, WorkflowState newWorkflowState) {
+        return advisory.put(WORKFLOW_STATE_FIELD, newWorkflowState.name());
+    }
+
 }

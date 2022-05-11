@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.convertCsafToJson;
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.covertCouchDbCsafToAdvisory;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,6 +60,18 @@ public class AdvisoryJsonServiceTest {
         Assertions.assertEquals(WorkflowState.Draft, response.getWorkflowState());
         Assertions.assertEquals(csafJson.replaceAll("\\s+", ""), response.getCsaf());
 
+    }
+
+    @Test
+    public void changeWorkflowStateTest() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(fullAdvisoryJson);
+
+        Assertions.assertEquals("Draft", jsonNode.at("/workflowState").asText());
+
+        changeWorkflowState(jsonNode, WorkflowState.Approved);
+
+        Assertions.assertEquals("Approved", jsonNode.at("/workflowState").asText());
     }
 
 }
