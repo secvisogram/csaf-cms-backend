@@ -1,0 +1,75 @@
+package de.bsi.secvisogram.csaf_cms_backend;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import javax.xml.bind.DatatypeConverter;
+import org.junit.jupiter.api.extension.*;
+import org.testcontainers.containers.GenericContainer;
+
+/**
+ * Test extension to start a CouchDB container, create a database and set corresponding application properties.
+ * The test database is cleared (created before and deleted after) for each single test
+ */
+public class CouchDBExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
+
+    private static GenericContainer<?> couchDb;
+
+    public static final String couchDbVersion = "3.2.2";
+    private static final String user = "testUser";
+    private static final String password = "testPassword";
+    private static final int initialPort = 5984;
+    private static final String dbName = "test-db";
+
+    @Override
+    public void beforeAll(ExtensionContext context) {
+        couchDb = new GenericContainer<>("couchdb:" + couchDbVersion)
+                .withEnv("COUCHDB_USER", user)
+                .withEnv("COUCHDB_PASSWORD", password)
+                .withCommand()
+                .withExposedPorts(initialPort);
+
+        couchDb.start();
+
+        System.setProperty("csaf.couchdb.host", couchDb.getHost());
+        System.setProperty("csaf.couchdb.port", couchDb.getMappedPort(initialPort).toString());
+        System.setProperty("csaf.couchdb.ssl", "false");
+        System.setProperty("csaf.couchdb.user", user);
+        System.setProperty("csaf.couchdb.password", password);
+        System.setProperty("csaf.couchdb.dbname", dbName);
+
+    }
+
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {
+        sendDbRequest("PUT");
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) throws IOException {
+        sendDbRequest("DELETE");
+    }
+
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "URL is built from dynamic values but not user input")
+    private void sendDbRequest(String method) throws IOException {
+        URL url = new URL("http://"
+                          + couchDb.getHost() + ":"
+                          + couchDb.getMappedPort(initialPort)
+                          + "/" + dbName);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(method);
+        String auth = user + ":" + password;
+        String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8));
+        connection.setRequestProperty("Authorization", basicAuth);
+        connection.getResponseCode();
+    }
+
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        couchDb.stop();
+    }
+
+}

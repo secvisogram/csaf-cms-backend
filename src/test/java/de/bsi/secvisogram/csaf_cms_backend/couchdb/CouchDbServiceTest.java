@@ -5,35 +5,28 @@ import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.conve
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
-
+import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.xml.bind.DatatypeConverter;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Test for the CouchDB service. Starts up a couchDB container via testcontainers (https://www.testcontainers.org/)
+ * Test for the CouchDB service. The required CouchDB container is started in the CouchDBExtension.
  */
 @SpringBootTest
-@Testcontainers
+@ExtendWith(CouchDBExtension.class)
 public class CouchDbServiceTest {
 
     private final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
@@ -41,49 +34,10 @@ public class CouchDbServiceTest {
     @Autowired
     private CouchDbService couchDbService;
 
-    static final String couchDbVersion = "3.2.2";
-    static final String user = "testUser";
-    static final String password = "testPassword";
-    static final String dbName = "test-db";
-    static final int initialPort = 5984;
-
-    @Container
-    static GenericContainer<?> couchDb = new GenericContainer<>("couchdb:" + couchDbVersion)
-            .withEnv("COUCHDB_USER", user)
-            .withEnv("COUCHDB_PASSWORD", password)
-            .withCommand()
-            .withExposedPorts(initialPort);
-
-    @DynamicPropertySource
-    static void registerCouchDbProperties(DynamicPropertyRegistry registry) {
-        registry.add("csaf.couchdb.host", () -> couchDb.getHost());
-        registry.add("csaf.couchdb.port", () -> couchDb.getMappedPort(initialPort));
-        registry.add("csaf.couchdb.ssl", () -> Boolean.FALSE);
-        registry.add("csaf.couchdb.user", () -> user);
-        registry.add("csaf.couchdb.password", () -> password);
-        registry.add("csaf.couchdb.dbname", () -> dbName);
-    }
-
-    @BeforeAll
-    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "URL is built from dynamic values but not user input")
-    private static void createTestDB() throws IOException {
-        // initializes a DB for testing purposes via PUT request to couchDB API
-        URL url = new URL("http://"
-                + couchDb.getHost() + ":"
-                + couchDb.getMappedPort(initialPort)
-                + "/" + dbName);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("PUT");
-        String auth = user + ":" + password;
-        String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8));
-        connection.setRequestProperty("Authorization", basicAuth);
-        connection.getResponseCode();
-    }
-
     @Test
     public void getServerVersionTest() {
 
-        Assertions.assertEquals(couchDbVersion, this.couchDbService.getServerVersion());
+        Assertions.assertEquals(CouchDBExtension.couchDbVersion, this.couchDbService.getServerVersion());
     }
 
     @Test
