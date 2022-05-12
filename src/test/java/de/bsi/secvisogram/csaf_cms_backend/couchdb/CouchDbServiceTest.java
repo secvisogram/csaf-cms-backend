@@ -1,9 +1,23 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.ROOT_PRIMITIVE_FIELDS;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.*;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.internal.LazilyParsedNumber;
 import com.ibm.cloud.cloudant.v1.model.Document;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
+import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
+import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -159,6 +173,130 @@ public class CouchDbServiceTest {
         document = new Document.Builder().add("csaf", Map.of("document", Map.of("title", "TestTitle"))).build();
         Assertions.assertEquals(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document), "TestTitle");
     }
+
+    /**
+     * Test find with Native Cloudant selecto
+     * @throws IOException unexpected exception
+     */
+    @Test
+    public void findDocumentsTest_native() throws IOException {
+
+        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
+        this.couchDbService.createDatabase(this.couchDbService.getDbName());
+
+        final TestModelRoot node1 = new TestModelRoot().setFirstString("Hans").setSecondString("Dampf").setDecimalValue(12.55);
+        this.couchDbService.writeDocument(UUID.randomUUID(), node1);
+
+        final TestModelRoot node2 = new TestModelRoot().setFirstString("Franz").setSecondString("Dampf");
+        this.couchDbService.writeDocument(UUID.randomUUID(), node2);
+
+        List<Document> foundDocs = this.couchDbService.findDocuments(Map.of("secondString", "Dampf"),
+                ROOT_PRIMITIVE_FIELDS);
+
+        assertThat(foundDocs.size(), equalTo(2));
+
+        foundDocs = this.couchDbService.findDocuments(Map.of("firstString", "Hans"),
+                ROOT_PRIMITIVE_FIELDS);
+        assertThat(foundDocs.size(), equalTo(1));
+    }
+
+    @Test
+    public void findDocumentsTest_operatorEqual() throws IOException {
+
+        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
+        this.couchDbService.createDatabase(this.couchDbService.getDbName());
+
+        final TestModelRoot node1 = new TestModelRoot().setFirstString("zzz").setSecondString("AAA").setDecimalValue(12.55);
+        this.couchDbService.writeDocument(UUID.randomUUID(), node1);
+
+        final TestModelRoot node2 = new TestModelRoot().setFirstString("yyy").setSecondString("AAA");
+        this.couchDbService.writeDocument(UUID.randomUUID(), node2);
+
+        final TestModelRoot node3 = new TestModelRoot().setFirstString("xxx").setSecondString("BBB");
+        this.couchDbService.writeDocument(UUID.randomUUID(), node3);
+
+        Map<String, Object> filter = expr2CouchDBFilter(equal("AAA","secondString"));
+        List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "firstString"), containsInAnyOrder("yyy","zzz"));
+
+        Map<String, Object> filterNe = expr2CouchDBFilter(notEqual("yyy","firstString"));
+        foundDocs = this.couchDbService.findDocuments(filterNe, ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "firstString"), containsInAnyOrder("xxx","zzz"));
+    }
+
+    @Test
+    public void findDocumentsTest_operatorsGreaterAndLess() throws IOException {
+
+        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
+        this.couchDbService.createDatabase(this.couchDbService.getDbName());
+
+        this.couchDbService.writeDocument(UUID.randomUUID(), new TestModelRoot().setFirstString("AAA"));
+        this.couchDbService.writeDocument(UUID.randomUUID(), new TestModelRoot().setFirstString("BBB"));
+        this.couchDbService.writeDocument(UUID.randomUUID(), new TestModelRoot().setFirstString("CCC"));
+
+        OperatorExpression gteExpr = greaterOrEqual("BBB","firstString");
+        List<Document> foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(gteExpr), ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "firstString"), containsInAnyOrder("BBB", "CCC"));
+
+        OperatorExpression gtExpr = greater("BBB","firstString");
+        foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(gtExpr), ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "firstString"), containsInAnyOrder("CCC"));
+
+        OperatorExpression lteExpr = lessOrEqual("BBB","firstString");
+        foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(lteExpr), ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "firstString"), containsInAnyOrder("AAA", "BBB"));
+
+        OperatorExpression ltExpr = less("BBB","firstString");
+        foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(ltExpr), ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "firstString"), containsInAnyOrder("AAA"));
+    }
+
+     @Test
+    public void findDocumentsTest_numericValue() throws IOException {
+
+        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
+        this.couchDbService.createDatabase(this.couchDbService.getDbName());
+
+        final TestModelRoot node1 = new TestModelRoot().setDecimalValue(12.55);
+        this.couchDbService.writeDocument(UUID.randomUUID(), node1);
+
+        final TestModelRoot node2 = new TestModelRoot().setDecimalValue(2374.332);
+        this.couchDbService.writeDocument(UUID.randomUUID(), node2);
+
+        Map<String, Object> filter = expr2CouchDBFilter(equal(12.55,"decimalValue"));
+        List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttributeDouble(foundDocs, "decimalValue"), containsInAnyOrder(12.55));
+    }
+
+    @Test
+    public void findDocumentsTest_booleanValue() throws IOException {
+
+        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
+        this.couchDbService.createDatabase(this.couchDbService.getDbName());
+
+        final TestModelRoot node1 = new TestModelRoot().setBooleanValue(true);
+        this.couchDbService.writeDocument(UUID.randomUUID(), node1);
+
+        final TestModelRoot node2 = new TestModelRoot().setBooleanValue(false);
+        this.couchDbService.writeDocument(UUID.randomUUID(), node2);
+
+        Map<String, Object> filter = expr2CouchDBFilter(equal(true,"booleanValue"));
+        List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
+        assertThat(mapAttribute(foundDocs, "booleanValue"), containsInAnyOrder(true));
+    }
+
+    private List<Object> mapAttribute(List<Document> foundDocs, String attributeName) {
+        return foundDocs.stream()
+                .map(doc -> doc.get(attributeName))
+                .collect(toList());
+    }
+
+    private List<Object> mapAttributeDouble(List<Document> foundDocs, String attributeName) {
+        return foundDocs.stream()
+                .map(doc -> ((LazilyParsedNumber)doc.get(attributeName)).doubleValue())
+                .collect(toList());
+    }
+
 
 
     private ObjectNode toAdvisoryJson(InputStream csafJsonStream, String owner) throws IOException {

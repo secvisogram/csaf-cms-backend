@@ -5,6 +5,46 @@ package de.bsi.secvisogram.csaf_cms_backend.model.filter;
  */
 public class OperatorExpression implements Expression {
 
+    public static OperatorExpression equal(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.Equal, value, TypeOfValue.Text);
+    }
+
+    public static OperatorExpression equal(double value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.Equal, Double.toString(value), TypeOfValue.Decimal);
+    }
+
+    public static OperatorExpression equal(boolean value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.Equal, value ? "true" : "false", TypeOfValue.Boolean);
+    }
+
+    public static OperatorExpression notEqual(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.NotEqual, value, TypeOfValue.Text);
+    }
+
+    public static OperatorExpression greaterOrEqual(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.GreaterOrEqual, value, TypeOfValue.Text);
+    }
+
+    public static OperatorExpression greater(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.Greater, value, TypeOfValue.Text);
+    }
+
+    public static OperatorExpression lessOrEqual(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.LessOrEqual, value, TypeOfValue.Text);
+    }
+
+    public static OperatorExpression less(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.Less, value, TypeOfValue.Text);
+    }
+
     private String[] pathInJson;
     private TypeOfOperator operatorType;
     private String value;

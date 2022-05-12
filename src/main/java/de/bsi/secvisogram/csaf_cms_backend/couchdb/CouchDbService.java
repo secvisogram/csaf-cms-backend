@@ -63,6 +63,10 @@ public class CouchDbService {
         return protocol + dbHost + ":" + dbPort;
     }
 
+    public String getDbName() {
+        return dbName;
+    }
+
     /**
      * Create a new CouchDB
      *
@@ -90,6 +94,36 @@ public class CouchDbService {
             }
         }
     }
+
+    /**
+     * Delete a new CouchDB
+     *
+     * @param nameOfNewDb name of the couchdb database
+     */
+    public void deleteDatabase(String nameOfNewDb) {
+
+        Cloudant client = createCloudantClient();
+        DeleteDatabaseOptions deleteDbOptions =
+                new DeleteDatabaseOptions.Builder().db(nameOfNewDb).build();
+
+        // Try to create database if it doesn't exist
+        try {
+            Ok deleteResult = client
+                    .deleteDatabase(deleteDbOptions)
+                    .execute()
+                    .getResult();
+
+            if (deleteResult.isOk()) {
+                LOG.info("{}' database deleted.", nameOfNewDb);
+            }
+        } catch (ServiceResponseException sre) {
+            if (sre.getStatusCode() == 412) {
+                throw new RuntimeException("Cannot create \"" + nameOfNewDb + "\" database, it already exists.", sre);
+            }
+        }
+    }
+
+
 
     /**
      * Get the Version of the couchdb server
@@ -153,6 +187,25 @@ public class CouchDbService {
         return createDocumentResponse.getRev();
     }
 
+    public String writeDocument(final UUID uuid, Object rootNode) throws JsonProcessingException {
+
+        Cloudant client = createCloudantClient();
+        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+        String createString = writer.writeValueAsString(rootNode);
+
+        PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
+                .db(this.dbName)
+                .docId(uuid.toString())
+                .contentType("application/json")
+                .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
+                .build();
+        DocumentResult createDocumentResponse = client
+                .putDocument(createDocumentOptions)
+                .execute()
+                .getResult();
+
+        return createDocumentResponse.getRev();
+    }
     /**
      * Change a CSAF document in the couchDB
      *
@@ -236,28 +289,54 @@ public class CouchDbService {
      */
     public List<Document> readAllCsafDocuments(List<String> fields) {
 
-        Cloudant client = createCloudantClient();
 
         Map<String, Object> selector = new HashMap<>();
-        selector.put("type", Map.of("$eq", ObjectType.Advisory.name()));
+        selector.put("type", Map.of("$eq", AdvisoryJsonService.ObjectType.Advisory.name()));
+
+        return findCsafDocuments(selector);
+    }
+
+    /**
+     * read the information of the CSAF documents matching the selector
+     *
+     * @return list of all document information that match the selector
+     */
+    public List<AdvisoryInformationResponse> findCsafDocuments(Map<String, Object> selector) {
+
+
+        String titlePath = String.join(".", DOCUMENT_TITLE);
+        String trackIdPath = String.join(".", DOCUMENT_TRACKING_ID);
+        List<String> fields = Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, TYPE_FIELD,
+                COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath);
+        List<Document> documents = this.findDocuments(selector, fields);
+        return documents.stream()
+                .map(this::convertToAdvisoryInformationResponse)
+                .collect(Collectors.toList());
+    }
+
+
+    /**
+     * read the information of the documents matching the selector
+     *
+     * @return list of all document information that match the selector
+     */
+    public List<Document> findDocuments(Map<String, Object> selector, List<String> fields) {
+
+        Cloudant client = createCloudantClient();
+
         PostFindOptions findOptions = new PostFindOptions.Builder()
                 .db(this.dbName)
                 .selector(selector)
                 .fields(fields)
                 .build();
 
-        FindResult updateDocumentResponse = client
+        FindResult findDocumentResult = client
                 .postFind(findOptions)
                 .execute()
                 .getResult();
 
-        return updateDocumentResponse.getDocs();
+        return findDocumentResult.getDocs();
     }
-
-    public List<Document> readAllCsafDocuments() {
-        return readAllCsafDocuments(List.of(ID_FIELD, REVISION_FIELD));
-    }
-
     /**
      * Delete a CSAF document from the database
      *
