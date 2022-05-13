@@ -1,5 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.ObjectType.Advisory;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
@@ -275,10 +279,7 @@ public class CouchDbService {
      */
     public List<Document> readAllCsafDocuments(List<String> fields) {
 
-
-        Map<String, Object> selector = new HashMap<>();
-        selector.put("type", Map.of("$eq", AdvisoryJsonService.ObjectType.Advisory.name()));
-
+        Map<String, Object> selector = expr2CouchDBFilter(equal(Advisory.name(), "type"));
         return findCsafDocuments(selector);
     }
 
