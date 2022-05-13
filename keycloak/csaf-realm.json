@@ -12,7 +12,7 @@
       "standardFlowEnabled": true,
       "publicClient": false,
       "redirectUris": [
-        "http://localhost:4180/*"
+        "http://localhost*"
       ],
       "rootUrl": "http://localhost",
       "webOrigins": [
