@@ -5,6 +5,11 @@ package de.bsi.secvisogram.csaf_cms_backend.model.filter;
  */
 public class OperatorExpression implements Expression {
 
+    public static OperatorExpression containsIgnoreCase(String value, String ... path) {
+
+        return new OperatorExpression(path, TypeOfOperator.ContainsIgnoreCase, value, TypeOfValue.Text);
+    }
+
     public static OperatorExpression equal(String value, String ... path) {
 
         return new OperatorExpression(path, TypeOfOperator.Equal, value, TypeOfValue.Text);
@@ -45,7 +50,7 @@ public class OperatorExpression implements Expression {
         return new OperatorExpression(path, TypeOfOperator.Less, value, TypeOfValue.Text);
     }
 
-    private String[] pathInJson;
+    private String[] selector;
     private TypeOfOperator operatorType;
     private String value;
     private TypeOfValue valueType;
@@ -54,16 +59,16 @@ public class OperatorExpression implements Expression {
 
     }
 
-    public OperatorExpression(String[] pathInJson, TypeOfOperator operatorType, String value, TypeOfValue valueType) {
+    public OperatorExpression(String[] selector, TypeOfOperator operatorType, String value, TypeOfValue valueType) {
         super();
-        this.pathInJson = pathInJson.clone();
+        this.selector = selector.clone();
         this.operatorType = operatorType;
         this.value = value;
         this.valueType = valueType;
     }
 
-    public String[] getPathInJson() {
-        return pathInJson.clone();
+    public String[] getSelector() {
+        return selector.clone();
     }
 
     public TypeOfOperator getOperatorType() {

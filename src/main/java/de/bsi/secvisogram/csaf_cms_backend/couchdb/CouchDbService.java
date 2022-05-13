@@ -170,21 +170,7 @@ public class CouchDbService {
      */
     public String writeCsafDocument(final UUID uuid, ObjectNode rootNode) {
 
-        Cloudant client = createCloudantClient();
-        String createString = rootNode.toPrettyString();
-
-        PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
-                .db(this.dbName)
-                .docId(uuid.toString())
-                .contentType("application/json")
-                .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
-                .build();
-        DocumentResult createDocumentResponse = client
-                .putDocument(createDocumentOptions)
-                .execute()
-                .getResult();
-
-        return createDocumentResponse.getRev();
+        return writeDocument(uuid, rootNode);
     }
 
     public String writeDocument(final UUID uuid, Object rootNode) throws JsonProcessingException {

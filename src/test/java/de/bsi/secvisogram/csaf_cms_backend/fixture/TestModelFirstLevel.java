@@ -1,6 +1,12 @@
 package de.bsi.secvisogram.csaf_cms_backend.fixture;
 
+/**
+ * Model to test CouchDB access
+ * subfields level 1 from root
+ */
 public class TestModelFirstLevel {
+
+    public static final String SECOND_LEVEL = "secondLevel";
 
     private String level1Value;
 

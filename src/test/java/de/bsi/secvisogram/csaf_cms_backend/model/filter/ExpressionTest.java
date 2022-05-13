@@ -6,11 +6,10 @@ import static org.hamcrest.collection.ArrayMatching.arrayContaining;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
-import org.hamcrest.collection.ArrayMatching;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ExpresssionTest {
+public class ExpressionTest {
 
     @Test
     public void expressionToJson() throws JsonProcessingException {
@@ -56,7 +55,7 @@ public class ExpresssionTest {
         assertThat(operatorExpr.getOperatorType(), equalTo(TypeOfOperator.Equal));
         assertThat(operatorExpr.getValue(), equalTo("123.45"));
         assertThat(operatorExpr.getValueType(), equalTo(TypeOfValue.Decimal));
-        assertThat(operatorExpr.getPathInJson(),  	arrayContaining("document", "version"));
+        assertThat(operatorExpr.getSelector(),  	arrayContaining("document", "version"));
     }
 
     @Test
