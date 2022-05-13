@@ -23,7 +23,7 @@ public class ExpressionTest {
                 "  \"type\" : \"AND\"," +
                 "  \"expressions\" : [ {" +
                 "    \"type\" : \"Operator\"," +
-                "    \"pathInJson\" : [ \"document\" ]," +
+                "    \"selector\" : [ \"document\" ]," +
                 "    \"operatorType\" : \"Equal\"," +
                 "    \"value\" : \"123.45\"," +
                 "    \"valueType\" : \"Decimal\"" +
@@ -38,7 +38,7 @@ public class ExpressionTest {
                 "  \"type\" : \"AND\"," +
                 "  \"expressions\" : [ {" +
                 "    \"type\" : \"Operator\"," +
-                "    \"pathInJson\" : [ \"document\", \"version\" ]," +
+                "    \"selector\" : [ \"document\", \"version\" ]," +
                 "    \"operatorType\" : \"Equal\"," +
                 "    \"value\" : \"123.45\"," +
                 "    \"valueType\" : \"Decimal\"" +
