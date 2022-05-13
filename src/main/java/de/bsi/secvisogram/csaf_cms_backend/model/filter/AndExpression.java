@@ -35,4 +35,9 @@ public class AndExpression implements Expression {
         return Collections.unmodifiableList(this.expressions);
     }
 
+    public <TResult> TResult handleExpr(ExpressionHandler<TResult> handler) {
+
+        return handler.and(this);
+    }
+
 }

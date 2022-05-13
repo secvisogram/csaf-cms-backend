@@ -9,4 +9,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = OperatorExpression.class, name = "Operator")
 })
 public interface Expression {
+
+    <TResult> TResult handleExpr(ExpressionHandler<TResult> handler);
 }

@@ -21,6 +21,17 @@ public class CouchDBFilterCreator {
         return new CouchDBFilterCreator().expression2CouchDbFilter(expr);
     }
 
+    private final Map<TypeOfOperator, String> operator2CouchDB = Map.of(
+            TypeOfOperator.Equal, "$eq",
+            TypeOfOperator.Greater, "$gt",
+            TypeOfOperator.GreaterOrEqual, "$gte",
+            TypeOfOperator.Less, "$lt",
+            TypeOfOperator.LessOrEqual, "$lte",
+            TypeOfOperator.NotEqual, "$ne",
+            TypeOfOperator.ContainsIgnoreCase, "$regex"
+    );
+
+
     /**
      * Builder Method for CouchDBFilterCreator
      * @param expr expression to convert
@@ -44,7 +55,7 @@ public class CouchDBFilterCreator {
 
     public CouchDBFilterCreator(List<String[]> arrayFieldSelectors) {
 
-        this.arrayFieldSelectors = arrayFieldSelectors;
+        this.arrayFieldSelectors = Collections.unmodifiableList(arrayFieldSelectors);
     }
 
     /**
@@ -64,21 +75,23 @@ public class CouchDBFilterCreator {
      */
     private Map<String, Object> expression2Filter(Expression expr) {
 
-        Map<String, Object> result;
-        if (expr instanceof AndExpression andExpr) {
-            List<Object> andExpressions = andExpr.getExpressions()
-                    .stream()
-                    .map(this::expression2Filter)
-                    .collect(Collectors.toList());
+        ExpressionHandler<Map<String, Object>> couchDbExprHandler = new ExpressionHandler<>() {
+            @Override
+            public Map<String, Object> and(AndExpression andExpr) {
+                List<Object> andExpressions = andExpr.getExpressions()
+                        .stream()
+                        .map(expr -> expression2Filter(expr))
+                        .collect(Collectors.toList());
 
-            result = createAndExpression(andExpressions);
-        } else if (expr instanceof OperatorExpression opExpr) {
+                return createAndExpression(andExpressions);
+            }
 
-            result = createOperatorExpression(opExpr);
-        } else {
-            throw new RuntimeException("Invalid Expression Type " + expr.getClass().getName());
-        }
-        return result;
+            @Override
+            public Map<String, Object> operator(OperatorExpression opExpr) {
+                return createOperatorExpression(opExpr);
+            }
+        };
+        return expr.handleExpr(couchDbExprHandler);
     }
 
     /**
@@ -105,9 +118,9 @@ public class CouchDBFilterCreator {
 
         final Object compareValue;
         if (opExpr.getValueType() == TypeOfValue.Decimal) {
-            compareValue = Double.parseDouble(opExpr.getValue());
+            compareValue = Double.valueOf(opExpr.getValue());
         } else if (opExpr.getValueType() == TypeOfValue.Boolean) {
-            compareValue = opExpr.getValue().equals("true");
+            compareValue = "true".equals(opExpr.getValue());
         } else if (opExpr.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
             compareValue = "^.*(?i)" + opExpr.getValue() + "(?i).*";
         } else {
@@ -159,22 +172,8 @@ public class CouchDBFilterCreator {
      * */
     private String convertOperator(OperatorExpression opExpr) {
 
-        String couchDBOperator;
-        if (opExpr.getOperatorType() == TypeOfOperator.Equal) {
-            couchDBOperator = "$eq";
-        } else if (opExpr.getOperatorType() == TypeOfOperator.Greater) {
-            couchDBOperator = "$gt";
-        } else if (opExpr.getOperatorType() == TypeOfOperator.GreaterOrEqual) {
-            couchDBOperator = "$gte";
-        } else if (opExpr.getOperatorType() == TypeOfOperator.Less) {
-            couchDBOperator = "$lt";
-        } else if (opExpr.getOperatorType() == TypeOfOperator.LessOrEqual) {
-            couchDBOperator = "$lte";
-        } else if (opExpr.getOperatorType() == TypeOfOperator.NotEqual) {
-            couchDBOperator = "$ne";
-        } else if (opExpr.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
-            couchDBOperator = "$regex";
-        } else {
+        String couchDBOperator = operator2CouchDB.get(opExpr.getOperatorType());
+        if (couchDBOperator == null) {
             throw new RuntimeException("Invalid Operator " + opExpr.getOperatorType().name());
         }
         return couchDBOperator;
@@ -182,7 +181,7 @@ public class CouchDBFilterCreator {
 
     /**
      * Create Cloudant And expression for list of expression
-     * @param expressions the expression to add to the and expression
+     * @param expressions the expression to add to the 'and' expression
      * @return the cloudant and expression object
      */
     private Map<String, Object> createAndExpression(List<Object> expressions) {

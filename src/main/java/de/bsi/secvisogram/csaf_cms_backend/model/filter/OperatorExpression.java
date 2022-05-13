@@ -82,4 +82,10 @@ public class OperatorExpression implements Expression {
     public TypeOfValue getValueType() {
         return valueType;
     }
+
+    public <TResult> TResult handleExpr(ExpressionHandler<TResult> handler) {
+
+        return handler.operator(this);
+    }
+
 }
