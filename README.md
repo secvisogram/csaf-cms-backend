@@ -20,7 +20,7 @@ here.
   - On the left side, navigate to "Clients" and select the Secvisogram client.
   - Select the **Credentials** tab and copy the Secret. This is our 
     `CSAF_CLIENT_SECRET` environment variable.
-- [Generate a client secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret) 
+- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret) 
   and paste it in `CSAF_COOKIE_SECRET`.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - restart compose
