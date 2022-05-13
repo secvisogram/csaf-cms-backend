@@ -23,8 +23,8 @@ public class TestModelRoot {
 
     public static final String[] ARRAY_FIELD_SELECTOR = {ARRAY_VALUES};
 
-    public static final List<String> ROOT_PRIMITIVE_FIELDS = Arrays.asList(FIRST_STRING, SECOND_STRING
-            , DECIMAL_VALUE, BOOLEAN_VALUE);
+    public static final List<String> ROOT_PRIMITIVE_FIELDS = Arrays.asList(FIRST_STRING, SECOND_STRING,
+            DECIMAL_VALUE, BOOLEAN_VALUE);
     private String firstString;
 
     private String secondString;

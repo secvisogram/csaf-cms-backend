@@ -210,15 +210,15 @@ public class CouchDbServiceTest {
 
         this.writeToDb(new TestModelRoot().setFirstString("zzz").setSecondString("AAA").setDecimalValue(12.55));
         this.writeToDb(new TestModelRoot().setFirstString("yyy").setSecondString("AAA"));
-        this.writeToDb( new TestModelRoot().setFirstString("xxx").setSecondString("BBB"));
+        this.writeToDb(new TestModelRoot().setFirstString("xxx").setSecondString("BBB"));
 
-        Map<String, Object> filter = expr2CouchDBFilter(equal("AAA",SECOND_STRING));
+        Map<String, Object> filter = expr2CouchDBFilter(equal("AAA", SECOND_STRING));
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
-        assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("yyy","zzz"));
+        assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("yyy", "zzz"));
 
-        Map<String, Object> filterNe = expr2CouchDBFilter(notEqual("yyy",FIRST_STRING));
+        Map<String, Object> filterNe = expr2CouchDBFilter(notEqual("yyy", FIRST_STRING));
         foundDocs = this.couchDbService.findDocuments(filterNe, ROOT_PRIMITIVE_FIELDS);
-        assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("xxx","zzz"));
+        assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("xxx", "zzz"));
     }
 
     @Test
@@ -231,9 +231,9 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setFirstString("123abC45"));
         this.writeToDb(new TestModelRoot().setFirstString("123abD45"));
 
-        Map<String, Object> filter = expr2CouchDBFilter(containsIgnoreCase("3abc4",FIRST_STRING));
+        Map<String, Object> filter = expr2CouchDBFilter(containsIgnoreCase("3abc4", FIRST_STRING));
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
-        assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("123Abc45","123abC45"));
+        assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("123Abc45", "123abC45"));
     }
 
     @Test
@@ -246,19 +246,19 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setFirstString("BBB"));
         this.writeToDb(new TestModelRoot().setFirstString("CCC"));
 
-        OperatorExpression gteExpr = greaterOrEqual("BBB",FIRST_STRING);
+        OperatorExpression gteExpr = greaterOrEqual("BBB", FIRST_STRING);
         List<Document> foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(gteExpr), ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("BBB", "CCC"));
 
-        OperatorExpression gtExpr = greater("BBB",FIRST_STRING);
+        OperatorExpression gtExpr = greater("BBB", FIRST_STRING);
         foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(gtExpr), ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("CCC"));
 
-        OperatorExpression lteExpr = lessOrEqual("BBB",FIRST_STRING);
+        OperatorExpression lteExpr = lessOrEqual("BBB", FIRST_STRING);
         foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(lteExpr), ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("AAA", "BBB"));
 
-        OperatorExpression ltExpr = less("BBB",FIRST_STRING);
+        OperatorExpression ltExpr = less("BBB", FIRST_STRING);
         foundDocs = this.couchDbService.findDocuments(expr2CouchDBFilter(ltExpr), ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("AAA"));
     }
@@ -272,7 +272,7 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setDecimalValue(12.55));
         this.writeToDb(new TestModelRoot().setDecimalValue(2374.332));
 
-        Map<String, Object> filter = expr2CouchDBFilter(equal(12.55,DECIMAL_VALUE));
+        Map<String, Object> filter = expr2CouchDBFilter(equal(12.55, DECIMAL_VALUE));
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttributeDouble(foundDocs, DECIMAL_VALUE), containsInAnyOrder(12.55));
     }
@@ -286,7 +286,7 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setBooleanValue(true));
         this.writeToDb(new TestModelRoot().setBooleanValue(false));
 
-        Map<String, Object> filter = expr2CouchDBFilter(equal(true,BOOLEAN_VALUE));
+        Map<String, Object> filter = expr2CouchDBFilter(equal(true, BOOLEAN_VALUE));
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, BOOLEAN_VALUE), containsInAnyOrder(true));
     }
@@ -306,14 +306,14 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setFirstString("xxx").setSecondString("BBB").setDecimalValue(11.11));
         this.writeToDb(new TestModelRoot().setFirstString("xxx").setSecondString("BBB").setDecimalValue(22.22));
 
-        AndExpression andExpr = new AndExpression(equal("xxx",FIRST_STRING)
-                , equal("AAA",SECOND_STRING), equal(22.22,DECIMAL_VALUE));
+        AndExpression andExpr = new AndExpression(equal("xxx", FIRST_STRING),
+                equal("AAA", SECOND_STRING), equal(22.22, DECIMAL_VALUE));
         Map<String, Object> filter = expr2CouchDBFilter(andExpr);
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
         assertThat(foundDocs.size(), equalTo(1));
         assertThat(foundDocs.get(0).get(FIRST_STRING), equalTo("xxx"));
         assertThat(foundDocs.get(0).get(SECOND_STRING), equalTo("AAA"));
-        assertThat(((LazilyParsedNumber)foundDocs.get(0).get(DECIMAL_VALUE)).doubleValue(), equalTo(22.22));
+        assertThat(((LazilyParsedNumber) foundDocs.get(0).get(DECIMAL_VALUE)).doubleValue(), equalTo(22.22));
     }
 
     @Test
@@ -327,7 +327,7 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setFirstString("CCC").setLevelValues("Lev1C", "Lev2A"));
         this.writeToDb(new TestModelRoot().setFirstString("DDD").setLevelValues("Lev1D", "Lev2B"));
 
-        Map<String, Object> filter = expr2CouchDBFilter(equal("Lev2B",FIRST_LEVEL, SECOND_LEVEL, LEVEL_2_VALUE));
+        Map<String, Object> filter = expr2CouchDBFilter(equal("Lev2B", FIRST_LEVEL, SECOND_LEVEL, LEVEL_2_VALUE));
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("BBB", "DDD"));
     }
@@ -343,8 +343,8 @@ public class CouchDbServiceTest {
         this.writeToDb(new TestModelRoot().setFirstString("CCC").addListValues("ListVal7", "ListVal8", "ListVal2"));
         this.writeToDb(new TestModelRoot().setFirstString("DDD").addListValues("ListVal9", "ListVal3", "ListVal20"));
 
-        Map<String, Object> filter = expr2CouchDBFilter(equal("ListVal2",ARRAY_VALUES, ENTRY_VALUE)
-        , ARRAY_FIELD_SELECTOR);
+        Map<String, Object> filter = expr2CouchDBFilter(equal("ListVal2", ARRAY_VALUES, ENTRY_VALUE),
+            ARRAY_FIELD_SELECTOR);
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
         assertThat(mapAttribute(foundDocs, FIRST_STRING), containsInAnyOrder("AAA", "CCC"));
     }
@@ -358,7 +358,7 @@ public class CouchDbServiceTest {
 
     private List<Object> mapAttributeDouble(List<Document> foundDocs, String attributeName) {
         return foundDocs.stream()
-                .map(doc -> ((LazilyParsedNumber)doc.get(attributeName)).doubleValue())
+                .map(doc -> ((LazilyParsedNumber) doc.get(attributeName)).doubleValue())
                 .collect(toList());
     }
 

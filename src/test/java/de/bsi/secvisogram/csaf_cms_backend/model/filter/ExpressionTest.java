@@ -48,8 +48,8 @@ public class ExpressionTest {
         Expression expression = new AdvisoryJsonService().json2Expression(expressionString);
 
         assertThat(expression, instanceOf(AndExpression.class));
-        assertThat(((AndExpression)expression).getExpressions().size(), equalTo(1));
-        Expression expr2 = ((AndExpression)expression).getExpressions().get(0);
+        assertThat(((AndExpression) expression).getExpressions().size(), equalTo(1));
+        Expression expr2 = ((AndExpression) expression).getExpressions().get(0);
         assertThat(expr2, instanceOf(OperatorExpression.class));
         OperatorExpression operatorExpr = (OperatorExpression) expr2;
         assertThat(operatorExpr.getOperatorType(), equalTo(TypeOfOperator.Equal));
@@ -72,8 +72,8 @@ public class ExpressionTest {
                 "  } ]\n" +
                 "}";
 
-        Throwable thrown = Assertions.assertThrows(JsonProcessingException.class
-                , () ->  new AdvisoryJsonService().json2Expression(expressionString));
+        Throwable thrown = Assertions.assertThrows(JsonProcessingException.class,
+                () ->  new AdvisoryJsonService().json2Expression(expressionString));
         assertThat(thrown.getMessage(), startsWith("Unrecognized field \"expressi\""));
     }
 }
