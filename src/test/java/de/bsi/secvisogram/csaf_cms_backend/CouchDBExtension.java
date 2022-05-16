@@ -15,7 +15,7 @@ import org.testcontainers.containers.GenericContainer;
  */
 public class CouchDBExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
-    private static GenericContainer<?> couchDb;
+    private GenericContainer<?> couchDb;
 
     public static final String couchDbVersion = "3.2.2";
     private static final String user = "testUser";

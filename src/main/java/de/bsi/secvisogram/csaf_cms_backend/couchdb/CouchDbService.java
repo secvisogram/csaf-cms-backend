@@ -1,10 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
@@ -12,31 +8,32 @@ import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 /**
  * Service to create, update and delete objects in a couchDB
  */
-@Service
+@Repository
 public class CouchDbService {
+
+    public static final String REVISION_FIELD = "_rev";
+    public static final String ID_FIELD = "_id";
 
     private static final Logger LOG = LoggerFactory.getLogger(CouchDbService.class);
     private static final String CLOUDANT_SERVICE_NAME = "SECVISOGRAM";
 
-    private static final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
-    private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
+    public enum ObjectType {
+        Advisory
+    }
 
     @Value("${csaf.couchdb.dbname}")
     private String dbName;
@@ -55,8 +52,6 @@ public class CouchDbService {
 
     @Value("${csaf.couchdb.password}")
     private String dbPassword;
-
-    private final ObjectMapper jacksonMapper = new ObjectMapper();
 
     /**
      * Get the CouchDB connection string
@@ -128,7 +123,6 @@ public class CouchDbService {
                 .execute()
                 .getResult();
 
-        // 4. Show document count in database =================================
         return dbInformationResponse.getDocCount();
     }
 
@@ -167,12 +161,19 @@ public class CouchDbService {
      * @param rootNode new root node
      * @return new revision for concurrent control
      */
-    public String updateCsafDocument(final String uuid, final String revision, ObjectNode rootNode) {
+    public String updateCsafDocument(final String uuid, final String revision, ObjectNode rootNode) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
 
-        rootNode.put(COUCHDB_REVISON_FIELD, revision);
-        rootNode.put(COUCHDB_ID_FIELD, uuid);
+        if (rootNode.has(ID_FIELD) && !rootNode.get(ID_FIELD).asText().equals(revision)) {
+            throw new IllegalArgumentException("The updated object has an ID set that does not match!");
+        }
+        if (rootNode.has(REVISION_FIELD) && !rootNode.get(REVISION_FIELD).asText().equals(revision)) {
+            throw new IllegalArgumentException("The updated object has a revision set that does not match!");
+        }
+
+        rootNode.put(REVISION_FIELD, revision);
+        rootNode.put(ID_FIELD, uuid);
 
         String updateString = rootNode.toPrettyString();
 
@@ -182,20 +183,33 @@ public class CouchDbService {
                         .contentType("application/json")
                         .body(new ByteArrayInputStream(updateString.getBytes(StandardCharsets.UTF_8)))
                         .build();
-        DocumentResult updateDocumentResponse = client
-                .postDocument(updateDocumentOptions)
-                .execute()
-                .getResult();
 
-        return updateDocumentResponse.getRev();
+        try {
+            DocumentResult response = client
+                    .postDocument(updateDocumentOptions)
+                    .execute()
+                    .getResult();
+            if (!response.isOk()) {
+                throw new DatabaseException(response.getError());
+            }
+            return response.getRev();
+        } catch (BadRequestException brEx) {
+            String msg = "Bad request, possibly the given revision is invalid";
+            LOG.error(msg);
+            throw new DatabaseException(msg, brEx);
+        } catch (NotFoundException nfEx) {
+            String msg = String.format("No element with such an ID: %s", rootNode.at(ID_FIELD).asText());
+            LOG.error(msg);
+            throw new IdNotFoundException(msg, nfEx);
+        }
     }
 
     /**
      * @param uuid id of the object to read
-     * @return the document
-     * @throws IOException error read document
+     * @return the requested document
+     * @throws IdNotFoundException if the requested document was not found
      */
-    public JsonNode readCsafDocument(final String uuid) throws IOException {
+    public Document readCsafDocument(final String uuid) throws IdNotFoundException {
 
         Cloudant client = createCloudantClient();
         GetDocumentOptions documentOptions =
@@ -204,33 +218,32 @@ public class CouchDbService {
                         .docId(uuid)
                         .build();
 
-        InputStream response =
-                client.getDocumentAsStream(documentOptions).execute().getResult();
-        ObjectReader jsonReader = jacksonMapper.reader();
-
-        return jsonReader.readTree(response);
+        try {
+            return client.getDocument(documentOptions).execute().getResult();
+        } catch (NotFoundException nfEx) {
+            String msg = String.format("No element with such an ID: %s", uuid);
+            LOG.error(msg);
+            throw new IdNotFoundException(msg, nfEx);
+        }
 
     }
 
     /**
      * read the information of all CSAF documents
      *
-     * @return list of all document information
+     * @param fields the fields of information to select
+     * @return list of all requested document information
      */
-    public List<AdvisoryInformationResponse> readAllCsafDocuments() {
+    public List<Document> readAllCsafDocuments(List<String> fields) {
 
         Cloudant client = createCloudantClient();
 
-        String titlePath = String.join(".", DOCUMENT_TITLE);
-        String trackIdPath = String.join(".", DOCUMENT_TRACKING_ID);
-
         Map<String, Object> selector = new HashMap<>();
-        selector.put("type", Map.of("$eq", AdvisoryJsonService.ObjectType.Advisory.name()));
+        selector.put("type", Map.of("$eq", ObjectType.Advisory.name()));
         PostFindOptions findOptions = new PostFindOptions.Builder()
                 .db(this.dbName)
                 .selector(selector)
-                .fields(Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, AdvisoryJsonService.TYPE_FIELD,
-                        COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath))
+                .fields(fields)
                 .build();
 
         FindResult updateDocumentResponse = client
@@ -238,10 +251,11 @@ public class CouchDbService {
                 .execute()
                 .getResult();
 
-        List<Document> documents = updateDocumentResponse.getDocs();
-        return documents.stream()
-                .map(this::convertToAdvisoryInformationResponse)
-                .collect(Collectors.toList());
+        return updateDocumentResponse.getDocs();
+    }
+
+    public List<Document> readAllCsafDocuments() {
+        return readAllCsafDocuments(List.of(ID_FIELD, REVISION_FIELD));
     }
 
     /**
@@ -265,10 +279,14 @@ public class CouchDbService {
             if (!response.isOk()) {
                 throw new DatabaseException(response.getError());
             }
-        } catch (BadRequestException ex) {
-            throw new DatabaseException("Possible wrong revision", ex);
-        } catch (NotFoundException ex2) {
-            throw new DatabaseException("Possible wrong uuid", ex2);
+        } catch (BadRequestException brEx) {
+            String msg = "Bad request, possibly the given revision is invalid";
+            LOG.error(msg);
+            throw new DatabaseException(msg, brEx);
+        } catch (NotFoundException nfEx) {
+            String msg = String.format("No element with such an ID: %s", uuid);
+            LOG.error(msg);
+            throw new IdNotFoundException(msg, nfEx);
         }
 
     }
@@ -288,7 +306,7 @@ public class CouchDbService {
     /**
      * Create authenticator for the couchDB
      *
-     * @return a new base authenticato
+     * @return a new base authentication
      */
     private BasicAuthenticator createBasicAuthenticator() {
 
@@ -296,20 +314,6 @@ public class CouchDbService {
                 .username(this.dbUser)
                 .password(this.dbPassword)
                 .build();
-    }
-
-
-    private AdvisoryInformationResponse convertToAdvisoryInformationResponse(Document document) {
-
-        AdvisoryInformationResponse response = new AdvisoryInformationResponse();
-        response.setAdvisoryId(document.getId());
-        response.setOwner(getStringFieldValue(OWNER_FIELD, document));
-        response.setTitle(getStringFieldValue(DOCUMENT_TITLE, document));
-        response.setDocumentTrackingId(getStringFieldValue(DOCUMENT_TRACKING_ID, document));
-        String workflowState = getStringFieldValue(WORKFLOW_STATE_FIELD, document);
-        response.setWorkflowState(WorkflowState.valueOf(WorkflowState.class, workflowState));
-        response.setAllowedStateChanges(Collections.emptyList());
-        return response;
     }
 
     /**
@@ -320,7 +324,7 @@ public class CouchDbService {
      * @param document the document
      * @return the value at the path
      */
-    private static String getStringFieldValue(String path, Document document) {
+    public static String getStringFieldValue(String path, Document document) {
 
         return getStringFieldValue(new String[] {path}, document);
     }

@@ -1,21 +1,16 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.convertCsafToJson;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.xml.bind.DatatypeConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class CouchDbServiceTest {
 
     private final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
+    private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
 
     @Autowired
     private CouchDbService couchDbService;
@@ -55,29 +51,30 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void updateCsafDocumentToDb() throws IOException {
-
+    public void updateCsafDocumentToDb() throws IOException, DatabaseException {
 
         final UUID uuid = UUID.randomUUID();
-        String revision = insertTestDocument(uuid);
+        insertTestDocument(uuid);
 
         long countBeforeUpdate = this.couchDbService.getDocumentCount();
-        final JsonNode responseBeforeUpdate = this.couchDbService.readCsafDocument(uuid.toString());
-        JsonNode trackingIdBeforeUpdate = responseBeforeUpdate.at("/csaf/document/tracking/id");
-        Assertions.assertEquals("exxcellent-2021AB123", trackingIdBeforeUpdate.asText());
+        final Document responseBeforeUpdate = this.couchDbService.readCsafDocument(uuid.toString());
+        String trackingIdBeforeUpdate = CouchDbService.getStringFieldValue(DOCUMENT_TRACKING_ID, responseBeforeUpdate);
+        Assertions.assertEquals("exxcellent-2021AB123", trackingIdBeforeUpdate);
+        String revision = responseBeforeUpdate.getRev();
 
         String newOwner = "Musterfrau";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
-            ObjectNode objectNode = convertCsafToJson(csafJsonStream, newOwner, WorkflowState.Draft);
+            ObjectNode objectNode = toAdvisoryJson(csafJsonStream, newOwner);
             this.couchDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
         }
 
         long countAfterUpdate = this.couchDbService.getDocumentCount();
-        final JsonNode responseAfterUpdate = this.couchDbService.readCsafDocument(uuid.toString());
+        final Document responseAfterUpdate = this.couchDbService.readCsafDocument(uuid.toString());
         Assertions.assertEquals(countBeforeUpdate, countAfterUpdate);
 
-        JsonNode trackingIdAfterUpdate = responseAfterUpdate.at("/csaf/document/tracking/id");
-        Assertions.assertEquals("exxcellent-2022CC", trackingIdAfterUpdate.asText());
+        String trackingIdAfterUpdate = CouchDbService.getStringFieldValue(DOCUMENT_TRACKING_ID, responseAfterUpdate);
+        Assertions.assertEquals("exxcellent-2022CC", trackingIdAfterUpdate);
+        Assertions.assertEquals(uuid.toString(), responseAfterUpdate.getId());
 
     }
 
@@ -117,23 +114,27 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void readAllCsafDocumentsFromDbTest() {
+    public void readAllCsafDocumentsFromDbTest() throws IOException {
+
+        UUID advisoryId = UUID.randomUUID();
+        insertTestDocument(advisoryId);
 
         long docCount = this.couchDbService.getDocumentCount();
 
-        final List<AdvisoryInformationResponse> infos = this.couchDbService.readAllCsafDocuments();
-        Assertions.assertEquals(docCount, infos.size());
+        final List<Document> docs = this.couchDbService.readAllCsafDocuments();
+        Assertions.assertEquals(docCount, docs.size());
+        Assertions.assertEquals(advisoryId.toString(), docs.get(0).getId());
     }
 
     @Test
-    public void readCsafDocumentTest() throws IOException {
+    public void readCsafDocumentTest() throws IOException, IdNotFoundException {
 
         final UUID uuid = UUID.randomUUID();
         insertTestDocument(uuid);
 
-        final JsonNode response = this.couchDbService.readCsafDocument(uuid.toString());
-        JsonNode readTitle = response.at("/csaf/document/title");
-        Assertions.assertEquals("TestRSc", readTitle.asText());
+        final Document response = this.couchDbService.readCsafDocument(uuid.toString());
+        Assertions.assertEquals("TestRSc", CouchDbService.getStringFieldValue(DOCUMENT_TITLE, response));
+        Assertions.assertEquals(uuid.toString(), response.getId());
     }
 
 
@@ -141,7 +142,7 @@ public class CouchDbServiceTest {
         String owner = "Mustermann";
         String jsonFileName = "exxcellent-2021AB123.json";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
-            ObjectNode objectNode = convertCsafToJson(csafJsonStream, owner, WorkflowState.Draft);
+            ObjectNode objectNode = toAdvisoryJson(csafJsonStream, owner);
             return this.couchDbService.writeCsafDocument(documentUuid, objectNode);
         }
     }
@@ -156,4 +157,21 @@ public class CouchDbServiceTest {
         document = new Document.Builder().add("csaf", Map.of("document", Map.of("title", "TestTitle"))).build();
         Assertions.assertEquals(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document), "TestTitle");
     }
+
+
+    private ObjectNode toAdvisoryJson(InputStream csafJsonStream, String owner) throws IOException {
+
+        ObjectMapper jacksonMapper = new ObjectMapper();
+
+        JsonNode csafRootNode = jacksonMapper.readValue(csafJsonStream, JsonNode.class);
+
+        ObjectNode rootNode = jacksonMapper.createObjectNode();
+        rootNode.put("workflowState", "Draft");
+        rootNode.put("owner", owner);
+        rootNode.put("type", CouchDbService.ObjectType.Advisory.name());
+        rootNode.set("csaf", csafRootNode);
+
+        return rootNode;
+    }
+
 }
