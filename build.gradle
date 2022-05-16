@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.6'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id "com.github.spotbugs" version "5.0.5"
+	id 'com.github.spotbugs' version '5.0.5'
 	id 'jacoco'
 }
 
@@ -16,14 +16,16 @@ repositories {
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
-		vendor = JvmVendorSpec.ADOPTIUM
+		vendor = JvmVendorSpec.ADOPTOPENJDK
 	}
 }
 
 dependencies {
-
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'com.ibm.cloud:cloudant:0.1.2'
 	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.0'
 
@@ -32,6 +34,7 @@ dependencies {
 
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation ('org.openapitools:openapi-generator:6.0.0-beta') {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}

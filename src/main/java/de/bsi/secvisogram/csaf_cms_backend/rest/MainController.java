@@ -1,6 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
-
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

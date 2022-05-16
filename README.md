@@ -2,55 +2,61 @@
 
 ![Coverage](.github/badges/jacoco.svg)
 
-## Introduction
-
 ##  Getting started
 
-### Create .env file and setup CouchDB
+The configuration of the application as well as the compose file is done in 
+a local **.env** file. To start, simply copy the **.env.example** file.
+If you want different passwords, database names or ports you can change them 
+here.
 
-The Configuration is done in the **.env** file in the root path.
-The file has to be created for every developer, for example by 
- copying the file **.env.example**.    
+- run `docker-compose up`
+- After Keycloak is up, open a second terminal window and run 
+  `docker-compose up csaf-keycloak-cli` to import a realm with all the users 
+  and roles already set up.
+- To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup` 
+  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and 
+  stops CouchDB from spamming our logs
+- Open `http://localhost:9000/auth/` and log in with the admin user.
+  - On the left side, navigate to "Clients" and select the Secvisogram client.
+  - Select the **Credentials** tab and copy the Secret. This is our 
+    `CSAF_CLIENT_SECRET` environment variable.
+- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret) 
+  and paste it in `CSAF_COOKIE_SECRET`.
+- Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
+- restart compose
 
-The Spring Boot application needs also a running CouchDb.
-The configuration for the couchdb has to be set in the .env file.
-
-A CouchDb could be startet with docker by executing the docker compose file in the directory <project_root>/docker.
-
-In the couchdb a database for the advisories has to be created and configured with the Parameter CSAF_COUCHDB_DBNAME in the .env file. 
-
-It is also recommended create a database tihe the name _users.
-
-s. [CouchDb Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html)
+You should now be able to start the spring boot application, navigate to 
+`localhost:4180/api/2.0/about`, log in with one of the users and get a 
+response from the server.
 
 
-### gradle: build and execute tests
+## Commands
+
+### build and execute tests
 
 ./gradlew clean build
 
-### gradle: build and run SpotBugs
+### build and run SpotBugs
 
 ./gradlew clean assemble spotbugsMain
 
-### gradle: start application
+### start application
 
 ./gradlew bootRun
-
-###
 
 with main class: de.exxcellent.bsi.SecvisogramApplication
 
 ### check application running
 
-http://localhost:8080/api/2.0/about
+http://localhost:8081/api/2.0/about
 
 Swagger UI
 
-http://localhost:8080/swagger-ui/index.html#
+http://localhost:8081/swagger-ui/index.html
 
-OpenAPI Spezifikation
+OpenAPI specification
 
-http://localhost:8080/v3/api-docs/
+http://localhost:8081/v3/api-docs/
 
 ## How to use
 
