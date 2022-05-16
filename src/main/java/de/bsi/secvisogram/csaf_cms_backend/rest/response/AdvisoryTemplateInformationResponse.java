@@ -1,12 +1,11 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Entry in a list of advisory  template information's
+ * Entry in a list of advisory template information items
  */
-@ApiModel("AdvisoryTemplateInformation")
+@Schema(name = "AdvisoryTemplateInformation")
 public class AdvisoryTemplateInformationResponse {
 
     private final long templateId;
@@ -17,12 +16,12 @@ public class AdvisoryTemplateInformationResponse {
         this.templateDescription = templateDescription;
     }
 
-    @ApiModelProperty(value = "Unique Id of the template", example = "33476793")
+    @Schema(description = "The unique ID of the template.", example = "33476793")
     public long getTemplateId() {
         return templateId;
     }
 
-    @ApiModelProperty(value = "Description of the template", example = "Template for profile ")
+    @Schema(description = "The description of the template.", example = "Template for the profile CSAF base.")
     public String getTemplateDescription() {
         return templateDescription;
     }

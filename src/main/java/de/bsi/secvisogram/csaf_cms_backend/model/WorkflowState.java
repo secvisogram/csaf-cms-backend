@@ -5,5 +5,7 @@ public enum WorkflowState {
     Draft,
     Review,
     Approved,
+
+    RfPublication,
     Published
 }

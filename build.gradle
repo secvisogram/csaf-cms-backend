@@ -8,13 +8,17 @@ plugins {
 
 group = 'de.exxcellent'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
 
 repositories {
 	mavenCentral()
 }
 
-
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+		vendor = JvmVendorSpec.ADOPTIUM
+	}
+}
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
@@ -22,26 +26,44 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
-	implementation 'io.springfox:springfox-boot-starter:3.0.0'
-	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
-	implementation 'com.ibm.cloud:cloudant:0.1.1'
-	implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.6.0'
+	implementation 'com.ibm.cloud:cloudant:0.1.2'
+	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.0'
+
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.8'
+
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation group: 'org.openapitools', name: 'openapi-generator', version: '5.4.0'
-	testImplementation group: 'org.openapitools', name: 'openapi-generator-cli', version: '5.4.0'
+	testImplementation ('org.openapitools:openapi-generator:6.0.0-beta') {
+		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
+	}
+	testImplementation ('org.openapitools:openapi-generator-cli:6.0.0-beta') {
+		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
+	}
 
-	spotbugsSlf4j group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36'
+	testImplementation 'org.testcontainers:testcontainers:1.17.1'
+	testImplementation 'org.testcontainers:junit-jupiter:1.17.1'
+
+	spotbugsSlf4j 'org.slf4j:slf4j-simple:1.7.36'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
 
-	spotbugsPlugins group: 'com.mebigfatguy.sb-contrib', name: 'sb-contrib', version: '7.4.7'
+	spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.4.7'
 }
 
 test {
 	useJUnitPlatform()
+	filter {
+		excludeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
+	}
 }
 
+task apiDocumentation(type: Test, description: "generates the API documentation") {
+	useJUnitPlatform()
+	filter {
+		includeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
+	}
+}
 
 
 jacoco {

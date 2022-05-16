@@ -1,17 +1,15 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Entry in a list of advisory information's
+ * An entry in a list of advisory information items.
  */
-@ApiModel("AdvisoryDocumentInformation")
+@Schema(name = "AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
     private String advisoryId;
@@ -52,7 +50,7 @@ public class AdvisoryInformationResponse {
         this.owner = "Mustermann";
     }
 
-    @ApiModelProperty(value = "Unique Id of the advisory", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
+    @Schema(description = "The unique ID of the advisory.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
     public String getAdvisoryId() {
         return advisoryId;
     }
@@ -61,7 +59,7 @@ public class AdvisoryInformationResponse {
         this.advisoryId = advisoryId;
     }
 
-    @ApiModelProperty(value = "Current workflow state of the advisory", example = "Approved")
+    @Schema(description = "The current workflow state of the advisory.", example = "Approved")
     public WorkflowState getWorkflowState() {
         return workflowState;
     }
@@ -74,7 +72,7 @@ public class AdvisoryInformationResponse {
         this.allowedStateChanges = Collections.unmodifiableList(allowedStateChanges);
     }
 
-    @ApiModelProperty(value = "CSAF tracking id of the advisory", example = "RHBA-2019_0024")
+    @Schema(description = "The CSAF tracking ID of the advisory.", example = "RHBA-2019_0024")
     public String getDocumentTrackingId() {
         return documentTrackingId;
     }
@@ -83,7 +81,10 @@ public class AdvisoryInformationResponse {
         this.documentTrackingId = documentTrackingId;
     }
 
-    @ApiModelProperty(value = "CSAF title of the advisory", example = "Cisco IPv6 Crafted Packet Denial of Service Vulnerability")
+    @Schema(
+            description = "The CSAF title of the advisory.",
+            example = "Cisco IPv6 Crafted Packet Denial of Service Vulnerability"
+    )
     public String getTitle() {
         return title;
     }
@@ -92,7 +93,7 @@ public class AdvisoryInformationResponse {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Current owner of the advisory", example = "Mustermann")
+    @Schema(description = "The current owner of the advisory.", example = "Mustermann")
     public String getOwner() {
         return owner;
     }
@@ -101,17 +102,20 @@ public class AdvisoryInformationResponse {
         this.owner = owner;
     }
 
-    @ApiModelProperty(value = "Can the logged in user change this advisory?", example = "true")
+    @Schema(description = "Indicates if the currently logged in user can change this advisory.", example = "true")
     public boolean isChangeable() {
         return changeable;
     }
 
-    @ApiModelProperty(value = "Can the logged in user delete this advisory?", example = "false")
+    @Schema(description = "Indicates if the logged in user can delete this advisory.", example = "false")
     public boolean isDeletable() {
         return deletable;
     }
 
-    @ApiModelProperty(value = "Allowed state changes of the logged in user", example = "Published")
+    @Schema(
+            description = "A list of allowed state changes of the logged in user.",
+            example = "[\"Approved\", \"Published\"]"
+    )
     public List<WorkflowState> getAllowedStateChanges() {
         return Collections.unmodifiableList(allowedStateChanges);
     }

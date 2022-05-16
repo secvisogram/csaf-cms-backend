@@ -52,7 +52,7 @@ http://localhost:8081/api/2.0/about
 
 Swagger UI
 
-http://localhost:8081/swagger-ui/
+http://localhost:8081/swagger-ui/index.html
 
 OpenAPI specification
 
