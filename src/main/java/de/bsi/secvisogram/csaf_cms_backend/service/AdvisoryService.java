@@ -29,7 +29,7 @@ public class AdvisoryService {
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryService.class);
 
     @Autowired
-    private CouchDbService couchDbService;
+    public CouchDbService couchDbService;
 
     private static final String WORKFLOW_STATE_FIELD = "workflowState";
     private static final String OWNER_FIELD = "owner";
@@ -100,9 +100,8 @@ public class AdvisoryService {
      * @param advisoryJsonString the advisory as JSON String
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
      * @throws JsonProcessingException  if the given JSON string is not valid
-     * @throws IllegalArgumentException if the given JSON does not satisfy basic requirements
      */
-    public IdAndRevision addAdvisory(String advisoryJsonString) throws JsonProcessingException, IllegalArgumentException {
+    public IdAndRevision addAdvisory(String advisoryJsonString) throws JsonProcessingException {
 
         UUID advisoryId = UUID.randomUUID();
         ObjectNode objectNode = stringToAdvisory(advisoryJsonString);
