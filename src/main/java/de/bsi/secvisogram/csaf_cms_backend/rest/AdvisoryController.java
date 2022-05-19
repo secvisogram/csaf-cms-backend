@@ -54,8 +54,8 @@ public class AdvisoryController {
     private static UUID getUuid(String idString) {
         try {
             return UUID.fromString(idString);
-        } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!");
+        } catch (IllegalArgumentException iaEx) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!", iaEx);
         }
     }
 
@@ -116,7 +116,8 @@ public class AdvisoryController {
         try {
             return ResponseEntity.ok(advisoryService.getAdvisory(uuid));
         } catch (IdNotFoundException idNfEx) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Advisory with given ID not found");
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -208,7 +209,8 @@ public class AdvisoryController {
             String newRevision = advisoryService.updateAdvisory(uuid, revision, changedCsafJson);
             return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
         } catch (IdNotFoundException idNfEx) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Advisory with given ID not found");
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
         }
@@ -278,7 +280,8 @@ public class AdvisoryController {
             advisoryService.deleteAdvisory(uuid, revision);
             return ResponseEntity.ok().build();
         } catch (IdNotFoundException idNfEx) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Advisory with given ID not found");
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
         }
