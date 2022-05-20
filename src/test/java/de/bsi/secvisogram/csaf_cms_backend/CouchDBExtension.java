@@ -44,26 +44,44 @@ public class CouchDBExtension implements BeforeAllCallback, AfterAllCallback, Be
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        sendDbRequest("PUT");
+        createDatabase();
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws IOException {
-        sendDbRequest("DELETE");
+        deleteDatabase();
     }
 
     @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "URL is built from dynamic values but not user input")
-    private void sendDbRequest(String method) throws IOException {
-        URL url = new URL("http://"
+    private void createDatabase() throws IOException {
+
+        HttpURLConnection connection = (HttpURLConnection) createCreateDeleteDatabaseUrl().openConnection();
+        connection.setRequestMethod("PUT");
+        connection.setRequestProperty("Authorization", createBasicAuth());
+        connection.getResponseCode();
+    }
+
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "URL is built from dynamic values but not user input")
+    private void deleteDatabase() throws IOException {
+
+        HttpURLConnection connection = (HttpURLConnection) createCreateDeleteDatabaseUrl().openConnection();
+        connection.setRequestMethod("DELETE");
+        connection.setRequestProperty("Authorization", createBasicAuth());
+        connection.getResponseCode();
+    }
+
+
+    private String createBasicAuth() {
+
+        String auth = user + ":" + password;
+        return "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private URL createCreateDeleteDatabaseUrl() throws IOException {
+        return new URL("http://"
                           + couchDb.getHost() + ":"
                           + couchDb.getMappedPort(initialPort)
                           + "/" + dbName);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(method);
-        String auth = user + ":" + password;
-        String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8));
-        connection.setRequestProperty("Authorization", basicAuth);
-        connection.getResponseCode();
     }
 
 
