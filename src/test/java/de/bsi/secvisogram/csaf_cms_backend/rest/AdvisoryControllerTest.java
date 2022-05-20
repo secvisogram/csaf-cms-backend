@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -135,7 +136,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.addAdvisory(invalidJson)).thenThrow(JsonProcessingException.class);
 
         this.mockMvc.perform(
-                        post(advisoryRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON))
+                        post(advisoryRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -147,7 +148,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.addAdvisory(csafJsonString)).thenReturn(idRev);
 
         this.mockMvc.perform(
-                        post(advisoryRoute).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
+                        post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(String.format("{\"id\": \"%s\", \"revision\": \"%s\"}", advisoryId, revision)));
@@ -159,7 +160,7 @@ public class AdvisoryControllerTest {
 
         doThrow(IdNotFoundException.class).when(advisoryService).updateAdvisory(advisoryId, revision, fullAdvisoryJsonString);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId)
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -172,7 +173,7 @@ public class AdvisoryControllerTest {
 
         String invalidId = "not an UUID";
 
-        this.mockMvc.perform(patch(advisoryRoute + invalidId)
+        this.mockMvc.perform(patch(advisoryRoute + invalidId).with(csrf())
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -186,7 +187,7 @@ public class AdvisoryControllerTest {
         String invalidRevision = "invalid";
         doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(advisoryId, invalidRevision, fullAdvisoryJsonString);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId)
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", invalidRevision))
@@ -201,7 +202,7 @@ public class AdvisoryControllerTest {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateAdvisory(advisoryId, revision, fullAdvisoryJsonString)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId)
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -216,7 +217,7 @@ public class AdvisoryControllerTest {
         UUID advisoryId = UUID.randomUUID();
         doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision))
+        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -226,7 +227,7 @@ public class AdvisoryControllerTest {
 
         String invalidId = "invalid ID";
 
-        this.mockMvc.perform(delete(advisoryRoute + invalidId))
+        this.mockMvc.perform(delete(advisoryRoute + invalidId).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -238,7 +239,8 @@ public class AdvisoryControllerTest {
         String invalidRevision = "invalid";
         doThrow(DatabaseException.class).when(advisoryService).deleteAdvisory(advisoryId, invalidRevision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", invalidRevision))
+        this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
+                        .param("revision", invalidRevision))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -247,7 +249,7 @@ public class AdvisoryControllerTest {
     @Test
     void deleteCsafDocumentTest() throws Exception {
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision))
+        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
