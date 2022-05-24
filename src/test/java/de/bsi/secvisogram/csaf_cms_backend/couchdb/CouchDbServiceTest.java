@@ -24,9 +24,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +42,11 @@ public class CouchDbServiceTest {
 
     private final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
     private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
+
+    private static final String[] ARRAY_FIELD_SELECTOR = {ARRAY_VALUES};
+
+    private static final List<String> ROOT_PRIMITIVE_FIELDS = Arrays.asList(FIRST_STRING, SECOND_STRING,
+            DECIMAL_VALUE, BOOLEAN_VALUE);
 
     @Autowired
     private CouchDbService couchDbService;
@@ -269,12 +272,12 @@ public class CouchDbServiceTest {
     @Test
     public void findDocumentsTest_booleanValue() throws IOException {
 
-        this.writeToDb(new TestModelRoot().setBooleanValue(true));
-        this.writeToDb(new TestModelRoot().setBooleanValue(false));
+        this.writeToDb(new TestModelRoot().setBooleanValue(Boolean.TRUE));
+        this.writeToDb(new TestModelRoot().setBooleanValue(Boolean.FALSE));
 
         Map<String, Object> filter = expr2CouchDBFilter(equal(true, BOOLEAN_VALUE));
         List<Document> foundDocs = this.couchDbService.findDocuments(filter, ROOT_PRIMITIVE_FIELDS);
-        assertThat(mapAttribute(foundDocs, BOOLEAN_VALUE), containsInAnyOrder(true));
+        assertThat(mapAttribute(foundDocs, BOOLEAN_VALUE), containsInAnyOrder(Boolean.TRUE));
     }
 
     @Test
@@ -327,13 +330,13 @@ public class CouchDbServiceTest {
     }
 
 
-    private List<Object> mapAttribute(List<Document> foundDocs, String attributeName) {
+    private List<Object> mapAttribute(Collection<Document> foundDocs, String attributeName) {
         return foundDocs.stream()
                 .map(doc -> doc.get(attributeName))
                 .collect(toList());
     }
 
-    private List<Object> mapAttributeDouble(List<Document> foundDocs, String attributeName) {
+    private List<Object> mapAttributeDouble(Collection<Document> foundDocs, String attributeName) {
         return foundDocs.stream()
                 .map(doc -> ((LazilyParsedNumber) doc.get(attributeName)).doubleValue())
                 .collect(toList());
