@@ -51,7 +51,7 @@ public class AdvisoryController {
     @Autowired
     private AdvisoryService advisoryService;
 
-    private static UUID getUuid(String idString) {
+    private static UUID convertToUuid(String idString) {
         try {
             return UUID.fromString(idString);
         } catch (IllegalArgumentException iaEx) {
@@ -112,7 +112,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("readCsafDocument");
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             return ResponseEntity.ok(advisoryService.getAdvisory(uuid));
         } catch (IdNotFoundException idNfEx) {
@@ -204,7 +204,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             String newRevision = advisoryService.updateAdvisory(uuid, revision, changedCsafJson);
             return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
@@ -275,7 +275,7 @@ public class AdvisoryController {
 
         LOG.info("deleteCsafDocument");
 
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             advisoryService.deleteAdvisory(uuid, revision);
             return ResponseEntity.ok().build();
@@ -396,7 +396,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Draft);
             return ResponseEntity.ok().build();
@@ -432,7 +432,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToReview {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Review);
             return ResponseEntity.ok().build();
@@ -468,7 +468,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Approved);
             return ResponseEntity.ok().build();
@@ -506,7 +506,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime));
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.RfPublication);
             return ResponseEntity.ok().build();
@@ -549,7 +549,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {} {}",
                 sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
-        UUID uuid = getUuid(advisoryId);
+        UUID uuid = convertToUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Published);
             return ResponseEntity.ok().build();

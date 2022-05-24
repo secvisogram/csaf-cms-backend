@@ -165,15 +165,15 @@ public class CouchDbService {
 
         Cloudant client = createCloudantClient();
 
-        if (rootNode.has(ID_FIELD) && !rootNode.get(ID_FIELD).asText().equals(revision)) {
+        if (rootNode.has(ID_FIELD) && !rootNode.get(ID_FIELD).asText().equals(uuid)) {
             throw new IllegalArgumentException("The updated object has an ID set that does not match!");
         }
         if (rootNode.has(REVISION_FIELD) && !rootNode.get(REVISION_FIELD).asText().equals(revision)) {
             throw new IllegalArgumentException("The updated object has a revision set that does not match!");
         }
 
-        rootNode.put(REVISION_FIELD, revision);
         rootNode.put(ID_FIELD, uuid);
+        rootNode.put(REVISION_FIELD, revision);
 
         String updateString = rootNode.toPrettyString();
 
