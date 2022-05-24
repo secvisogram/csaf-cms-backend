@@ -56,6 +56,7 @@ test {
 	filter {
 		excludeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
 	}
+	testLogging.showStandardStreams = true
 }
 
 task apiDocumentation(type: Test, description: "generates the API documentation") {

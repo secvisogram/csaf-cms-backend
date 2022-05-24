@@ -34,6 +34,10 @@ public class AdvisoryInformationResponse {
     }
 
     public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId) {
+        this(advisoryId, workflowState, documentTrackingId, "Title of: " + documentTrackingId, "unknown");
+    }
+
+    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId, String title, String owner) {
         this.advisoryId = advisoryId;
         this.workflowState = workflowState;
         this.documentTrackingId = documentTrackingId;
@@ -46,8 +50,8 @@ public class AdvisoryInformationResponse {
         } else if (WorkflowState.Review == workflowState) {
             this.allowedStateChanges = Arrays.asList(WorkflowState.Draft, WorkflowState.Approved);
         }
-        this.title = "Title of: " + documentTrackingId;
-        this.owner = "Mustermann";
+        this.title = title;
+        this.owner = owner;
     }
 
     @Schema(description = "The unique ID of the advisory.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
