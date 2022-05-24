@@ -17,13 +17,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.ibm.cloud.cloudant.v1.model.Document;
+import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
@@ -142,7 +139,14 @@ public class CouchDbServiceTest {
 
         long docCount = this.couchDbService.getDocumentCount();
 
-        final List<Document> docs = this.couchDbService.readAllCsafDocuments();
+        List<String> infoFields = List.of(
+                String.join(".", DOCUMENT_TITLE),
+                String.join(".", DOCUMENT_TRACKING_ID),
+                CouchDbService.REVISION_FIELD,
+                CouchDbService.ID_FIELD
+        );
+
+        final List<Document> docs = this.couchDbService.readAllCsafDocuments(infoFields);
         Assertions.assertEquals(docCount, docs.size());
         Assertions.assertEquals(advisoryId.toString(), docs.get(0).getId());
     }
@@ -186,9 +190,6 @@ public class CouchDbServiceTest {
     @Test
     public void findDocumentsTest_native() throws IOException {
 
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
-
         this.writeToDb(new TestModelRoot().setFirstString("Hans").setSecondString("Dampf").setDecimalValue(12.55));
         this.writeToDb(new TestModelRoot().setFirstString("Franz").setSecondString("Dampf"));
 
@@ -204,9 +205,6 @@ public class CouchDbServiceTest {
 
     @Test
     public void findDocumentsTest_operatorEqual() throws IOException {
-
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
 
         this.writeToDb(new TestModelRoot().setFirstString("zzz").setSecondString("AAA").setDecimalValue(12.55));
         this.writeToDb(new TestModelRoot().setFirstString("yyy").setSecondString("AAA"));
@@ -224,9 +222,6 @@ public class CouchDbServiceTest {
     @Test
     public void findDocumentsTest_operatorContainsIgnoreCase() throws IOException {
 
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
-
         this.writeToDb(new TestModelRoot().setFirstString("123Abc45"));
         this.writeToDb(new TestModelRoot().setFirstString("123abC45"));
         this.writeToDb(new TestModelRoot().setFirstString("123abD45"));
@@ -238,9 +233,6 @@ public class CouchDbServiceTest {
 
     @Test
     public void findDocumentsTest_operatorsGreaterAndLess() throws IOException {
-
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
 
         this.writeToDb(new TestModelRoot().setFirstString("AAA"));
         this.writeToDb(new TestModelRoot().setFirstString("BBB"));
@@ -266,9 +258,6 @@ public class CouchDbServiceTest {
      @Test
     public void findDocumentsTest_numericValue() throws IOException {
 
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
-
         this.writeToDb(new TestModelRoot().setDecimalValue(12.55));
         this.writeToDb(new TestModelRoot().setDecimalValue(2374.332));
 
@@ -280,9 +269,6 @@ public class CouchDbServiceTest {
     @Test
     public void findDocumentsTest_booleanValue() throws IOException {
 
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
-
         this.writeToDb(new TestModelRoot().setBooleanValue(true));
         this.writeToDb(new TestModelRoot().setBooleanValue(false));
 
@@ -293,9 +279,6 @@ public class CouchDbServiceTest {
 
     @Test
     public void findDocumentsTest_operatorAnd() throws IOException {
-
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
 
         this.writeToDb(new TestModelRoot().setFirstString("zzz").setSecondString("AAA").setDecimalValue(11.11));
         this.writeToDb(new TestModelRoot().setFirstString("zzz").setSecondString("AAA").setDecimalValue(22.22));
@@ -319,9 +302,6 @@ public class CouchDbServiceTest {
     @Test
     public void findDocumentsTest_multLevelSelector() throws IOException {
 
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
-
         this.writeToDb(new TestModelRoot().setFirstString("AAA").setLevelValues("Lev1A", "Lev2A"));
         this.writeToDb(new TestModelRoot().setFirstString("BBB").setLevelValues("Lev1B", "Lev2B"));
         this.writeToDb(new TestModelRoot().setFirstString("CCC").setLevelValues("Lev1C", "Lev2A"));
@@ -334,9 +314,6 @@ public class CouchDbServiceTest {
 
     @Test
     public void findDocumentsTest_searchInArray() throws IOException {
-
-        this.couchDbService.deleteDatabase(this.couchDbService.getDbName());
-        this.couchDbService.createDatabase(this.couchDbService.getDbName());
 
         this.writeToDb(new TestModelRoot().setFirstString("AAA").addListValues("ListVal1", "ListVal2", "ListVal3"));
         this.writeToDb(new TestModelRoot().setFirstString("BBB").addListValues("ListVal1", "ListVal5", "ListVal6"));

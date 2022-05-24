@@ -38,8 +38,8 @@ public class AdvisoryService {
     private static final Set<String> REQUIRED_FIELDS = Set.of(
             WORKFLOW_STATE_FIELD, OWNER_FIELD, TYPE_FIELD, CSAF_FIELD
     );
-    private static final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
-    private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
+    public static final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
+    public static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
 
     private static final ObjectMapper jacksonMapper = new ObjectMapper();
 

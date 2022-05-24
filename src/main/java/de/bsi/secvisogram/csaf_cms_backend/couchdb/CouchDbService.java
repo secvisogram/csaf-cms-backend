@@ -1,10 +1,13 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.*;
 import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.ObjectType.Advisory;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
@@ -14,7 +17,6 @@ import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -67,10 +69,6 @@ public class CouchDbService {
         return protocol + dbHost + ":" + dbPort;
     }
 
-    public String getDbName() {
-        return dbName;
-    }
-
     /**
      * Create a new CouchDB
      *
@@ -98,36 +96,6 @@ public class CouchDbService {
             }
         }
     }
-
-    /**
-     * Delete a new CouchDB
-     *
-     * @param nameOfNewDb name of the couchdb database
-     */
-    public void deleteDatabase(String nameOfNewDb) {
-
-        Cloudant client = createCloudantClient();
-        DeleteDatabaseOptions deleteDbOptions =
-                new DeleteDatabaseOptions.Builder().db(nameOfNewDb).build();
-
-        // Try to create database if it doesn't exist
-        try {
-            Ok deleteResult = client
-                    .deleteDatabase(deleteDbOptions)
-                    .execute()
-                    .getResult();
-
-            if (deleteResult.isOk()) {
-                LOG.info("{}' database deleted.", nameOfNewDb);
-            }
-        } catch (ServiceResponseException sre) {
-            if (sre.getStatusCode() == 412) {
-                throw new RuntimeException("Cannot create \"" + nameOfNewDb + "\" database, it already exists.", sre);
-            }
-        }
-    }
-
-
 
     /**
      * Get the Version of the couchdb server
@@ -174,12 +142,27 @@ public class CouchDbService {
      */
     public String writeCsafDocument(final UUID uuid, ObjectNode rootNode) {
 
-        return writeDocument(uuid, rootNode);
+        Cloudant client = createCloudantClient();
+        String createString = rootNode.toPrettyString();
+
+        PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
+                .db(this.dbName)
+                .docId(uuid.toString())
+                .contentType("application/json")
+                .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
+                .build();
+        DocumentResult createDocumentResponse = client
+                .putDocument(createDocumentOptions)
+                .execute()
+                .getResult();
+
+        return createDocumentResponse.getRev();
     }
 
     public String writeDocument(final UUID uuid, Object rootNode) throws JsonProcessingException {
 
         Cloudant client = createCloudantClient();
+        final ObjectMapper jacksonMapper = new ObjectMapper();
         ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
         String createString = writer.writeValueAsString(rootNode);
 
@@ -196,6 +179,7 @@ public class CouchDbService {
 
         return createDocumentResponse.getRev();
     }
+
     /**
      * Change a CSAF document in the couchDB
      *
@@ -274,33 +258,13 @@ public class CouchDbService {
     /**
      * read the information of all CSAF documents
      *
-     * @param fields the fields of information to select
      * @return list of all requested document information
      */
     public List<Document> readAllCsafDocuments(List<String> fields) {
 
         Map<String, Object> selector = expr2CouchDBFilter(equal(Advisory.name(), "type"));
-        return findCsafDocuments(selector);
+        return findDocuments(selector, fields);
     }
-
-    /**
-     * read the information of the CSAF documents matching the selector
-     *
-     * @return list of all document information that match the selector
-     */
-    public List<AdvisoryInformationResponse> findCsafDocuments(Map<String, Object> selector) {
-
-
-        String titlePath = String.join(".", DOCUMENT_TITLE);
-        String trackIdPath = String.join(".", DOCUMENT_TRACKING_ID);
-        List<String> fields = Arrays.asList(WORKFLOW_STATE_FIELD, OWNER_FIELD, TYPE_FIELD,
-                COUCHDB_REVISON_FIELD, COUCHDB_ID_FIELD, titlePath, trackIdPath);
-        List<Document> documents = this.findDocuments(selector, fields);
-        return documents.stream()
-                .map(this::convertToAdvisoryInformationResponse)
-                .collect(Collectors.toList());
-    }
-
 
     /**
      * read the information of the documents matching the selector
