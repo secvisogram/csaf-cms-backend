@@ -85,7 +85,7 @@ Additional features and requirements are:
 | C2  | Coding conventions         | This project is using the [oracle coding conventions](https://www.oracle.com/java/technologies/javase/codeconventions-introduction.html)                                          |
 | C3  | Language                   | The language used throughout the project is american English. (code comments, documentation, ...)                                                                                 |
 | C4  | Git commit conventions     | [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) are used for commit messages. GitHub issues shall be referenced in commit messages where applicable.       |
-| C5  | License                    | The code should be published under the MIT license                                                                                                                                |
+| C5  | License                    | The following licenses are considered compatible with the MIT license: Apache 2.0, BSD                                                                                                                                |
 | C6  | Markdown Lint              | Markdown files should be checked with Markdown-lint. This should be done in Github Actions                                                                                        |
 | C7  | Eslint                     | Javascript files should be checked with Eslint. This should be done in Github Actions                                                                                             |
 | C7  | Code Reviews               | A pull request has to be reviewed by another developer before it is merged to the main branch                                                                                     |
@@ -122,8 +122,7 @@ The Client could have one of the following roles:
 - inherits the rights of the "Registered" role
 - may list, view and edit and delete own (by the user) CSAF documents in `Draft`
   status
-- may view and reply to comments on CSAF documents that he/she is allowed to
-  view and edit
+- may create comments, view and reply to comments on CSAF documents that he/she is allowed to view and edit
 - may create new CSAF documents
 - may change the status of own CSAF documents from `Draft` to `Review`
 - may view the status of own CSAF documents
@@ -148,7 +147,7 @@ The Client could have one of the following roles:
 - inherits the rights of the "Registered" role
 - may list and view all CSAF documents in the status `Review` and not created by
   the user
-- May view and create comments on CSAF documents.
+- May view, reply to and create comments on CSAF documents
 - may change the status from `Review` to `Draft` or `Approved`.
 
 ##### Role: Auditor
