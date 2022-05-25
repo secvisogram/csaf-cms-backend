@@ -79,21 +79,23 @@ public class CouchDbServiceTest {
 
         long countBeforeUpdate = this.couchDbService.getDocumentCount();
         final Document responseBeforeUpdate = this.couchDbService.readCsafDocument(uuid.toString());
-        String trackingIdBeforeUpdate = CouchDbService.getStringFieldValue(DOCUMENT_TRACKING_ID, responseBeforeUpdate);
+        String trackingIdBeforeUpdate = CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TRACKING_ID, responseBeforeUpdate);
         Assertions.assertEquals("exxcellent-2021AB123", trackingIdBeforeUpdate);
         String revision = responseBeforeUpdate.getRev();
 
         String newOwner = "Musterfrau";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
             ObjectNode objectNode = toAdvisoryJson(csafJsonStream, newOwner);
-            this.couchDbService.updateCsafDocument(uuid.toString(), revision, objectNode);
+            objectNode.put(CouchDbField.ID_FIELD.getDbName(), uuid.toString());
+            objectNode.put(CouchDbField.REVISION_FIELD.getDbName(), revision);
+            this.couchDbService.updateCsafDocument(objectNode);
         }
 
         long countAfterUpdate = this.couchDbService.getDocumentCount();
         final Document responseAfterUpdate = this.couchDbService.readCsafDocument(uuid.toString());
         Assertions.assertEquals(countBeforeUpdate, countAfterUpdate);
 
-        String trackingIdAfterUpdate = CouchDbService.getStringFieldValue(DOCUMENT_TRACKING_ID, responseAfterUpdate);
+        String trackingIdAfterUpdate = CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TRACKING_ID, responseAfterUpdate);
         Assertions.assertEquals("exxcellent-2022CC", trackingIdAfterUpdate);
         Assertions.assertEquals(uuid.toString(), responseAfterUpdate.getId());
 
@@ -161,7 +163,7 @@ public class CouchDbServiceTest {
         insertTestDocument(uuid);
 
         final Document response = this.couchDbService.readCsafDocument(uuid.toString());
-        Assertions.assertEquals("TestRSc", CouchDbService.getStringFieldValue(DOCUMENT_TITLE, response));
+        Assertions.assertEquals("TestRSc", CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, response));
         Assertions.assertEquals(uuid.toString(), response.getId());
     }
 
@@ -179,11 +181,11 @@ public class CouchDbServiceTest {
     public void getStringFieldValueTest() {
 
         Document document = new Document.Builder().build();
-        Assertions.assertNull(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
+        Assertions.assertNull(CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, document));
         document = new Document.Builder().add("csaf", null).build();
-        Assertions.assertNull(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document));
+        Assertions.assertNull(CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, document));
         document = new Document.Builder().add("csaf", Map.of("document", Map.of("title", "TestTitle"))).build();
-        Assertions.assertEquals(CouchDbService.getStringFieldValue(DOCUMENT_TITLE, document), "TestTitle");
+        Assertions.assertEquals(CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, document), "TestTitle");
     }
 
     /**

@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -39,6 +41,8 @@ public class AdvisoryControllerTest {
     @Autowired
     AdvisoryController advisoryController;
 
+    private static final ObjectMapper jacksonMapper = new ObjectMapper();
+
     private static final String advisoryRoute = "/api/2.0/advisories/";
 
     private static final String csafJsonString = "{" +
@@ -55,7 +59,6 @@ public class AdvisoryControllerTest {
                                                                        "    \"_rev\": \"revision\"," +
                                                                        "    \"_id\": \"%s\"" +
                                                                        "}", csafJsonString, advisoryId);
-    private static final AdvisoryResponse advisoryResponse = new AdvisoryResponse(advisoryId.toString(), WorkflowState.Draft, csafJsonString);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
 
@@ -119,6 +122,9 @@ public class AdvisoryControllerTest {
 
     @Test
     void readCsafDocumentTest() throws Exception {
+
+        JsonNode node = jacksonMapper.readTree(csafJsonString);
+        final AdvisoryResponse advisoryResponse = new AdvisoryResponse(advisoryId.toString(), WorkflowState.Draft, node);
 
         when(advisoryService.getAdvisory(advisoryId)).thenReturn(advisoryResponse);
 
