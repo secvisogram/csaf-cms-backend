@@ -59,13 +59,13 @@ public class AdvisoryServiceTest {
 
     @Test
     public void getAdvisoryCount_empty() {
-        Assertions.assertEquals(0, this.advisoryService.getAdvisoryCount());
+        Assertions.assertEquals(0, this.advisoryService.getDocumentCount());
     }
 
     @Test
-    public void getAdvisoryCount() throws JsonProcessingException {
-        this.advisoryService.addAdvisory(advisoryJsonString);
-        Assertions.assertEquals(1, this.advisoryService.getAdvisoryCount());
+    public void getAdvisoryCount() throws IOException {
+        this.advisoryService.addAdvisory(csafJson);
+        Assertions.assertEquals(1, this.advisoryService.getDocumentCount());
     }
 
     @Test
@@ -75,9 +75,9 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void getAdvisoryIdsTest() throws JsonProcessingException {
-        IdAndRevision idRev1 = this.advisoryService.addAdvisory(advisoryJsonString);
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(advisoryJsonString);
+    public void getAdvisoryIdsTest() throws IOException {
+        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJson);
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryIds();
         List<UUID> expectedIDs = List.of(idRev1.getId(), idRev2.getId());
         List<UUID> ids = infos.stream().map(info -> UUID.fromString(info.getAdvisoryId())).toList();
@@ -101,19 +101,8 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void addAdvisoryTest_missingKey() {
-        String advisoryJsonMissingOwner = String.format("{" +
-                                                        "    \"type\": \"Advisory\"," +
-                                                        "    \"workflowState\": \"Draft\"," +
-                                                        "    \"csaf\": %s" +
-                                                        "}", csafJson);
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> this.advisoryService.addAdvisory(advisoryJsonMissingOwner));
-    }
-
-    @Test
-    public void addAdvisoryTest() throws JsonProcessingException {
-        IdAndRevision idRev = advisoryService.addAdvisory(advisoryJsonString);
+    public void addAdvisoryTest() throws IOException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         Assertions.assertNotNull(idRev);
     }
 
@@ -124,10 +113,10 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void getAdvisoryTest() throws IOException, IdNotFoundException {
-        IdAndRevision idRev = advisoryService.addAdvisory(advisoryJsonString);
+    public void getAdvisoryTest() throws IOException, DatabaseException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
-        Assertions.assertEquals(csafJson.replaceAll("\\s+", ""), advisory.getCsaf().replaceAll("\\s+", ""));
+        Assertions.assertEquals(csafJson.replaceAll("\\s+", ""), advisory.getCsaf().toString().replaceAll("\\s+", ""));
         Assertions.assertEquals(idRev.getId().toString(), advisory.getAdvisoryId());
     }
 
@@ -138,19 +127,19 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void deleteAdvisoryTest_badRevision() throws JsonProcessingException {
-        IdAndRevision idRev = advisoryService.addAdvisory(advisoryJsonString);
-        Assertions.assertEquals(1, advisoryService.getAdvisoryCount());
+    public void deleteAdvisoryTest_badRevision() throws IOException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        Assertions.assertEquals(1, advisoryService.getDocumentCount());
         String revision = "bad revision";
         Assertions.assertThrows(DatabaseException.class, () -> this.advisoryService.deleteAdvisory(idRev.getId(), revision));
     }
 
     @Test
     public void deleteAdvisoryTest() throws IOException, DatabaseException {
-        IdAndRevision idRev = advisoryService.addAdvisory(advisoryJsonString);
-        Assertions.assertEquals(1, advisoryService.getAdvisoryCount());
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        Assertions.assertEquals(1, advisoryService.getDocumentCount());
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        Assertions.assertEquals(0, advisoryService.getAdvisoryCount());
+        Assertions.assertEquals(0, advisoryService.getDocumentCount());
     }
 
     @Test
@@ -161,19 +150,21 @@ public class AdvisoryServiceTest {
 
     @Test
     public void updateAdvisoryTest() throws IOException, DatabaseException {
-        IdAndRevision idRev = advisoryService.addAdvisory(advisoryJsonString);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updatedAdvisoryJsonString);
-        Assertions.assertEquals(1, advisoryService.getAdvisoryCount());
+        // an advisory and an audit trail are created
+        Assertions.assertEquals(2, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
         Assertions.assertEquals(updatedCsafJson.replaceAll("\\s+", ""),
-                updatedAdvisory.getCsaf().replaceAll("\\s+", ""));
+                updatedAdvisory.getCsaf().toString().replaceAll("\\s+", ""));
     }
 
     @Test
     public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException {
-        IdAndRevision idRev = advisoryService.addAdvisory(advisoryJsonString);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review);
-        Assertions.assertEquals(1, advisoryService.getAdvisoryCount());
+        // an advisory and an audit trail are created
+        Assertions.assertEquals(2, advisoryService.getDocumentCount());
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         Assertions.assertEquals(WorkflowState.Review, advisory.getWorkflowState());
     }

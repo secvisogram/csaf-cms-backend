@@ -2,22 +2,22 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
+import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailDocumentWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import java.io.IOException;
-import java.util.HashSet;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,45 +31,12 @@ public class AdvisoryService {
     @Autowired
     public CouchDbService couchDbService;
 
-    private static final String WORKFLOW_STATE_FIELD = "workflowState";
-    private static final String OWNER_FIELD = "owner";
-    private static final String TYPE_FIELD = "type";
-    private static final String CSAF_FIELD = "csaf";
-    private static final Set<String> REQUIRED_FIELDS = Set.of(
-            WORKFLOW_STATE_FIELD, OWNER_FIELD, TYPE_FIELD, CSAF_FIELD
-    );
-    private static final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
-    private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
-
-    private static final ObjectMapper jacksonMapper = new ObjectMapper();
-
-    private ObjectNode stringToAdvisory(String jsonString) throws JsonProcessingException {
-        ObjectNode jsonObject = jacksonMapper.readValue(jsonString, ObjectNode.class);
-        if (!basicValidate(jsonObject)) {
-            throw new IllegalArgumentException("The advisory did not pass basic validation!");
-        }
-        return jsonObject;
-    }
-
-    private boolean basicValidate(ObjectNode advisoryJsonObject) {
-        Set<String> fields = new HashSet<>();
-        advisoryJsonObject.fieldNames().forEachRemaining(fields::add);
-        Set<String> missingFields = new HashSet<>(REQUIRED_FIELDS);
-        missingFields.removeAll(fields);
-        if (!missingFields.isEmpty()) {
-            LOG.error("The advisory json does not contain the required fields: {} (got {})", missingFields, fields);
-            return false;
-        }
-        return true;
-    }
-
-
     /**
      * get number of advisories
      *
      * @return number of advisories in the DB
      */
-    public Long getAdvisoryCount() {
+    public Long getDocumentCount() {
         return couchDbService.getDocumentCount();
     }
 
@@ -80,32 +47,34 @@ public class AdvisoryService {
      */
     public List<AdvisoryInformationResponse> getAdvisoryIds() {
 
-        List<String> infoFields = List.of(
-                WORKFLOW_STATE_FIELD,
-                OWNER_FIELD,
-                TYPE_FIELD,
-                String.join(".", DOCUMENT_TITLE),
-                String.join(".", DOCUMENT_TRACKING_ID),
-                CouchDbService.REVISION_FIELD,
-                CouchDbService.ID_FIELD
+        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = Map.of(
+                AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
+                AdvisoryField.OWNER, AdvisoryInformationResponse::setOwner,
+                AdvisorySearchField.DOCUMENT_TITLE, AdvisoryInformationResponse::setTitle,
+                AdvisorySearchField.DOCUMENT_TRACKING_ID, AdvisoryInformationResponse::setDocumentTrackingId,
+                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId
         );
 
-        List<Document> docList = couchDbService.readAllCsafDocuments(infoFields);
-        return docList.stream().map(this::convertToAdvisoryInfo).toList();
+        List<Document> docList = couchDbService.readAllCsafDocuments(new ArrayList<>(infoFields.keySet()));
+        return docList.stream()
+                .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
+                .toList();
     }
+
+
 
     /**
      * Adds an advisory to the system
      *
-     * @param advisoryJsonString the advisory as JSON String
+     * @param newCsafJson the advisory as JSON String
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
      * @throws JsonProcessingException  if the given JSON string is not valid
      */
-    public IdAndRevision addAdvisory(String advisoryJsonString) throws JsonProcessingException {
+    public IdAndRevision addAdvisory(String newCsafJson) throws IOException {
 
         UUID advisoryId = UUID.randomUUID();
-        ObjectNode objectNode = stringToAdvisory(advisoryJsonString);
-        String revision = couchDbService.writeCsafDocument(advisoryId, objectNode);
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(newCsafJson, "Mustermann");
+        String revision = couchDbService.writeCsafDocument(advisoryId, advisory.getAdvisoryNode());
         return new IdAndRevision(advisoryId, revision);
     }
 
@@ -116,9 +85,17 @@ public class AdvisoryService {
      * @return the requested advisory
      * @throws IdNotFoundException if there is no advisory with given ID
      */
-    public AdvisoryResponse getAdvisory(UUID advisoryId) throws IdNotFoundException {
-        Document dbDoc = couchDbService.readCsafDocument(advisoryId.toString());
-        return convertToAdvisory(dbDoc);
+    public AdvisoryResponse getAdvisory(UUID advisoryId) throws DatabaseException {
+        InputStream advisoryStream = couchDbService.readCsafDocumentAsStream(advisoryId.toString());
+        try {
+            AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+            AdvisoryResponse response = new AdvisoryResponse(advisoryId.toString(), advisory.getWorkflowState(), advisory.getCsaf());
+            response.setRevision(advisory.getRevision());
+            return response;
+
+        } catch (IOException e) {
+            throw new DatabaseException(e);
+        }
     }
 
     /**
@@ -134,15 +111,33 @@ public class AdvisoryService {
     /**
      * @param advisoryId                the ID of the advisory to update
      * @param revision                  the revision for concurrent control
-     * @param updatedAdvisoryJsonString the updated advisory json as string
+     * @param changedCsafJson           the updated csaf json as string
      * @return the new revision of the updated csaf document
      * @throws JsonProcessingException if the given JSON string is not valid
      * @throws DatabaseException       if there was an error updating the advisory in the DB
      */
-    public String updateAdvisory(UUID advisoryId, String revision, String updatedAdvisoryJsonString) throws JsonProcessingException, DatabaseException {
+    public String updateAdvisory(UUID advisoryId, String revision, String changedCsafJson) throws IOException, DatabaseException {
 
-        ObjectNode objectNode = stringToAdvisory(updatedAdvisoryJsonString);
-        return couchDbService.updateCsafDocument(advisoryId.toString(), revision, objectNode);
+        InputStream existingAdvisory = this.couchDbService.readCsafDocumentAsStream(advisoryId.toString());
+        if (existingAdvisory == null) {
+            throw new DatabaseException("Invalid advisory ID!");
+        }
+        AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisory);
+        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
+        newAdvisoryNode.setRevision(revision);
+
+        JsonNode patch = AdvisoryWrapper.calculateJsonDiff(oldAdvisoryNode.getAdvisoryNode(),
+                newAdvisoryNode.getAdvisoryNode());
+        AuditTrailDocumentWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromPatch(patch)
+            .setAdvisoryId(advisoryId.toString())
+            .setCreatedAtToNow()
+            .setChangeType(AuditTrailDocumentWrapper.ChangeType.UPDATED)
+            .setUser("Mustermann")
+            .setDocVersion("")
+            .setOldDocVersion("");
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.getAuditTrailNode());
+
+        return this.couchDbService.updateCsafDocument(newAdvisoryNode.getAdvisoryNode());
     }
 
     /**
@@ -154,41 +149,12 @@ public class AdvisoryService {
      */
     public String changeAdvisoryWorkflowState(UUID advisoryId, String revision, WorkflowState newWorkflowState) throws IOException, DatabaseException {
 
-        AdvisoryResponse advisory = getAdvisory(advisoryId);
-        advisory.setWorkflowState(newWorkflowState);
-        return updateAdvisory(advisoryId, revision, convertToString(advisory));
-
+        InputStream advisoryStream = couchDbService.readCsafDocumentAsStream(advisoryId.toString());
+        AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        advisoryNode.setWorkflowState(newWorkflowState);
+        return updateAdvisory(advisoryId, revision, advisoryNode.advisoryAsString());
     }
 
 
-    private AdvisoryInformationResponse convertToAdvisoryInfo(Document doc) {
-        String advisoryId = doc.getId();
-        WorkflowState wkfState = WorkflowState.valueOf(CouchDbService.getStringFieldValue(WORKFLOW_STATE_FIELD, doc));
-        String trackingId = CouchDbService.getStringFieldValue(DOCUMENT_TRACKING_ID, doc);
-        String title = CouchDbService.getStringFieldValue(DOCUMENT_TITLE, doc);
-        String owner = CouchDbService.getStringFieldValue(OWNER_FIELD, doc);
-        return new AdvisoryInformationResponse(advisoryId, wkfState, trackingId, title, owner);
-    }
-
-    private AdvisoryResponse convertToAdvisory(Document doc) {
-        String advisoryId = doc.getId();
-        WorkflowState wkfState = WorkflowState.valueOf(CouchDbService.getStringFieldValue(WORKFLOW_STATE_FIELD, doc));
-        String csafString = jacksonMapper.convertValue(doc.get(CSAF_FIELD), JsonNode.class).toPrettyString();
-        AdvisoryResponse advisory = new AdvisoryResponse(advisoryId, wkfState, csafString);
-        advisory.setRevision(doc.getRev());
-        return advisory;
-    }
-
-    private String convertToString(AdvisoryResponse advisory) throws JsonProcessingException {
-        JsonNode csafRootNode = jacksonMapper.readValue(advisory.getCsaf(), JsonNode.class);
-
-        ObjectNode rootNode = jacksonMapper.createObjectNode();
-        rootNode.put(WORKFLOW_STATE_FIELD, advisory.getWorkflowState().name());
-        rootNode.put(OWNER_FIELD, advisory.getOwner());
-        rootNode.put(TYPE_FIELD, CouchDbService.ObjectType.Advisory.name());
-        rootNode.set(CSAF_FIELD, csafRootNode);
-
-        return rootNode.toPrettyString();
-    }
 
 }

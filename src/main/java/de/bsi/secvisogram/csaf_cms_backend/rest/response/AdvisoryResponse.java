@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -10,9 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class AdvisoryResponse extends AdvisoryInformationResponse {
 
     private String revision;
-    private String csaf;
+    private JsonNode csaf;
 
-    public AdvisoryResponse(String advisoryId, WorkflowState status, String csafJsonWithComments) {
+    public AdvisoryResponse(String advisoryId, WorkflowState status, JsonNode csafJsonWithComments) {
         super(advisoryId, status);
         this.csaf = csafJsonWithComments;
     }
@@ -21,11 +22,11 @@ public class AdvisoryResponse extends AdvisoryInformationResponse {
             description = "The current CSAF document enhanced with comment IDs.",
             example = "{document: { $comment: [23454], category: \"generic_csaf\",..."
     )
-    public String getCsaf() {
+    public JsonNode getCsaf() {
         return this.csaf;
     }
 
-    public void setCsaf(String csaf) {
+    public void setCsaf(JsonNode csaf) {
         this.csaf = csaf;
     }
 

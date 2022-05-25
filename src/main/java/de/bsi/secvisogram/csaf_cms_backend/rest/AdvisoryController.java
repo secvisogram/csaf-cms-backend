@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
@@ -118,6 +117,9 @@ public class AdvisoryController {
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
+        } catch (DatabaseException e) {
+            LOG.info("Error reading Advisory");
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -157,7 +159,7 @@ public class AdvisoryController {
             URI advisoryLocation = URI.create("advisories/" + idRev.getId().toString());
             AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId().toString(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);
-        } catch (JsonProcessingException jpEx) {
+        } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
         }
     }
