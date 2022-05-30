@@ -122,7 +122,7 @@ public class CouchDBFilterCreator {
         } else if (opExpr.getValueType() == TypeOfValue.Boolean) {
             compareValue = "true".equals(opExpr.getValue());
         } else if (opExpr.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
-            compareValue = "^.*(?i)" + opExpr.getValue() + "(?i).*";
+            compareValue = "(?i)^.*" + opExpr.getValue() + ".*";
         } else {
             compareValue = opExpr.getValue();
         }

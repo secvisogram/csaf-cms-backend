@@ -232,6 +232,7 @@ public class CouchDbService {
     }
 
     /**
+     *
      * @param uuid id of the object to read
      * @return the requested document
      * @throws IdNotFoundException if the requested document was not found
@@ -258,6 +259,8 @@ public class CouchDbService {
     /**
      * read the information of all CSAF documents
      *
+     * @param fields the fields of information to select
+     *
      * @return list of all requested document information
      */
     public List<Document> readAllCsafDocuments(List<String> fields) {
@@ -268,7 +271,8 @@ public class CouchDbService {
 
     /**
      * read the information of the documents matching the selector
-     *
+     * @param selector the selector to search for
+     * @param fields the fields of information to select
      * @return list of all document information that match the selector
      */
     public List<Document> findDocuments(Map<String, Object> selector, List<String> fields) {
