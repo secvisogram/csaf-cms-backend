@@ -1,6 +1,13 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.ObjectType.Advisory;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
@@ -10,7 +17,6 @@ import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -153,6 +159,27 @@ public class CouchDbService {
         return createDocumentResponse.getRev();
     }
 
+    public String writeDocument(final UUID uuid, Object rootNode) throws JsonProcessingException {
+
+        Cloudant client = createCloudantClient();
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+        String createString = writer.writeValueAsString(rootNode);
+
+        PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
+                .db(this.dbName)
+                .docId(uuid.toString())
+                .contentType("application/json")
+                .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
+                .build();
+        DocumentResult createDocumentResponse = client
+                .putDocument(createDocumentOptions)
+                .execute()
+                .getResult();
+
+        return createDocumentResponse.getRev();
+    }
+
     /**
      * Change a CSAF document in the couchDB
      *
@@ -205,6 +232,7 @@ public class CouchDbService {
     }
 
     /**
+     *
      * @param uuid id of the object to read
      * @return the requested document
      * @throws IdNotFoundException if the requested document was not found
@@ -232,32 +260,38 @@ public class CouchDbService {
      * read the information of all CSAF documents
      *
      * @param fields the fields of information to select
+     *
      * @return list of all requested document information
      */
     public List<Document> readAllCsafDocuments(List<String> fields) {
 
+        Map<String, Object> selector = expr2CouchDBFilter(equal(Advisory.name(), "type"));
+        return findDocuments(selector, fields);
+    }
+
+    /**
+     * read the information of the documents matching the selector
+     * @param selector the selector to search for
+     * @param fields the fields of information to select
+     * @return list of all document information that match the selector
+     */
+    public List<Document> findDocuments(Map<String, Object> selector, List<String> fields) {
+
         Cloudant client = createCloudantClient();
 
-        Map<String, Object> selector = new HashMap<>();
-        selector.put("type", Map.of("$eq", ObjectType.Advisory.name()));
         PostFindOptions findOptions = new PostFindOptions.Builder()
                 .db(this.dbName)
                 .selector(selector)
                 .fields(fields)
                 .build();
 
-        FindResult updateDocumentResponse = client
+        FindResult findDocumentResult = client
                 .postFind(findOptions)
                 .execute()
                 .getResult();
 
-        return updateDocumentResponse.getDocs();
+        return findDocumentResult.getDocs();
     }
-
-    public List<Document> readAllCsafDocuments() {
-        return readAllCsafDocuments(List.of(ID_FIELD, REVISION_FIELD));
-    }
-
     /**
      * Delete a CSAF document from the database
      *
