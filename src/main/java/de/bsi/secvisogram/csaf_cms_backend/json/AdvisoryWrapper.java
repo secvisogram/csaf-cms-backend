@@ -1,11 +1,14 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.*;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
+import com.flipkart.zjsonpatch.JsonPatch;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
@@ -13,7 +16,6 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +28,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Wrapper to JsonNode to read and write advisory objects from/to the CouchDB
+ */
 public class AdvisoryWrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryWrapper.class);
@@ -34,12 +39,26 @@ public class AdvisoryWrapper {
             AdvisoryField.WORKFLOW_STATE, AdvisoryField.OWNER, CouchDbField.TYPE_FIELD, CSAF
     );
 
+    /**
+     * Convert an input stream from th couch db to an AdvisoryWrapper
+     * @param advisoryStream the stream
+     * @return the wrapper
+     * @throws IOException error in processing the input stream
+     */
     public static AdvisoryWrapper createFromCouchDb(InputStream advisoryStream) throws IOException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
         return new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
     }
 
+    /**
+     * Convert an CSAF document to an initial AdvisoryWrapper for given user.
+     * The wrapper has no id and revision.
+     * @param newCsafJson the csaf string
+     * @param userName the user
+     * @return the wrapper
+     * @throws IOException exception in handling json string
+     */
     public static AdvisoryWrapper createNewFromCsaf(String newCsafJson, String userName) throws IOException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
@@ -80,8 +99,7 @@ public class AdvisoryWrapper {
          this.advisoryNode = advisoryNode;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "1. JsonNode is readonly 2. advisoryNode could be very huge")
-    public JsonNode getAdvisoryNode() {
+    private JsonNode getAdvisoryNode() {
         return advisoryNode;
     }
 
@@ -122,23 +140,23 @@ public class AdvisoryWrapper {
 
     public String getRevision() {
 
-        return advisoryNode.get(CouchDbField.REVISION_FIELD.getDbName()).asText();
+        return (advisoryNode.has(REVISION_FIELD.getDbName())) ? advisoryNode.get(REVISION_FIELD.getDbName()).asText() : null;
     }
 
     public AdvisoryWrapper setRevision(String newValue) {
 
-        this.advisoryNode.put(CouchDbField.REVISION_FIELD.getDbName(), newValue);
+        this.advisoryNode.put(REVISION_FIELD.getDbName(), newValue);
         return this;
     }
 
     public String getAdvisoryId() {
 
-        return advisoryNode.get(CouchDbField.ID_FIELD.getDbName()).asText();
+        return (advisoryNode.has(ID_FIELD.getDbName())) ? advisoryNode.get(ID_FIELD.getDbName()).asText() : null;
     }
 
     private AdvisoryWrapper setAdvisoryId(String newValue) {
 
-        this.advisoryNode.put(CouchDbField.ID_FIELD.getDbName(), newValue);
+        this.advisoryNode.put(ID_FIELD.getDbName(), newValue);
         return this;
     }
 
@@ -152,6 +170,10 @@ public class AdvisoryWrapper {
 
         this.advisoryNode.putIfAbsent(CSAF.getDbName(), node);
         return this;
+    }
+
+    public JsonNode at(String jsonPtrExpr) {
+        return this.advisoryNode.at(jsonPtrExpr);
     }
 
     public String advisoryAsString() {
@@ -184,9 +206,9 @@ public class AdvisoryWrapper {
     public static void setValueInResponse(AdvisoryInformationResponse response, DbField field, Document doc, BiConsumer<AdvisoryInformationResponse, String> advisorySetter) {
 
         String value;
-        if (field.equals(CouchDbField.ID_FIELD)) {
+        if (field.equals(ID_FIELD)) {
             value = doc.getId();
-        } else if (field.equals(CouchDbField.REVISION_FIELD)) {
+        } else if (field.equals(REVISION_FIELD)) {
             value = doc.getRev();
         } else {
             value = CouchDbService.getStringFieldValue(field, doc);
@@ -198,14 +220,24 @@ public class AdvisoryWrapper {
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
-     * @param source either valid JSON objects or arrays or values
      * @param target either valid JSON objects or arrays or values
      * @return the resultant patch
      */
-    public static JsonNode calculateJsonDiff(JsonNode source, JsonNode target) {
+    public JsonNode calculateJsonDiff(AdvisoryWrapper target) {
 
 
-        return JsonDiff.asJson(source, target);
+        return JsonDiff.asJson(this.getAdvisoryNode(), target.getAdvisoryNode());
+    }
+
+    /**
+     * Apply path o JsonNode
+     * @param patch the patch to apply
+     * @param source the JsonNode the pacht is applied o
+     * @return the patched JsonNode
+     */
+    public JsonNode applyJsonPatch(JsonNode patch, JsonNode source) {
+
+        return JsonPatch.apply(patch, source);
     }
 
 }
