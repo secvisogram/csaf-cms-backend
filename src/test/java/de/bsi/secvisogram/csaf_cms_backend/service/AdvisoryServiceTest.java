@@ -49,7 +49,6 @@ public class AdvisoryServiceTest {
                                                          "}";
 
     private static final String advisoryJsonString = String.format(advisoryTemplateString, csafJson);
-    private static final String updatedAdvisoryJsonString = String.format(advisoryTemplateString, updatedCsafJson);
 
 
     @Test
@@ -149,9 +148,17 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void updateAdvisoryTest() throws IOException, DatabaseException {
+    public void   updateAdvisoryTest() throws IOException, DatabaseException {
+
+        var updateJsafJson = """
+                { "document": {
+                      "category": "CSAF_INFORMATIONAL_ADVISORY",
+                      "title":"Test Advisory"
+                   }
+                }""";
+
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updatedAdvisoryJsonString);
+        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updateJsafJson);
         // an advisory and an audit trail are created
         Assertions.assertEquals(2, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());

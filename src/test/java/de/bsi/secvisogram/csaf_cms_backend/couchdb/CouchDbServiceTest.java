@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelField;
 import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
@@ -40,13 +41,10 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext
 public class CouchDbServiceTest {
 
-    private final String[] DOCUMENT_TITLE = {"csaf", "document", "title"};
-    private static final String[] DOCUMENT_TRACKING_ID = {"csaf", "document", "tracking", "id"};
-
     private static final String[] ARRAY_FIELD_SELECTOR = {ARRAY_VALUES};
 
-    private static final List<String> ROOT_PRIMITIVE_FIELDS = Arrays.asList(FIRST_STRING, SECOND_STRING,
-            DECIMAL_VALUE, BOOLEAN_VALUE);
+    private static final List<DbField> ROOT_PRIMITIVE_FIELDS = Arrays.asList(TestModelField.FIRST_STRING, TestModelField.SECOND_STRING,
+            TestModelField.DECIMAL_VALUE, TestModelField.BOOLEAN_VALUE);
 
     @Autowired
     private CouchDbService couchDbService;
@@ -144,11 +142,11 @@ public class CouchDbServiceTest {
 
         long docCount = this.couchDbService.getDocumentCount();
 
-        List<String> infoFields = List.of(
-                String.join(".", DOCUMENT_TITLE),
-                String.join(".", DOCUMENT_TRACKING_ID),
-                CouchDbService.REVISION_FIELD,
-                CouchDbService.ID_FIELD
+        List<DbField> infoFields = List.of(
+                AdvisorySearchField.DOCUMENT_TITLE,
+                AdvisorySearchField.DOCUMENT_TRACKING_ID,
+                CouchDbField.REVISION_FIELD,
+                CouchDbField.ID_FIELD
         );
 
         final List<Document> docs = this.couchDbService.readAllCsafDocuments(infoFields);

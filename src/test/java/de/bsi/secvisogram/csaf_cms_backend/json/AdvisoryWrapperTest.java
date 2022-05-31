@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 public class AdvisoryWrapperTest {
 
     @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void createNewFromCsafTest() throws IOException {
 
         var csafJson = """
@@ -30,6 +32,7 @@ public class AdvisoryWrapperTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void createFromCouchDbTest() throws IOException {
 
         var revision = "rev-aa-12";
