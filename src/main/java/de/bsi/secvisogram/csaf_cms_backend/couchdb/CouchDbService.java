@@ -1,18 +1,12 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService.ObjectType.Advisory;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
@@ -22,11 +16,11 @@ import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -276,7 +270,7 @@ public class CouchDbService {
      */
     public List<Document> readAllCsafDocuments(Collection<DbField> fields) {
 
-        Map<String, Object> selector = expr2CouchDBFilter(equal(Advisory.name(), "type"));
+        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), "type"));
         return findDocuments(selector, fields);
     }
 
@@ -286,7 +280,7 @@ public class CouchDbService {
      * @param fields the fields of information to select
      * @return list of all document information that match the selector
      */
-    public List<Document> findDocuments(Map<String, Object> selector, List<String> fields) {
+    public List<Document> findDocuments(Map<String, Object> selector, Collection<DbField> fields) {
 
         Cloudant client = createCloudantClient();
 

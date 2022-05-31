@@ -10,6 +10,10 @@ public enum AuditTrailField implements DbField {
     USER("user"),
 
     CHANGE_TYPE("changeType"),
+
+    OLD_WORKFLOW_STATE("oldState"),
+
+    NEW_WORKFLOW_STATE("newState")
     ;
 
     private final String dbName;

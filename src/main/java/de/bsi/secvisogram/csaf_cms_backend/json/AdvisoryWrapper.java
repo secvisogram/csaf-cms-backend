@@ -4,8 +4,11 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.*;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
@@ -15,6 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -82,6 +86,9 @@ public class AdvisoryWrapper {
         final ObjectMapper jacksonMapper = new ObjectMapper();
         final InputStream csafStream = new ByteArrayInputStream(changedCsafJson.getBytes(StandardCharsets.UTF_8));
         JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+        if (csafRootNode.get("document") == null) {
+            throw new IllegalArgumentException("Csaf contains no document entry");
+        }
 
         ObjectNode newRootNode = jacksonMapper.createObjectNode();
         return new AdvisoryWrapper(newRootNode)
@@ -240,4 +247,30 @@ public class AdvisoryWrapper {
         return JsonPatch.apply(patch, source);
     }
 
+    /**
+     * Convert Search Expression to JSON String
+     * @param expression2Convert the expression to convert
+     * @return the converted expression
+     * @throws JsonProcessingException a conversion problem has occurred
+     */
+    public static String expression2Json(Expression expression2Convert) throws JsonProcessingException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+
+        return writer.writeValueAsString(expression2Convert);
+    }
+
+    /**
+     * Convert JSON String to Search expression
+     * @param jsonString the String to convert
+     * @return the converted expression
+     * @throws JsonProcessingException
+     */
+    public static Expression json2Expression(String jsonString) throws JsonProcessingException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        return jacksonMapper.readValue(jsonString, Expression.class);
+
+    }
 }
