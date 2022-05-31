@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Instant;
 
 public class AuditTrailDocumentWrapper {
@@ -31,9 +30,9 @@ public class AuditTrailDocumentWrapper {
         this.auditTrailNode = auditTrailNode;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "1. JsonNode is readonly 2. auditTrailNode could be very huge")
-    public JsonNode getAuditTrailNode() {
-        return auditTrailNode;
+    public String advisoryAsString() {
+
+        return this.auditTrailNode.toString();
     }
 
     private AuditTrailDocumentWrapper setType(ObjectType newValue) {

@@ -141,13 +141,12 @@ public class CouchDbService {
      * Write a new CSAF document to the couchDB
      *
      * @param uuid     id fo the new document
-     * @param rootNode rootNode of the document
+     * @param createString string of rootNode of the document
      * @return revision for concurrent control
      */
-    public String writeCsafDocument(final UUID uuid, JsonNode rootNode) {
+    public String writeCsafDocument(final UUID uuid, String createString) {
 
         Cloudant client = createCloudantClient();
-        String createString = rootNode.toPrettyString();
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
                 .db(this.dbName)
@@ -187,15 +186,12 @@ public class CouchDbService {
     /**
      * Change a CSAF document in the couchDB
      *
-     * @param rootNode new root node
+     * @param updateString the new root node as string
      * @return new revision for concurrent control
      */
-    public String updateCsafDocument(JsonNode rootNode) throws DatabaseException {
+    public String updateCsafDocument(String updateString) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
-
-
-        String updateString = rootNode.toPrettyString();
 
         PostDocumentOptions updateDocumentOptions =
                 new PostDocumentOptions.Builder()
@@ -218,7 +214,7 @@ public class CouchDbService {
             LOG.error(msg);
             throw new DatabaseException(msg, brEx);
         } catch (NotFoundException nfEx) {
-            String msg = String.format("No element with such an ID: %s", rootNode.at(ID_FIELD.getDbName()).asText());
+            String msg = "No element with given ID";
             LOG.error(msg);
             throw new IdNotFoundException(msg, nfEx);
         }

@@ -74,7 +74,7 @@ public class AdvisoryService {
 
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(newCsafJson, "Mustermann");
-        String revision = couchDbService.writeCsafDocument(advisoryId, advisory.getAdvisoryNode());
+        String revision = couchDbService.writeCsafDocument(advisoryId, advisory.advisoryAsString());
         return new IdAndRevision(advisoryId, revision);
     }
 
@@ -126,8 +126,7 @@ public class AdvisoryService {
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
         newAdvisoryNode.setRevision(revision);
 
-        JsonNode patch = AdvisoryWrapper.calculateJsonDiff(oldAdvisoryNode.getAdvisoryNode(),
-                newAdvisoryNode.getAdvisoryNode());
+        JsonNode patch = oldAdvisoryNode.calculateJsonDiff(newAdvisoryNode);
         AuditTrailDocumentWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromPatch(patch)
             .setAdvisoryId(advisoryId.toString())
             .setCreatedAtToNow()
@@ -135,9 +134,9 @@ public class AdvisoryService {
             .setUser("Mustermann")
             .setDocVersion("")
             .setOldDocVersion("");
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.getAuditTrailNode());
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
 
-        return this.couchDbService.updateCsafDocument(newAdvisoryNode.getAdvisoryNode());
+        return this.couchDbService.updateCsafDocument(newAdvisoryNode.advisoryAsString());
     }
 
     /**

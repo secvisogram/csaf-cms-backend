@@ -88,7 +88,7 @@ public class CouchDbServiceTest {
             ObjectNode objectNode = toAdvisoryJson(csafJsonStream, newOwner);
             objectNode.put(CouchDbField.ID_FIELD.getDbName(), uuid.toString());
             objectNode.put(CouchDbField.REVISION_FIELD.getDbName(), revision);
-            this.couchDbService.updateCsafDocument(objectNode);
+            this.couchDbService.updateCsafDocument(objectNode.toPrettyString());
         }
 
         long countAfterUpdate = this.couchDbService.getDocumentCount();
@@ -173,7 +173,7 @@ public class CouchDbServiceTest {
         String jsonFileName = "exxcellent-2021AB123.json";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
             ObjectNode objectNode = toAdvisoryJson(csafJsonStream, owner);
-            return this.couchDbService.writeCsafDocument(documentUuid, objectNode);
+            return this.couchDbService.writeCsafDocument(documentUuid, objectNode.toString());
         }
     }
 
