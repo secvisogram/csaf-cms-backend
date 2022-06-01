@@ -637,17 +637,19 @@ normal version.
 
 #### Backend States
 
-![state maschine](CSAF-Backend-States.drawio.svg)
+![state maschine](workflow-states.drawio.svg)
 
 ##### Possible actions in every state
 
-- `listCsafDocuments`
+- `listCsafDocuments (GET advisories/)`
   - Read all documents for which the user is authorized
-- `exportAdvisory`
-  - Read all documents for which the user is authorized
-- `readTemplate`
+- `readCsafDocument (GET advisories/{id})`
+  - Read single document
+- `exportAdvisory (GET advisories/{advisoryId}/csaf)`
+  - Export document to HTML,PDF,JSON
+- `readTemplate (GET advisories/templates/{id})`
   - Read CSAF Document template
-- `listAllTemplates`
+- `listAllTemplates (GET advisories/templates)`
   - List all possible CSAF Document templates in the system
 
 ##### Workflow Status: Not Created
@@ -657,7 +659,7 @@ Afterwards the new advisory is pushed to the server.
 
 `Possible actions`
 
-- `createCsafDocument`
+- `createCsafDocument  (POST advisories/)`
   - create new advisory in db
   - set version to 0.0.1
   - set workflow state of the advisory to `Draft`
@@ -668,12 +670,12 @@ The editor edits the advisory several times.
 
 `Possible actions`
 
-- `changeCsafDocument`
+- `changeCsafDocument (PATCH advisories/{id})`
   - save changes in db
   - increase minor or patch version depending on changes
-- `setWkfStateReview`
+- `setWkfStateReview (PATCH advisories/{id}/workflowstate/Draft)`
   - set workflow state of the advisory to `Review`
-- `deleteCsafDocument`
+- `deleteCsafDocument (DELETE advisories/{id})`
   - removes advisory from system
 
 #### Workflow State: Review
@@ -684,13 +686,17 @@ When the document is in workflow state `Approved` a pre-release version is creat
 
 `Possible actions`
 
-- `setWkfStateDraft`
+- `setWkfStateDraft (PATCH advisories/{id}/workflowstate/Draft)`
   - set workflow state of the advisory to `Draft`
-- `setWkfStateApproved`
+- `setWkfStateApproved (PATCH advisories/{id}/workflowstate/Approved)`
   - set workflow state of the advisory to `Approved`
   - set version as described below
 - _add and change comments and answers_
-  - `listComments`, `addComment`, `addAnswer`, `changeComment`, `changeAnswer`,
+  - `listComments (GET advisories/{id}/comments/)`
+  - `addComment (POST advisories/{id}/comments/)`
+  - `addAnswer (POST advisories/{id}/comments/{commentId}/answer)`
+  - `changeComment (PATCH advisories/{id}/comments/{commentId}/)`
+  - `changeAnswer (PATCH advisories/{id}/comments/{commentId}/answer/{answerId})`,
 
 A prerelease version number is assigned during the status transition to `Approved`.
 If the previous version was `< 1.0.0`, the new version is `1.0.0-1`.
@@ -709,9 +715,9 @@ In the state `Approved` the Publisher has 2 options:
 
 `Possible actions`
 
-- `setWkfStateDraft`
+- `setWkfStateDraft (PATCH advisories/{id}/workflowstate/Draft)`
   - change workflow state to `Draft`, set version to `1.0.0-x`
-- `setWkfStateRfPublication`
+- `setWkfStateRfPublication (PATCH advisories/{id}/workflowstate/RfPublication)`
   - set workflow state of the advisory `RfPublication`
   - optionally set a time for when the publication should take place
 - `createNewCsafDocumentVersion`
@@ -721,7 +727,7 @@ In the state `Approved` the Publisher has 2 options:
 
 `Possible actions`
 
-- `publish` / `setWkfStatePublish`
+- `publish` / `setWkfStatePublish (PATCH advisories/{id}/workflowstate/Published)`
   - change workflow state to `Published`
   - set version to `1.0.0`
 
@@ -729,10 +735,10 @@ In the state `Approved` the Publisher has 2 options:
 
 `Possible actions`
 
-- `createNewDocVersion` / `changeWorkflowStateDraft`
+- `createNewDocVersion` / `changeWorkflowStateDraft  (PATCH advisories/{id}/workflowstate/Draft)`
   - change workflow state to `Draft`
   - set version to `X.0.0` where `X` is the major version increased by `1`
-- `createNewCsafDocumentVersion`
+- `createNewCsafDocumentVersion (PATCH advisories/{advisoryId}/csaf/document/tracking/version)`
   - create new Version of the CSAF document
 
 ## 9 Design Decisions
