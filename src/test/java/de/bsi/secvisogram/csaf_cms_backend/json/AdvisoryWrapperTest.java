@@ -59,4 +59,39 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.at("/csaf/document/category").asText(), equalTo("CSAF_BASE"));
     }
 
+    @Test
+    public void updateFromExistingTest() throws IOException {
+
+        var revision = "rev-aa-12";
+        var id = "id-aaa-bbb";
+        var advisoryDbString = """
+                {   "owner": "Musterfrau",
+                    "type": "Advisory",
+                    "workflowState": "Draft",
+                    "csaf": { "document": {
+                                "category": "CSAF_BASE"
+                              }
+                            },
+                    "_rev": "%s",
+                    "_id": "%s"}""".formatted(revision, id);
+
+        var updateCsafJson = """
+                { "document": {
+                      "category": "CHANGED",
+                          "title": "New Title" 
+                       }
+                }""";
+
+
+        var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
+        var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        AdvisoryWrapper updatedWrapper = AdvisoryWrapper.updateFromExisting(advisory, updateCsafJson);
+        assertThat(updatedWrapper.getWorkflowState(), equalTo(WorkflowState.Draft));
+        assertThat(updatedWrapper.getOwner(), equalTo("Musterfrau"));
+        assertThat(updatedWrapper.getRevision(), is(nullValue()));
+        assertThat(updatedWrapper.getAdvisoryId(), equalTo(id));
+        assertThat(updatedWrapper.at("/csaf/document/category").asText(), equalTo("CHANGED"));
+        assertThat(updatedWrapper.at("/csaf/document/title").asText(), equalTo("New Title"));
+    }
+
 }

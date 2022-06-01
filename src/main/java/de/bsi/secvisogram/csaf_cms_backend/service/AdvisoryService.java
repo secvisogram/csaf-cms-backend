@@ -2,6 +2,8 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
@@ -10,15 +12,13 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailDocumentWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailWorkflowWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailWrapper;
+import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +29,13 @@ import org.springframework.stereotype.Service;
 public class AdvisoryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryService.class);
+    static final String emptyCsafDocument = """
+                { "document": {
+                   }
+                }""";
 
     @Autowired
-    public CouchDbService couchDbService;
+    private CouchDbService couchDbService;
 
     /**
      * get number of advisories
@@ -47,7 +51,7 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
-    public List<AdvisoryInformationResponse> getAdvisoryIds() {
+    public List<AdvisoryInformationResponse> getAdvisoryInfromations() {
 
         Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = Map.of(
                 AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
@@ -63,7 +67,23 @@ public class AdvisoryService {
                 .toList();
     }
 
+    /**
+     * read from {@link CouchDbService#findDocumentsAsStream(Map, Collection)} and convert it to a list of JsonNode
+     *
+     * @param selector the selector to search for
+     * @param fields   the fields of information to select
+     * @return the result nodes of the search
+     */
+    List<JsonNode> findDocuments(Map<String, Object> selector, Collection<DbField> fields) throws IOException {
 
+        InputStream inputStream = couchDbService.findDocumentsAsStream(selector, fields);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode couchDbResultNode = mapper.readValue(inputStream, JsonNode.class);
+        ArrayNode couchDbDocs = (ArrayNode) couchDbResultNode.get("docs");
+        List<JsonNode> docNodes = new ArrayList<>();
+        couchDbDocs.forEach(node -> docNodes.add(node));
+        return docNodes;
+    }
 
     /**
      * Adds an advisory to the system
@@ -75,8 +95,16 @@ public class AdvisoryService {
     public IdAndRevision addAdvisory(String newCsafJson) throws IOException {
 
         UUID advisoryId = UUID.randomUUID();
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(newCsafJson, "Mustermann");
-        String revision = couchDbService.writeCsafDocument(advisoryId, advisory.advisoryAsString());
+        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createNewFromCsaf(emptyCsafDocument, "");
+        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, "Mustermann");
+        AuditTrailWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
+                .setAdvisoryId(advisoryId.toString())
+                .setChangeType(ChangeType.Create)
+                .setUser("Mustermann");
+
+        String revision = couchDbService.writeCsafDocument(advisoryId, newAdvisoryNode.advisoryAsString());
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
+
         return new IdAndRevision(advisoryId, revision);
     }
 
@@ -128,17 +156,14 @@ public class AdvisoryService {
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
         newAdvisoryNode.setRevision(revision);
 
-        JsonNode patch = oldAdvisoryNode.calculateJsonDiff(newAdvisoryNode);
-        AuditTrailWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromPatch(patch)
+        AuditTrailWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
             .setAdvisoryId(advisoryId.toString())
-            .setCreatedAtToNow()
-            .setChangeType(AuditTrailDocumentWrapper.ChangeType.UPDATED)
-            .setUser("Mustermann")
-            .setDocVersion("")
-            .setOldDocVersion("");
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
+            .setChangeType(ChangeType.Update)
+            .setUser("Mustermann");
 
-        return this.couchDbService.updateCsafDocument(newAdvisoryNode.advisoryAsString());
+        String result =  this.couchDbService.updateCsafDocument(newAdvisoryNode.advisoryAsString());
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
+        return result;
     }
 
     /**
@@ -159,7 +184,7 @@ public class AdvisoryService {
         AuditTrailWrapper auditTrail = AuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
                 .setAdvisoryId(advisoryId.toString())
                 .setCreatedAtToNow()
-                .setChangeType(AuditTrailDocumentWrapper.ChangeType.UPDATED)
+                .setChangeType(ChangeType.Update)
                 .setUser("Mustermann")
                 .setDocVersion("")
                 .setOldDocVersion("");

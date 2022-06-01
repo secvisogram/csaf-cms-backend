@@ -1,13 +1,21 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 
+/**
+ * Wrapper around JsonNode to read and write audit trail objects for advisory workflow changes from/to the CouchDB
+ */
 public class AuditTrailWorkflowWrapper extends AuditTrailWrapper {
 
+    /**
+     * Create an AuditTrailWorkflowWrapper for a change in the workflow state of anadvisory
+     * @param newWorkflowState the new state
+     * @param oldWorkflowState the old state
+     * @return the new wrapper
+     */
     public static AuditTrailWorkflowWrapper createNewFrom(WorkflowState newWorkflowState, WorkflowState oldWorkflowState) {
 
         ObjectNode rootNode = new ObjectMapper().createObjectNode();
@@ -15,7 +23,7 @@ public class AuditTrailWorkflowWrapper extends AuditTrailWrapper {
         AuditTrailWorkflowWrapper wrapper =  new AuditTrailWorkflowWrapper(rootNode)
                 .setNewWorkflowState(newWorkflowState)
                 .setOldWorkflowState(oldWorkflowState);
-        wrapper.setType(ObjectType.AuditTrailDocument)
+        wrapper.setType(ObjectType.AuditTrailWorkflow)
                 .setCreatedAtToNow();
         return wrapper;
     }
@@ -25,14 +33,14 @@ public class AuditTrailWorkflowWrapper extends AuditTrailWrapper {
         super(auditTrailNode);
     }
 
-    public JsonNode getOldWorkflowState() {
+    public String getOldWorkflowState() {
 
-        return this.getAuditTrailNode().get(AuditTrailField.OLD_WORKFLOW_STATE.getDbName());
+        return this.getAuditTrailNode().get(AuditTrailField.OLD_WORKFLOW_STATE.getDbName()).asText();
     }
 
-    public JsonNode getNewWorkflowState() {
+    public String getNewWorkflowState() {
 
-        return this.getAuditTrailNode().get(AuditTrailField.NEW_WORKFLOW_STATE.getDbName());
+        return this.getAuditTrailNode().get(AuditTrailField.NEW_WORKFLOW_STATE.getDbName()).asText();
     }
 
     public AuditTrailWorkflowWrapper setOldWorkflowState(WorkflowState newValue) {
