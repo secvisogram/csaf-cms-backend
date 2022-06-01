@@ -36,7 +36,7 @@ public class AuditTrailTest {
         JsonNode target = mapper.valueToTree(new TestModelRoot().setFirstString("xxx").setSecondString("AAA"));
 
         JsonNode patch = AdvisoryWrapper.calculateJsonDiff(source, target);
-        JsonNode patchedSource = AdvisoryWrapper.applyJsonPatch(patch, source);
+        JsonNode patchedSource = AdvisoryWrapper.applyJsonPatchToNode(patch, source);
         assertThat(patchedSource.get("secondString").asText(), equalTo("AAA"));
     }
 }

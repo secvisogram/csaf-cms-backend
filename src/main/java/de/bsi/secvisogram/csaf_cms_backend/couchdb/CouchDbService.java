@@ -15,6 +15,7 @@ import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
+import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -253,7 +254,7 @@ public class CouchDbService {
         try {
             return client.getDocumentAsStream(documentOptions).execute().getResult();
         } catch (NotFoundException nfEx) {
-            String msg = String.format("No element with such an ID: %s", uuid);
+            String msg = "No element with such an ID";
             LOG.error(msg);
             throw new IdNotFoundException(msg, nfEx);
         }
@@ -312,12 +313,10 @@ public class CouchDbService {
                 .fields(fields.stream().map(DbField::getDbName).collect(Collectors.toList()))
                 .build();
 
-        InputStream findDocumentResult = client
+        return client
                 .postFindAsStream(findOptions)
                 .execute()
                 .getResult();
-
-        return findDocumentResult;
     }
 
     /**
@@ -346,11 +345,59 @@ public class CouchDbService {
             LOG.error(msg);
             throw new DatabaseException(msg, brEx);
         } catch (NotFoundException nfEx) {
-            String msg = String.format("No element with such an ID: %s", uuid);
+            String msg = "No element with such an ID";
             LOG.error(msg);
             throw new IdNotFoundException(msg, nfEx);
         }
 
+    }
+
+    public void bulkDeleteCsafDocument(final Collection<IdAndRevision> objectsToDelete) throws DatabaseException {
+
+        Cloudant client = createCloudantClient();
+        List<Document> documents = objectsToDelete.stream()
+                .map(this::createBulkDelete)
+                .collect(Collectors.toList());
+
+
+        BulkDocs bulkDocs = new BulkDocs.Builder()
+                .docs(documents)
+                .build();
+
+        PostBulkDocsOptions bulkDocsOptions = new PostBulkDocsOptions.Builder()
+                .db(this.dbName)
+                .bulkDocs(bulkDocs)
+                .build();
+
+
+        try {
+            List<DocumentResult> responses =
+                    client.postBulkDocs(bulkDocsOptions).execute()
+                            .getResult();
+            for (DocumentResult response : responses) {
+                if (!response.isOk()) {
+                    throw new DatabaseException(response.getError());
+                }
+            }
+        } catch (BadRequestException brEx) {
+            String msg = "Bad request, possibly the given revision is invalid";
+            LOG.error(msg);
+            throw new DatabaseException(msg, brEx);
+        } catch (NotFoundException nfEx) {
+            String msg = "No element with such an ID";
+            LOG.error(msg);
+            throw new IdNotFoundException(msg, nfEx);
+        }
+
+    }
+
+    private Document createBulkDelete(IdAndRevision object) {
+
+        Document eventDoc1 = new Document();
+        eventDoc1.setId(object.getId());
+        eventDoc1.setRev(object.getRevision());
+        eventDoc1.setDeleted(Boolean.TRUE);
+        return eventDoc1;
     }
 
     /**

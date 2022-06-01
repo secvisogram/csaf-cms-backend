@@ -50,7 +50,7 @@ public class AdvisoryControllerTest {
                                                  "        \"category\": \"CSAF_BASE\"" +
                                                  "    }" +
                                                  "}";
-    private static final UUID advisoryId = UUID.randomUUID();
+    private static final String advisoryId = UUID.randomUUID().toString();
     private static final String fullAdvisoryJsonString = String.format("{" +
                                                                        "    \"owner\": \"Musterfrau\"," +
                                                                        "    \"type\": \"Advisory\"," +
@@ -84,7 +84,7 @@ public class AdvisoryControllerTest {
     @Test
     void listCsafDocumentsTest_oneItem() throws Exception {
 
-        AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId.toString(), WorkflowState.Draft);
+        AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId, WorkflowState.Draft);
         when(advisoryService.getAdvisoryInfromations()).thenReturn(List.of(info));
 
         this.mockMvc.perform(get(advisoryRoute))
@@ -97,21 +97,10 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void readCsafDocumentTest_invalidId() throws Exception {
-
-        String invalidId = "invalid ID";
-
-        this.mockMvc.perform(get(advisoryRoute + invalidId))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-
-    }
-
-    @Test
     void readCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
-        when(advisoryService.getAdvisory(advisoryId)).thenThrow(IdNotFoundException.class);
+        when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(IdNotFoundException.class);
 
 
         this.mockMvc.perform(get(advisoryRoute + advisoryId))
@@ -124,7 +113,7 @@ public class AdvisoryControllerTest {
     void readCsafDocumentTest() throws Exception {
 
         JsonNode node = jacksonMapper.readTree(csafJsonString);
-        final AdvisoryResponse advisoryResponse = new AdvisoryResponse(advisoryId.toString(), WorkflowState.Draft, node);
+        final AdvisoryResponse advisoryResponse = new AdvisoryResponse(advisoryId, WorkflowState.Draft, node);
 
         when(advisoryService.getAdvisory(advisoryId)).thenReturn(advisoryResponse);
 
@@ -175,19 +164,6 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void changeCsafDocumentTest_invalidId() throws Exception {
-
-        String invalidId = "not an UUID";
-
-        this.mockMvc.perform(patch(advisoryRoute + invalidId).with(csrf())
-                        .content(fullAdvisoryJsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("revision", revision))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
@@ -221,7 +197,7 @@ public class AdvisoryControllerTest {
     void deleteCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
-        doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
+        doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), revision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
                 .andDo(print())
@@ -243,7 +219,7 @@ public class AdvisoryControllerTest {
 
         UUID advisoryId = UUID.randomUUID();
         String invalidRevision = "invalid";
-        doThrow(DatabaseException.class).when(advisoryService).deleteAdvisory(advisoryId, invalidRevision);
+        doThrow(DatabaseException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), invalidRevision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
                         .param("revision", invalidRevision))

@@ -22,17 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
  * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
  */
 public class AdvisoryWrapper {
-
-    private static final Set<DbField> REQUIRED_FIELDS = Set.of(
-            AdvisoryField.WORKFLOW_STATE, AdvisoryField.OWNER, CouchDbField.TYPE_FIELD, CSAF
-    );
 
     /**
      * Convert an input stream from the couch db to an AdvisoryWrapper
@@ -77,7 +72,7 @@ public class AdvisoryWrapper {
      * @param existing the base AdvisoryWrapper
      * @param changedCsafJson the new CSAF document
      * @return the new AdvisoryWrapper
-     * @throws IOException
+     * @throws IOException exception in handling json
      */
     public static AdvisoryWrapper updateFromExisting(AdvisoryWrapper existing, String changedCsafJson) throws IOException {
 
@@ -246,7 +241,7 @@ public class AdvisoryWrapper {
 
     public AdvisoryWrapper applyJsonPatch(JsonNode patch) {
 
-        ObjectNode patched = (ObjectNode) applyJsonPatch(patch, this.getAdvisoryNode());
+        ObjectNode patched = (ObjectNode) applyJsonPatchToNode(patch, this.getAdvisoryNode());
         return new AdvisoryWrapper(patched);
     }
 
@@ -271,7 +266,7 @@ public class AdvisoryWrapper {
      * @param source the JsonNode the pacht is applied o
      * @return the patched JsonNode
      */
-    public static JsonNode applyJsonPatch(JsonNode patch, JsonNode source) {
+    public static JsonNode applyJsonPatchToNode(JsonNode patch, JsonNode source) {
 
         return JsonPatch.apply(patch, source);
     }
@@ -294,7 +289,7 @@ public class AdvisoryWrapper {
      * Convert JSON String to Search expression
      * @param jsonString the String to convert
      * @return the converted expression
-     * @throws JsonProcessingException
+     * @throws JsonProcessingException error in json
      */
     public static Expression json2Expression(String jsonString) throws JsonProcessingException {
 

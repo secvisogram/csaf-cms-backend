@@ -60,6 +60,7 @@ public class AdvisoryWrapperTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void updateFromExistingTest() throws IOException {
 
         var revision = "rev-aa-12";
