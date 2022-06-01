@@ -90,8 +90,8 @@ public class AdvisoryServiceTest {
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJson);
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJson);
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInfromations();
-        List<UUID> expectedIDs = List.of(idRev1.getId(), idRev2.getId());
-        List<UUID> ids = infos.stream().map(info -> UUID.fromString(info.getAdvisoryId())).toList();
+        List<String> expectedIDs = List.of(idRev1.getId(), idRev2.getId());
+        List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
         Assertions.assertTrue(ids.size() == expectedIDs.size()
                               && ids.containsAll(expectedIDs)
                               && expectedIDs.containsAll(ids));
@@ -120,7 +120,7 @@ public class AdvisoryServiceTest {
     @Test
     public void getAdvisoryTest_notPresent() {
         UUID noAdvisoryId = UUID.randomUUID();
-        Assertions.assertThrows(IdNotFoundException.class, () -> advisoryService.getAdvisory(noAdvisoryId));
+        Assertions.assertThrows(IdNotFoundException.class, () -> advisoryService.getAdvisory(noAdvisoryId.toString()));
     }
 
     @Test
@@ -128,13 +128,13 @@ public class AdvisoryServiceTest {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(csafJson.replaceAll("\\s+", ""), advisory.getCsaf().toString().replaceAll("\\s+", ""));
-        assertEquals(idRev.getId().toString(), advisory.getAdvisoryId());
+        assertEquals(idRev.getId(), advisory.getAdvisoryId());
     }
 
     @Test
     public void deleteAdvisoryTest_notPresent() {
         UUID noAdvisoryId = UUID.randomUUID();
-        Assertions.assertThrows(IdNotFoundException.class, () -> advisoryService.deleteAdvisory(noAdvisoryId, "redundant-revision"));
+        Assertions.assertThrows(IdNotFoundException.class, () -> advisoryService.deleteAdvisory(noAdvisoryId.toString(), "redundant-revision"));
     }
 
     @Test
@@ -149,10 +149,11 @@ public class AdvisoryServiceTest {
     @Test
     public void deleteAdvisoryTest() throws IOException, DatabaseException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        advisoryService.addAdvisory(csafJson);
         // creates advisory and audit trail
-        assertEquals(2, advisoryService.getDocumentCount());
+        assertEquals(4, advisoryService.getDocumentCount());
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        assertEquals(0, advisoryService.getDocumentCount());
+        assertEquals(2, advisoryService.getDocumentCount());
     }
 
     @Test
@@ -185,7 +186,7 @@ public class AdvisoryServiceTest {
         List<JsonNode> auditTrails = readAllAuditTrailDocumentsFromDb();
 
         assertEquals(4, auditTrails.size());
-        auditTrails.sort(comparing(node -> CREATED_AT.stringVal(node)));
+        auditTrails.sort(comparing(CREATED_AT::stringVal));
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(0)), equalTo(ChangeType.Create.name()));
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(1)), equalTo(ChangeType.Update.name()));
         // recreate Advisory from diffs
@@ -206,14 +207,13 @@ public class AdvisoryServiceTest {
         Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, AuditTrailField.ADVISORY_ID, CREATED_AT,
                 CHANGE_TYPE, DIFF, AuditTrailField.DOC_VERSION);
         Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.AuditTrailDocument.name(), TYPE_FIELD.getDbName()));
-        List<JsonNode> auditTrails = advisoryService.findDocuments(selector, fields);
-        return auditTrails;
+        return advisoryService.findDocuments(selector, fields);
     }
 
     @Test
     public void updateAdvisoryTest_badData() {
         UUID noAdvisoryId = UUID.randomUUID();
-        Assertions.assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId, "redundant", advisoryJsonString));
+        Assertions.assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(), "redundant", advisoryJsonString));
     }
 
     @Test

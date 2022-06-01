@@ -26,11 +26,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -50,15 +48,7 @@ public class AdvisoryController {
     @Autowired
     private AdvisoryService advisoryService;
 
-    private static UUID convertToUuid(String idString) {
-        try {
-            return UUID.fromString(idString);
-        } catch (IllegalArgumentException iaEx) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!", iaEx);
-        }
-    }
-
-    /**
+     /**
      * Read all advisories, optionally filtered by a search expression
      *
      * @param expression optional search expression as json string
@@ -111,9 +101,8 @@ public class AdvisoryController {
     ) {
 
         LOG.info("readCsafDocument");
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            return ResponseEntity.ok(advisoryService.getAdvisory(uuid));
+            return ResponseEntity.ok(advisoryService.getAdvisory(advisoryId));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
@@ -156,8 +145,8 @@ public class AdvisoryController {
 
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
-            URI advisoryLocation = URI.create("advisories/" + idRev.getId().toString());
-            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId().toString(), idRev.getRevision());
+            URI advisoryLocation = URI.create("advisories/" + idRev.getId());
+            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);
         } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
@@ -206,9 +195,8 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            String newRevision = advisoryService.updateAdvisory(uuid, revision, changedCsafJson);
+            String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
             return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
@@ -277,9 +265,8 @@ public class AdvisoryController {
 
         LOG.info("deleteCsafDocument");
 
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.deleteAdvisory(uuid, revision);
+            advisoryService.deleteAdvisory(advisoryId, revision);
             return ResponseEntity.ok().build();
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
@@ -398,9 +385,8 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Draft);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -434,9 +420,8 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToReview {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Review);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Review);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -470,9 +455,8 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Approved);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Approved);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -508,9 +492,8 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime));
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.RfPublication);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -551,9 +534,8 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {} {}",
                 sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Published);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
