@@ -122,7 +122,8 @@ The Client could have one of the following roles:
 - inherits the rights of the "Registered" role
 - may list, view and edit and delete own (by the user) CSAF documents in `Draft`
   status
-- may create comments, view and reply to comments on CSAF documents that he/she is allowed to view and edit
+- may create comments, view and reply to comments on CSAF documents that he/she
+  is allowed to view and edit
 - may create new CSAF documents
 - may change the status of own CSAF documents from `Draft` to `Review`
 - may view the status of own CSAF documents
