@@ -3,14 +3,13 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
+import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import java.time.Instant;
 
-public class AuditTrailWrapper {
-
-    public enum ChangeType {
-        CREATED,
-        UPDATED
-    }
+/**
+ * Superclass for all audit trail entries
+ */
+public abstract class AuditTrailWrapper {
 
     private final ObjectNode auditTrailNode;
 
@@ -27,6 +26,11 @@ public class AuditTrailWrapper {
         return this.auditTrailNode.toString();
     }
 
+    public String getType() {
+
+        return this.auditTrailNode.get(CouchDbField.TYPE_FIELD.getDbName()).asText();
+    }
+
     AuditTrailWrapper setType(ObjectType newValue) {
 
         this.auditTrailNode.put(CouchDbField.TYPE_FIELD.getDbName(), newValue.name());
@@ -40,12 +44,12 @@ public class AuditTrailWrapper {
 
     public String getDocVersion() {
 
-        return this.auditTrailNode.get(AuditTrailField.OLD_DOC_VERSION.getDbName()).asText();
+        return this.auditTrailNode.get(AuditTrailField.DOC_VERSION.getDbName()).asText();
     }
 
     public String getOldDocVersion() {
 
-        return this.auditTrailNode.get(AuditTrailField.DOC_VERSION.getDbName()).asText();
+        return this.auditTrailNode.get(AuditTrailField.OLD_DOC_VERSION.getDbName()).asText();
     }
 
     public String getUser() {
@@ -71,13 +75,13 @@ public class AuditTrailWrapper {
 
     public AuditTrailWrapper setDocVersion(String newValue) {
 
-        this.auditTrailNode.put(AuditTrailField.OLD_DOC_VERSION.getDbName(), newValue);
+        this.auditTrailNode.put(AuditTrailField.DOC_VERSION.getDbName(), newValue);
         return this;
     }
 
     public AuditTrailWrapper setOldDocVersion(String newValue) {
 
-        this.auditTrailNode.put(AuditTrailField.DOC_VERSION.getDbName(), newValue);
+        this.auditTrailNode.put(AuditTrailField.OLD_DOC_VERSION.getDbName(), newValue);
         return this;
     }
 
@@ -95,7 +99,7 @@ public class AuditTrailWrapper {
 
     public AuditTrailWrapper setChangeType(ChangeType newValue) {
 
-        this.auditTrailNode.put(AuditTrailField.CREATED_AT.getDbName(), newValue.name());
+        this.auditTrailNode.put(AuditTrailField.CHANGE_TYPE.getDbName(), newValue.name());
         return this;
     }
 

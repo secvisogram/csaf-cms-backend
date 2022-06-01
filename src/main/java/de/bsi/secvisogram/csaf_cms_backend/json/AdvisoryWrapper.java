@@ -13,10 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
 import com.ibm.cloud.cloudant.v1.model.Document;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
@@ -24,27 +21,21 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Wrapper to JsonNode to read and write advisory objects from/to the CouchDB
+ * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
  */
 public class AdvisoryWrapper {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AdvisoryWrapper.class);
 
     private static final Set<DbField> REQUIRED_FIELDS = Set.of(
             AdvisoryField.WORKFLOW_STATE, AdvisoryField.OWNER, CouchDbField.TYPE_FIELD, CSAF
     );
 
     /**
-     * Convert an input stream from th couch db to an AdvisoryWrapper
+     * Convert an input stream from the couch db to an AdvisoryWrapper
      * @param advisoryStream the stream
      * @return the wrapper
      * @throws IOException error in processing the input stream
@@ -56,7 +47,7 @@ public class AdvisoryWrapper {
     }
 
     /**
-     * Convert an CSAF document to an initial AdvisoryWrapper for given user.
+     * Convert an CSAF document to an initial AdvisoryWrapper for a given user.
      * The wrapper has no id and revision.
      * @param newCsafJson the csaf string
      * @param userName the user
@@ -81,6 +72,13 @@ public class AdvisoryWrapper {
         return new AdvisoryWrapper(rootNode);
     }
 
+    /**
+     * Creates a new AdvisoryWrapper based on the given one and set its CSAF document to the changed CSAF document
+     * @param existing the base AdvisoryWrapper
+     * @param changedCsafJson the new CSAF document
+     * @return the new AdvisoryWrapper
+     * @throws IOException
+     */
     public static AdvisoryWrapper updateFromExisting(AdvisoryWrapper existing, String changedCsafJson) throws IOException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
@@ -179,25 +177,36 @@ public class AdvisoryWrapper {
         return this;
     }
 
+    /**
+     * Get the node in the wrapped advisory node specified by given JSON pointer instance
+     * @param jsonPtrExpr – Expression to compile as a JsonPointer instance
+     * @return Node that matches given JSON Pointer: if no match exists, will return a node for which TreeNode.isMissingNode() returns true.
+     */
     public JsonNode at(String jsonPtrExpr) {
         return this.advisoryNode.at(jsonPtrExpr);
     }
 
+    /**
+     * Get the node in the wrapped advisory node specified by given dbField.
+     * @param dbField dbField converted to JSON pointer instance
+     * @return Node that matches given JSON Pointer: if no match exists, will return a node for which TreeNode.isMissingNode() returns true.
+     */
+    public JsonNode at(DbField dbField) {
+
+        String jsonPtrExpr = String.join("/", dbField.getFieldPath());
+        return this.advisoryNode.at("/" + jsonPtrExpr);
+    }
+
+    public String getDocumentTrackingVersion() {
+
+        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_VERSION);
+        return (versionNode.isMissingNode()) ? "" : versionNode.asText();
+    }
+
+
     public String advisoryAsString() {
 
         return this.advisoryNode.toString();
-    }
-
-    public boolean basicValidate(ObjectNode advisoryJsonObject) {
-        Set<String> fields = new HashSet<>();
-        advisoryJsonObject.fieldNames().forEachRemaining(fields::add);
-        Set<String> missingFields = new HashSet<>(REQUIRED_FIELDS.stream().map(DbField::getDbName).collect(Collectors.toList()));
-        missingFields.removeAll(fields);
-        if (!missingFields.isEmpty()) {
-            LOG.error("The advisory json does not contain the required fields: {} (got {})", missingFields, fields);
-            return false;
-        }
-        return true;
     }
 
     public static AdvisoryInformationResponse convertToAdvisoryInfo(Document doc, Map<DbField,
@@ -210,7 +219,7 @@ public class AdvisoryWrapper {
         return response;
     }
 
-    public static void setValueInResponse(AdvisoryInformationResponse response, DbField field, Document doc, BiConsumer<AdvisoryInformationResponse, String> advisorySetter) {
+    private static void setValueInResponse(AdvisoryInformationResponse response, DbField field, Document doc, BiConsumer<AdvisoryInformationResponse, String> advisorySetter) {
 
         String value;
         if (field.equals(ID_FIELD)) {
@@ -230,10 +239,30 @@ public class AdvisoryWrapper {
      * @param target either valid JSON objects or arrays or values
      * @return the resultant patch
      */
-    public JsonNode calculateJsonDiff(AdvisoryWrapper target) {
+    public JsonNode calculateDiffTo(AdvisoryWrapper target) {
+
+        return calculateJsonDiff(this.getAdvisoryNode(), target.getAdvisoryNode());
+    }
+
+    public AdvisoryWrapper applyJsonPatch(JsonNode patch) {
+
+        ObjectNode patched = (ObjectNode) applyJsonPatch(patch, this.getAdvisoryNode());
+        return new AdvisoryWrapper(patched);
+    }
 
 
-        return JsonDiff.asJson(this.getAdvisoryNode(), target.getAdvisoryNode());
+    /**
+     * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
+     * Computes and returns a JSON patch from source to target
+     * Further, if resultant patch is applied to source, it will yield target
+     * @param source either valid JSON objects or arrays or values
+     * @param target either valid JSON objects or arrays or values
+     * @return the resultant patch
+     */
+    public static JsonNode calculateJsonDiff(JsonNode source, JsonNode target) {
+
+
+        return JsonDiff.asJson(source, target);
     }
 
     /**
@@ -242,7 +271,7 @@ public class AdvisoryWrapper {
      * @param source the JsonNode the pacht is applied o
      * @return the patched JsonNode
      */
-    public JsonNode applyJsonPatch(JsonNode patch, JsonNode source) {
+    public static JsonNode applyJsonPatch(JsonNode patch, JsonNode source) {
 
         return JsonPatch.apply(patch, source);
     }

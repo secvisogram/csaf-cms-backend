@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,6 +14,7 @@ import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
+import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -34,10 +36,6 @@ public class CouchDbService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CouchDbService.class);
     private static final String CLOUDANT_SERVICE_NAME = "SECVISOGRAM";
-
-    public enum ObjectType {
-        Advisory
-    }
 
     @Value("${csaf.couchdb.dbname}")
     private String dbName;
@@ -270,7 +268,7 @@ public class CouchDbService {
      */
     public List<Document> readAllCsafDocuments(Collection<DbField> fields) {
 
-        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), "type"));
+        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
         return findDocuments(selector, fields);
     }
 
@@ -297,6 +295,31 @@ public class CouchDbService {
 
         return findDocumentResult.getDocs();
     }
+
+    /**
+     * read the information of the documents matching the selector
+     * @param selector the selector to search for
+     * @param fields the fields of information to select
+     * @return the result as stream
+     */
+    public InputStream findDocumentsAsStream(Map<String, Object> selector, Collection<DbField> fields) {
+
+        Cloudant client = createCloudantClient();
+
+        PostFindOptions findOptions = new PostFindOptions.Builder()
+                .db(this.dbName)
+                .selector(selector)
+                .fields(fields.stream().map(DbField::getDbName).collect(Collectors.toList()))
+                .build();
+
+        InputStream findDocumentResult = client
+                .postFindAsStream(findOptions)
+                .execute()
+                .getResult();
+
+        return findDocumentResult;
+    }
+
     /**
      * Delete a CSAF document from the database
      *

@@ -86,7 +86,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("findAdvisories {} ", sanitize(expression));
-        return ResponseEntity.ok(advisoryService.getAdvisoryIds());
+        return ResponseEntity.ok(advisoryService.getAdvisoryInfromations());
     }
 
 
@@ -523,7 +523,7 @@ public class AdvisoryController {
      * @param advisoryId             advisoryId id of the CSAF document to change
      * @param revision               optimistic locking revision
      * @param proposedTime           optimistic locking revision
-     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document, only
+     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
      * @return new optimistic locking revision
      */
     @Operation(

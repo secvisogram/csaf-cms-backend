@@ -5,16 +5,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 
+/**
+ * Wrapper around JsonNode to read and write audit trail objects for CSAF document changes from/to the CouchDB
+ */
 public class AuditTrailDocumentWrapper extends AuditTrailWrapper {
 
-    public static AuditTrailDocumentWrapper createNewFromPatch(JsonNode diffPatch) {
+    /**
+     * Calculate an CSAF document diff in JSON Patch format for the given AdvisoryWrapper's
+     * and create an AuditTrailDocumentWrapper for this diff.
+     * @param oldAdvisory the old advisory
+     * @param newAdvisory the new advisory
+     * @return the new wrapper
+     */
+    public static AuditTrailDocumentWrapper createNewFromAdvisories(AdvisoryWrapper oldAdvisory, AdvisoryWrapper newAdvisory) {
 
+        JsonNode diffPatch = oldAdvisory.calculateDiffTo(newAdvisory);
         ObjectNode rootNode = new ObjectMapper().createObjectNode();
 
         AuditTrailDocumentWrapper wrapper =  new AuditTrailDocumentWrapper(rootNode)
                 .setDiffPatch(diffPatch);
         wrapper.setType(ObjectType.AuditTrailDocument)
-                .setCreatedAtToNow();
+                .setCreatedAtToNow()
+                .setDocVersion(newAdvisory.getDocumentTrackingVersion())
+                .setOldDocVersion(oldAdvisory.getDocumentTrackingVersion());
         return wrapper;
     }
 
@@ -30,7 +43,7 @@ public class AuditTrailDocumentWrapper extends AuditTrailWrapper {
 
     private AuditTrailDocumentWrapper setDiffPatch(JsonNode diff) {
 
-        this.getAuditTrailNode().put(AuditTrailField.DIFF.getDbName(), diff);
+        this.getAuditTrailNode().set(AuditTrailField.DIFF.getDbName(), diff);
         return this;
     }
 
