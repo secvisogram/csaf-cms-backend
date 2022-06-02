@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,6 +24,7 @@ import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
+import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +123,7 @@ public class CouchDbServiceTest {
         final UUID uuid = UUID.randomUUID();
         insertTestDocument(uuid);
 
-        Assertions.assertThrows(DatabaseException.class,
+        assertThrows(DatabaseException.class,
                 () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
     }
 
@@ -131,8 +133,64 @@ public class CouchDbServiceTest {
         final UUID uuid = UUID.randomUUID();
         final String revision = insertTestDocument(uuid);
 
-        Assertions.assertThrows(DatabaseException.class,
+        assertThrows(DatabaseException.class,
                 () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
+    public void bulkDeleteDocuments() throws IOException, DatabaseException {
+
+        long countBefore = this.couchDbService.getDocumentCount();
+
+        final UUID uuid1 = UUID.randomUUID();
+        String revision1 = insertTestDocument(uuid1);
+        final UUID uuid2 = UUID.randomUUID();
+        String revision2 = insertTestDocument(uuid2);
+
+        Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
+        this.couchDbService.bulkDeleteDocuments(Arrays.asList(new IdAndRevision(uuid1.toString(), revision1),
+                new IdAndRevision(uuid2.toString(), revision2)));
+
+        Assertions.assertEquals(countBefore, this.couchDbService.getDocumentCount());
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
+    public void bulkDeleteDocuments_invalidUuid() throws IOException, DatabaseException {
+
+        long countBefore = this.couchDbService.getDocumentCount();
+
+        final UUID uuid1 = UUID.randomUUID();
+        String revision1 = insertTestDocument(uuid1);
+        final UUID uuid2 = UUID.randomUUID();
+        String revision2 = insertTestDocument(uuid2);
+
+        Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
+        this.couchDbService.bulkDeleteDocuments(Arrays.asList(new IdAndRevision("Invalid uuid", revision1),
+                new IdAndRevision(uuid2.toString(), revision2)));
+
+        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
+    public void bulkDeleteDocuments_invalidRevision() throws IOException, DatabaseException {
+
+        long countBefore = this.couchDbService.getDocumentCount();
+
+        final UUID uuid1 = UUID.randomUUID();
+        String revision1 = insertTestDocument(uuid1);
+        final UUID uuid2 = UUID.randomUUID();
+        insertTestDocument(uuid2);
+
+        Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
+        assertThrows(DatabaseException.class,
+                () -> this.couchDbService.bulkDeleteDocuments(Arrays.asList(
+                        new IdAndRevision(uuid1.toString(), revision1),
+                        new IdAndRevision(uuid2.toString(), "Invalid Revision"))));
+
+        Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
     }
 
     @Test

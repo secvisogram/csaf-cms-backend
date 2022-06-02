@@ -152,7 +152,7 @@ public class AdvisoryService {
                 bulkDeletes.add(new IdAndRevision(CouchDbField.ID_FIELD.stringVal(doc),
                         CouchDbField.REVISION_FIELD.stringVal(doc)));
             }
-            this.couchDbService.bulkDeleteCsafDocument(bulkDeletes);
+            this.couchDbService.bulkDeleteDocuments(bulkDeletes);
 
         } catch (IOException ex) {
             throw new DatabaseException(ex);

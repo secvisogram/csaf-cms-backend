@@ -352,7 +352,12 @@ public class CouchDbService {
 
     }
 
-    public void bulkDeleteCsafDocument(final Collection<IdAndRevision> objectsToDelete) throws DatabaseException {
+    /**
+     * Delete multiple Objects in the CouchDB
+     * @param objectsToDelete the ids and revisions of all objects to delete
+     * @throws DatabaseException Deletion of at least one object failed
+     */
+    public void bulkDeleteDocuments(final Collection<IdAndRevision> objectsToDelete) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
         List<Document> documents = objectsToDelete.stream()
@@ -369,7 +374,6 @@ public class CouchDbService {
                 .bulkDocs(bulkDocs)
                 .build();
 
-
         try {
             List<DocumentResult> responses =
                     client.postBulkDocs(bulkDocsOptions).execute()
@@ -380,7 +384,7 @@ public class CouchDbService {
                 }
             }
         } catch (BadRequestException brEx) {
-            String msg = "Bad request, possibly the given revision is invalid";
+            String msg = "Bad request, possibly one of the given revisions is invalid";
             LOG.error(msg);
             throw new DatabaseException(msg, brEx);
         } catch (NotFoundException nfEx) {
@@ -388,9 +392,13 @@ public class CouchDbService {
             LOG.error(msg);
             throw new IdNotFoundException(msg, nfEx);
         }
-
     }
 
+    /**
+     * Convert IdAndRevision to delete document
+     * @param object the id and revision to convert
+     * @return the converted object
+     */
     private Document createBulkDelete(IdAndRevision object) {
 
         Document eventDoc1 = new Document();
