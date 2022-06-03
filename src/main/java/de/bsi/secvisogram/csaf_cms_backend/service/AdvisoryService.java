@@ -20,6 +20,8 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -89,7 +91,7 @@ public class AdvisoryService {
      *
      * @param newCsafJson the advisory as JSON String
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
-     * @throws JsonProcessingException  if the given JSON string is not valid
+     * @throws JsonProcessingException if the given JSON string is not valid
      */
     public IdAndRevision addAdvisory(String newCsafJson) throws IOException {
 
@@ -129,43 +131,39 @@ public class AdvisoryService {
 
     /**
      * Delete advisory with given id
+     *
      * @param advisoryId the ID of the advisory to delete
      * @param revision   the revision for concurrent control
      * @throws BadRequestException if the request was
      * @throws NotFoundException   if there is no advisory with given ID
      */
-    public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException {
+    public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException {
         this.couchDbService.deleteDocument(advisoryId, revision);
-
-        try {
-            var auditTrailDocs = this.readAllAuditTrailDocumentsFromDbFor(advisoryId);
-            Collection<IdAndRevision> bulkDeletes = new ArrayList<>(auditTrailDocs.size());
-            for (JsonNode doc : auditTrailDocs) {
-                bulkDeletes.add(new IdAndRevision(CouchDbField.ID_FIELD.stringVal(doc),
-                        CouchDbField.REVISION_FIELD.stringVal(doc)));
-            }
-            this.couchDbService.bulkDeleteDocuments(bulkDeletes);
-
-        } catch (IOException ex) {
-            throw new DatabaseException(ex);
-        }
+        deleteAllAuditTrailDocumentsFromDbFor(advisoryId, ADVISORY_ID.getDbName());
     }
 
-    private List<JsonNode> readAllAuditTrailDocumentsFromDbFor(String advisoryId) throws IOException {
+    private void deleteAllAuditTrailDocumentsFromDbFor(String itemId, String idKey) throws IOException, DatabaseException {
 
         Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
 
         AndExpression searchExpr = new AndExpression(containsIgnoreCase("AuditTrail", TYPE_FIELD.getDbName()),
-                equal(advisoryId, ADVISORY_ID.getDbName()));
+                equal(itemId, idKey));
         Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
-        return this.findDocuments(selector, fields);
+        var auditTrailDocs = this.findDocuments(selector, fields);
+
+        Collection<IdAndRevision> bulkDeletes = new ArrayList<>(auditTrailDocs.size());
+        for (JsonNode doc : auditTrailDocs) {
+            bulkDeletes.add(new IdAndRevision(CouchDbField.ID_FIELD.stringVal(doc),
+                    CouchDbField.REVISION_FIELD.stringVal(doc)));
+        }
+        this.couchDbService.bulkDeleteDocuments(bulkDeletes);
+
     }
 
-
     /**
-     * @param advisoryId                the ID of the advisory to update
-     * @param revision                  the revision for concurrent control
-     * @param changedCsafJson           the updated csaf json as string
+     * @param advisoryId      the ID of the advisory to update
+     * @param revision        the revision for concurrent control
+     * @param changedCsafJson the updated csaf json as string
      * @return the new revision of the updated csaf document
      * @throws JsonProcessingException if the given JSON string is not valid
      * @throws DatabaseException       if there was an error updating the advisory in the DB
@@ -181,11 +179,11 @@ public class AdvisoryService {
         newAdvisoryNode.setRevision(revision);
 
         AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
-            .setAdvisoryId(advisoryId)
-            .setChangeType(ChangeType.Update)
-            .setUser("Mustermann");
+                .setAdvisoryId(advisoryId)
+                .setChangeType(ChangeType.Update)
+                .setUser("Mustermann");
 
-        String result =  this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
+        String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
         return result;
     }
@@ -219,6 +217,95 @@ public class AdvisoryService {
         return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
     }
 
+    /**
+     * Adds a comment to the advisory
+     *
+     * @param advisoryId        the ID of the advisory to add the comment to
+     * @param commentJson       the comment to add as JSON string, requires a commentText
+     * @return a tuple of ID and revision of the added comment
+     * @throws DatabaseException when there are database errors
+     * @throws IOException       when there are errors in JSON handling
+     */
+    public IdAndRevision addComment(String advisoryId, String commentJson) throws DatabaseException, IOException {
 
+        UUID commentId = UUID.randomUUID();
+
+        CommentWrapper newComment = CommentWrapper.createNewFromJson(advisoryId, commentJson);
+
+        AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newComment)
+                .setCommentId(commentId.toString())
+                .setChangeType(ChangeType.Create);
+
+        String user = newComment.getOwner();
+        if (user != null) {
+            auditTrail.setUser(user);
+        }
+
+        String commentRevision = couchDbService.writeDocument(commentId, newComment.commentAsString());
+        couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+        InputStream advisoryStream = couchDbService.readDocumentAsStream(newComment.getAdvisoryId());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        String field = newComment.getField();
+        advisory.addCommentId(Objects.requireNonNullElse(field, ""), commentId.toString());
+        couchDbService.updateDocument(advisory.advisoryAsString());
+
+        return new IdAndRevision(commentId.toString(), commentRevision);
+
+    }
+
+    /**
+     * Get a specific comment
+     *
+     * @param commentId the ID of the comment to get
+     * @return the requested comment
+     * @throws IdNotFoundException if there is no comment with given ID
+     */
+    public CommentResponse getComment(String commentId) throws DatabaseException {
+        InputStream commentStream = couchDbService.readDocumentAsStream(commentId);
+        try {
+            CommentWrapper comment = CommentWrapper.createFromCouchDb(commentStream);
+            return new CommentResponse(commentId, comment.getRevision(), comment.getAdvisoryId(), comment.getOwner(), comment.getText(), null);
+
+        } catch (IOException e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public List<CommentInformationResponse> getComments(String advisoryId) throws IOException {
+
+        List<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
+
+        AndExpression searchExpr = new AndExpression(
+                equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
+                equal(advisoryId, CommentField.ADVISORY_ID.getDbName())
+        );
+        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
+        List<JsonNode> commentInfosJson = this.findDocuments(selector, fields);
+
+        return commentInfosJson.stream().map(CommentWrapper::convertToCommentInfo).toList();
+    }
+
+    /**
+     * Deletes a comment from an advisory
+     *
+     * @param advisoryId      the ID of the advisory to remove the comment from
+     * @param commentId       the ID of the comment to remove
+     * @param commentRevision the comment's revision for concurrent control
+     * @throws DatabaseException when there are database errors
+     * @throws IOException       when there are errors in JSON handling
+     */
+    public void deleteComment(String advisoryId, String commentId, String commentRevision) throws DatabaseException, IOException {
+
+        couchDbService.deleteDocument(commentId, commentRevision);
+
+        InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
+        AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        advisory.removeCommentId(commentId);
+        couchDbService.updateDocument(advisory.advisoryAsString());
+
+        deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
+
+    }
 
 }

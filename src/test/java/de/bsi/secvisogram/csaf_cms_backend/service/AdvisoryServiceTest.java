@@ -12,7 +12,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
@@ -21,6 +24,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
 import java.io.IOException;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
@@ -159,7 +163,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void   updateAdvisoryTest() throws IOException, DatabaseException {
+    public void updateAdvisoryTest() throws IOException, DatabaseException {
 
         var updateJsafJson = csafDocumentJson("CSAF_INFORMATIONAL_ADVISORY", "Test Advisory");
 
@@ -173,7 +177,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void   updateAdvisoryTest_auditTrail() throws IOException, DatabaseException {
+    public void updateAdvisoryTest_auditTrail() throws IOException, DatabaseException {
 
         var idRev = advisoryService.addAdvisory(csafDocumentJson("Category1", "Title1"));
         var revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafDocumentJson("Category2", "Title2"));
@@ -237,4 +241,160 @@ public class AdvisoryServiceTest {
                    }
                 }""".formatted(documentCategory, documentTitle);
     }
+
+    @Test
+    public void addCommentTest_oneComment() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentText = "This is a comment";
+
+        String commentJson = String.format("""
+            {
+                "commentText": "%s",
+                "field": "/document"
+            }
+            """, commentText);
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
+
+        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment and an audit trail entry for both");
+        Assertions.assertTrue(csafNode.get("document").has("$comment"));
+        Assertions.assertEquals(idRevComment.getId(), csafNode.at("/document/$comment/0").asText());
+
+        CommentResponse comment = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals(commentText, comment.getCommentText());
+
+    }
+
+    @Test
+    public void addCommentTest_twoComments() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        String commentTextOne = "This is a comment for a field";
+        String commentTextTwo = "This is another comment for the document";
+
+        String commentOneJson = String.format("""
+            {
+                "commentText": "%s",
+                "field": "/document"
+            }
+            """, commentTextOne);
+
+
+        String commentTwoJson = String.format("""
+            {
+                "commentText": "%s"
+            }
+            """, commentTextTwo);
+
+
+        IdAndRevision idRevCommentField = advisoryService.addComment(idRevAdvisory.getId(), commentOneJson);
+        IdAndRevision idRevCommentDoc = advisoryService.addComment(idRevAdvisory.getId(), commentTwoJson);
+
+        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
+        Assertions.assertTrue(csafNode.has("$comment"));
+        Assertions.assertTrue(csafNode.get("document").has("$comment"));
+        Assertions.assertEquals(idRevCommentDoc.getId(), csafNode.at("/$comment/0").asText());
+        Assertions.assertEquals(idRevCommentField.getId(), csafNode.at("/document/$comment/0").asText());
+
+    }
+
+    @Test
+    public void addCommentTest_twoCommentsSameField() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        String commentTextOne = "This is a comment for a field";
+        String commentTextTwo = "This is another comment for the same field";
+
+        String commentOneJson = String.format("""
+            {
+                "commentText": "%s",
+                "field": "/document"
+            }
+            """, commentTextOne);
+        String commentTwoJson = String.format("""
+            {
+                "commentText": "%s",
+                "field": "/document"
+            }
+            """, commentTextTwo);
+
+        IdAndRevision idRevCommentField1 = advisoryService.addComment(idRevAdvisory.getId(), commentOneJson);
+        IdAndRevision idRevCommentField2 = advisoryService.addComment(idRevAdvisory.getId(), commentTwoJson);
+
+        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
+        Assertions.assertTrue(csafNode.get("document").has("$comment"));
+        Assertions.assertEquals(2, csafNode.at("/document/$comment").size(), "there should be two comments for the document field");
+
+        ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<List<String>>() {
+        });
+        List<String> idList = reader.readValue(csafNode.at("/document/$comment"));
+
+        Assertions.assertTrue(idList.containsAll(List.of(idRevCommentField1.getId(), idRevCommentField2.getId())));
+
+    }
+
+    @Test
+    public void deleteComment_notPresent() throws IOException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        Assertions.assertThrows(IdNotFoundException.class,
+                () -> advisoryService.deleteComment(idRevAdvisory.getId(), "not present", "no revision"));
+    }
+
+    @Test
+    public void deleteComment_badRevision() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        String commentJson = """
+            {
+                "commentText": "a comment",
+                "field": "/document"
+            }
+            """;
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
+
+        Assertions.assertThrows(DatabaseException.class,
+                () -> advisoryService.deleteComment(idRevAdvisory.getId(), idRevComment.getId(), "bad revision"));
+    }
+
+    @Test
+    public void deleteComment() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        String commentJson = """
+            {
+                "commentText": "a comment",
+                "field": "/document"
+            }
+            """;
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment and an audit trail entry for both before deletion");
+
+        advisoryService.deleteComment(idRevAdvisory.getId(), idRevComment.getId(), idRevComment.getRevision());
+        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+
+        Assertions.assertEquals(0, csafNode.at("/document/$comment").size(),
+                "the one comment should be deleted (the array node still exists)");
+
+        Assertions.assertEquals(2, advisoryService.getDocumentCount(),
+                "There should be 1 advisory and 1 audit trail entry left after deletion");
+
+    }
+
 }

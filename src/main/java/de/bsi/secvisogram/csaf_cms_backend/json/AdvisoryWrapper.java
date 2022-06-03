@@ -5,10 +5,12 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
@@ -21,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -29,13 +32,12 @@ import java.util.function.BiConsumer;
  */
 public class AdvisoryWrapper {
 
-    public static final String emptyCsafDocument = """
-                { "document": {
-                   }
-                }""";
+    private static final String COMMENT_KEY = "$comment";
+
 
     /**
      * Convert an input stream from the couch db to an AdvisoryWrapper
+     *
      * @param advisoryStream the stream
      * @return the wrapper
      * @throws IOException error in processing the input stream
@@ -74,8 +76,9 @@ public class AdvisoryWrapper {
     /**
      * Convert an CSAF document to an initial AdvisoryWrapper for a given user.
      * The wrapper has no id and revision.
+     *
      * @param newCsafJson the csaf string
-     * @param userName the user
+     * @param userName    the user
      * @return the wrapper
      * @throws IOException exception in handling json string
      */
@@ -91,7 +94,8 @@ public class AdvisoryWrapper {
 
     /**
      * Creates a new AdvisoryWrapper based on the given one and set its CSAF document to the changed CSAF document
-     * @param existing the base AdvisoryWrapper
+     *
+     * @param existing        the base AdvisoryWrapper
      * @param changedCsafJson the new CSAF document
      * @return the new AdvisoryWrapper
      * @throws IOException exception in handling json
@@ -110,7 +114,7 @@ public class AdvisoryWrapper {
 
     private AdvisoryWrapper(ObjectNode advisoryNode) {
 
-         this.advisoryNode = advisoryNode;
+        this.advisoryNode = advisoryNode;
     }
 
     private JsonNode getAdvisoryNode() {
@@ -186,17 +190,85 @@ public class AdvisoryWrapper {
         return this;
     }
 
+    private ObjectNode getExistingDocumentObjectNode(String jsonPtrExpr) {
+        TreeNode node = getCsaf().at(jsonPtrExpr);
+        if (node.isMissingNode()) {
+            throw new IllegalArgumentException("The given json pointer expression leads nowhere.");
+        }
+        if (!node.isObject()) {
+            throw new IllegalArgumentException("Can only add comments to object nodes in the json tree.");
+        }
+        return (ObjectNode) node;
+    }
+
     /**
-     * Get the node in the wrapped advisory node specified by given JSON pointer instance
-     * @param jsonPtrExpr – Expression to compile as a JsonPointer instance
-     * @return Node that matches given JSON Pointer: if no match exists, will return a node for which TreeNode.isMissingNode() returns true.
+     * Adds a comment to a specific field of the CSAF document
+     *
+     * @param jsonPtrExpr the JSON path to the field the comment is added for, must point to an existing object node
+     * @param commentId   the comment ID to add
+     * @return this advisory wrapper with the updated advisory
      */
+    public AdvisoryWrapper addCommentId(String jsonPtrExpr, String commentId) {
+        ObjectNode objectNode = getExistingDocumentObjectNode(jsonPtrExpr);
+        if (objectNode.has(COMMENT_KEY)) {
+            ArrayNode commentNode = (ArrayNode) objectNode.get(COMMENT_KEY);
+            commentNode.add(commentId);
+        } else {
+            final ObjectMapper jacksonMapper = new ObjectMapper();
+            ArrayNode commentNode = jacksonMapper.createArrayNode();
+            commentNode.add(commentId);
+            objectNode.set(COMMENT_KEY, commentNode);
+        }
+        return this;
+    }
+
+    /**
+     * Removes a comment from a specific field of the CSAF document
+     * As comments are assumed to be unique, the comment's id is searched in the whole tree and the first occurrence
+     * is removed. It will be silently ignored if the comment id is not found.
+     *
+     * @param commentId the comment ID to remove
+     * @return this advisory wrapper with the updated advisory
+     */
+    public AdvisoryWrapper removeCommentId(String commentId) {
+        ArrayNode commentNode = findCommentNode(getCsaf());
+        if (commentNode != null) {
+            for (Iterator<JsonNode> it = commentNode.iterator(); it.hasNext(); ) {
+                JsonNode item = it.next();
+                if (item.asText().equals(commentId)) {
+                    it.remove();
+                }
+            }
+        }
+        return this;
+    }
+
+    private ArrayNode findCommentNode(JsonNode j) {
+        Iterator<String> keyIter = j.fieldNames();
+        while (keyIter.hasNext()) {
+            String key = keyIter.next();
+            System.out.println(key);
+            if (j.get(key) instanceof ObjectNode objNode) {
+                if (objNode.has(COMMENT_KEY)) {
+                    return (ArrayNode) objNode.get(COMMENT_KEY);
+                }
+                return findCommentNode(objNode);
+            } else if (j.get(key) instanceof ArrayNode) {
+                for (JsonNode arrNode : j.get(key)) {
+                    return findCommentNode(arrNode);
+                }
+            }
+        }
+        return null;
+    }
+
     public JsonNode at(String jsonPtrExpr) {
         return this.advisoryNode.at(jsonPtrExpr);
     }
 
     /**
      * Get the node in the wrapped advisory node specified by given dbField.
+     *
      * @param dbField dbField converted to JSON pointer instance
      * @return Node that matches given JSON Pointer: if no match exists, will return a node for which TreeNode.isMissingNode() returns true.
      */
@@ -244,6 +316,7 @@ public class AdvisoryWrapper {
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
+     *
      * @param target either valid JSON objects or arrays or values
      * @return the resultant patch
      */
@@ -263,6 +336,7 @@ public class AdvisoryWrapper {
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
+     *
      * @param source either valid JSON objects or arrays or values
      * @param target either valid JSON objects or arrays or values
      * @return the resultant patch
@@ -275,7 +349,8 @@ public class AdvisoryWrapper {
 
     /**
      * Apply patch to JsonNode
-     * @param patch the patch to apply
+     *
+     * @param patch  the patch to apply
      * @param source the JsonNode the patch is applied to
      * @return the patched JsonNode
      */
@@ -286,6 +361,7 @@ public class AdvisoryWrapper {
 
     /**
      * Convert Search Expression to JSON String
+     *
      * @param expression2Convert the expression to convert
      * @return the converted expression
      * @throws JsonProcessingException a conversion problem has occurred
@@ -300,6 +376,7 @@ public class AdvisoryWrapper {
 
     /**
      * Convert JSON String to Search expression
+     *
      * @param jsonString the String to convert
      * @return the converted expression
      * @throws JsonProcessingException error in json

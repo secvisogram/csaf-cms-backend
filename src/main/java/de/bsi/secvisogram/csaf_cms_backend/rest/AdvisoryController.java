@@ -22,8 +22,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,13 +148,13 @@ public class AdvisoryController {
                     )
             )
     )
-    public ResponseEntity<AdvisoryCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
+    public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
 
         LOG.info("createCsafDocument");
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
             URI advisoryLocation = URI.create("advisories/" + idRev.getId());
-            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId(), idRev.getRevision());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);
         } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
@@ -573,54 +574,58 @@ public class AdvisoryController {
     /**
      * Get a list of all comments and answers of an CSAF document
      *
-     * @param advisoryId id of the CSAF document to add the answer
-     * @return list of comments and their metadata
+     * @param advisoryId id of the CSAF document to get comment ids for
+     * @return list of comment ids
      */
     @Operation(
             summary = "Show comments and answers of an advisory.",
             description = "Show all comments and answers of the advisory with the given advisoryId.",
             tags = {"Advisory"}
     )
-    @GetMapping("/{advisoryId}/comments/")
-    public List<AdvisoryCommentResponse> listComments(
+    @GetMapping("/{advisoryId}/comments")
+    public ResponseEntity<List<CommentInformationResponse>> listComments(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to get the comments of."
             ) String advisoryId
-    ) {
+    ) throws IOException {
 
-        // only for debugging, remove when implemented
-        LOG.info("listComments {}", sanitize(advisoryId));
-        return Collections.emptyList();
+        return ResponseEntity.ok(advisoryService.getComments(advisoryId));
     }
 
     /**
      * Add a comment to an advisory
      *
-     * @param advisoryId  ID of the CSAF document to add the comment to
-     * @param commentText text content of the comment
+     * @param advisoryId      the ID of the advisory to add the comment to
+     * @param newCommentJson  the comment to add as JSON string
      */
     @PostMapping("/{advisoryId}/comments")
     @Operation(
             summary = "Add a comment to an advisory.",
             description = "Add a comment to the advisory with the given ID. The comments are generated independently" +
-                          " of the CSAF document. The IDs of the comments must be added manually to the appropriate place in " +
-                          "the CSAF document and then saved with the document.",
+                          " of the CSAF document.",
             tags = {"Advisory"}
     )
-    public AdvisoryCreateResponse createComment(
+    public ResponseEntity<EntityCreateResponse> createComment(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
-                    description = "The ID of the advisory to add the comment to."
+                    description = "The ID of the advisory to add the comments to."
             ) String advisoryId,
-            @RequestBody AdvisoryCreateCommentRequest commentText
-    ) {
+            @RequestBody String newCommentJson) {
 
-        // only for debugging, remove when implemented
-        LOG.info("createComment {} {}", sanitize(advisoryId), sanitize(commentText));
-        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
+        try {
+            IdAndRevision idRev = advisoryService.addComment(advisoryId, newCommentJson);
+            URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
+            return ResponseEntity.created(advisoryLocation).body(createResponse);
+        } catch (IOException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (DatabaseException dbEx) {
+            LOG.error("Error creating comment");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -636,7 +641,7 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @PostMapping("/{advisoryId}/comments/{commentId}/answer")
-    public AdvisoryCreateResponse addAnswer(
+    public EntityCreateResponse addAnswer(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -652,7 +657,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(answerText));
-        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**

@@ -18,6 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescri
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import java.io.IOException;
@@ -68,6 +69,8 @@ public class AdvisoryControllerTest {
                                                                        "}", csafJsonString, advisoryId);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
+
+    private static final String commentRoute = advisoryRoute + advisoryId + "/comments/";
 
 
     @Test
@@ -350,6 +353,101 @@ public class AdvisoryControllerTest {
     @Test
     void createNewCsafDocumentVersionTest() {
         // to be filled
+    }
+
+    @Test
+    void listCommentsTest_empty() throws Exception {
+
+        this.mockMvc.perform(get(advisoryRoute + advisoryId + "/comments"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void listCommentsTest_oneItem() throws Exception {
+
+        String commentId = UUID.randomUUID().toString();
+        String owner = "Musterfrau";
+
+        CommentInformationResponse info = new CommentInformationResponse(commentId, advisoryId, owner);
+        when(advisoryService.getComments(advisoryId)).thenReturn(List.of(info));
+
+
+        String expected = String.format("""
+                [{
+                    "commentId": "%s",
+                    "advisoryId": "%s",
+                    "owner": "%s"
+                }]
+                """, commentId, advisoryId, owner
+        );
+
+        this.mockMvc.perform(get(commentRoute))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void createCommentTest_invalidJson() throws Exception {
+
+        String invalidJson = "not a valid JSON string";
+
+        when(advisoryService.addComment(advisoryId, invalidJson)).thenThrow(JsonProcessingException.class);
+
+        this.mockMvc.perform(
+                        post(commentRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void createCommentTest_missingAdvisoryId() throws Exception {
+
+
+        String commentJson = """
+                {
+                    "commentText": "This is a comment."
+                }
+                """;
+
+        when(advisoryService.addComment(advisoryId, commentJson)).thenThrow(IllegalArgumentException.class);
+
+        this.mockMvc.perform(
+                        post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void createCommentTest() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
+        String commentJson = """
+                {
+                    "commentText": "This is a comment.",
+                    "advisoryId": "some advisory ID we pretend exists."
+                }
+                """;
+
+        when(advisoryService.addComment(advisoryId, commentJson)).thenReturn(idRev);
+
+        String expected = String.format("""
+                {
+                    "id": "%s",
+                    "revision": "%s"
+                }
+                """, idRev.getId(), idRev.getRevision());
+
+        this.mockMvc.perform(
+                post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expected));
+
     }
 
 }

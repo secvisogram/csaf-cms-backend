@@ -2,13 +2,13 @@ package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(name = "AdvisoryCreateResponse")
-public class AdvisoryCreateResponse {
+@Schema(name = "EntityCreateResponse")
+public class EntityCreateResponse {
 
     private final String id;
     private final String revision;
 
-    public AdvisoryCreateResponse(String id, String revision) {
+    public EntityCreateResponse(String id, String revision) {
         this.id = id;
         this.revision = revision;
     }
