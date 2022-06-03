@@ -1,6 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.*;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.*;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE_TYPE;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
@@ -204,8 +206,8 @@ public class AdvisoryServiceTest {
 
     private List<JsonNode> readAllAuditTrailDocumentsFromDb() throws IOException {
 
-        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, AuditTrailField.ADVISORY_ID, CREATED_AT,
-                CHANGE_TYPE, DIFF, AuditTrailField.DOC_VERSION);
+        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, ADVISORY_ID, CREATED_AT,
+                CHANGE_TYPE, DIFF, DOC_VERSION);
         Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.AuditTrailDocument.name(), TYPE_FIELD.getDbName()));
         return advisoryService.findDocuments(selector, fields);
     }

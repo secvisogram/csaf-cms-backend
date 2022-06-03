@@ -1,6 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.ADVISORY_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
@@ -96,7 +96,7 @@ public class AdvisoryService {
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser("");
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, "Mustermann");
-        AuditTrailWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
+        AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
                 .setAdvisoryId(advisoryId.toString())
                 .setChangeType(ChangeType.Create)
                 .setUser("Mustermann");
@@ -180,7 +180,7 @@ public class AdvisoryService {
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
         newAdvisoryNode.setRevision(revision);
 
-        AuditTrailWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
+        AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
             .setAdvisoryId(advisoryId)
             .setChangeType(ChangeType.Update)
             .setUser("Mustermann");
@@ -205,13 +205,13 @@ public class AdvisoryService {
         }
         AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
 
-        AuditTrailWrapper auditTrail = AuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+        AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+                .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
                 .setAdvisoryId(advisoryId)
                 .setCreatedAtToNow()
                 .setChangeType(ChangeType.Update)
-                .setUser("Mustermann")
-                .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion());
+                .setUser("Mustermann");
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
         existingAdvisoryNode.setWorkflowState(newWorkflowState);
