@@ -282,6 +282,8 @@ public class AdvisoryController {
             return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
+        } catch (IOException ioEx) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 

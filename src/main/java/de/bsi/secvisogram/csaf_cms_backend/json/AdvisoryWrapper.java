@@ -32,6 +32,10 @@ import java.util.function.BiConsumer;
  */
 public class AdvisoryWrapper {
 
+    public static final String emptyCsafDocument = """
+                { "document": {
+                   }
+                }""";
     private static final String COMMENT_KEY = "$comment";
 
 
