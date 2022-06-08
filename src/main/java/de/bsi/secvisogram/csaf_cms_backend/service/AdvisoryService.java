@@ -136,7 +136,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Delete advisory w
+     * Delete advisory with given id
      * @param advisoryId the ID of the advisory to delete
      * @param revision   the revision for concurrent control
      * @throws BadRequestException if the request was
