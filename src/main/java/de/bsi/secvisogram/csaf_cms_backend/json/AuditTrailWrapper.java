@@ -64,7 +64,7 @@ public abstract class AuditTrailWrapper {
 
     public ChangeType getChangeType() {
 
-        return ChangeType.valueOf(this.auditTrailNode.get(AuditTrailField.CREATED_AT.getDbName()).asText());
+        return ChangeType.valueOf(this.auditTrailNode.get(AuditTrailField.CHANGE_TYPE.getDbName()).asText());
     }
 
     public AuditTrailWrapper setAdvisoryId(String newValue) {
