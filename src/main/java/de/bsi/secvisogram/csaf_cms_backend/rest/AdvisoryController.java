@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
@@ -51,15 +50,7 @@ public class AdvisoryController {
     @Autowired
     private AdvisoryService advisoryService;
 
-    private static UUID convertToUuid(String idString) {
-        try {
-            return UUID.fromString(idString);
-        } catch (IllegalArgumentException iaEx) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!", iaEx);
-        }
-    }
-
-    /**
+     /**
      * Read all advisories, optionally filtered by a search expression
      *
      * @param expression optional search expression as json string
@@ -87,7 +78,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("findAdvisories {} ", sanitize(expression));
-        return ResponseEntity.ok(advisoryService.getAdvisoryIds());
+        return ResponseEntity.ok(advisoryService.getAdvisoryInformations());
     }
 
 
@@ -112,12 +103,15 @@ public class AdvisoryController {
     ) {
 
         LOG.info("readCsafDocument");
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            return ResponseEntity.ok(advisoryService.getAdvisory(uuid));
+            return ResponseEntity.ok(advisoryService.getAdvisory(advisoryId));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
+        } catch (DatabaseException e) {
+            LOG.info("Error reading Advisory");
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -151,13 +145,12 @@ public class AdvisoryController {
     public ResponseEntity<AdvisoryCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
 
         LOG.info("createCsafDocument");
-
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
-            URI advisoryLocation = URI.create("advisories/" + idRev.getId().toString());
-            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId().toString(), idRev.getRevision());
+            URI advisoryLocation = URI.create("advisories/" + idRev.getId());
+            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);
-        } catch (JsonProcessingException jpEx) {
+        } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -204,9 +197,9 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            String newRevision = advisoryService.updateAdvisory(uuid, revision, changedCsafJson);
+            String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
             return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
@@ -274,10 +267,9 @@ public class AdvisoryController {
     ) {
 
         LOG.info("deleteCsafDocument");
-
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            advisoryService.deleteAdvisory(uuid, revision);
+            advisoryService.deleteAdvisory(advisoryId, revision);
             return ResponseEntity.ok().build();
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
@@ -367,6 +359,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
+        checkValidUuid(advisoryId);
         return "";
     }
 
@@ -396,9 +389,9 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Draft);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -432,9 +425,8 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToReview {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = convertToUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Review);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Review);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -468,9 +460,9 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Approved);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Approved);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -506,9 +498,9 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime));
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.RfPublication);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -521,7 +513,7 @@ public class AdvisoryController {
      * @param advisoryId             advisoryId id of the CSAF document to change
      * @param revision               optimistic locking revision
      * @param proposedTime           optimistic locking revision
-     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document, only
+     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
      * @return new optimistic locking revision
      */
     @Operation(
@@ -549,9 +541,9 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {} {}",
                 sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
-        UUID uuid = convertToUuid(advisoryId);
+        checkValidUuid(advisoryId);
         try {
-            advisoryService.changeAdvisoryWorkflowState(uuid, revision, WorkflowState.Published);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
@@ -728,4 +720,17 @@ public class AdvisoryController {
     private String sanitize(Object value) {
         return (value != null) ? value.toString().replaceAll("[\r\n]", "") : "";
     }
+
+    /**
+     * Check whether the given id is a valid uuid
+     * @param uuidString
+     */
+    private static void checkValidUuid(String uuidString) {
+        try {
+            UUID.fromString(uuidString);
+        } catch (IllegalArgumentException iaEx) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!", iaEx);
+        }
+    }
+
 }

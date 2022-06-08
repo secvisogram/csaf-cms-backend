@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -39,6 +41,8 @@ public class AdvisoryControllerTest {
     @Autowired
     AdvisoryController advisoryController;
 
+    private static final ObjectMapper jacksonMapper = new ObjectMapper();
+
     private static final String advisoryRoute = "/api/2.0/advisories/";
 
     private static final String csafJsonString = "{" +
@@ -46,7 +50,7 @@ public class AdvisoryControllerTest {
                                                  "        \"category\": \"CSAF_BASE\"" +
                                                  "    }" +
                                                  "}";
-    private static final UUID advisoryId = UUID.randomUUID();
+    private static final String advisoryId = UUID.randomUUID().toString();
     private static final String fullAdvisoryJsonString = String.format("{" +
                                                                        "    \"owner\": \"Musterfrau\"," +
                                                                        "    \"type\": \"Advisory\"," +
@@ -55,7 +59,6 @@ public class AdvisoryControllerTest {
                                                                        "    \"_rev\": \"revision\"," +
                                                                        "    \"_id\": \"%s\"" +
                                                                        "}", csafJsonString, advisoryId);
-    private static final AdvisoryResponse advisoryResponse = new AdvisoryResponse(advisoryId.toString(), WorkflowState.Draft, csafJsonString);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
 
@@ -69,7 +72,7 @@ public class AdvisoryControllerTest {
     @Test
     void listCsafDocumentsTest_empty() throws Exception {
 
-        when(advisoryService.getAdvisoryIds()).thenReturn(Collections.emptyList());
+        when(advisoryService.getAdvisoryInformations()).thenReturn(Collections.emptyList());
 
         this.mockMvc.perform(get(advisoryRoute))
                 .andDo(print())
@@ -81,8 +84,8 @@ public class AdvisoryControllerTest {
     @Test
     void listCsafDocumentsTest_oneItem() throws Exception {
 
-        AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId.toString(), WorkflowState.Draft);
-        when(advisoryService.getAdvisoryIds()).thenReturn(List.of(info));
+        AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId, WorkflowState.Draft);
+        when(advisoryService.getAdvisoryInformations()).thenReturn(List.of(info));
 
         this.mockMvc.perform(get(advisoryRoute))
                 .andDo(print())
@@ -93,22 +96,12 @@ public class AdvisoryControllerTest {
 
     }
 
-    @Test
-    void readCsafDocumentTest_invalidId() throws Exception {
-
-        String invalidId = "invalid ID";
-
-        this.mockMvc.perform(get(advisoryRoute + invalidId))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-
-    }
 
     @Test
     void readCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
-        when(advisoryService.getAdvisory(advisoryId)).thenThrow(IdNotFoundException.class);
+        when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(IdNotFoundException.class);
 
 
         this.mockMvc.perform(get(advisoryRoute + advisoryId))
@@ -119,6 +112,9 @@ public class AdvisoryControllerTest {
 
     @Test
     void readCsafDocumentTest() throws Exception {
+
+        JsonNode node = jacksonMapper.readTree(csafJsonString);
+        final AdvisoryResponse advisoryResponse = new AdvisoryResponse(advisoryId, WorkflowState.Draft, node);
 
         when(advisoryService.getAdvisory(advisoryId)).thenReturn(advisoryResponse);
 
@@ -169,19 +165,6 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void changeCsafDocumentTest_invalidId() throws Exception {
-
-        String invalidId = "not an UUID";
-
-        this.mockMvc.perform(patch(advisoryRoute + invalidId).with(csrf())
-                        .content(fullAdvisoryJsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("revision", revision))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
@@ -194,6 +177,19 @@ public class AdvisoryControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
+    }
+
+    @Test
+    void changeCsafDocumentTest_invalidId() throws Exception {
+
+        String invalidId = "not an UUID";
+
+        this.mockMvc.perform(patch(advisoryRoute + invalidId).with(csrf())
+                        .content(fullAdvisoryJsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -215,7 +211,7 @@ public class AdvisoryControllerTest {
     void deleteCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
-        doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
+        doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), revision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
                 .andDo(print())
@@ -237,7 +233,7 @@ public class AdvisoryControllerTest {
 
         UUID advisoryId = UUID.randomUUID();
         String invalidRevision = "invalid";
-        doThrow(DatabaseException.class).when(advisoryService).deleteAdvisory(advisoryId, invalidRevision);
+        doThrow(DatabaseException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), invalidRevision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
                         .param("revision", invalidRevision))

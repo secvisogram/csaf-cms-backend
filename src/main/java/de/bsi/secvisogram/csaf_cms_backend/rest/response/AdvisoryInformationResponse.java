@@ -12,6 +12,7 @@ import java.util.List;
 @Schema(name = "AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
+
     private String advisoryId;
     private WorkflowState workflowState;
     private String documentTrackingId;
@@ -20,7 +21,6 @@ public class AdvisoryInformationResponse {
     private boolean changeable;
     private boolean deletable;
     private List<WorkflowState> allowedStateChanges;
-
 
     public AdvisoryInformationResponse() {
 
@@ -71,6 +71,19 @@ public class AdvisoryInformationResponse {
     public void setWorkflowState(WorkflowState workflowState) {
         this.workflowState = workflowState;
     }
+
+    public void setWorkflowState(String workflowStateString) {
+
+        this.workflowState = WorkflowState.valueOf(workflowStateString);
+        if (WorkflowState.Draft == this.workflowState) {
+            this.allowedStateChanges = List.of(WorkflowState.Review);
+        } else if (WorkflowState.Approved == this.workflowState) {
+            this.allowedStateChanges = List.of(WorkflowState.Published);
+        } else if (WorkflowState.Review == this.workflowState) {
+            this.allowedStateChanges = Arrays.asList(WorkflowState.Draft, WorkflowState.Approved);
+        }
+    }
+
 
     public void setAllowedStateChanges(List<WorkflowState> allowedStateChanges) {
         this.allowedStateChanges = Collections.unmodifiableList(allowedStateChanges);

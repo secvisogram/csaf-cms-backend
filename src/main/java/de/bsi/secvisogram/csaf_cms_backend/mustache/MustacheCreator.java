@@ -2,7 +2,6 @@ package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import de.bsi.secvisogram.csaf_cms_backend.json.Csaf2MapReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

@@ -1,4 +1,4 @@
-package de.bsi.secvisogram.csaf_cms_backend.json;
+package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
