@@ -11,7 +11,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 public class AuditTrailDocumentWrapper extends AuditTrailWrapper {
 
     /**
-     * Calculate an CSAF document diff in JSON Patch format for the given AdvisoryWrapper's
+     * Calculate a CSAF document diff in JSON Patch format for the given AdvisoryWrapper
      * and create an AuditTrailDocumentWrapper for this diff.
      * @param oldAdvisory the old advisory
      * @param newAdvisory the new advisory
