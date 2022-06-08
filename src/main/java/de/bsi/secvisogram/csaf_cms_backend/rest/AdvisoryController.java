@@ -76,7 +76,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("findAdvisories {} ", sanitize(expression));
-        return ResponseEntity.ok(advisoryService.getAdvisoryInfromations());
+        return ResponseEntity.ok(advisoryService.getAdvisoryInformations());
     }
 
 

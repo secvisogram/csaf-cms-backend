@@ -41,6 +41,20 @@ public class AdvisoryWrapper {
         return new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
     }
 
+    private static ObjectNode createAdvisoryNodeFromString(String csafJson) throws IOException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
+        JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+        if (csafRootNode.get("document") == null) {
+            throw new IllegalArgumentException("Csaf contains no document entry");
+        }
+
+        ObjectNode rootNode = jacksonMapper.createObjectNode();
+        rootNode.set(CSAF.getDbName(), csafRootNode);
+        return rootNode;
+    }
+
     /**
      * Convert an CSAF document to an initial AdvisoryWrapper for a given user.
      * The wrapper has no id and revision.
@@ -51,18 +65,10 @@ public class AdvisoryWrapper {
      */
     public static AdvisoryWrapper createNewFromCsaf(String newCsafJson, String userName) throws IOException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        final InputStream csafStream = new ByteArrayInputStream(newCsafJson.getBytes(StandardCharsets.UTF_8));
-        JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
-
-        if (csafRootNode.get("document") == null) {
-            throw new IllegalArgumentException("Csaf contains no document entry");
-        }
-        ObjectNode rootNode = jacksonMapper.createObjectNode();
+        ObjectNode rootNode = createAdvisoryNodeFromString(newCsafJson);
         rootNode.put(WORKFLOW_STATE.getDbName(), WorkflowState.Draft.name());
         rootNode.put(OWNER.getDbName(), userName);
         rootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Advisory.name());
-        rootNode.set(CSAF.getDbName(), csafRootNode);
 
         return new AdvisoryWrapper(rootNode);
     }
@@ -76,20 +82,12 @@ public class AdvisoryWrapper {
      */
     public static AdvisoryWrapper updateFromExisting(AdvisoryWrapper existing, String changedCsafJson) throws IOException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        final InputStream csafStream = new ByteArrayInputStream(changedCsafJson.getBytes(StandardCharsets.UTF_8));
-        JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
-        if (csafRootNode.get("document") == null) {
-            throw new IllegalArgumentException("Csaf contains no document entry");
-        }
-
-        ObjectNode newRootNode = jacksonMapper.createObjectNode();
-        return new AdvisoryWrapper(newRootNode)
+        ObjectNode rootNode = createAdvisoryNodeFromString(changedCsafJson);
+        return new AdvisoryWrapper(rootNode)
                 .setAdvisoryId(existing.getAdvisoryId())
                 .setOwner(existing.getOwner())
                 .setWorkflowState(existing.getWorkflowState())
-                .setType(ObjectType.Advisory)
-                .setCsaf(csafRootNode);
+                .setType(ObjectType.Advisory);
     }
 
     private final ObjectNode advisoryNode;
