@@ -13,8 +13,7 @@ public enum AuditTrailField implements DbField {
 
     OLD_WORKFLOW_STATE("oldState"),
 
-    NEW_WORKFLOW_STATE("newState")
-    ;
+    NEW_WORKFLOW_STATE("newState");
 
     private final String dbName;
     private final String[] fieldPath;
