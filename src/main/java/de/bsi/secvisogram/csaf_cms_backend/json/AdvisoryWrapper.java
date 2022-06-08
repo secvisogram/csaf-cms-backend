@@ -208,8 +208,7 @@ public class AdvisoryWrapper {
             BiConsumer<AdvisoryInformationResponse, String>> infoFields) {
         String advisoryId = doc.getId();
         final AdvisoryInformationResponse response = new AdvisoryInformationResponse(advisoryId, null);
-        infoFields.entrySet()
-                .forEach(entry -> setValueInResponse(response, entry.getKey(), doc, entry.getValue()));
+        infoFields.forEach((key, value) -> setValueInResponse(response, key, doc, value));
 
         return response;
     }
