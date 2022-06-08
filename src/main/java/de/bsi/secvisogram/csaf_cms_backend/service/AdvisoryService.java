@@ -58,7 +58,7 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
-    public List<AdvisoryInformationResponse> getAdvisoryInfromations() {
+    public List<AdvisoryInformationResponse> getAdvisoryInformations() {
 
         Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = Map.of(
                 AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
