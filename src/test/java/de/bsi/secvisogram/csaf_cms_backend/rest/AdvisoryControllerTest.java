@@ -72,7 +72,7 @@ public class AdvisoryControllerTest {
     @Test
     void listCsafDocumentsTest_empty() throws Exception {
 
-        when(advisoryService.getAdvisoryInfromations()).thenReturn(Collections.emptyList());
+        when(advisoryService.getAdvisoryInformations()).thenReturn(Collections.emptyList());
 
         this.mockMvc.perform(get(advisoryRoute))
                 .andDo(print())
@@ -85,7 +85,7 @@ public class AdvisoryControllerTest {
     void listCsafDocumentsTest_oneItem() throws Exception {
 
         AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId, WorkflowState.Draft);
-        when(advisoryService.getAdvisoryInfromations()).thenReturn(List.of(info));
+        when(advisoryService.getAdvisoryInformations()).thenReturn(List.of(info));
 
         this.mockMvc.perform(get(advisoryRoute))
                 .andDo(print())
@@ -95,6 +95,7 @@ public class AdvisoryControllerTest {
                 );
 
     }
+
 
     @Test
     void readCsafDocumentTest_notExisting() throws Exception {
@@ -176,6 +177,19 @@ public class AdvisoryControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
+    }
+
+    @Test
+    void changeCsafDocumentTest_invalidId() throws Exception {
+
+        String invalidId = "not an UUID";
+
+        this.mockMvc.perform(patch(advisoryRoute + invalidId).with(csrf())
+                        .content(fullAdvisoryJsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test

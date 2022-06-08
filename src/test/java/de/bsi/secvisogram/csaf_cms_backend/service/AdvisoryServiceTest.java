@@ -81,7 +81,7 @@ public class AdvisoryServiceTest {
 
     @Test
     public void getAdvisoryIdsTest_empty() {
-        List<AdvisoryInformationResponse> ids = this.advisoryService.getAdvisoryInfromations();
+        List<AdvisoryInformationResponse> ids = this.advisoryService.getAdvisoryInformations();
         assertEquals(0, ids.size());
     }
 
@@ -89,7 +89,7 @@ public class AdvisoryServiceTest {
     public void getAdvisoryIdsTest() throws IOException {
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJson);
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJson);
-        List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInfromations();
+        List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations();
         List<String> expectedIDs = List.of(idRev1.getId(), idRev2.getId());
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
         Assertions.assertTrue(ids.size() == expectedIDs.size()

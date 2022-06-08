@@ -26,9 +26,11 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -101,6 +103,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("readCsafDocument");
+        checkValidUuid(advisoryId);
         try {
             return ResponseEntity.ok(advisoryService.getAdvisory(advisoryId));
         } catch (IdNotFoundException idNfEx) {
@@ -142,7 +145,6 @@ public class AdvisoryController {
     public ResponseEntity<AdvisoryCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
 
         LOG.info("createCsafDocument");
-
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
             URI advisoryLocation = URI.create("advisories/" + idRev.getId());
@@ -195,6 +197,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
+        checkValidUuid(advisoryId);
         try {
             String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
             return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
@@ -264,7 +267,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("deleteCsafDocument");
-
+        checkValidUuid(advisoryId);
         try {
             advisoryService.deleteAdvisory(advisoryId, revision);
             return ResponseEntity.ok().build();
@@ -356,6 +359,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
+        checkValidUuid(advisoryId);
         return "";
     }
 
@@ -385,6 +389,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
+        checkValidUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft);
             return ResponseEntity.ok().build();
@@ -455,6 +460,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
+        checkValidUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Approved);
             return ResponseEntity.ok().build();
@@ -492,6 +498,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime));
+        checkValidUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication);
             return ResponseEntity.ok().build();
@@ -534,6 +541,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {} {}",
                 sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
+        checkValidUuid(advisoryId);
         try {
             advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published);
             return ResponseEntity.ok().build();
@@ -712,4 +720,17 @@ public class AdvisoryController {
     private String sanitize(Object value) {
         return (value != null) ? value.toString().replaceAll("[\r\n]", "") : "";
     }
+
+    /**
+     * Check whether the given id is a valid uuid
+     * @param uuidString
+     */
+    private static void checkValidUuid(String uuidString) {
+        try {
+            UUID.fromString(uuidString);
+        } catch (IllegalArgumentException iaEx) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!", iaEx);
+        }
+    }
+
 }
