@@ -155,11 +155,18 @@ public class AdvisoryServiceTest {
     @Test
     public void deleteAdvisoryTest() throws IOException, DatabaseException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.addAdvisory(csafJson);
-        // creates advisory and audit trail
-        assertEquals(4, advisoryService.getDocumentCount());
+        assertEquals(2, advisoryService.getDocumentCount(), "there should be one advisory and one audit trail");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        assertEquals(2, advisoryService.getDocumentCount());
+        assertEquals(0, advisoryService.getDocumentCount(), "the advisory and audit trail should be deleted");
+    }
+
+    @Test
+    public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        advisoryService.addAdvisory(csafJson);
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be two advisories with an audit trail each");
+        this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
+        assertEquals(2, advisoryService.getDocumentCount(), "one advisory and one audit trail should be deleted");
     }
 
     @Test

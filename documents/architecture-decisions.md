@@ -402,7 +402,7 @@ When the comment belongs to a dedicated field and not the whole object,
 the `fieldName` in the objects is used to specify the concrete value.
 
 We archive this by adding a `$comment` value to the document where the user adds
-a comment.
+a comment. This is only possible for object nodes in the JSON tree.
 
 **Example:**
 
