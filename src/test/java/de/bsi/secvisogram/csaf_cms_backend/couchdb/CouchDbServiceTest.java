@@ -175,7 +175,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
-    public void bulkDeleteDocuments_invalidRevision() throws IOException, DatabaseException {
+    public void bulkDeleteDocuments_invalidRevision() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
 

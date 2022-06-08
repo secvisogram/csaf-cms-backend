@@ -36,11 +36,6 @@ import org.springframework.stereotype.Service;
 public class AdvisoryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryService.class);
-    static final String emptyCsafDocument = """
-                { "document": {
-                   }
-                }""";
-
     @Autowired
     private CouchDbService couchDbService;
 
@@ -102,7 +97,7 @@ public class AdvisoryService {
     public IdAndRevision addAdvisory(String newCsafJson) throws IOException {
 
         UUID advisoryId = UUID.randomUUID();
-        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createNewFromCsaf(emptyCsafDocument, "");
+        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser("");
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, "Mustermann");
         AuditTrailWrapper auditTrail = AuditTrailDocumentWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
                 .setAdvisoryId(advisoryId.toString())
@@ -110,7 +105,7 @@ public class AdvisoryService {
                 .setUser("Mustermann");
 
         String revision = couchDbService.writeCsafDocument(advisoryId, newAdvisoryNode.advisoryAsString());
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
         return new IdAndRevision(advisoryId.toString(), revision);
     }
@@ -194,7 +189,7 @@ public class AdvisoryService {
             .setUser("Mustermann");
 
         String result =  this.couchDbService.updateCsafDocument(newAdvisoryNode.advisoryAsString());
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
         return result;
     }
 
@@ -220,7 +215,7 @@ public class AdvisoryService {
                 .setUser("Mustermann")
                 .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
                 .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion());
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.advisoryAsString());
+        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
         existingAdvisoryNode.setWorkflowState(newWorkflowState);
         existingAdvisoryNode.setRevision(revision);

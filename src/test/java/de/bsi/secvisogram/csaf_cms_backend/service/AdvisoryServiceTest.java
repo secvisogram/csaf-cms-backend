@@ -190,7 +190,7 @@ public class AdvisoryServiceTest {
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(0)), equalTo(ChangeType.Create.name()));
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(1)), equalTo(ChangeType.Update.name()));
         // recreate Advisory from diffs
-        AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(AdvisoryService.emptyCsafDocument, "");
+        AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(AdvisoryWrapper.emptyCsafDocument, "");
         JsonNode patch0 = auditTrails.get(0).get(DIFF.getDbName());
         AdvisoryWrapper node1 = rootWrapper.applyJsonPatch(patch0);
         assertThat(node1.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title1"));

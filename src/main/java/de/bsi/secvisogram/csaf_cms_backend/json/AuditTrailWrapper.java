@@ -21,7 +21,7 @@ public abstract class AuditTrailWrapper {
         return auditTrailNode;
     }
 
-    public String advisoryAsString() {
+    public String auditTrailAsString() {
 
         return this.auditTrailNode.toString();
     }

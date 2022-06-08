@@ -29,6 +29,11 @@ import java.util.function.BiConsumer;
  */
 public class AdvisoryWrapper {
 
+    public static final String emptyCsafDocument = """
+                { "document": {
+                   }
+                }""";
+
     /**
      * Convert an input stream from the couch db to an AdvisoryWrapper
      * @param advisoryStream the stream
@@ -53,6 +58,17 @@ public class AdvisoryWrapper {
         ObjectNode rootNode = jacksonMapper.createObjectNode();
         rootNode.set(CSAF.getDbName(), csafRootNode);
         return rootNode;
+    }
+
+    /**
+     * Create an initial empty AdvisoryWrapper for the given user
+     * @param userName the user
+     * @return the wrapper
+     * @throws IOException exception in handling json string
+     */
+    public static AdvisoryWrapper createInitialEmptyAdvisoryForUser(String userName) throws IOException {
+
+        return createNewFromCsaf(emptyCsafDocument, userName);
     }
 
     /**
