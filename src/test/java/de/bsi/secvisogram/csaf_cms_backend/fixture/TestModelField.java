@@ -11,8 +11,7 @@ public enum TestModelField implements DbField {
     BOOLEAN_VALUE("booleanValue"),
 
     FIRST_LEVEL("firstLevel"),
-    ARRAY_VALUES("arrayValues")
-    ;
+    ARRAY_VALUES("arrayValues");
 
     private final String dbName;
     private final String[] fieldPath;
