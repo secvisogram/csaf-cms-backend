@@ -74,7 +74,7 @@ public class AdvisoryInformationResponse {
 
     public void setWorkflowState(String workflowStateString) {
 
-        this.workflowState =  WorkflowState.valueOf(workflowStateString);
+        this.workflowState = WorkflowState.valueOf(workflowStateString);
         if (WorkflowState.Draft == this.workflowState) {
             this.allowedStateChanges = List.of(WorkflowState.Review);
         } else if (WorkflowState.Approved == this.workflowState) {
