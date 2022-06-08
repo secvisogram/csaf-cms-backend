@@ -308,4 +308,31 @@ public class AdvisoryService {
 
     }
 
+    /**
+     * @param commentId the ID of the comment to update
+     * @param revision  the revision for concurrent control
+     * @param newText   the updated text of the comment
+     * @return the new revision of the updated comment
+     */
+    public String updateComment(String commentId, String revision, String newText) throws IOException, DatabaseException {
+
+        InputStream existingCommentStream = this.couchDbService.readDocumentAsStream(commentId);
+        if (existingCommentStream == null) {
+            throw new DatabaseException("Invalid comment ID!");
+        }
+        CommentWrapper comment = CommentWrapper.createFromCouchDb(existingCommentStream);
+        comment.setRevision(revision);
+        comment.setText(newText);
+
+        AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(comment)
+                .setCommentId(commentId)
+                .setCreatedAtToNow()
+                .setChangeType(ChangeType.Update)
+                .setUser("Mustermann");
+
+        String newRevision = this.couchDbService.updateDocument(comment.commentAsString());
+        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+        return newRevision;
+    }
+
 }

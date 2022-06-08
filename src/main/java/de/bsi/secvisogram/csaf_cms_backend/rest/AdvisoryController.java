@@ -677,7 +677,7 @@ public class AdvisoryController {
             description = "Change the text of the comment with the given ID.",
             tags = {"Advisory"}
     )
-    public EntityUpdateResponse changeComment(
+    public ResponseEntity<EntityUpdateResponse> changeComment(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -687,15 +687,23 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change."
-            ) long commentId,
+            ) String commentId,
             @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
             @RequestBody String newCommentText
     ) {
 
-        // only for debugging, remove when implemented
-        LOG.info("changeComment {} {} {} {}",
-                sanitize(advisoryId), sanitize(commentId), sanitize(revision), sanitize(newCommentText));
-        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(commentId);
+        try {
+            String newRevision = advisoryService.updateComment(commentId, revision, newCommentText);
+            return ResponseEntity.ok(new EntityUpdateResponse(newRevision));
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Comment with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (IOException ioEx) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**

@@ -71,6 +71,8 @@ public class AdvisoryControllerTest {
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
 
     private static final String commentRoute = advisoryRoute + advisoryId + "/comments/";
+    private static final String commentId = UUID.randomUUID().toString();
+    private static final String commentText = "This is a comment.";
 
 
     @Test
@@ -367,7 +369,6 @@ public class AdvisoryControllerTest {
     @Test
     void listCommentsTest_oneItem() throws Exception {
 
-        String commentId = UUID.randomUUID().toString();
         String owner = "Musterfrau";
 
         CommentInformationResponse info = new CommentInformationResponse(commentId, advisoryId, owner);
@@ -448,6 +449,63 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expected));
 
+    }
+
+
+    @Test
+    void changeCommentTest_notExisting() throws Exception {
+
+        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(commentId, revision, commentText);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void changeCommentTest_invalidRevision() throws Exception {
+
+        String invalidRevision = "invalid";
+        doThrow(DatabaseException.class).when(advisoryService).updateComment(commentId, invalidRevision, commentText);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", invalidRevision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void changeCommentTest_invalidId() throws Exception {
+
+        String invalidId = "not an UUID";
+
+        this.mockMvc.perform(patch(commentRoute + invalidId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changeCommentTest() throws Exception {
+
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.updateComment(commentId, revision, commentText)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
 
 }

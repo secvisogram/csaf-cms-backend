@@ -404,4 +404,29 @@ public class AdvisoryServiceTest {
 
     }
 
+    @Test
+    void updateCommentTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentJson = """
+            {
+                "commentText": "comment text",
+                "field": "/document"
+            }
+            """;
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
+
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+
+        CommentResponse comment = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals("comment text", comment.getCommentText());
+
+        advisoryService.updateComment(idRevComment.getId(), idRevComment.getRevision(), "updated comment text");
+
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be an additional audit trail for the comment update");
+
+        CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals("updated comment text", newComment.getCommentText());
+
+    }
+
 }
