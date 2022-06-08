@@ -260,7 +260,7 @@ public class AdvisoryWrapper {
     }
 
     /**
-     * Apply path o JsonNode
+     * Apply patch to JsonNode
      * @param patch the patch to apply
      * @param source the JsonNode the pacht is applied o
      * @return the patched JsonNode
