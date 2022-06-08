@@ -175,7 +175,7 @@ public class AdvisoryController {
                           " Thus, after changing a document, it must be reloaded on the client side.",
             tags = {"Advisory"}
     )
-    public ResponseEntity<AdvisoryUpdateResponse> changeCsafDocument(
+    public ResponseEntity<EntityUpdateResponse> changeCsafDocument(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -206,7 +206,7 @@ public class AdvisoryController {
         checkValidUuid(advisoryId);
         try {
             String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
-            return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
+            return ResponseEntity.ok(new EntityUpdateResponse(newRevision));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
@@ -228,7 +228,7 @@ public class AdvisoryController {
             description = "Increase the version of a CSAF document.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse createNewCsafDocumentVersion(
+    public EntityUpdateResponse createNewCsafDocumentVersion(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -243,7 +243,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("createNewCsafDocumentVersion {} {}", sanitize(advisoryId), sanitize(revision));
 
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
 
@@ -677,7 +677,7 @@ public class AdvisoryController {
             description = "Change the text of the comment with the given ID.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse changeComment(
+    public EntityUpdateResponse changeComment(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -695,7 +695,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("changeComment {} {} {} {}",
                 sanitize(advisoryId), sanitize(commentId), sanitize(revision), sanitize(newCommentText));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**
@@ -714,7 +714,7 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @PatchMapping("/{advisoryId}/comments/{commentId}/answer/{answerId}")
-    public AdvisoryUpdateResponse changeAnswer(
+    public EntityUpdateResponse changeAnswer(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -738,7 +738,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId),
                 sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**

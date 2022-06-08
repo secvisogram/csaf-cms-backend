@@ -2,12 +2,12 @@ package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(name = "AdvisoryUpdateResponse")
-public class AdvisoryUpdateResponse {
+@Schema(name = "EntityUpdateResponse")
+public class EntityUpdateResponse {
 
     private final String revision;
 
-    public AdvisoryUpdateResponse(String revision) {
+    public EntityUpdateResponse(String revision) {
         this.revision = revision;
     }
 
