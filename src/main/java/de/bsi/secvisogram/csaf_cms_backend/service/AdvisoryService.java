@@ -40,9 +40,9 @@ public class AdvisoryService {
     private CouchDbService couchDbService;
 
     /**
-     * get number of advisories
+     * get number of documents
      *
-     * @return number of advisories in the DB
+     * @return number of all documents in the DB
      */
     public Long getDocumentCount() {
         return couchDbService.getDocumentCount();
