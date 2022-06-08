@@ -337,7 +337,7 @@ public class CouchDbService {
 
         try {
             DocumentResult response = client.deleteDocument(documentOptions).execute().getResult();
-            if (!response.isOk()) {
+            if (response.isOk() == null || !response.isOk()) {
                 throw new DatabaseException(response.getError());
             }
         } catch (BadRequestException brEx) {
