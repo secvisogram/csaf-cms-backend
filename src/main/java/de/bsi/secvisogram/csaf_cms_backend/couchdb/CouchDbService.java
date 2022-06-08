@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 /**
- * Service to create, update and delete objects in a couchDB
+ * Service to create, update and delete objects in a couchDB database
  */
 @Repository
 public class CouchDbService {
@@ -67,9 +67,9 @@ public class CouchDbService {
     }
 
     /**
-     * Create a new CouchDB
+     * Create a new CouchDB database
      *
-     * @param nameOfNewDb name of the couchdb database
+     * @param nameOfNewDb name of the couchdb database to create
      */
     public void createDatabase(String nameOfNewDb) {
 
@@ -95,7 +95,7 @@ public class CouchDbService {
     }
 
     /**
-     * Get the Version of the couchdb server
+     * Get the version of the couchdb server
      *
      * @return server version
      */
@@ -111,7 +111,7 @@ public class CouchDbService {
     }
 
     /**
-     * Get the count of documents in the couchDB
+     * Get the count of all documents in the database
      *
      * @return count of documents
      */
@@ -131,13 +131,13 @@ public class CouchDbService {
 
 
     /**
-     * Write a new CSAF document to the couchDB
+     * Write a new document to the database
      *
-     * @param uuid     id fo the new document
-     * @param createString string of rootNode of the document
+     * @param uuid         id fo the new document
+     * @param createString JSON encoded string of the document to add
      * @return revision for concurrent control
      */
-    public String writeCsafDocument(final UUID uuid, String createString) {
+    public String writeDocument(final UUID uuid, String createString) {
 
         Cloudant client = createCloudantClient();
 
@@ -155,6 +155,13 @@ public class CouchDbService {
         return createDocumentResponse.getRev();
     }
 
+    /**
+     * Write a new document to the database
+     *
+     * @param uuid     id fo the new document
+     * @param rootNode object to encode as json and write to the database
+     * @return revision for concurrent control
+     */
     public String writeDocument(final UUID uuid, Object rootNode) throws JsonProcessingException {
 
         Cloudant client = createCloudantClient();
@@ -177,12 +184,12 @@ public class CouchDbService {
     }
 
     /**
-     * Change a CSAF document in the couchDB
+     * Change a document in the couchDB
      *
      * @param updateString the new root node as string
      * @return new revision for concurrent control
      */
-    public String updateCsafDocument(String updateString) throws DatabaseException {
+    public String updateDocument(String updateString) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
 
@@ -215,11 +222,11 @@ public class CouchDbService {
 
     /**
      *
-     * @param uuid id of the object to read
+     * @param uuid id of the document to read
      * @return the requested document
      * @throws IdNotFoundException if the requested document was not found
      */
-    public Document readCsafDocument(final String uuid) throws IdNotFoundException {
+    public Document readDocument(final String uuid) throws IdNotFoundException {
 
         Cloudant client = createCloudantClient();
         GetDocumentOptions documentOptions =
@@ -238,11 +245,13 @@ public class CouchDbService {
     }
 
     /**
-     * @param uuid id of the object to read
-     * @return the requested document
+     * Read a document from the database as stream
+     *
+     * @param uuid id of the document to read
+     * @return the requested document as stream
      * @throws IdNotFoundException if the requested document was not found
      */
-    public InputStream readCsafDocumentAsStream(final String uuid) throws IdNotFoundException {
+    public InputStream readDocumentAsStream(final String uuid) throws IdNotFoundException {
 
         Cloudant client = createCloudantClient();
         GetDocumentOptions documentOptions =
@@ -261,22 +270,24 @@ public class CouchDbService {
     }
 
     /**
-     * read the information of all CSAF documents
+     * Read the information of all documents of a given type
      *
+     * @param type   the {@link ObjectType} of objects to retrieve information on
      * @param fields the fields of information to select
      *
      * @return list of all requested document information
      */
-    public List<Document> readAllCsafDocuments(Collection<DbField> fields) {
+    public List<Document> readAllDocuments(ObjectType type, Collection<DbField> fields) {
 
-        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
+        Map<String, Object> selector = expr2CouchDBFilter(equal(type.name(), TYPE_FIELD.getDbName()));
         return findDocuments(selector, fields);
     }
 
     /**
-     * read the information of the documents matching the selector
+     * Read the information of the documents matching the selector
+     *
      * @param selector the selector to search for
-     * @param fields the fields of information to select
+     * @param fields   the fields of information to select
      * @return list of all document information that match the selector
      */
     public List<Document> findDocuments(Map<String, Object> selector, Collection<DbField> fields) {
@@ -298,9 +309,10 @@ public class CouchDbService {
     }
 
     /**
-     * read the information of the documents matching the selector
+     * Read the information of the documents matching the selector
+     *
      * @param selector the selector to search for
-     * @param fields the fields of information to select
+     * @param fields   the fields of information to select
      * @return the result as stream
      */
     public InputStream findDocumentsAsStream(Map<String, Object> selector, Collection<DbField> fields) {
@@ -320,12 +332,12 @@ public class CouchDbService {
     }
 
     /**
-     * Delete a CSAF document from the database
+     * Delete a document from the database
      *
      * @param uuid     id of the object to delete
      * @param revision revision of the document to delete
      */
-    public void deleteCsafDocument(final String uuid, final String revision) throws DatabaseException {
+    public void deleteDocument(final String uuid, final String revision) throws DatabaseException {
 
         Cloudant client = createCloudantClient();
         DeleteDocumentOptions documentOptions =
@@ -353,8 +365,9 @@ public class CouchDbService {
     }
 
     /**
-     * Delete multiple Objects in the CouchDB
-     * @param objectsToDelete the ids and revisions of all objects to delete
+     * Delete multiple objects from the database
+     *
+     * @param objectsToDelete collection of ids and revisions of all documents to delete
      * @throws DatabaseException Deletion of at least one object failed
      */
     public void bulkDeleteDocuments(final Collection<IdAndRevision> objectsToDelete) throws DatabaseException {
@@ -379,7 +392,7 @@ public class CouchDbService {
                     client.postBulkDocs(bulkDocsOptions).execute()
                             .getResult();
             for (DocumentResult response : responses) {
-                if (!response.isOk()) {
+                if (response.isOk() == null || !response.isOk()) {
                     throw new DatabaseException(response.getError());
                 }
             }
@@ -396,6 +409,7 @@ public class CouchDbService {
 
     /**
      * Convert IdAndRevision to delete document
+     *
      * @param object the id and revision to convert
      * @return the converted object
      */
@@ -409,7 +423,7 @@ public class CouchDbService {
     }
 
     /**
-     * Create a client to access couchDB
+     * Create a client to access the couchDB database
      *
      * @return the new client
      */
@@ -421,7 +435,7 @@ public class CouchDbService {
     }
 
     /**
-     * Create authenticator for the couchDB
+     * Create authenticator for the couchDB database
      *
      * @return a new base authentication
      */

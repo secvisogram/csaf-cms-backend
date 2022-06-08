@@ -60,7 +60,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
-    public void writeNewCsafDocumentToDb() throws IOException {
+    public void writeDocumentTest() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
 
@@ -73,13 +73,13 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void updateCsafDocumentToDb() throws IOException, DatabaseException {
+    public void updateDocumentTest() throws IOException, DatabaseException {
 
         final UUID uuid = UUID.randomUUID();
         insertTestDocument(uuid);
 
         long countBeforeUpdate = this.couchDbService.getDocumentCount();
-        final Document responseBeforeUpdate = this.couchDbService.readCsafDocument(uuid.toString());
+        final Document responseBeforeUpdate = this.couchDbService.readDocument(uuid.toString());
         String trackingIdBeforeUpdate = CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TRACKING_ID, responseBeforeUpdate);
         Assertions.assertEquals("exxcellent-2021AB123", trackingIdBeforeUpdate);
         String revision = responseBeforeUpdate.getRev();
@@ -89,11 +89,11 @@ public class CouchDbServiceTest {
             ObjectNode objectNode = toAdvisoryJson(csafJsonStream, newOwner);
             objectNode.put(CouchDbField.ID_FIELD.getDbName(), uuid.toString());
             objectNode.put(CouchDbField.REVISION_FIELD.getDbName(), revision);
-            this.couchDbService.updateCsafDocument(objectNode.toPrettyString());
+            this.couchDbService.updateDocument(objectNode.toPrettyString());
         }
 
         long countAfterUpdate = this.couchDbService.getDocumentCount();
-        final Document responseAfterUpdate = this.couchDbService.readCsafDocument(uuid.toString());
+        final Document responseAfterUpdate = this.couchDbService.readDocument(uuid.toString());
         Assertions.assertEquals(countBeforeUpdate, countAfterUpdate);
 
         String trackingIdAfterUpdate = CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TRACKING_ID, responseAfterUpdate);
@@ -104,7 +104,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
-    public void deleteCsafDocumentFromDb() throws IOException, DatabaseException {
+    public void deleteDocumentTest() throws IOException, DatabaseException {
 
         long countBefore = this.couchDbService.getDocumentCount();
 
@@ -112,7 +112,7 @@ public class CouchDbServiceTest {
         String revision = insertTestDocument(uuid);
 
         Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
-        this.couchDbService.deleteCsafDocument(uuid.toString(), revision);
+        this.couchDbService.deleteDocument(uuid.toString(), revision);
 
         Assertions.assertEquals(countBefore, this.couchDbService.getDocumentCount());
     }
@@ -124,7 +124,7 @@ public class CouchDbServiceTest {
         insertTestDocument(uuid);
 
         assertThrows(DatabaseException.class,
-                () -> this.couchDbService.deleteCsafDocument(uuid.toString(), "invalid revision"));
+                () -> this.couchDbService.deleteDocument(uuid.toString(), "invalid revision"));
     }
 
     @Test
@@ -134,7 +134,7 @@ public class CouchDbServiceTest {
         final String revision = insertTestDocument(uuid);
 
         assertThrows(DatabaseException.class,
-                () -> this.couchDbService.deleteCsafDocument("invalid user id", revision));
+                () -> this.couchDbService.deleteDocument("invalid user id", revision));
     }
 
     @Test
@@ -157,7 +157,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
-    public void bulkDeleteDocuments_invalidUuid() throws IOException, DatabaseException {
+    public void bulkDeleteDocumentsTest_invalidUuid() throws IOException, DatabaseException {
 
         long countBefore = this.couchDbService.getDocumentCount();
 
@@ -175,7 +175,7 @@ public class CouchDbServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
-    public void bulkDeleteDocuments_invalidRevision() throws IOException {
+    public void bulkDeleteDocumentsTest_invalidRevision() throws IOException {
 
         long countBefore = this.couchDbService.getDocumentCount();
 
@@ -194,7 +194,7 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void readAllCsafDocumentsFromDbTest() throws IOException {
+    public void readAllDocumentsTest() throws IOException {
 
         UUID advisoryId = UUID.randomUUID();
         insertTestDocument(advisoryId);
@@ -208,18 +208,18 @@ public class CouchDbServiceTest {
                 CouchDbField.ID_FIELD
         );
 
-        final List<Document> docs = this.couchDbService.readAllCsafDocuments(infoFields);
+        final List<Document> docs = this.couchDbService.readAllDocuments(ObjectType.Advisory, infoFields);
         Assertions.assertEquals(docCount, docs.size());
         Assertions.assertEquals(advisoryId.toString(), docs.get(0).getId());
     }
 
     @Test
-    public void readCsafDocumentTest() throws IOException, IdNotFoundException {
+    public void readDocumentTest() throws IOException, IdNotFoundException {
 
         final UUID uuid = UUID.randomUUID();
         insertTestDocument(uuid);
 
-        final Document response = this.couchDbService.readCsafDocument(uuid.toString());
+        final Document response = this.couchDbService.readDocument(uuid.toString());
         Assertions.assertEquals("TestRSc", CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, response));
         Assertions.assertEquals(uuid.toString(), response.getId());
     }
@@ -230,7 +230,7 @@ public class CouchDbServiceTest {
         String jsonFileName = "exxcellent-2021AB123.json";
         try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream(jsonFileName)) {
             ObjectNode objectNode = toAdvisoryJson(csafJsonStream, owner);
-            return this.couchDbService.writeCsafDocument(documentUuid, objectNode.toString());
+            return this.couchDbService.writeDocument(documentUuid, objectNode.toString());
         }
     }
 
@@ -246,7 +246,7 @@ public class CouchDbServiceTest {
     }
 
     /**
-     * Test find with Native Cloudant selecto
+     * Test find with Native Cloudant selector
      * @throws IOException unexpected exception
      */
     @Test

@@ -14,10 +14,7 @@ import com.ibm.cloud.cloudant.v1.model.Document;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailDocumentWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailWorkflowWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.AuditTrailWrapper;
+import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
@@ -63,7 +60,7 @@ public class AdvisoryService {
                 CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId
         );
 
-        List<Document> docList = couchDbService.readAllCsafDocuments(new ArrayList<>(infoFields.keySet()));
+        List<Document> docList = couchDbService.readAllDocuments(ObjectType.Advisory, new ArrayList<>(infoFields.keySet()));
         return docList.stream()
                 .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
                 .toList();
@@ -104,8 +101,8 @@ public class AdvisoryService {
                 .setChangeType(ChangeType.Create)
                 .setUser("Mustermann");
 
-        String revision = couchDbService.writeCsafDocument(advisoryId, newAdvisoryNode.advisoryAsString());
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+        String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
+        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
         return new IdAndRevision(advisoryId.toString(), revision);
     }
@@ -118,7 +115,7 @@ public class AdvisoryService {
      * @throws IdNotFoundException if there is no advisory with given ID
      */
     public AdvisoryResponse getAdvisory(String advisoryId) throws DatabaseException {
-        InputStream advisoryStream = couchDbService.readCsafDocumentAsStream(advisoryId);
+        InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
         try {
             AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
             AdvisoryResponse response = new AdvisoryResponse(advisoryId, advisory.getWorkflowState(), advisory.getCsaf());
@@ -138,7 +135,7 @@ public class AdvisoryService {
      * @throws NotFoundException   if there is no advisory with given ID
      */
     public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException {
-        this.couchDbService.deleteCsafDocument(advisoryId, revision);
+        this.couchDbService.deleteDocument(advisoryId, revision);
 
         try {
             var auditTrailDocs = this.readAllAuditTrailDocumentsFromDbFor(advisoryId);
@@ -175,7 +172,7 @@ public class AdvisoryService {
      */
     public String updateAdvisory(String advisoryId, String revision, String changedCsafJson) throws IOException, DatabaseException {
 
-        InputStream existingAdvisoryStream = this.couchDbService.readCsafDocumentAsStream(advisoryId);
+        InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
         if (existingAdvisoryStream == null) {
             throw new DatabaseException("Invalid advisory ID!");
         }
@@ -188,8 +185,8 @@ public class AdvisoryService {
             .setChangeType(ChangeType.Update)
             .setUser("Mustermann");
 
-        String result =  this.couchDbService.updateCsafDocument(newAdvisoryNode.advisoryAsString());
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+        String result =  this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
+        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
         return result;
     }
 
@@ -202,7 +199,7 @@ public class AdvisoryService {
      */
     public String changeAdvisoryWorkflowState(String advisoryId, String revision, WorkflowState newWorkflowState) throws IOException, DatabaseException {
 
-        InputStream existingAdvisoryStream = couchDbService.readCsafDocumentAsStream(advisoryId);
+        InputStream existingAdvisoryStream = couchDbService.readDocumentAsStream(advisoryId);
         if (existingAdvisoryStream == null) {
             throw new DatabaseException("Invalid advisory ID!");
         }
@@ -215,11 +212,11 @@ public class AdvisoryService {
                 .setUser("Mustermann")
                 .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
                 .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion());
-        this.couchDbService.writeCsafDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
         existingAdvisoryNode.setWorkflowState(newWorkflowState);
         existingAdvisoryNode.setRevision(revision);
-        return this.couchDbService.updateCsafDocument(existingAdvisoryNode.advisoryAsString());
+        return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
     }
 
 
