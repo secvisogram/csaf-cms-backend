@@ -392,7 +392,7 @@ public class CouchDbService {
                     client.postBulkDocs(bulkDocsOptions).execute()
                             .getResult();
             for (DocumentResult response : responses) {
-                if (!response.isOk()) {
+                if (response.isOk() == null || !response.isOk()) {
                     throw new DatabaseException(response.getError());
                 }
             }
