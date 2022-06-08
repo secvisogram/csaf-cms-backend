@@ -262,7 +262,7 @@ public class AdvisoryWrapper {
     /**
      * Apply patch to JsonNode
      * @param patch the patch to apply
-     * @param source the JsonNode the pacht is applied o
+     * @param source the JsonNode the patch is applied to
      * @return the patched JsonNode
      */
     public static JsonNode applyJsonPatchToNode(JsonNode patch, JsonNode source) {
