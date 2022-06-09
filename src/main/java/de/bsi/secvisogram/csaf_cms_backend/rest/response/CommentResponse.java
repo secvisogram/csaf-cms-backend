@@ -65,6 +65,10 @@ public class CommentResponse {
         return commentText;
     }
 
+    public String getRevision() {
+        return revision;
+    }
+
     public void setRevision(String revision) {
         this.revision = revision;
     }
