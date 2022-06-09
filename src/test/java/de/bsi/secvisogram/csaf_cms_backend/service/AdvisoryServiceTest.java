@@ -170,6 +170,23 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    public void deleteAdvisoryTest_withComments() throws IOException, DatabaseException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        String commentJson = """
+            {
+                "commentText": "This is a comment.",
+                "field": "/document"
+            }
+            """;
+        advisoryService.addComment(idRev.getId(), commentJson);
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+        // the advisory changed as comments were added and thus has a new revision
+        String newRev = advisoryService.getAdvisory(idRev.getId()).getRevision();
+        this.advisoryService.deleteAdvisory(idRev.getId(), newRev);
+        assertEquals(0, advisoryService.getDocumentCount(), "the comment and its audit trail should also be deleted");
+    }
+
+    @Test
     public void updateAdvisoryTest() throws IOException, DatabaseException {
 
         var updateJsafJson = csafDocumentJson("CSAF_INFORMATIONAL_ADVISORY", "Test Advisory");

@@ -140,6 +140,25 @@ public class AdvisoryService {
     public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException {
         this.couchDbService.deleteDocument(advisoryId, revision);
         deleteAllAuditTrailDocumentsFromDbFor(advisoryId, ADVISORY_ID.getDbName());
+        deleteAllCommentsFromDbForAdvisory(advisoryId);
+    }
+
+    private void deleteAllCommentsFromDbForAdvisory(String advisoryId) throws IOException, DatabaseException {
+        AndExpression searchExpr = new AndExpression(equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
+                equal(advisoryId, CommentField.ADVISORY_ID.getDbName()));
+
+        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
+
+        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
+        List<JsonNode> commentsToDelete = this.findDocuments(selector, fields);
+
+        Collection<IdAndRevision> bulkDeletes = new ArrayList<>();
+        for (JsonNode doc : commentsToDelete) {
+            String commentId = CouchDbField.ID_FIELD.stringVal(doc);
+            bulkDeletes.add(new IdAndRevision(commentId, CouchDbField.REVISION_FIELD.stringVal(doc)));
+            deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
+        }
+        this.couchDbService.bulkDeleteDocuments(bulkDeletes);
     }
 
     private void deleteAllAuditTrailDocumentsFromDbFor(String itemId, String idKey) throws IOException, DatabaseException {
