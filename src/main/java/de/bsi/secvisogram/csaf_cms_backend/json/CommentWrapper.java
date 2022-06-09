@@ -64,7 +64,7 @@ public class CommentWrapper {
         this.commentNode = commentNode;
     }
 
-    public ObjectNode getCommentNode() {
+    private ObjectNode getCommentNode() {
 
         return this.commentNode;
     }
