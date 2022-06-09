@@ -239,8 +239,8 @@ public class AdvisoryService {
     /**
      * Adds a comment to the advisory
      *
-     * @param advisoryId        the ID of the advisory to add the comment to
-     * @param commentJson       the comment to add as JSON string, requires a commentText
+     * @param advisoryId  the ID of the advisory to add the comment to
+     * @param commentJson the comment to add as JSON string, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
@@ -291,6 +291,13 @@ public class AdvisoryService {
         }
     }
 
+    /**
+     * Retrieves all comments for a given advisory
+     *
+     * @param advisoryId the ID of the advisory to get comments of
+     * @return a list of information on all comments for the requested advisory
+     * @throws IOException when there are errors in JSON handling
+     */
     public List<CommentInformationResponse> getComments(String advisoryId) throws IOException {
 
         List<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
@@ -306,7 +313,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Deletes a comment from an advisory
+     * Deletes a comment from the database and an advisory
      *
      * @param advisoryId      the ID of the advisory to remove the comment from
      * @param commentId       the ID of the comment to remove
