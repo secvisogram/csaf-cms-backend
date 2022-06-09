@@ -152,7 +152,7 @@ public class AdvisoryService {
         Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
         List<JsonNode> commentsToDelete = this.findDocuments(selector, fields);
 
-        Collection<IdAndRevision> bulkDeletes = new ArrayList<>();
+        Collection<IdAndRevision> bulkDeletes = new ArrayList<>(commentsToDelete.size());
         for (JsonNode doc : commentsToDelete) {
             String commentId = CouchDbField.ID_FIELD.stringVal(doc);
             bulkDeletes.add(new IdAndRevision(commentId, CouchDbField.REVISION_FIELD.stringVal(doc)));
