@@ -14,12 +14,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
+import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,6 +41,9 @@ public class AdvisoryControllerTest {
 
     @MockBean
     private AdvisoryService advisoryService;
+
+    @MockBean
+    private DocumentTemplateService templateService;
 
     @Autowired
     AdvisoryController advisoryController;
@@ -248,6 +255,80 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void listAllTemplates() throws Exception {
+
+        DocumentTemplateDescription[] templateDescs = {new DocumentTemplateDescription("T1", "Template1", "File1")};
+        when(this.templateService.getAllTemplates()).thenReturn(templateDescs);
+
+        this.mockMvc.perform(get(advisoryRoute + "/templates"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content()
+                        .json("""
+                                [{"templateId":"T1","templateDescription":"Template1"}]
+                                """
+                ));
+    }
+
+    @Test
+    void listAllTemplates_internalServerError() throws Exception {
+
+        when(this.templateService.getAllTemplates()).thenThrow(new IOException());
+
+        this.mockMvc.perform(get(advisoryRoute + "/templates"))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void readTemplate() throws Exception {
+
+        final String templateId = "T1";
+        Optional<DocumentTemplateDescription> templateDesc = Optional.of(new DocumentTemplateDescription(templateId, "Template1", "File1") {
+            @Override
+            public JsonNode getFileAsJsonNode() throws IOException {
+                return jacksonMapper.readTree(csafJsonString);
+            }
+        });
+        when(this.templateService.getTemplateForId(templateId)).thenReturn(templateDesc);
+
+        this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content()
+                        .json(csafJsonString));
+    }
+
+    @Test
+    void readTemplate_internalServerError() throws Exception {
+
+        final String templateId = "T1";
+        Optional<DocumentTemplateDescription> templateDesc = Optional.of(new DocumentTemplateDescription(templateId, "Template1", "File1") {
+            @Override
+            public JsonNode getFileAsJsonNode() throws IOException {
+                throw new IOException("Server Error Test");
+            }
+        });
+        when(this.templateService.getTemplateForId(templateId)).thenReturn(templateDesc);
+
+        this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void readTemplate_NotFound() throws Exception {
+
+        final String templateId = "T1";
+        Optional<DocumentTemplateDescription> templateDesc = Optional.empty();
+        when(this.templateService.getTemplateForId(templateId)).thenReturn(templateDesc);
+
+        this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
