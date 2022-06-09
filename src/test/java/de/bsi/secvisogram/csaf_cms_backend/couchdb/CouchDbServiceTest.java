@@ -128,13 +128,13 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void deleteCsafDocumentFromDb_invalidUuid() throws IOException {
+    public void deleteCsafDocumentFromDb_doesNotExist() throws IOException {
 
         final UUID uuid = UUID.randomUUID();
         final String revision = insertTestDocument(uuid);
 
-        assertThrows(DatabaseException.class,
-                () -> this.couchDbService.deleteDocument("invalid user id", revision));
+        assertThrows(IdNotFoundException.class,
+                () -> this.couchDbService.deleteDocument("idDoesNotExist", revision));
     }
 
     @Test
