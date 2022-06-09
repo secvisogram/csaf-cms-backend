@@ -22,6 +22,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationRespo
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import java.io.IOException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AdvisoryController.class)
+@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryControllerTest {
 
     @Autowired
@@ -53,20 +55,22 @@ public class AdvisoryControllerTest {
 
     private static final String advisoryRoute = "/api/2.0/advisories/";
 
-    private static final String csafJsonString = "{" +
-                                                 "    \"document\": {" +
-                                                 "        \"category\": \"CSAF_BASE\"" +
-                                                 "    }" +
-                                                 "}";
+    private static final String csafJsonString = (
+            """
+                "document": {
+                    "category": "CSAF_BASE"
+                }
+            """);
     private static final String advisoryId = UUID.randomUUID().toString();
-    private static final String fullAdvisoryJsonString = String.format("{" +
-                                                                       "    \"owner\": \"Musterfrau\"," +
-                                                                       "    \"type\": \"Advisory\"," +
-                                                                       "    \"workflowState\": \"Draft\"," +
-                                                                       "    \"csaf\": %s," +
-                                                                       "    \"_rev\": \"revision\"," +
-                                                                       "    \"_id\": \"%s\"" +
-                                                                       "}", csafJsonString, advisoryId);
+    private static final String fullAdvisoryJsonString = String.format(
+            """
+                    "owner": "Musterfrau",
+                    "type": "Advisory",
+                    "workflowState": "Draft",
+                    "csaf": %s,
+                    "_rev": "revision",
+                    "_id": "%s"
+            """, csafJsonString, advisoryId);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
 
@@ -375,7 +379,8 @@ public class AdvisoryControllerTest {
         when(advisoryService.getComments(advisoryId)).thenReturn(List.of(info));
 
 
-        String expected = String.format("""
+        String expected = String.format(
+                """
                 [{
                     "commentId": "%s",
                     "advisoryId": "%s",
@@ -436,7 +441,8 @@ public class AdvisoryControllerTest {
 
         when(advisoryService.addComment(advisoryId, commentJson)).thenReturn(idRev);
 
-        String expected = String.format("""
+        String expected = String.format(
+                """
                 {
                     "id": "%s",
                     "revision": "%s"

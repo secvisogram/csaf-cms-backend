@@ -3,6 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,17 +12,19 @@ import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class CommentWrapperTest {
 
-    private final String commentText = "This is a comment.";
-    private final String owner = "Mustermann";
+    private static final String commentText = "This is a comment.";
+    private static final String owner = "Mustermann";
 
 
     @Test
     public void createNewFromJsonTest_missingFields() {
 
         String advisoryId = UUID.randomUUID().toString();
-        String commentJson = String.format("""
+        String commentJson = String.format(
+                """
                 {
                     "owner": "%s"
                 }
@@ -36,7 +39,8 @@ public class CommentWrapperTest {
     public void createNewFromJsonTest_minimumFields() throws IOException {
 
         String advisoryId = UUID.randomUUID().toString();
-        String docCommentJson = String.format("""
+        String docCommentJson = String.format(
+                """
                 {
                     "commentText": "%s"
                 }
@@ -52,7 +56,8 @@ public class CommentWrapperTest {
     public void createNewFromJsonTest_allFields() throws IOException {
 
         String advisoryId = UUID.randomUUID().toString();
-        String fullCommentJson = String.format("""
+        String fullCommentJson = String.format(
+                """
                 {
                     "commentText": "%s",
                     "owner": "%s",
@@ -74,7 +79,8 @@ public class CommentWrapperTest {
         String revision = "revision-abcd-1234";
         String commentId = UUID.randomUUID().toString();
         String advisoryId = UUID.randomUUID().toString();
-        String commentDbString = String.format("""
+        String commentDbString = String.format(
+                """
                 {
                     "commentText": "%s",
                     "advisoryId": "%s",

@@ -25,6 +25,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
@@ -40,30 +41,36 @@ import org.springframework.test.annotation.DirtiesContext;
 @SpringBootTest
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
+@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryServiceTest {
 
     @Autowired
     private AdvisoryService advisoryService;
 
-    private static final String csafJson = "{" +
-                                           "    \"document\": {" +
-                                           "        \"category\": \"CSAF_BASE\"" +
-                                           "    }" +
-                                           "}";
+    private static final String csafJson = ("""
+                    {
+                        "document": {
+                            "category": "CSAF_BASE"
+                        }
+                    }""");
 
-    private static final String updatedCsafJson = "{" +
-                                                  "    \"document\": {" +
-                                                  "        \"category\": \"CSAF_INFORMATIONAL_ADVISORY\"," +
-                                                  "         \"title\": \"Test Advisory\"" +
-                                                  "    }" +
-                                                  "}";
+    private static final String updatedCsafJson = ("""
+            {
+                "document": {
+                    "category": "CSAF_INFORMATIONAL_ADVISORY",
+                    "title": "Test Advisory"
+                }
+            }
+            """);
 
-    private static final String advisoryTemplateString = "{" +
-                                                         "    \"owner\": \"John Doe\"," +
-                                                         "    \"type\": \"Advisory\"," +
-                                                         "    \"workflowState\": \"Draft\"," +
-                                                         "    \"csaf\": %s" +
-                                                         "}";
+    private static final String advisoryTemplateString = ("""
+            {
+                "owner": "John Doe",
+                "type": "Advisory",
+                "workflowState": "Draft",
+                "csaf": %s
+            }
+            """);
 
     private static final String advisoryJsonString = String.format(advisoryTemplateString, csafJson);
 
@@ -272,7 +279,8 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
         String commentText = "This is a comment";
 
-        String commentJson = String.format("""
+        String commentJson = String.format(
+            """
             {
                 "commentText": "%s",
                 "field": "/document"
@@ -301,7 +309,8 @@ public class AdvisoryServiceTest {
         String commentTextOne = "This is a comment for a field";
         String commentTextTwo = "This is another comment for the document";
 
-        String commentOneJson = String.format("""
+        String commentOneJson = String.format(
+            """
             {
                 "commentText": "%s",
                 "field": "/document"
@@ -309,7 +318,8 @@ public class AdvisoryServiceTest {
             """, commentTextOne);
 
 
-        String commentTwoJson = String.format("""
+        String commentTwoJson = String.format(
+            """
             {
                 "commentText": "%s"
             }
@@ -338,13 +348,15 @@ public class AdvisoryServiceTest {
         String commentTextOne = "This is a comment for a field";
         String commentTextTwo = "This is another comment for the same field";
 
-        String commentOneJson = String.format("""
+        String commentOneJson = String.format(
+            """
             {
                 "commentText": "%s",
                 "field": "/document"
             }
             """, commentTextOne);
-        String commentTwoJson = String.format("""
+        String commentTwoJson = String.format(
+            """
             {
                 "commentText": "%s",
                 "field": "/document"
