@@ -8,10 +8,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 
 @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "for test it is ok")
-public class TemplateTest {
+public class DocumentTemplateReaderTest {
 
     @Test
-    public void expressionToJson() throws JsonProcessingException {
+    public void json2TemplateDescriptions() throws JsonProcessingException {
 
         var templatesString = """
                 [{ "id": "T1",

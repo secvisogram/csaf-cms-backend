@@ -18,7 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(properties = "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/allTemplates.json")
 @ExtendWith(SpringExtension.class)
 @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "for test it is ok")
-class TemplateServiceTest {
+class DocumentTemplateServiceTest {
 
     @Autowired
     private DocumentTemplateService templateService;

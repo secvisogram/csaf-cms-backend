@@ -110,7 +110,7 @@ public class AdvisoryController {
         LOG.info("readCsafDocument");
         checkValidUuid(advisoryId);
         try {
-            return (ResponseEntity.ok(advisoryService.getAdvisory(advisoryId)));
+            return ResponseEntity.ok(advisoryService.getAdvisory(advisoryId));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();

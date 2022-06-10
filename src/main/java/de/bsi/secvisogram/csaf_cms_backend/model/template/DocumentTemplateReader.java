@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DocumentTemplateReader {
 
     /**
-     * Converts the content of the jsonString to a List pf descriptions
+     * Converts the content of the jsonString to a List of descriptions
      * @param jsonString the Json String
      * @return all descriptions
      * @throws JsonProcessingException error processing the JSON String
