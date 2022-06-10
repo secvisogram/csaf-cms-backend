@@ -24,7 +24,7 @@ class TemplateServiceTest {
     private DocumentTemplateService templateService;
 
     @Test
-    void getAllTemplates() throws IOException {
+    void getAllTemplatesTest() throws IOException {
 
         DocumentTemplateDescription[] allTemplates = this.templateService.getAllTemplates();
         assertThat(allTemplates.length, equalTo(2));
@@ -37,7 +37,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void getTemplatesForId() throws IOException {
+    void getTemplatesForIdTest() throws IOException {
 
         var template1 = this.templateService.getTemplateForId("T1");
         assertThat(template1.get().getDescription(), equalTo("Test Template 1"));
@@ -45,7 +45,7 @@ class TemplateServiceTest {
         JsonNode node1 = template1.get().getFileAsJsonNode();
         assertThat(node1.at("/document/title").asText(), equalTo("Test Template 1"));
 
-        var  template2 = this.templateService.getTemplateForId("T2");
+        var template2 = this.templateService.getTemplateForId("T2");
         assertThat(template2.get().getDescription(), equalTo("Test Template 2"));
         Assertions.assertThrows(NoSuchFileException.class, () -> template2.get().getFileAsJsonNode());
 

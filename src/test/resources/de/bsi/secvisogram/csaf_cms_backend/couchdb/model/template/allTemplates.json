@@ -1,7 +1,8 @@
-[{ "id": "T1",
-  "description":"Test Template 1",
-  "file":"./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/template1.json"
-},
+[
+  { "id": "T1",
+    "description":"Test Template 1",
+    "file":"./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/template1.json"
+  },
   { "id": "T2",
     "description":"Test Template 2",
     "file":"./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/template2.json"

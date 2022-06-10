@@ -258,7 +258,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void listAllTemplates() throws Exception {
+    void listAllTemplatesTest() throws Exception {
 
         DocumentTemplateDescription[] templateDescs = {new DocumentTemplateDescription("T1", "Template1", "File1")};
         when(this.templateService.getAllTemplates()).thenReturn(templateDescs);
@@ -274,7 +274,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void listAllTemplates_internalServerError() throws Exception {
+    void listAllTemplatesTest_internalServerError() throws Exception {
 
         when(this.templateService.getAllTemplates()).thenThrow(new IOException());
 
@@ -284,7 +284,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void readTemplate() throws Exception {
+    void readTemplateTest() throws Exception {
 
         final String templateId = "T1";
         Optional<DocumentTemplateDescription> templateDesc = Optional.of(new DocumentTemplateDescription(templateId, "Template1", "File1") {
@@ -303,7 +303,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void readTemplate_internalServerError() throws Exception {
+    void readTemplateTest_internalServerError() throws Exception {
 
         final String templateId = "T1";
         Optional<DocumentTemplateDescription> templateDesc = Optional.of(new DocumentTemplateDescription(templateId, "Template1", "File1") {
@@ -320,7 +320,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void readTemplate_NotFound() throws Exception {
+    void readTemplateTest_NotFound() throws Exception {
 
         final String templateId = "T1";
         Optional<DocumentTemplateDescription> templateDesc = Optional.empty();
