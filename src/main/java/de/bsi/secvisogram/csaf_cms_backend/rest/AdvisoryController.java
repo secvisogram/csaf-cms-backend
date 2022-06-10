@@ -2,15 +2,17 @@ package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
-import de.bsi.secvisogram.csaf_cms_backend.coudb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.coudb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryJsonService;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
+import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
+import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -18,20 +20,18 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -42,31 +42,33 @@ import java.util.UUID;
 @Tag(
         name = "Advisory",
         description = "API for for Creating, Retrieving, Updating and Deleting of CSAF documents," +
-                " including their Versions, Comments and Workflow States."
+                      " including their Versions, Comments and Workflow States."
 )
 public class AdvisoryController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryController.class);
 
-    private final AdvisoryJsonService jsonService = new AdvisoryJsonService();
+    @Autowired
+    private AdvisoryService advisoryService;
 
     @Autowired
-    private CouchDbService couchDbService;
+    private DocumentTemplateService templateService;
+
 
     /**
      * Read all advisories, optionally filtered by a search expression
      *
      * @param expression optional search expression as json string
-     * @return list of advisories satisfying the search criteria
+     * @return response with list of advisories satisfying the search criteria
      */
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(
             summary = "Get all authorized advisories.",
             description = "All CSAF documents for which the logged in user is authorized are returned." +
-                    " This depends on the user's role and the state of the CSAF document.",
+                          " This depends on the user's role and the state of the CSAF document.",
             tags = {"Advisory"}
     )
-    public List<AdvisoryInformationResponse> listCsafDocuments(
+    public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
             @RequestParam(required = false)
             @Parameter(
                     in = ParameterIn.QUERY,
@@ -81,7 +83,7 @@ public class AdvisoryController {
     ) {
 
         LOG.info("findAdvisories {} ", sanitize(expression));
-        return this.couchDbService.readAllCsafDocuments();
+        return ResponseEntity.ok(advisoryService.getAdvisoryInformations());
     }
 
 
@@ -89,33 +91,42 @@ public class AdvisoryController {
      * Get a single advisory
      *
      * @param advisoryId ID of the CSAF document that should be read
-     * @return the requested CSAF document
+     * @return response with the requested CSAF document
      */
-    @GetMapping("/{advisoryId}/")
+    @GetMapping("/{advisoryId}")
     @Operation(
             summary = "Get a single Advisory.",
             description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
             tags = {"Advisory"}
     )
-    public AdvisoryResponse readCsafDocument(
+    public ResponseEntity<AdvisoryResponse> readCsafDocument(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to read."
             ) String advisoryId
-    ) throws IOException {
+    ) {
 
         LOG.info("readCsafDocument");
-        JsonNode document = this.couchDbService.readCsafDocument(advisoryId);
-        return jsonService.covertCoudbCsafToAdvisory(document, advisoryId);
+        checkValidUuid(advisoryId);
+        try {
+            return ResponseEntity.ok(advisoryService.getAdvisory(advisoryId));
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException e) {
+            LOG.info("Error reading Advisory");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
      * Create a new CSAF document
      *
      * @param newCsafJson content of the new CSAF document
+     * @return response with id and revision of the newly created advisory
      */
-    @PostMapping(name = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Create a new Advisory.",
             description = "Create a new CSAF document with optional comments in the system.",
@@ -136,15 +147,17 @@ public class AdvisoryController {
                     )
             )
     )
-    public AdvisoryCreateResponse createCsafDocument(@RequestBody String newCsafJson) throws IOException {
+    public ResponseEntity<AdvisoryCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
 
         LOG.info("createCsafDocument");
-        final InputStream csafStream = new ByteArrayInputStream(newCsafJson.getBytes(StandardCharsets.UTF_8));
-        final String owner = "Musterman";
-        ObjectNode objectNode = jsonService.convertCsafToJson(csafStream, owner, WorkflowState.Draft);
-        final UUID uuid = UUID.randomUUID();
-        final String revision = couchDbService.writeCsafDocument(uuid, objectNode);
-        return new AdvisoryCreateResponse(uuid.toString(), revision);
+        try {
+            IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
+            URI advisoryLocation = URI.create("advisories/" + idRev.getId());
+            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId(), idRev.getRevision());
+            return ResponseEntity.created(advisoryLocation).body(createResponse);
+        } catch (IOException jpEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -152,16 +165,16 @@ public class AdvisoryController {
      *
      * @param advisoryId ID of the CSAF document to change
      * @param revision   optimistic locking revision
-     * @return new optimistic locking revision
+     * @return response with the new optimistic locking revision
      */
-    @PatchMapping("/{advisoryId}/")
+    @PatchMapping("/{advisoryId}")
     @Operation(
             summary = "Change advisory.",
             description = "Change a CSAF document in the system. On saving a document its content (version) may change " +
-                    " Thus, after changing a document, it must be reloaded on the client side.",
+                          " Thus, after changing a document, it must be reloaded on the client side.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse changeCsafDocument(
+    public ResponseEntity<AdvisoryUpdateResponse> changeCsafDocument(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -189,12 +202,16 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
-        final InputStream csafStream = new ByteArrayInputStream(changedCsafJson.getBytes(StandardCharsets.UTF_8));
-        final String owner = "Musterman";
-        ObjectNode objectNode = jsonService.convertCsafToJson(csafStream, owner, WorkflowState.Draft);
-        final String newRevision = couchDbService.updateCsafDocument(advisoryId, revision, objectNode);
-
-        return new AdvisoryUpdateResponse(newRevision);
+        checkValidUuid(advisoryId);
+        try {
+            String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
+            return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -202,7 +219,7 @@ public class AdvisoryController {
      *
      * @param advisoryId ID of the CSAF document to change
      * @param revision   optimistic locking revision
-     * @return new optimistic locking revision
+     * @return response with the new optimistic locking revision
      */
     @PatchMapping("/{advisoryId}/csaf/document/tracking/version")
     @Operation(
@@ -216,6 +233,7 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to change."
             ) String advisoryId,
+            @RequestParam
             @Parameter(
                     description = "The optimistic locking revision."
             ) String revision
@@ -234,26 +252,36 @@ public class AdvisoryController {
      * @param advisoryId advisoryId id of the CSAF document to delete
      * @param revision   optimistic locking revision
      */
-    @DeleteMapping("/{advisoryId}/")
+    @DeleteMapping("/{advisoryId}")
     @Operation(
             summary = "Delete an advisory.",
             description = "Delete a CSAF document from the system. All older versions, comments and audit-trails are" +
-                    " also deleted.",
+                          " also deleted.",
             tags = {"Advisory"}
     )
-    public void deleteCsafDocument(
+    public ResponseEntity<Void> deleteCsafDocument(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to change."
             ) String advisoryId,
+            @RequestParam
             @Parameter(
                     description = "The optimistic locking revision."
             ) String revision
-    ) throws DatabaseException {
+    ) {
 
         LOG.info("deleteCsafDocument");
-        this.couchDbService.deleteCsafDocument(advisoryId, revision);
+        checkValidUuid(advisoryId);
+        try {
+            advisoryService.deleteAdvisory(advisoryId, revision);
+            return ResponseEntity.ok().build();
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -267,14 +295,19 @@ public class AdvisoryController {
             description = "Get all available templates in the system.",
             tags = {"Advisory"}
     )
-    public List<AdvisoryTemplateInformationResponse> listAllTemplates() {
+    public ResponseEntity<List<AdvisoryTemplateInfoResponse>> listAllTemplates() {
 
         LOG.info("listAllTemplates");
-        return Arrays.asList(
-                new AdvisoryTemplateInformationResponse(1L, "Template for security incident response"),
-                new AdvisoryTemplateInformationResponse(2L, "Template for informational Advisory"),
-                new AdvisoryTemplateInformationResponse(3L, "Template for security Advisory")
-        );
+
+        try {
+            var response =  Arrays.stream(this.templateService.getAllTemplates())
+                    .map(template -> new AdvisoryTemplateInfoResponse(template.getId(), template.getDescription()))
+                    .collect(Collectors.toList());
+            return  ResponseEntity.ok(response);
+        } catch (IOException ex) {
+            LOG.error("Error loading templates", ex);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -289,17 +322,27 @@ public class AdvisoryController {
             description = "Get the content of the templates with the given templateId.",
             tags = {"Advisory"}
     )
-    public AdvisoryTemplateResponse readTemplate(
+    public ResponseEntity<JsonNode> readTemplate(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the template to read."
-            ) long templateId
+            ) String templateId
     ) {
 
         // only for debugging, remove when implemented
         LOG.info("readTemplate {}", sanitize(templateId));
-        return null;
+        try {
+            Optional<DocumentTemplateDescription> template = this.templateService.getTemplateForId(templateId);
+            if (template.isPresent()) {
+                return  ResponseEntity.ok(template.get().getFileAsJsonNode());
+            } else {
+                return  ResponseEntity.notFound().build();
+            }
+        } catch (IOException ex) {
+            LOG.error(String.format("Error loading template with id: %s", sanitize(templateId)), ex);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -335,7 +378,8 @@ public class AdvisoryController {
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("exportAdvisory to format: {} {}", sanitize(advisoryId), sanitize(format));
+        LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
+        checkValidUuid(advisoryId);
         return "";
     }
 
@@ -352,7 +396,7 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Draft.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse setWorkflowStateToDraft(
+    public ResponseEntity<String> setWorkflowStateToDraft(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -362,11 +406,16 @@ public class AdvisoryController {
             @Parameter(
                     description = "The optimistic locking revision."
             ) String revision
-    ) {
+    ) throws IOException {
 
-        // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(advisoryId);
+        try {
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft);
+            return ResponseEntity.ok().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -382,7 +431,7 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Review.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse setWorkflowStateToReview(
+    public ResponseEntity<String> setWorkflowStateToReview(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -392,11 +441,16 @@ public class AdvisoryController {
             @Parameter(
                     description = "The optimistic locking revision."
             ) String revision
-    ) {
+    ) throws IOException {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToReview {} {}", sanitize(advisoryId), sanitize(revision));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        try {
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Review);
+            return ResponseEntity.ok().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -412,7 +466,7 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Approve.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse setWorkflowStateToApprove(
+    public ResponseEntity<String> setWorkflowStateToApprove(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -422,11 +476,17 @@ public class AdvisoryController {
             @Parameter(
                     description = "The optimistic locking revision."
             ) String revision
-    ) {
+    ) throws IOException {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(advisoryId);
+        try {
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Approved);
+            return ResponseEntity.ok().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -440,10 +500,10 @@ public class AdvisoryController {
     @Operation(
             summary = "Change workflow state of an advisory to RfPublication.",
             description = "Change the workflow state of the advisory with the given id to RfPublication" +
-                    " (Request for Publication).",
+                          " (Request for Publication).",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse setWorkflowStateToRfPublication(
+    public ResponseEntity<String> setWorkflowStateToRfPublication(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -454,11 +514,17 @@ public class AdvisoryController {
             @Parameter(
                     description = "Proposed Time at which the publication should take place.")
                     String proposedTime
-    ) {
+    ) throws IOException {
 
         // only for debugging, remove when implemented
         LOG.info("setWorkflowStateToPublish {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(advisoryId);
+        try {
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication);
+            return ResponseEntity.ok().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -467,7 +533,7 @@ public class AdvisoryController {
      * @param advisoryId             advisoryId id of the CSAF document to change
      * @param revision               optimistic locking revision
      * @param proposedTime           optimistic locking revision
-     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document, only
+     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
      * @return new optimistic locking revision
      */
     @Operation(
@@ -476,7 +542,7 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @PatchMapping("/{advisoryId}/workflowstate/Publish")
-    public AdvisoryUpdateResponse setWorkflowStateToPublish(
+    public ResponseEntity<String> setWorkflowStateToPublish(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -488,14 +554,20 @@ public class AdvisoryController {
             @RequestParam
             @Parameter(
                     description = "The new Document Tracking Status of the CSAF Document." +
-                            " Only interim and final are allowed."
+                                  " Only interim and final are allowed."
             ) DocumentTrackingStatus documentTrackingStatus
-    ) {
+    ) throws IOException {
 
         // only for debugging, remove when implemented
-        LOG.info("setWorkflowStateToPublish {} {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime)
-                , sanitize(documentTrackingStatus));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        LOG.info("setWorkflowStateToPublish {} {} {} {}",
+                sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
+        checkValidUuid(advisoryId);
+        try {
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published);
+            return ResponseEntity.ok().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -533,8 +605,8 @@ public class AdvisoryController {
     @Operation(
             summary = "Add a comment to an advisory.",
             description = "Add a comment to the advisory with the given ID. The comments are generated independently" +
-                    " of the CSAF document. The IDs of the comments must be added manually to the appropriate place in " +
-                    "the CSAF document and then saved with the document.",
+                          " of the CSAF document. The IDs of the comments must be added manually to the appropriate place in " +
+                          "the CSAF document and then saved with the document.",
             tags = {"Advisory"}
     )
     public AdvisoryCreateResponse createComment(
@@ -608,14 +680,14 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change."
-            )  long commentId,
+            ) long commentId,
             @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
             @RequestBody String newCommentText
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("changeComment {} {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(revision)
-                , sanitize(newCommentText));
+        LOG.info("changeComment {} {} {} {}",
+                sanitize(advisoryId), sanitize(commentId), sanitize(revision), sanitize(newCommentText));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -645,20 +717,20 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change an answer of."
-            )  long commentId,
+            ) long commentId,
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the answer to change."
-            )  long answerId,
+            ) long answerId,
             @RequestParam
             @Parameter(description = "Optimistic locking revision of the answer.") String revision,
             @RequestBody String newAnswerText
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId)
-                , sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
+        LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId),
+                sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
         return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
@@ -668,4 +740,17 @@ public class AdvisoryController {
     private String sanitize(Object value) {
         return (value != null) ? value.toString().replaceAll("[\r\n]", "") : "";
     }
+
+    /**
+     * Check whether the given id is a valid uuid
+     * @param uuidString
+     */
+    private static void checkValidUuid(String uuidString) {
+        try {
+            UUID.fromString(uuidString);
+        } catch (IllegalArgumentException iaEx) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid UUID!", iaEx);
+        }
+    }
+
 }

@@ -2,32 +2,43 @@ plugins {
 	id 'org.springframework.boot' version '2.6.6'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id "com.github.spotbugs" version "5.0.5"
+	id 'com.github.spotbugs' version '5.0.5'
 	id 'jacoco'
 }
 
 group = 'de.exxcellent'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
 
 repositories {
 	mavenCentral()
 }
 
-
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+		vendor = JvmVendorSpec.ADOPTOPENJDK
+	}
+}
 
 dependencies {
-
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'com.ibm.cloud:cloudant:0.1.1'
-	implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.6.0'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
+	implementation 'com.ibm.cloud:cloudant:0.1.2'
+	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.0'
 
-	implementation group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.0'
-	implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.8'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.8'
 
+	//https://github.com/flipkart-incubator/zjsonpatch
+	implementation ('com.flipkart.zjsonpatch:zjsonpatch:0.4.12') {
+		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+	}
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation ('org.openapitools:openapi-generator:6.0.0-beta') {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
@@ -35,10 +46,13 @@ dependencies {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
 
-	spotbugsSlf4j group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36'
+	testImplementation 'org.testcontainers:testcontainers:1.17.1'
+	testImplementation 'org.testcontainers:junit-jupiter:1.17.1'
+
+	spotbugsSlf4j 'org.slf4j:slf4j-simple:1.7.36'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
 
-	spotbugsPlugins group: 'com.mebigfatguy.sb-contrib', name: 'sb-contrib', version: '7.4.7'
+	spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.4.7'
 }
 
 test {
@@ -46,6 +60,7 @@ test {
 	filter {
 		excludeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
 	}
+	testLogging.showStandardStreams = true
 }
 
 task apiDocumentation(type: Test, description: "generates the API documentation") {

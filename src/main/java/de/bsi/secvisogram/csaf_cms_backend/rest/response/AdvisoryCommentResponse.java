@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.LocalDate;
 
 @Schema(name = "AdvisoryCommentResponse")

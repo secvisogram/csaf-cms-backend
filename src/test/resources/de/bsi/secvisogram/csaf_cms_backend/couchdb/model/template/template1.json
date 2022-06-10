@@ -1,0 +1,48 @@
+{
+  "document": {
+    "category": "generic_csaf",
+    "csaf_version": "2.0",
+    "publisher": {
+      "category": "coordinator",
+      "name": "exccellent",
+      "namespace": "https://exccellent.de"
+    },
+    "title": "Test Template 1",
+    "tracking": {
+      "current_release_date": "2022-01-11T11:00:00.000Z",
+      "id": "exxcellent-2021AB123",
+      "initial_release_date": "2022-01-12T11:00:00.000Z",
+      "revision_history": [
+        {
+          "date": "2022-01-12T11:00:00.000Z",
+          "number": "0.0.1",
+          "summary": "Test rsvSummary"
+        }
+      ],
+      "status": "draft",
+      "version": "0.0.1",
+      "generator": {
+        "date": "2022-01-11T04:07:27.246Z",
+        "engine": {
+          "version": "1.10.0",
+          "name": "Secvisogram"
+        }
+      }
+    },
+    "acknowledgments": [
+      {
+        "names": [
+          "Rainer",
+          "Gregor",
+          "Timo"
+        ],
+        "organization": "exxcellent contribute",
+        "summary": "Summary 1234",
+        "urls": [
+          "https://exccellent.de",
+          "https:/heise.de"
+        ]
+      }
+    ]
+  }
+}
