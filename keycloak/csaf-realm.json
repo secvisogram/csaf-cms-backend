@@ -28,7 +28,7 @@
             "userinfo.token.claim": "false",
             "id.token.claim": "true",
             "access.token.claim": "false",
-            "claim.name": "roles",
+            "claim.name": "groups",
             "jsonType.label": "String",
             "usermodel.clientRoleMapping.clientId": "secvisogram"
           }
@@ -41,6 +41,9 @@
   "enabled": true,
   "registrationAllowed": false,
   "verifyEmail": false,
+  "attributes" : {
+    "frontendUrl": "http://localhost:9000/"
+  },
   "roles": {
     "client": {
       "secvisogram": [
