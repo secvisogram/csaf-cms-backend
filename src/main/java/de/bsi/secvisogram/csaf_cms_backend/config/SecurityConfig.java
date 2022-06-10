@@ -19,6 +19,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${csaf.csrf.enabled}")
     private Boolean isCsrfEnabled;
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "SPRING_CSRF_PROTECTION_DISABLED",
+            justification = "CSRF protection should only be disabled for development purposes.")
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
