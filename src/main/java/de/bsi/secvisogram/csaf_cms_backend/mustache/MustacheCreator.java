@@ -5,8 +5,8 @@ import com.samskivert.mustache.Template;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +17,10 @@ public class MustacheCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(MustacheCreator.class);
 
-    public String createHtml(final String templateName, final Reader jsonReader) throws IOException {
+    public String createHtml(final String templateName, final Map<String, Object> objectToConvert) throws IOException {
 
         // read templates from resources template dir
-        final Mustache.Compiler compiler = Mustache.compiler().withLoader(name -> {
+        final Mustache.Compiler compiler = Mustache.compiler().defaultValue("").withLoader(name -> {
             InputStream inputStream = MustacheCreator.class.getResourceAsStream("/templates/" + name);
             if (inputStream != null) {
                 return new InputStreamReader(inputStream, StandardCharsets.UTF_8);
@@ -29,30 +29,14 @@ public class MustacheCreator {
             }
         });
 
+
         try (InputStream templateStream = MustacheCreator.class.getResourceAsStream("/templates/" + templateName)) {
 
             if (templateStream == null) {
                 throw new RuntimeException("Invalid Template: " + templateName);
             }
             Template htmlTemplate = compiler.compile(new InputStreamReader(templateStream, StandardCharsets.UTF_8));
-            Object result = new Csaf2MapReader().readCsafDocument(jsonReader);
-            return htmlTemplate.execute(result);
-        }
-    }
-
-
-    public static void main(String[] args) {
-
-        final String jsonFileName = "exxcellent-2021AB123.json";
-        try (InputStream csafJsonStream = Csaf2MapReader.class.getResourceAsStream(jsonFileName)) {
-            if (csafJsonStream != null) {
-                System.out.println(new MustacheCreator().createHtml("index.mustache",
-                        new InputStreamReader(csafJsonStream, StandardCharsets.UTF_8)));
-            } else {
-                System.out.println("Invalid Json File: " + jsonFileName);
-            }
-        } catch (Exception ex) {
-            LOG.error("Error loading Json", ex);
+            return htmlTemplate.execute(objectToConvert);
         }
     }
 }

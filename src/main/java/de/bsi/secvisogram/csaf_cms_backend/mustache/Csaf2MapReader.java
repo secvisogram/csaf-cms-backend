@@ -3,10 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.mustache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * Converts a CSAF JSON File to HashMap.
  * JSON-Objects are converted to Hashmap
  * JSON-Arrays are converted to Arrays
- * JSON-Properties are converted Map-Entries
+ * JSON-Properties are converted to Map-Entries
  */
 public class Csaf2MapReader {
 
@@ -35,7 +32,7 @@ public class Csaf2MapReader {
         return convertToObject(rootNode);
     }
 
-    private Object convertToObject(JsonNode startNode) {
+    public Object convertToObject(JsonNode startNode) {
 
         final Object resultObj;
         if (startNode == null) {
@@ -62,21 +59,5 @@ public class Csaf2MapReader {
         return resultObj;
     }
 
-    public static void main(String[] args) {
-
-        final String jsonFileName = "exxcellent-2021AB123.json";
-        try (InputStream csafJsonStream = Csaf2MapReader.class.getResourceAsStream(jsonFileName)) {
-
-            if (csafJsonStream != null) {
-                Object result = new Csaf2MapReader()
-                        .readCsafDocument(new InputStreamReader(csafJsonStream, StandardCharsets.UTF_8));
-                System.out.println(result);
-            } else {
-                System.out.println("Invalid Json File: " + jsonFileName);
-            }
-        } catch (Exception ex) {
-            LOG.error("Error loading Json", ex);
-        }
-    }
 }
 

@@ -365,7 +365,7 @@ public class AdvisoryController {
             description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.",
             tags = {"Advisory"}
     )
-    public String exportAdvisory(
+    public ResponseEntity<String> exportAdvisory(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -380,7 +380,17 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
         checkValidUuid(advisoryId);
-        return "";
+        try {
+            String html = advisoryService.exportAdvisory(advisoryId);
+            return ResponseEntity.ok(html);
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Advisory with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
