@@ -6,10 +6,12 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIEL
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
@@ -260,13 +262,17 @@ public class AdvisoryService {
             auditTrail.setUser(user);
         }
 
+        InputStream advisoryStream = couchDbService.readDocumentAsStream(newComment.getAdvisoryId());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        // split the full JSON path to a pointer to the object node and a corresponding leaf
+        JsonPointer fullPointer = JsonPointer.compile(newComment.getField());
+        ObjectAndTailPointer objAndTailPtr = ObjectAndTailPointer.lastObjectNodeAndTail(fullPointer, advisory.getCsaf());
+        newComment.setField(objAndTailPtr.getTailPtr().toString());
+
         String commentRevision = couchDbService.writeDocument(commentId, newComment.commentAsString());
         couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
-        InputStream advisoryStream = couchDbService.readDocumentAsStream(newComment.getAdvisoryId());
-        AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
-        String field = newComment.getField();
-        advisory.addCommentId(Objects.requireNonNullElse(field, ""), commentId.toString());
+        advisory.addCommentId((ObjectNode) advisory.getCsaf().at(objAndTailPtr.getObjPtr()), commentId.toString());
         couchDbService.updateDocument(advisory.advisoryAsString());
 
         return new IdAndRevision(commentId.toString(), commentRevision);
@@ -284,7 +290,7 @@ public class AdvisoryService {
         InputStream commentStream = couchDbService.readDocumentAsStream(commentId);
         try {
             CommentWrapper comment = CommentWrapper.createFromCouchDb(commentStream);
-            return new CommentResponse(commentId, comment.getRevision(), comment.getAdvisoryId(), comment.getOwner(), comment.getText(), null);
+            return new CommentResponse(commentId, comment.getRevision(), comment.getAdvisoryId(), comment.getOwner(), comment.getText(), comment.getField(), null);
 
         } catch (IOException e) {
             throw new DatabaseException(e);

@@ -15,6 +15,8 @@ public class CommentResponse {
 
     private final String commentText;
 
+    private final String field;
+
     /**
      * An answer needs to reference the question it answers.
      */
@@ -27,6 +29,7 @@ public class CommentResponse {
             String advisoryId,
             String createdBy,
             String commentText,
+            String field,
             String answerToId
     ) {
         this.commentId = commentId;
@@ -34,6 +37,7 @@ public class CommentResponse {
         this.advisoryId = advisoryId;
         this.createdBy = createdBy;
         this.commentText = commentText;
+        this.field = field;
         this.answerToId = answerToId;
     }
 
@@ -71,5 +75,10 @@ public class CommentResponse {
 
     public void setRevision(String revision) {
         this.revision = revision;
+    }
+
+    @Schema(description = "The path to a nested leaf field when the comment is not on an object", example = "category")
+    public String getField() {
+        return field;
     }
 }

@@ -44,12 +44,12 @@ public class CommentWrapper {
     public static CommentWrapper createNewFromJson(String advisoryId, String newCommentJson) throws IOException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        final InputStream csafStream = new ByteArrayInputStream(newCommentJson.getBytes(StandardCharsets.UTF_8));
-        ObjectNode commentRootNode = jacksonMapper.readValue(csafStream, ObjectNode.class);
+        final InputStream commentStream = new ByteArrayInputStream(newCommentJson.getBytes(StandardCharsets.UTF_8));
+        ObjectNode commentRootNode = jacksonMapper.readValue(commentStream, ObjectNode.class);
 
 
         if (!commentRootNode.has(CommentField.TEXT.getDbName())) {
-            throw new IllegalArgumentException("commentText and advisoryId must be provided!");
+            throw new IllegalArgumentException("commentText must be provided!");
         }
         commentRootNode.put(CommentField.ADVISORY_ID.getDbName(), advisoryId);
         commentRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Comment.name());

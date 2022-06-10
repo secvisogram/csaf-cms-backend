@@ -301,6 +301,36 @@ public class AdvisoryServiceTest {
 
     }
 
+
+    @Test
+    public void addCommentTest_leafNode() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentText = "This is a leaf node comment";
+
+        String commentJson = String.format(
+                """
+                {
+                    "commentText": "%s",
+                    "field": "/document/category"
+                }
+                """, commentText);
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
+
+        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment and an audit trail entry for both");
+        Assertions.assertTrue(csafNode.get("document").has("$comment"));
+        Assertions.assertEquals(idRevComment.getId(), csafNode.at("/document/$comment/0").asText());
+
+        CommentResponse comment = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals(commentText, comment.getCommentText());
+        Assertions.assertEquals("/category", comment.getField());
+
+    }
+
     @Test
     public void addCommentTest_twoComments() throws DatabaseException, IOException {
 

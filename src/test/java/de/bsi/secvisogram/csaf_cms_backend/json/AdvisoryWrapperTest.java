@@ -3,6 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
@@ -108,23 +109,10 @@ public class AdvisoryWrapperTest {
         assertThat(updatedWrapper.at("/csaf/document/title").asText(), equalTo("New Title"));
     }
 
-
-    @Test
-    void addCommentIdTest_invalidJsonPointer() throws IOException {
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> advisory.addCommentId("notAPointer", "commentId"), "A valid JSON pointer should be used.");
-    }
-
-    @Test
-    void addCommentIdTest_invalidTarget() throws IOException {
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> advisory.addCommentId("/document/category", "commentId"), "The target must be an object node.");
-    }
-
     @Test
     void addCommentIdTest_Field() throws IOException {
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
-        advisory.addCommentId("/document/publisher", "commentId");
+        advisory.addCommentId((ObjectNode) advisory.getCsaf().at("/document/publisher"), "commentId");
         Assertions.assertEquals("[\"commentId\"]", advisory.getCsaf().at("/document/publisher/$comment").toString(), "A comment ID should be added to the publisher node.");
     }
 
@@ -143,7 +131,7 @@ public class AdvisoryWrapperTest {
                 }
                 """;
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJsonWithComments, "Mustermann");
-        advisory.addCommentId("/document/publisher", "commentId");
+        advisory.addCommentId((ObjectNode) advisory.getCsaf().at("/document/publisher"), "commentId");
         Assertions.assertEquals("[\"aCommentId\",\"commentId\"]", advisory.getCsaf().at("/document/publisher/$comment").toString(), "An additional comment ID should be added to the publisher node.");
     }
 

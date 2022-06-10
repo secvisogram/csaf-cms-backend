@@ -5,7 +5,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,6 +67,7 @@ public class AdvisoryWrapper {
 
     /**
      * Create an initial empty AdvisoryWrapper for the given user
+     *
      * @param userName the user
      * @return the wrapper
      * @throws IOException exception in handling json string
@@ -194,34 +194,23 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    private ObjectNode getExistingDocumentObjectNode(String jsonPtrExpr) {
-        TreeNode node = getCsaf().at(jsonPtrExpr);
-        if (node.isMissingNode()) {
-            throw new IllegalArgumentException("The given json pointer expression leads nowhere.");
-        }
-        if (!node.isObject()) {
-            throw new IllegalArgumentException("Can only add comments to object nodes in the json tree.");
-        }
-        return (ObjectNode) node;
-    }
-
     /**
      * Adds a comment to a specific field of the CSAF document
      *
-     * @param jsonPtrExpr the JSON path to the field the comment is added for, must point to an existing object node
-     * @param commentId   the comment ID to add
+     * @param objNode   the object node to add the comment to
+     * @param commentId the comment ID to add
      * @return this advisory wrapper with the updated advisory
      */
-    public AdvisoryWrapper addCommentId(String jsonPtrExpr, String commentId) {
-        ObjectNode objectNode = getExistingDocumentObjectNode(jsonPtrExpr);
-        if (objectNode.has(COMMENT_KEY)) {
-            ArrayNode commentNode = (ArrayNode) objectNode.get(COMMENT_KEY);
+    public AdvisoryWrapper addCommentId(ObjectNode objNode, String commentId) {
+
+        if (objNode.has(COMMENT_KEY)) {
+            ArrayNode commentNode = (ArrayNode) objNode.get(COMMENT_KEY);
             commentNode.add(commentId);
         } else {
             final ObjectMapper jacksonMapper = new ObjectMapper();
             ArrayNode commentNode = jacksonMapper.createArrayNode();
             commentNode.add(commentId);
-            objectNode.set(COMMENT_KEY, commentNode);
+            objNode.set(COMMENT_KEY, commentNode);
         }
         return this;
     }
