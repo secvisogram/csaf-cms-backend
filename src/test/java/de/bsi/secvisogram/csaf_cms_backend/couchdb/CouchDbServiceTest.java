@@ -128,13 +128,13 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void deleteCsafDocumentFromDb_invalidUuid() throws IOException {
+    public void deleteCsafDocumentFromDb_doesNotExist() throws IOException {
 
         final UUID uuid = UUID.randomUUID();
         final String revision = insertTestDocument(uuid);
 
-        assertThrows(DatabaseException.class,
-                () -> this.couchDbService.deleteDocument("invalid user id", revision));
+        assertThrows(IdNotFoundException.class,
+                () -> this.couchDbService.deleteDocument("idDoesNotExist", revision));
     }
 
     @Test
@@ -153,24 +153,6 @@ public class CouchDbServiceTest {
                 new IdAndRevision(uuid2.toString(), revision2)));
 
         Assertions.assertEquals(countBefore, this.couchDbService.getDocumentCount());
-    }
-
-    @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
-    public void bulkDeleteDocumentsTest_invalidUuid() throws IOException, DatabaseException {
-
-        long countBefore = this.couchDbService.getDocumentCount();
-
-        final UUID uuid1 = UUID.randomUUID();
-        String revision1 = insertTestDocument(uuid1);
-        final UUID uuid2 = UUID.randomUUID();
-        String revision2 = insertTestDocument(uuid2);
-
-        Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
-        this.couchDbService.bulkDeleteDocuments(Arrays.asList(new IdAndRevision("Invalid uuid", revision1),
-                new IdAndRevision(uuid2.toString(), revision2)));
-
-        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
     }
 
     @Test
