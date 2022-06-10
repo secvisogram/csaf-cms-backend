@@ -366,7 +366,7 @@ endif::internal-generation[]
 [.changeCsafDocument]
 ==== changeCsafDocument
 
-`PATCH /api/2.0/advisories/{advisoryId}/`
+`PATCH /api/2.0/advisories/{advisoryId}`
 
 Change advisory.
 
@@ -680,22 +680,22 @@ Increase the version of a CSAF document.
 
 |===
 
-====== Body Parameter
+
+
+
+====== Query Parameters
 
 [cols="2,3,1,1,1"]
 |===
 |Name| Description| Required| Default| Pattern
 
-| body
-|  <<string>>
-| -
-| 
+| revision
+| The optimistic locking revision. 
+| X
+| null
 | 
 
 |===
-
-
-
 
 
 ===== Return Type
@@ -746,7 +746,7 @@ endif::internal-generation[]
 [.deleteCsafDocument]
 ==== deleteCsafDocument
 
-`DELETE /api/2.0/advisories/{advisoryId}/`
+`DELETE /api/2.0/advisories/{advisoryId}`
 
 Delete an advisory.
 
@@ -775,22 +775,22 @@ Delete a CSAF document from the system. All older versions, comments and audit-t
 
 |===
 
-====== Body Parameter
+
+
+
+====== Query Parameters
 
 [cols="2,3,1,1,1"]
 |===
 |Name| Description| Required| Default| Pattern
 
-| body
-|  <<string>>
-| -
-| 
+| revision
+| The optimistic locking revision. 
+| X
+| null
 | 
 
 |===
-
-
-
 
 
 ===== Return Type
@@ -1089,7 +1089,7 @@ endif::internal-generation[]
 [.listCsafDocuments]
 ==== listCsafDocuments
 
-`GET /api/2.0/advisories/`
+`GET /api/2.0/advisories`
 
 Get all authorized advisories.
 
@@ -1171,7 +1171,7 @@ endif::internal-generation[]
 [.readCsafDocument]
 ==== readCsafDocument
 
-`GET /api/2.0/advisories/{advisoryId}/`
+`GET /api/2.0/advisories/{advisoryId}`
 
 Get a single Advisory.
 
@@ -1385,7 +1385,8 @@ Change the workflow state of the advisory with the given id to Approve.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+
+<<String>>
 
 
 ===== Content Type
@@ -1402,7 +1403,7 @@ Change the workflow state of the advisory with the given id to Approve.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<String>>
 
 |===
 
@@ -1480,7 +1481,8 @@ Change the workflow state of the advisory with the given id to Draft.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+
+<<String>>
 
 
 ===== Content Type
@@ -1497,7 +1499,7 @@ Change the workflow state of the advisory with the given id to Draft.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<String>>
 
 |===
 
@@ -1587,7 +1589,8 @@ Change the workflow state of the advisory with the given id to Publish.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+
+<<String>>
 
 
 ===== Content Type
@@ -1604,7 +1607,7 @@ Change the workflow state of the advisory with the given id to Publish.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<String>>
 
 |===
 
@@ -1682,7 +1685,8 @@ Change the workflow state of the advisory with the given id to Review.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+
+<<String>>
 
 
 ===== Content Type
@@ -1699,7 +1703,7 @@ Change the workflow state of the advisory with the given id to Review.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<String>>
 
 |===
 
@@ -1783,7 +1787,8 @@ Change the workflow state of the advisory with the given id to RfPublication (Re
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+
+<<String>>
 
 
 ===== Content Type
@@ -1800,7 +1805,7 @@ Change the workflow state of the advisory with the given id to RfPublication (Re
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<String>>
 
 |===
 
@@ -2081,7 +2086,7 @@ endif::internal-generation[]
 
 | csaf
 | 
-| String 
+| Object 
 | The current CSAF document enhanced with comment IDs.
 |  
 
@@ -2161,9 +2166,9 @@ endif::internal-generation[]
 
 | templateId
 | 
-| Long 
+| String 
 | The unique ID of the template.
-| int64 
+|  
 
 | templateDescription
 | 
