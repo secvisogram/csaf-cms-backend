@@ -13,7 +13,7 @@ services:
       - "${CSAF_COUCHDB_PORT}:5984"
 
   csaf-keycloak-db:
-    image: postgres:14.2
+    image: postgres:14.3
     container_name: csaf-keycloak-db
     volumes:
       - csaf-keycloak-db-data:/var/lib/postgresql/data
@@ -27,7 +27,7 @@ services:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
 
   csaf-keycloak:
-    image: bitnami/keycloak:16
+    image: bitnami/keycloak:18
     container_name: csaf-keycloak
     env_file: .env
     environment:
@@ -51,23 +51,21 @@ services:
 
   # Run this manually to import the default keycloak config since 'depends_on' is currently broken.
   csaf-keycloak-cli:
-    image: bitnami/keycloak-config-cli:4
+    image: adorsys/keycloak-config-cli:latest-18.0.0
     container_name: csaf-keycloak-cli
     profiles: [ "run_manually" ]
     env_file: .env
     environment:
-      KEYCLOAK_URL: "http://csaf-keycloak:8080/auth"
+      KEYCLOAK_URL: "http://csaf-keycloak:8080/"
       KEYCLOAK_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
       KEYCLOAK_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-      IMPORT_PATH: "/tmp/import/csaf-realm.json"
+      IMPORT_FILES_LOCATIONS: "/config/csaf-realm.json"
     volumes:
-      - ./keycloak:/tmp/import:z
+      - ./keycloak:/config:z
     restart: on-failure
-    depends_on:
-      - csaf-keycloak
 
   csaf-oauth2-proxy:
-    image: bitnami/oauth2-proxy:7
+    image: bitnami/oauth2-proxy:7.3.0
     container_name: csaf-oauth2-proxy
     command: [""]
     env_file: .env
@@ -78,16 +76,18 @@ services:
 
       # Security related config
       OAUTH2_PROXY_COOKIE_SECURE: "false"
+      OAUTH2_PROXY_COOKIE_HTTPONLY: "true"
+      OAUTH2_PROXY_COOKIE_SAMESITE: "lax"
       OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
 
       # OIDC provider config
       OAUTH2_PROXY_PROVIDER: oidc
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "CSAF OIDC Provider"
-      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://csaf-keycloak:8080/auth/realms/${CSAF_REALM}"
-      OAUTH2_PROXY_REDIRECT_URL: "${CSAF_APP_EXTERNAL_PROTOCOL}://${CSAF_APP_EXTERNAL_HOSTNAME}:${CSAF_APP_EXTERNAL_PORT}/oauth2/callback"
-      OAUTH2_PROXY_LOGIN_URL: "${CSAF_KEYCLOAK_EXTERNAL_PROTOCOL}://${CSAF_KEYCLOAK_EXTERNAL_HOSTNAME}:${CSAF_KEYCLOAK_EXTERNAL_PORT}/auth/realms/${CSAF_REALM}/protocol/openid-connect/auth"
+      # You need to set your keycloak "Frontend URL", in our case "http://localhost:9000/auth/"
+      # If you don't want to use autodiscovery, you have to set all urls by hand (login-url, oidc-jwks-url, redeem-url, ...)
+      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://csaf-keycloak:8080/realms/${CSAF_REALM}"
       OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
-      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080"
 
       # Client credentials
       OAUTH2_PROXY_CLIENT_ID: ${CSAF_CLIENT_ID}
@@ -104,8 +104,6 @@ services:
       OAUTH2_PROXY_EMAIL_DOMAINS: "*"
     ports:
       - "${CSAF_APP_EXTERNAL_PORT}:4180"
-    depends_on:
-      - csaf-keycloak
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
