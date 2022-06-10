@@ -1,6 +1,6 @@
 # Secvisogram Backend
 
-![Coverage](.github/badges/jacoco.svg)
+![Coverage](https://raw.githubusercontent.com/secvisogram/csaf-cms-backend/badges/.github/badges/jacoco.svg)
 
 ##  Getting started
 

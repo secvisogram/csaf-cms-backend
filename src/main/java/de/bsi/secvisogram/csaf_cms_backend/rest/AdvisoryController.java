@@ -1,12 +1,15 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
+import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
@@ -19,10 +22,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,11 @@ public class AdvisoryController {
     @Autowired
     private AdvisoryService advisoryService;
 
-     /**
+    @Autowired
+    private DocumentTemplateService templateService;
+
+
+    /**
      * Read all advisories, optionally filtered by a search expression
      *
      * @param expression optional search expression as json string
@@ -290,14 +295,19 @@ public class AdvisoryController {
             description = "Get all available templates in the system.",
             tags = {"Advisory"}
     )
-    public List<AdvisoryTemplateInformationResponse> listAllTemplates() {
+    public ResponseEntity<List<AdvisoryTemplateInfoResponse>> listAllTemplates() {
 
         LOG.info("listAllTemplates");
-        return Arrays.asList(
-                new AdvisoryTemplateInformationResponse(1L, "Template for security incident response"),
-                new AdvisoryTemplateInformationResponse(2L, "Template for informational Advisory"),
-                new AdvisoryTemplateInformationResponse(3L, "Template for security Advisory")
-        );
+
+        try {
+            var response =  Arrays.stream(this.templateService.getAllTemplates())
+                    .map(template -> new AdvisoryTemplateInfoResponse(template.getId(), template.getDescription()))
+                    .collect(Collectors.toList());
+            return  ResponseEntity.ok(response);
+        } catch (IOException ex) {
+            LOG.error("Error loading templates", ex);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -312,17 +322,27 @@ public class AdvisoryController {
             description = "Get the content of the templates with the given templateId.",
             tags = {"Advisory"}
     )
-    public AdvisoryTemplateResponse readTemplate(
+    public ResponseEntity<JsonNode> readTemplate(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the template to read."
-            ) long templateId
+            ) String templateId
     ) {
 
         // only for debugging, remove when implemented
         LOG.info("readTemplate {}", sanitize(templateId));
-        return null;
+        try {
+            Optional<DocumentTemplateDescription> template = this.templateService.getTemplateForId(templateId);
+            if (template.isPresent()) {
+                return  ResponseEntity.ok(template.get().getFileAsJsonNode());
+            } else {
+                return  ResponseEntity.notFound().build();
+            }
+        } catch (IOException ex) {
+            LOG.error(String.format("Error loading template with id: %s", sanitize(templateId)), ex);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
