@@ -32,6 +32,9 @@ dependencies {
 	implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.8'
 
+	implementation 'org.graalvm.js:js:22.1.0.1'
+	implementation 'org.graalvm.js:js-scriptengine:22.1.0.1'
+
 	//https://github.com/flipkart-incubator/zjsonpatch
 	implementation ('com.flipkart.zjsonpatch:zjsonpatch:0.4.12') {
 		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'

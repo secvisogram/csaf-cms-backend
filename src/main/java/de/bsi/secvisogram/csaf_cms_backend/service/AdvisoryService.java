@@ -18,8 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
-import de.bsi.secvisogram.csaf_cms_backend.mustache.Csaf2MapReader;
-import de.bsi.secvisogram.csaf_cms_backend.mustache.MustacheCreator;
+import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import java.io.IOException;
@@ -199,8 +198,7 @@ public class AdvisoryService {
             throw new DatabaseException("Invalid advisory ID!");
         }
         AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-        Object objectToExport = new Csaf2MapReader().convertToObject(advisoryNode.getCsaf());
-        return new MustacheCreator().createHtml("Template.html", (Map<String, Object>) objectToExport);
+        return new JavascriptExporter().createHtml(advisoryNode.getCsaf().toString());
     }
 
     /**
