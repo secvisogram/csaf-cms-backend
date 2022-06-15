@@ -56,7 +56,7 @@ public class AdvisoryWrapper {
         final ObjectMapper jacksonMapper = new ObjectMapper();
         final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
         JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
-        if (csafRootNode.get("document") == null) {
+        if (!csafRootNode.has("document")) {
             throw new IllegalArgumentException("Csaf contains no document entry");
         }
 
