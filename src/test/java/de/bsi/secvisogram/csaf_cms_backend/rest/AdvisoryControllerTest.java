@@ -21,8 +21,8 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
-import java.io.IOException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -57,20 +57,20 @@ public class AdvisoryControllerTest {
 
     private static final String csafJsonString = (
             """
-                "document": {
-                    "category": "CSAF_BASE"
-                }
-            """);
+                        "document": {
+                            "category": "CSAF_BASE"
+                        }
+                    """);
     private static final String advisoryId = UUID.randomUUID().toString();
     private static final String fullAdvisoryJsonString = String.format(
             """
-                    "owner": "Musterfrau",
-                    "type": "Advisory",
-                    "workflowState": "Draft",
-                    "csaf": %s,
-                    "_rev": "revision",
-                    "_id": "%s"
-            """, csafJsonString, advisoryId);
+                            "owner": "Musterfrau",
+                            "type": "Advisory",
+                            "workflowState": "Draft",
+                            "csaf": %s,
+                            "_rev": "revision",
+                            "_id": "%s"
+                    """, csafJsonString, advisoryId);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
 
@@ -279,7 +279,7 @@ public class AdvisoryControllerTest {
                         .json("""
                                 [{"templateId":"T1","templateDescription":"Template1"}]
                                 """
-                ));
+                        ));
     }
 
     @Test
@@ -381,12 +381,12 @@ public class AdvisoryControllerTest {
 
         String expected = String.format(
                 """
-                [{
-                    "commentId": "%s",
-                    "advisoryId": "%s",
-                    "owner": "%s"
-                }]
-                """, commentId, advisoryId, owner
+                        [{
+                            "commentId": "%s",
+                            "advisoryId": "%s",
+                            "owner": "%s"
+                        }]
+                        """, commentId, advisoryId, owner
         );
 
         this.mockMvc.perform(get(commentRoute))
@@ -443,14 +443,14 @@ public class AdvisoryControllerTest {
 
         String expected = String.format(
                 """
-                {
-                    "id": "%s",
-                    "revision": "%s"
-                }
-                """, idRev.getId(), idRev.getRevision());
+                        {
+                            "id": "%s",
+                            "revision": "%s"
+                        }
+                        """, idRev.getId(), idRev.getRevision());
 
         this.mockMvc.perform(
-                post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
+                        post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expected));
