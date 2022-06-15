@@ -12,10 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
@@ -182,7 +179,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "This is a comment.",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """;
         advisoryService.addComment(idRev.getId(), commentJson);
@@ -283,18 +280,14 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """, commentText);
 
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
 
-        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
-
         Assertions.assertEquals(4, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 1 comment and an audit trail entry for both");
-        Assertions.assertTrue(csafNode.get("document").has("$comment"));
-        Assertions.assertEquals(idRevComment.getId(), csafNode.at("/document/$comment/0").asText());
 
         CommentResponse comment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals(commentText, comment.getCommentText());
@@ -312,22 +305,19 @@ public class AdvisoryServiceTest {
                 """
                 {
                     "commentText": "%s",
-                    "field": "/document/category"
+                    "csafNodeId": "fieldId123",
+                    "fieldName": "category"
                 }
                 """, commentText);
 
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
 
-        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
-
         Assertions.assertEquals(4, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 1 comment and an audit trail entry for both");
-        Assertions.assertTrue(csafNode.get("document").has("$comment"));
-        Assertions.assertEquals(idRevComment.getId(), csafNode.at("/document/$comment/0").asText());
 
         CommentResponse comment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals(commentText, comment.getCommentText());
-        Assertions.assertEquals("/category", comment.getField());
+        Assertions.assertEquals("category", comment.getFieldName());
 
     }
 
@@ -343,7 +333,7 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """, commentTextOne);
 
@@ -351,23 +341,17 @@ public class AdvisoryServiceTest {
         String commentTwoJson = String.format(
             """
             {
-                "commentText": "%s"
+                "commentText": "%s",
+                "csafNodeId": "fieldId567"
             }
             """, commentTextTwo);
 
 
-        IdAndRevision idRevCommentField = advisoryService.addComment(idRevAdvisory.getId(), commentOneJson);
-        IdAndRevision idRevCommentDoc = advisoryService.addComment(idRevAdvisory.getId(), commentTwoJson);
-
-        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+        advisoryService.addComment(idRevAdvisory.getId(), commentOneJson);
+        advisoryService.addComment(idRevAdvisory.getId(), commentTwoJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
-        Assertions.assertTrue(csafNode.has("$comment"));
-        Assertions.assertTrue(csafNode.get("document").has("$comment"));
-        Assertions.assertEquals(idRevCommentDoc.getId(), csafNode.at("/$comment/0").asText());
-        Assertions.assertEquals(idRevCommentField.getId(), csafNode.at("/document/$comment/0").asText());
-
     }
 
     @Test
@@ -382,32 +366,22 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """, commentTextOne);
         String commentTwoJson = String.format(
             """
             {
                 "commentText": "%s",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """, commentTextTwo);
 
-        IdAndRevision idRevCommentField1 = advisoryService.addComment(idRevAdvisory.getId(), commentOneJson);
-        IdAndRevision idRevCommentField2 = advisoryService.addComment(idRevAdvisory.getId(), commentTwoJson);
-
-        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
+        advisoryService.addComment(idRevAdvisory.getId(), commentOneJson);
+        advisoryService.addComment(idRevAdvisory.getId(), commentTwoJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
-        Assertions.assertTrue(csafNode.get("document").has("$comment"));
-        Assertions.assertEquals(2, csafNode.at("/document/$comment").size(), "there should be two comments for the document field");
-
-        ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<List<String>>() {
-        });
-        List<String> idList = reader.readValue(csafNode.at("/document/$comment"));
-
-        Assertions.assertTrue(idList.containsAll(List.of(idRevCommentField1.getId(), idRevCommentField2.getId())));
 
     }
 
@@ -425,7 +399,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "a comment",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """;
 
@@ -443,7 +417,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "a comment",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """;
 
@@ -453,10 +427,6 @@ public class AdvisoryServiceTest {
                 "There should be 1 advisory, 1 comment and an audit trail entry for both before deletion");
 
         advisoryService.deleteComment(idRevAdvisory.getId(), idRevComment.getId(), idRevComment.getRevision());
-        JsonNode csafNode = advisoryService.getAdvisory(idRevAdvisory.getId()).getCsaf();
-
-        Assertions.assertEquals(0, csafNode.at("/document/$comment").size(),
-                "the one comment should be deleted (the array node still exists)");
 
         Assertions.assertEquals(2, advisoryService.getDocumentCount(),
                 "There should be 1 advisory and 1 audit trail entry left after deletion");
@@ -469,7 +439,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "comment text",
-                "field": "/document"
+                "csafNodeId": "fieldId123"
             }
             """;
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);

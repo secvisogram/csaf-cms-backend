@@ -15,7 +15,9 @@ public class CommentResponse {
 
     private final String commentText;
 
-    private final String field;
+    private final String csafNodeId;
+
+    private final String fieldName;
 
     /**
      * An answer needs to reference the question it answers.
@@ -29,7 +31,8 @@ public class CommentResponse {
             String advisoryId,
             String createdBy,
             String commentText,
-            String field,
+            String csafNodeId,
+            String fieldName,
             String answerToId
     ) {
         this.commentId = commentId;
@@ -37,7 +40,8 @@ public class CommentResponse {
         this.advisoryId = advisoryId;
         this.createdBy = createdBy;
         this.commentText = commentText;
-        this.field = field;
+        this.csafNodeId = csafNodeId;
+        this.fieldName = fieldName;
         this.answerToId = answerToId;
     }
 
@@ -69,6 +73,11 @@ public class CommentResponse {
         return commentText;
     }
 
+    @Schema(description = "The ID of the field this comment belongs to", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5:comment:1")
+    public String getCsafNodeId() {
+        return this.csafNodeId;
+    }
+
     public String getRevision() {
         return revision;
     }
@@ -78,7 +87,7 @@ public class CommentResponse {
     }
 
     @Schema(description = "The path to a nested leaf field when the comment is not on an object", example = "category")
-    public String getField() {
-        return field;
+    public String getFieldName() {
+        return fieldName;
     }
 }

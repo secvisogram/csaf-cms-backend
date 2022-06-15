@@ -599,16 +599,16 @@ public class AdvisoryController {
     }
 
     /**
-     * Add a comment to an advisory
+     * Create a new comment in the system, belonging to the advisory with given ID
      *
      * @param advisoryId      the ID of the advisory to add the comment to
      * @param newCommentJson  the comment to add as JSON string
      */
     @PostMapping("/{advisoryId}/comments")
     @Operation(
-            summary = "Add a comment to an advisory.",
-            description = "Add a comment to the advisory with the given ID. The comments are generated independently" +
-                          " of the CSAF document.",
+            summary = "Create a new comment in the system.",
+            description = "Creates a new comment associated with the advisory with the given ID." +
+                          " The comments are generated independently of the CSAF document.",
             tags = {"Advisory"}
     )
     public ResponseEntity<EntityCreateResponse> createComment(
@@ -619,6 +619,7 @@ public class AdvisoryController {
             ) String advisoryId,
             @RequestBody String newCommentJson) {
 
+        checkValidUuid(advisoryId);
         try {
             IdAndRevision idRev = advisoryService.addComment(advisoryId, newCommentJson);
             URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
@@ -694,6 +695,7 @@ public class AdvisoryController {
             @RequestBody String newCommentText
     ) {
 
+        checkValidUuid(advisoryId);
         checkValidUuid(commentId);
         try {
             String newRevision = advisoryService.updateComment(commentId, revision, newCommentText);
@@ -760,7 +762,7 @@ public class AdvisoryController {
 
     /**
      * Check whether the given id is a valid uuid
-     * @param uuidString
+     * @param uuidString the string to check
      */
     private static void checkValidUuid(String uuidString) {
         try {

@@ -20,18 +20,35 @@ public class CommentWrapperTest {
 
 
     @Test
-    public void createNewFromJsonTest_missingFields() {
+    public void createNewFromJsonTest_missingTextField() {
 
         String advisoryId = UUID.randomUUID().toString();
         String commentJson = String.format(
                 """
                 {
-                    "owner": "%s"
+                    "owner": "%s",
+                    "csafNodeId": "fieldId123"
                 }
                 """, owner);
 
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> CommentWrapper.createNewFromJson(advisoryId, commentJson), "missing commentText");
+    }
+
+    @Test
+    public void createNewFromJsonTest_missingCsafNodeId() {
+
+        String advisoryId = UUID.randomUUID().toString();
+        String commentJson = String.format(
+                """
+                {
+                    "owner": "%s",
+                    "commentText": "This is a comment"
+                }
+                """, owner);
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> CommentWrapper.createNewFromJson(advisoryId, commentJson), "missing csafNodeId");
     }
 
 
@@ -42,7 +59,8 @@ public class CommentWrapperTest {
         String docCommentJson = String.format(
                 """
                 {
-                    "commentText": "%s"
+                    "commentText": "%s",
+                    "csafNodeId": "fieldId123"
                 }
                 """, commentText);
 
@@ -60,17 +78,19 @@ public class CommentWrapperTest {
                 """
                 {
                     "commentText": "%s",
+                    "csafNodeId": "fieldId123",
                     "owner": "%s",
-                    "field": "/document/publisher"
+                    "fieldName": "publisher"
                 }
                 """, commentText, owner);
 
         CommentWrapper wrapper = CommentWrapper.createNewFromJson(advisoryId, fullCommentJson);
 
         Assertions.assertEquals(commentText, wrapper.getText());
+        Assertions.assertEquals("fieldId123", wrapper.getCsafNodeId());
         Assertions.assertEquals(advisoryId, wrapper.getAdvisoryId());
         Assertions.assertEquals(owner, wrapper.getOwner());
-        Assertions.assertEquals("/document/publisher", wrapper.getField());
+        Assertions.assertEquals("publisher", wrapper.getFieldName());
     }
 
     @Test
@@ -83,6 +103,7 @@ public class CommentWrapperTest {
                 """
                 {
                     "commentText": "%s",
+                    "csafNodeId": "fieldId123",
                     "advisoryId": "%s",
                     "owner": "%s",
                     "type": "Comment",
@@ -95,6 +116,7 @@ public class CommentWrapperTest {
         CommentWrapper comment = CommentWrapper.createFromCouchDb(commentStream);
 
         Assertions.assertEquals(commentText, comment.getText());
+        Assertions.assertEquals("fieldId123", comment.getCsafNodeId());
         Assertions.assertEquals(owner, comment.getOwner());
         Assertions.assertEquals(revision, comment.getRevision());
         Assertions.assertEquals(commentId, comment.getCommentId());
@@ -110,6 +132,7 @@ public class CommentWrapperTest {
         ObjectNode commentNode = new ObjectMapper().createObjectNode();
         commentNode.put("owner", owner);
         commentNode.put("text", commentText);
+        commentNode.put("csafNodeId", "field123");
         commentNode.put("advisoryId", advisoryId);
         commentNode.put("type", "Comment");
         commentNode.put("_rev", revision);

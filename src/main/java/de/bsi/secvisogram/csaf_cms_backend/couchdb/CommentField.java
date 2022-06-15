@@ -5,7 +5,8 @@ public enum CommentField implements DbField {
     TEXT("commentText"),
     OWNER("owner"),
     ADVISORY_ID("advisoryId"),
-    FIELD("field");
+    CSAF_NODE_ID("csafNodeId"),
+    FIELD_NAME("fieldName");
 
     private final String dbName;
     private final String[] fieldPath;

@@ -51,6 +51,9 @@ public class CommentWrapper {
         if (!commentRootNode.has(CommentField.TEXT.getDbName())) {
             throw new IllegalArgumentException("commentText must be provided!");
         }
+        if (!commentRootNode.has(CommentField.CSAF_NODE_ID.getDbName())) {
+            throw new IllegalArgumentException("csafNodeId must be provided!");
+        }
         commentRootNode.put(CommentField.ADVISORY_ID.getDbName(), advisoryId);
         commentRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Comment.name());
 
@@ -91,14 +94,25 @@ public class CommentWrapper {
         return this;
     }
 
-    public String getField() {
+    public String getCsafNodeId() {
 
-        return commentNode.has(CommentField.FIELD.getDbName()) ? commentNode.get(CommentField.FIELD.getDbName()).asText() : null;
+        return this.commentNode.get(CommentField.CSAF_NODE_ID.getDbName()).asText();
     }
 
-    public CommentWrapper setField(String newValue) {
+    public CommentWrapper setCsafNodeId(String newValue) {
 
-        this.commentNode.put(CommentField.FIELD.getDbName(), newValue);
+        this.commentNode.put(CommentField.CSAF_NODE_ID.getDbName(), newValue);
+        return this;
+    }
+
+    public String getFieldName() {
+
+        return commentNode.has(CommentField.FIELD_NAME.getDbName()) ? commentNode.get(CommentField.FIELD_NAME.getDbName()).asText() : null;
+    }
+
+    public CommentWrapper setFieldName(String newValue) {
+
+        this.commentNode.put(CommentField.FIELD_NAME.getDbName(), newValue);
         return this;
     }
 
