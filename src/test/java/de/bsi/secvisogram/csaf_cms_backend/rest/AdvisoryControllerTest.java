@@ -55,12 +55,13 @@ public class AdvisoryControllerTest {
 
     private static final String advisoryRoute = "/api/2.0/advisories/";
 
-    private static final String csafJsonString = (
-            """
-                        "document": {
-                            "category": "CSAF_BASE"
-                        }
-                    """);
+    private static final String csafJsonString = """
+            {
+                "document": {
+                    "category": "CSAF_BASE"
+                }
+            }
+            """;
     private static final String advisoryId = UUID.randomUUID().toString();
     private static final String fullAdvisoryJsonString = String.format(
             """
