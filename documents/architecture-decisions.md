@@ -313,17 +313,19 @@ state, respectively the current version of the document.
 
 The picture below depicts the access to the Rest backend and the objects that
 are created in the database. Each time the document is modified, an audit trail
-entry is created. This also happens when a comment is created or when the workflow
-state is changed.
+entry is created. This also happens when the workflow state is changed.
 
 ![data model](WokflowAdvisory.drawio.svg)
 
 ### Create Comments
 
-The comments are generated independently of the CSAF document. The IDs of the
-comments are inserted into the CSAF document and saved with the document.
+The comments are generated independently of the CSAF document.
+A comment may reference a specific part or piece of information of the CSAF
+document via a `nodeId`.
+As there are no such unique identifiers for objects in the CSAF JSON tree,
+these must be added by the client.
 
-![data model](WorkflowComments.drawio.svg)
+![comment workflow](WorkflowComments.drawio.svg)
 
 ## 7. Deployment View
 
@@ -334,6 +336,8 @@ comments are inserted into the CSAF document and saved with the document.
 At the current state a CSAF document will be saved as one object in the database.
 This object will also contain the owner as well as the workflow status. Other
 relevant information like comments or the audit trail will be stored separately.
+In order to allow referencing a specific part of the document (e.g. by comments),
+additional node IDs must be added by the client.
 
 ![data model](datamodel.drawio.svg)
 
@@ -341,15 +345,15 @@ relevant information like comments or the audit trail will be stored separately.
 
 Holds the current version of a CSAF advisory
 
-| Field            | Description                                               |
-|------------------|-----------------------------------------------------------|
-| `advisoryId`     | unique ID of the advisory                                 |
-| `docVersion`     | the current version string of the advisory                |
-| `publishingDate` | from this date, the state `Published` is valid            |
-| `workflowState`  | the workflow state of the advisory                        |
-| `owner`          | the current owner of the advisory                         |
-| `publicationDate`| optionally time at which the the publication should take place|
-| `csafDocument`   | the CSAF document in JSON format with additional comments |
+| Field            | Description                                                    |
+|------------------|----------------------------------------------------------------|
+| `advisoryId`     | unique ID of the advisory                                      |
+| `docVersion`     | the current version string of the advisory                     |
+| `publishingDate` | from this date, the state `Published` is valid                 |
+| `workflowState`  | the workflow state of the advisory                             |
+| `owner`          | the current owner of the advisory                              |
+| `publicationDate`| optionally time at which the the publication should take place |
+| `csafDocument`   | the CSAF document in JSON format with additional node ids      |
 
 #### AdvisoryVersion
 
@@ -381,58 +385,59 @@ sufficient to represent the full workflow.
 
 Hold all comments and answers to a CSAF Advisory.
 
-| Field         | Description                                                                                                                                                        |
-|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `commentId`   | The unique ID of the comment                                                                                                                                       |
-| `docVersion`  | Reference to the version of the CSAF AdvisoryInformation                                                                                                           |
-| `changedBy`   | User that created/last changed the comment                                                                                                                         |
-| `changedAt`   | Timestamp when the comment was created/last changed                                                                                                                |
-| `fieldName`   | `null` - if the comment belongs to the whole CSAF object, the concrete field name to which the comment belongs otherwise (e.g. `document.aggregate_severity.text`) |
-| `commentText` | The text of the comment as string with CR/LF                                                                                                                       |
-| `answers`     | List of answers to the comment                                                                                                                                     |
+| Field         | Description                                                                                                                                                                                                        |
+|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `commentId`   | The unique ID of the comment                                                                                                                                                                                       |
+| `docVersion`  | Reference to the version of the CSAF AdvisoryInformation                                                                                                                                                           |
+| `changedBy`   | User that created/last changed the comment                                                                                                                                                                         |
+| `changedAt`   | Timestamp when the comment was created/last changed                                                                                                                                                                |
+| `fieldName`   | `null` if this comment belongs to a object node (also the case for the whole object), otherwise this contains the JSON path to the leaf node it refers to (e.g. `name` for a comment on `document.publisher.name`) |
+| `commentText` | The text of the comment as string with CR/LF                                                                                                                                                                       |
+| `nodeId`      | The ID of the object inside the CSAF JSON tree this comment refers to. The ID of the corresponding object if this comment belongs to a non-object node, see `fieldName`                                            |
+| `answers`     | List of answers to the comment                                                                                                                                                                                     |
 
 A comment can reference either a document as a whole, a specific object or value
 in the document. Since the CSAF standard has no concept for unique identifiers
-inside the document we need to persist this relation somehow, without
-unnecessarily adding identifiers to each object. Furthermore, we need to remove
-these IDs before sending the document to the validator service or exporting it.
+inside the document we need to persist this relation somehow.
+This is achieved by adding identifiers to each object. See the example below.
+To allow concurrent modification of the document and adding comments in
+parallel, the generation of IDs is outsourced to the client.
+These IDs need to be removed before sending the document to the validator
+service or exporting it.
 
-The IDs of the Comments are referenced from the CSAF document objects.
 When the comment belongs to a dedicated field and not the whole object,
 the `fieldName` in the objects is used to specify the concrete value.
-
-We archive this by adding a `$comment` value to the document where the user adds
-a comment. This is only possible for object nodes in the JSON tree.
 
 **Example:**
 
 ```json
 {
-  "$comment": [22, 28, 34],
+  "$uuid": "f3194f0c-a036-4999-9e42-5e442fb6474f",
   "document": {
-    "$comment": [55],
+    "uuid": "7fccdb6c-802a-457e-bf71-9655eb8694fb",
     "category": "generic_csaf",
     "csaf_version": "2.0",
     "publisher": {
-      "$comment": [56, 57],
+      "$uuid": "563b81e0-8cec-4080-971c-e8b96d3c7d2b",
       "category": "coordinator",
       "name": "exccellent",
       "namespace": "https://exccellent.de"
     },
     "title": "TestRSc",
     "tracking": {
+      "$uuid": "b5c2de93-d915-4434-946d-cc29acf6ad98",
       "current_release_date": "2022-01-11T11:00:00.000Z",
       "id": "exxcellent-2021AB123",
       "initial_release_date": "2022-01-12T11:00:00.000Z",
       "revision_history": [
         {
-          "$comment": [58, 59],
+          "$uuid": "bfe7f3ea-5cfb-4be2-9205-e072de456f72",
           "date": "2022-01-12T11:00:00.000Z",
           "number": "0.0.1",
           "summary": "Test rsvSummary"
         },
         {
-          "$comment": [60, 61],
+          "$uuid": "b4ed0282-f51d-4d7a-91f6-ba7ea9f34638",
           "date": "2022-01-12T11:00:00.000Z",
           "number": "0.0.1",
           "summary": "Test rsvSummary"
@@ -441,8 +446,10 @@ a comment. This is only possible for object nodes in the JSON tree.
       "status": "draft",
       "version": "0.0.1",
       "generator": {
+        "$uuid": "f20ac652-fa60-4251-8724-c17dadfedd6f",
         "date": "2022-01-11T04:07:27.246Z",
         "engine": {
+          "$uuid": "92620a71-8e34-486e-9519-9e7395ccc6d1",
           "version": "1.10.0",
           "name": "Secvisogram"
         }
@@ -450,6 +457,7 @@ a comment. This is only possible for object nodes in the JSON tree.
     },
     "acknowledgments": [
       {
+        "$uuid": "be3c3867-763a-420f-b3b7-14cca728c9ae",
         "names": [
           "Alice",
           "Bob"
@@ -751,28 +759,29 @@ In the state `Approved` the Publisher has 2 options:
 It should be possible to add comments to the CSAF document. The comment could be
 for the whole document or for a specific area in the document.
 Since the CSAF standard has no concept for unique identifiers inside the
-document we need to persist this relation somehow without unnecessarily adding
-identifiers to each object.
+document such identifiers are added to each object node to persist this relation.
 
 #### Decision
 
-The ids of the Comments are referenced from the CSAF Document objects.
-When the comment belongs to a dedicated field and not the whole object,
-the fieldName in the objects is used to specify the concrete value.
-
-We archive this by adding a $comment value to the document where the user adds a
-comment.
+These missing unique identifiers are added to each object node in the CSAF JSON.
+A comment then refers to such a node ID.
+When the comment belongs to a dedicated field and not the whole object, the
+fieldName in the objects is used to specify the concrete value.
 
 #### Consequences
 
-- The algorithm to add comments is very simple
-- The comments are referenced proper even some parts of the document are deleted
-- The size of the CSAF document is only slightly increased be the comments
-- The comments have to be removed before the CSAF document is validated
-- The comments have to be removed / ignored when exporting the document
-- The rest client has to manage the id of the comments
-- The creation of comments and saving the CSAF documents is done in different
-  transaction. We need a job cleanup for accidentally created comments
+- The algorithm to add comments is very simple, they are just persisted as new
+  documents in the database
+- The CSAF document does not change when a comment is created
+- The node IDs have to be removed before the CSAF document is validated
+- The node IDs have to be removed / ignored when exporting the document
+- The rest client has to manage the IDs of the object nodes
+- Deleting or changing the CSAF document may leave comments dangling
+- It _should_ be checked if a document is affected by deletion or modification
+  of a CSAF document
+- It _should_ be validated that a node ID referenced by a comment exists in
+  the CSAF document
+- There _should_ be housekeeping to get rid of dangling comments
 
 ## 10 Quality Requirements
 
