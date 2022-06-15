@@ -342,8 +342,16 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void exportAdvisoryTest() {
-        // to be filled
+    void exportAdvisoryTest_HTML() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        when(advisoryService.exportAdvisory(advisoryId.toString())).thenReturn("<html></html>");
+
+        this.mockMvc.perform(
+                        get(advisoryRoute + advisoryId.toString() + "/csaf").with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("<html></html>"));
     }
 
 

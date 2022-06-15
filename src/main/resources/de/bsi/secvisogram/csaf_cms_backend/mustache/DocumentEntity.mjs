@@ -201,11 +201,12 @@ export default class DocumentEntity {
    *
    * @param {{ document: any }} params
    */
-  preview({ document }) {
+  preview(document) {
     const templateDoc = document
     const productIds = this.collectProductIds({ document: templateDoc })
     const groupIds = this.collectGroupIds({ document: templateDoc })
 
+    print("%%%%%%%%%" + document.document);
     if (templateDoc.document) {
       templateDoc.document.max_base_score = retrieveMaxBaseScore(
           templateDoc.vulnerabilities

@@ -84,10 +84,11 @@ const REFERENCE = `
 
 
 export function renderWithMustache(template, json) {
-    const obj = JSON.parse(json);;
+    const obj = JSON.parse(json);
+    print(json)
     const documentEntity = new DocumentEntity();
-    documentEntity.preview(obj);
-
+    const doc = documentEntity.preview(obj);
+    print(doc.document.title)
     return Mustache.render(template, obj, {
         product_status_header: PRODUCT_STATUS_HEADER,
         product_status_row: PRODUCT_STATUS_ROW,
