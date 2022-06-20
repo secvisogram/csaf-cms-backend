@@ -35,7 +35,6 @@ public class AdvisoryWrapper {
                 { "document": {
                    }
                 }""";
-    private static final String COMMENT_KEY = "$comment";
 
 
     /**
@@ -192,67 +191,6 @@ public class AdvisoryWrapper {
 
         this.advisoryNode.putIfAbsent(CSAF.getDbName(), node);
         return this;
-    }
-
-    /**
-     * Adds a comment to a specific field of the CSAF document
-     *
-     * @param objNode   the object node to add the comment to
-     * @param commentId the comment ID to add
-     * @return this advisory wrapper with the updated advisory
-     */
-    public AdvisoryWrapper addCommentId(ObjectNode objNode, String commentId) {
-
-        if (objNode.has(COMMENT_KEY)) {
-            ArrayNode commentNode = (ArrayNode) objNode.get(COMMENT_KEY);
-            commentNode.add(commentId);
-        } else {
-            final ObjectMapper jacksonMapper = new ObjectMapper();
-            ArrayNode commentNode = jacksonMapper.createArrayNode();
-            commentNode.add(commentId);
-            objNode.set(COMMENT_KEY, commentNode);
-        }
-        return this;
-    }
-
-    /**
-     * Removes a comment from a specific field of the CSAF document
-     * As comments are assumed to be unique, the comment's id is searched in the whole tree and the first occurrence
-     * is removed. It will be silently ignored if the comment id is not found.
-     *
-     * @param commentId the comment ID to remove
-     * @return this advisory wrapper with the updated advisory
-     */
-    public AdvisoryWrapper removeCommentId(String commentId) {
-        ArrayNode commentNode = findCommentNode(getCsaf());
-        if (commentNode != null) {
-            for (Iterator<JsonNode> it = commentNode.iterator(); it.hasNext(); ) {
-                JsonNode item = it.next();
-                if (item.asText().equals(commentId)) {
-                    it.remove();
-                }
-            }
-        }
-        return this;
-    }
-
-    private ArrayNode findCommentNode(JsonNode j) {
-        Iterator<String> keyIter = j.fieldNames();
-        while (keyIter.hasNext()) {
-            String key = keyIter.next();
-            System.out.println(key);
-            if (j.get(key) instanceof ObjectNode objNode) {
-                if (objNode.has(COMMENT_KEY)) {
-                    return (ArrayNode) objNode.get(COMMENT_KEY);
-                }
-                return findCommentNode(objNode);
-            } else if (j.get(key) instanceof ArrayNode) {
-                for (JsonNode arrNode : j.get(key)) {
-                    return findCommentNode(arrNode);
-                }
-            }
-        }
-        return null;
     }
 
     public JsonNode at(String jsonPtrExpr) {

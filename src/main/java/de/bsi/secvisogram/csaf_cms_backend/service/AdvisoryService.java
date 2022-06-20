@@ -324,14 +324,9 @@ public class AdvisoryService {
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
      */
-    public void deleteComment(String advisoryId, String commentId, String commentRevision) throws DatabaseException, IOException {
+    public void deleteComment(String commentId, String commentRevision) throws DatabaseException, IOException {
 
         couchDbService.deleteDocument(commentId, commentRevision);
-
-        InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
-        AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
-        advisory.removeCommentId(commentId);
-        couchDbService.updateDocument(advisory.advisoryAsString());
 
         deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
 

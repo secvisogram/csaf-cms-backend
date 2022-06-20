@@ -14,18 +14,6 @@ import org.junit.jupiter.api.Test;
 
 public class AdvisoryWrapperTest {
 
-    String csafJson = """
-            {
-              "document": {
-                "category": "CSAF_BASE",
-                "publisher": {
-                  "category": "other",
-                  "name": "John Doe"
-                }
-              }
-            }
-            """;
-
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void createNewFromCsafTest() throws IOException {
@@ -108,74 +96,5 @@ public class AdvisoryWrapperTest {
         assertThat(updatedWrapper.at("/csaf/document/category").asText(), equalTo("CHANGED"));
         assertThat(updatedWrapper.at("/csaf/document/title").asText(), equalTo("New Title"));
     }
-
-    @Test
-    void addCommentIdTest_Field() throws IOException {
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
-        advisory.addCommentId((ObjectNode) advisory.getCsaf().at("/document/publisher"), "commentId");
-        Assertions.assertEquals("[\"commentId\"]", advisory.getCsaf().at("/document/publisher/$comment").toString(), "A comment ID should be added to the publisher node.");
-    }
-
-    @Test
-    void addCommentIdTest_FieldExistingComments() throws IOException {
-        String csafJsonWithComments = """
-                {
-                  "document": {
-                    "category": "CSAF_BASE",
-                    "publisher": {
-                      "category": "other",
-                      "name": "John Doe",
-                      "$comment": ["aCommentId"]
-                    }
-                  }
-                }
-                """;
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJsonWithComments, "Mustermann");
-        advisory.addCommentId((ObjectNode) advisory.getCsaf().at("/document/publisher"), "commentId");
-        Assertions.assertEquals("[\"aCommentId\",\"commentId\"]", advisory.getCsaf().at("/document/publisher/$comment").toString(), "An additional comment ID should be added to the publisher node.");
-    }
-
-
-    @Test
-    void removeCommentId_notExisting() throws IOException {
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
-        String beforeRemoval = advisory.advisoryAsString();
-        advisory.removeCommentId("does not exist");
-        Assertions.assertEquals(beforeRemoval, advisory.advisoryAsString(), "The advisory should not change, when there is no target");
-    }
-
-    @Test
-    void removeCommentId() throws IOException {
-        String csafJsonWithComments = """
-                {
-                  "document": {
-                    "category": "CSAF_BASE",
-                    "publisher": {
-                      "category": "other",
-                      "name": "John Doe",
-                      "$comment": ["commentId"]
-                    }
-                  }
-                }
-                """;
-        AdvisoryWrapper advisoryWithComment = AdvisoryWrapper.createNewFromCsaf(csafJsonWithComments, "Mustermann");
-        advisoryWithComment.removeCommentId("commentId");
-
-        String csafJsonWithCommentIDRemoved = """
-                {
-                  "document": {
-                    "category": "CSAF_BASE",
-                    "publisher": {
-                      "category": "other",
-                      "name": "John Doe",
-                      "$comment": []
-                    }
-                  }
-                }
-                """;
-        AdvisoryWrapper advisoryRemovedComment = AdvisoryWrapper.createNewFromCsaf(csafJsonWithCommentIDRemoved, "Mustermann");
-        Assertions.assertEquals(advisoryRemovedComment.advisoryAsString(), advisoryWithComment.advisoryAsString(), "The comment should be removed.");
-    }
-
 
 }

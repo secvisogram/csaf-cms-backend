@@ -386,10 +386,9 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void deleteComment_notPresent() throws IOException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+    public void deleteComment_notPresent() {
         Assertions.assertThrows(IdNotFoundException.class,
-                () -> advisoryService.deleteComment(idRevAdvisory.getId(), "not present", "no revision"));
+                () -> advisoryService.deleteComment("not present", "no revision"));
     }
 
     @Test
@@ -406,7 +405,7 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
 
         Assertions.assertThrows(DatabaseException.class,
-                () -> advisoryService.deleteComment(idRevAdvisory.getId(), idRevComment.getId(), "bad revision"));
+                () -> advisoryService.deleteComment(idRevComment.getId(), "bad revision"));
     }
 
     @Test
@@ -426,7 +425,7 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(4, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 1 comment and an audit trail entry for both before deletion");
 
-        advisoryService.deleteComment(idRevAdvisory.getId(), idRevComment.getId(), idRevComment.getRevision());
+        advisoryService.deleteComment(idRevComment.getId(), idRevComment.getRevision());
 
         Assertions.assertEquals(2, advisoryService.getDocumentCount(),
                 "There should be 1 advisory and 1 audit trail entry left after deletion");
