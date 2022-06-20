@@ -27,7 +27,7 @@ public class CommentWrapperTest {
                 """
                 {
                     "owner": "%s",
-                    "csafNodeId": "fieldId123"
+                    "csafNodeId": "nodeId123"
                 }
                 """, owner);
 
@@ -60,7 +60,7 @@ public class CommentWrapperTest {
                 """
                 {
                     "commentText": "%s",
-                    "csafNodeId": "fieldId123"
+                    "csafNodeId": "nodeId123"
                 }
                 """, commentText);
 
@@ -78,7 +78,7 @@ public class CommentWrapperTest {
                 """
                 {
                     "commentText": "%s",
-                    "csafNodeId": "fieldId123",
+                    "csafNodeId": "nodeId123",
                     "owner": "%s",
                     "fieldName": "publisher"
                 }
@@ -87,7 +87,7 @@ public class CommentWrapperTest {
         CommentWrapper wrapper = CommentWrapper.createNewFromJson(advisoryId, fullCommentJson);
 
         Assertions.assertEquals(commentText, wrapper.getText());
-        Assertions.assertEquals("fieldId123", wrapper.getCsafNodeId());
+        Assertions.assertEquals("nodeId123", wrapper.getCsafNodeId());
         Assertions.assertEquals(advisoryId, wrapper.getAdvisoryId());
         Assertions.assertEquals(owner, wrapper.getOwner());
         Assertions.assertEquals("publisher", wrapper.getFieldName());
@@ -103,7 +103,7 @@ public class CommentWrapperTest {
                 """
                 {
                     "commentText": "%s",
-                    "csafNodeId": "fieldId123",
+                    "csafNodeId": "nodeId123",
                     "advisoryId": "%s",
                     "owner": "%s",
                     "type": "Comment",
@@ -116,7 +116,7 @@ public class CommentWrapperTest {
         CommentWrapper comment = CommentWrapper.createFromCouchDb(commentStream);
 
         Assertions.assertEquals(commentText, comment.getText());
-        Assertions.assertEquals("fieldId123", comment.getCsafNodeId());
+        Assertions.assertEquals("nodeId123", comment.getCsafNodeId());
         Assertions.assertEquals(owner, comment.getOwner());
         Assertions.assertEquals(revision, comment.getRevision());
         Assertions.assertEquals(commentId, comment.getCommentId());

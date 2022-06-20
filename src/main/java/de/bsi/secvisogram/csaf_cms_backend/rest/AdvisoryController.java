@@ -132,20 +132,20 @@ public class AdvisoryController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Create a new Advisory.",
-            description = "Create a new CSAF document with optional comments in the system.",
+            description = "Create a new CSAF document with added node IDs in the system.",
             tags = {"Advisory"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including comments.",
+                    description = "An advisory in CSAF JSON format including node IDs.",
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with comments.",
+                                    title = "Common Security Advisory Framework schema extended with node IDs.",
                                     description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
                             ),
                             examples = {@ExampleObject(
-                                    name = "A CSAF document in JSON format including comments.",
-                                    value = "{document: { $comment: [23454], category: \"CSAF Base\",... }, vulnerabilities: {...}}"
+                                    name = "A CSAF document in JSON format including additional node IDs.",
+                                    value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
                             )}
                     )
             )
@@ -188,17 +188,17 @@ public class AdvisoryController {
                     description = "The optimistic locking revision."
             ) String revision,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including comments.",
+                    description = "An advisory in CSAF JSON format including node IDs.",
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with comments.",
+                                    title = "Common Security Advisory Framework schema extended with node IDs.",
                                     description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
                             ),
                             examples = {@ExampleObject(
-                                    name = "A CSAF document in JSON format including comments.",
-                                    value = "{document: { $comment: [23454], category: \"CSAF Base\",... }, vulnerabilities: {...}}"
+                                    name = "A CSAF document in JSON format including node IDs.",
+                                    value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
                             )}
                     )
             ) @RequestBody String changedCsafJson
@@ -258,8 +258,8 @@ public class AdvisoryController {
     @DeleteMapping("/{advisoryId}")
     @Operation(
             summary = "Delete an advisory.",
-            description = "Delete a CSAF document from the system. All older versions, comments and audit-trails are" +
-                          " also deleted.",
+            description = "Delete a CSAF document from the system. All older versions of the document, corresponding" +
+                          " comments and audit-trails are also deleted.",
             tags = {"Advisory"}
     )
     public ResponseEntity<Void> deleteCsafDocument(

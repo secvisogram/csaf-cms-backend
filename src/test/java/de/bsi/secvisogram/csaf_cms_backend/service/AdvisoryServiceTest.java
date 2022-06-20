@@ -179,7 +179,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "This is a comment.",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """;
         advisoryService.addComment(idRev.getId(), commentJson);
@@ -280,7 +280,7 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """, commentText);
 
@@ -305,7 +305,7 @@ public class AdvisoryServiceTest {
                 """
                 {
                     "commentText": "%s",
-                    "csafNodeId": "fieldId123",
+                    "csafNodeId": "nodeId123",
                     "fieldName": "category"
                 }
                 """, commentText);
@@ -333,7 +333,7 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """, commentTextOne);
 
@@ -342,7 +342,7 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "csafNodeId": "fieldId567"
+                "csafNodeId": "nodeId567"
             }
             """, commentTextTwo);
 
@@ -366,14 +366,14 @@ public class AdvisoryServiceTest {
             """
             {
                 "commentText": "%s",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """, commentTextOne);
         String commentTwoJson = String.format(
             """
             {
                 "commentText": "%s",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """, commentTextTwo);
 
@@ -398,7 +398,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "a comment",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """;
 
@@ -416,7 +416,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "a comment",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """;
 
@@ -438,7 +438,7 @@ public class AdvisoryServiceTest {
         String commentJson = """
             {
                 "commentText": "comment text",
-                "csafNodeId": "fieldId123"
+                "csafNodeId": "nodeId123"
             }
             """;
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJson);
