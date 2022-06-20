@@ -46,32 +46,52 @@ public class AdvisoryServiceTest {
     @Autowired
     private AdvisoryService advisoryService;
 
-    private static final String csafJson = ("""
+    private static final String csafJson = """
                     {
                         "document": {
                             "category": "CSAF_BASE"
                         }
-                    }""");
+                    }""";
 
-    private static final String updatedCsafJson = ("""
+    private static final String updatedCsafJson = """
             {
                 "document": {
                     "category": "CSAF_INFORMATIONAL_ADVISORY",
                     "title": "Test Advisory"
                 }
             }
-            """);
+            """;
 
-    private static final String advisoryTemplateString = ("""
+    private static final String advisoryTemplateString = """
             {
                 "owner": "John Doe",
                 "type": "Advisory",
                 "workflowState": "Draft",
                 "csaf": %s
             }
-            """);
+            """;
 
     private static final String advisoryJsonString = String.format(advisoryTemplateString, csafJson);
+
+    private static final String commentTextObject = "This is a comment on an object.";
+    private static final String commentTextLeaf = "This is a comment on a leaf node.";
+    private static final String commentCsafNodeId = "nodeId123";
+    private static final String commentFieldName = "category";
+
+    private static final String commentJsonObjectNode = """
+                {
+                    "commentText": "%s",
+                    "csafNodeId": "%s"
+                }
+            """.formatted(commentTextObject, commentCsafNodeId);
+
+    private static final String commentJsonLeafNode = """
+                {
+                    "commentText": "%s",
+                    "csafNodeId": "%s",
+                    "fieldName": "%s"
+                }
+            """.formatted(commentTextLeaf, commentCsafNodeId, commentFieldName);
 
 
     @Test
@@ -271,7 +291,6 @@ public class AdvisoryServiceTest {
     public void addCommentTest_oneComment() throws DatabaseException, IOException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        String commentText = "This is a comment";
 
         Comment comment = new Comment(commentText, UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
@@ -289,7 +308,6 @@ public class AdvisoryServiceTest {
     public void addCommentTest_leafNode() throws DatabaseException, IOException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        String commentText = "This is a leaf node comment";
 
         Comment comment = new Comment(commentText, UUID.randomUUID().toString(), "category");
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
