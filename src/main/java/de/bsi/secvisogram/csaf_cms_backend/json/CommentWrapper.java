@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import java.io.IOException;
@@ -59,10 +60,43 @@ public class CommentWrapper {
         if (!newComment.isObjectComment()) {
             commentRootNode.put(CommentField.FIELD_NAME.getDbName(), newComment.getFieldName());
         }
+        if (commentRootNode.has(CommentField.ANSWER_TO.getDbName())) {
+            throw new IllegalArgumentException("answerTo must not be provided for comments!");
+        }
         commentRootNode.put(CommentField.ADVISORY_ID.getDbName(), advisoryId);
         commentRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Comment.name());
 
         return new CommentWrapper(commentRootNode);
+    }
+
+    /**
+     * Convert a comment String to an initial CommentWrapper for a given user.
+     * The wrapper has no id and revision.
+     *
+     * @param commentId     the ID of the comment to add the answer to
+     * @param newAnswerJson the new comment in JSON format, requires a commentText field
+     * @return the wrapper
+     */
+    public static CommentWrapper createNewAnswerFromJson(String commentId, String newAnswerJson) throws IOException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final InputStream commentStream = new ByteArrayInputStream(newAnswerJson.getBytes(StandardCharsets.UTF_8));
+        ObjectNode answerRootNode = jacksonMapper.readValue(commentStream, ObjectNode.class);
+
+
+        if (!answerRootNode.has(CommentField.TEXT.getDbName())) {
+            throw new IllegalArgumentException("commentText must be provided!");
+        }
+        if (answerRootNode.has(CommentField.ADVISORY_ID.getDbName())) {
+            throw new IllegalArgumentException("advisoryId must not be provided for answers!");
+        }
+        if (answerRootNode.has(CommentField.CSAF_NODE_ID.getDbName())) {
+            throw new IllegalArgumentException("csafNodeId must not be provided for answers!");
+        }
+        answerRootNode.put(CommentField.ANSWER_TO.getDbName(), commentId);
+        answerRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Answer.name());
+
+        return new CommentWrapper(answerRootNode);
     }
 
     private final ObjectNode commentNode;
@@ -154,6 +188,18 @@ public class CommentWrapper {
         return this;
     }
 
+
+    public String getAnswerTo() {
+
+        return commentNode.has(CommentField.ANSWER_TO.getDbName()) ? commentNode.get(CommentField.ANSWER_TO.getDbName()).asText() : null;
+    }
+
+    public CommentWrapper setAnswerTo(String newValue) {
+
+        this.commentNode.put(CommentField.ANSWER_TO.getDbName(), newValue);
+        return this;
+    }
+
     public String commentAsString() {
 
         return this.commentNode.toString();
@@ -166,6 +212,13 @@ public class CommentWrapper {
         String csafNodeId = commentJson.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentJson.get(CommentField.CSAF_NODE_ID.getDbName()).asText() : null;
         String owner = commentJson.has(CommentField.OWNER.getDbName()) ? commentJson.get(CommentField.OWNER.getDbName()).asText() : null;
         return new CommentInformationResponse(commentId, advisoryId, csafNodeId, owner);
+    }
+
+    public static AnswerInformationResponse convertToAnswerInfo(JsonNode answerJson) {
+        String answerId = answerJson.get(ID_FIELD.getDbName()).asText();
+        String answerTo = answerJson.get(CommentField.ANSWER_TO.getDbName()).asText();
+        String owner = answerJson.has(CommentField.OWNER.getDbName()) ? answerJson.get(CommentField.OWNER.getDbName()).asText() : null;
+        return new AnswerInformationResponse(answerId, answerTo, owner);
     }
 
 }

@@ -93,6 +93,14 @@ public class AdvisoryServiceTest {
                 }
             """.formatted(commentTextLeaf, commentCsafNodeId, commentFieldName);
 
+    private static final String answerText = "This is an answer.";
+
+    private static final String answerJson = """
+                {
+                    "commentText": "%s"
+                }
+            """.formatted(answerText);
+
 
     @Test
     public void contextLoads() {
@@ -201,11 +209,21 @@ public class AdvisoryServiceTest {
         Comment comment = new Comment("This is a comment", UUID.randomUUID().toString());
         advisoryService.addComment(idRev.getId(), comment);
         assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
-        // the advisory changed as comments were added and thus has a new revision
-        String newRev = advisoryService.getAdvisory(idRev.getId()).getRevision();
-        this.advisoryService.deleteAdvisory(idRev.getId(), newRev);
+        this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
         assertEquals(0, advisoryService.getDocumentCount(), "the comment and its audit trail should also be deleted");
     }
+
+    @Test
+    public void deleteAdvisoryTest_withCommentsAndAnswers() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        assertEquals(6, advisoryService.getDocumentCount(), "there should be one advisory one comment and one answer each with an audit trail");
+        this.advisoryService.deleteAdvisory(idRevAdvisory.getId(), idRevAdvisory.getRevision());
+        assertEquals(0, advisoryService.getDocumentCount(), "the comment and answer and their audit trails should also be deleted");
+    }
+
 
     @Test
     public void updateAdvisoryTest() throws IOException, DatabaseException {
@@ -377,6 +395,23 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    public void deleteCommentWithAnswer() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each before deletion");
+
+        advisoryService.deleteComment(idRevComment.getId(), idRevComment.getRevision());
+
+        Assertions.assertEquals(2, advisoryService.getDocumentCount(),
+                "There should be 1 advisory and 1 audit trail entry left after deletion");
+
+    }
+
+    @Test
     void updateCommentTest() throws IOException, DatabaseException {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
 
@@ -422,6 +457,104 @@ public class AdvisoryServiceTest {
         Assertions.assertTrue(ids.size() == expectedIDs.size()
                               && ids.containsAll(expectedIDs)
                               && expectedIDs.containsAll(ids));
+
+    }
+
+
+    @Test
+    public void addAnswerTest_oneAnswer() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
+
+        List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevComment.getId());
+        Assertions.assertEquals(1, answers.size());
+
+        CommentResponse answer = advisoryService.getComment(idRevAnswer.getId());
+        Assertions.assertEquals(answerText, answer.getCommentText());
+
+    }
+
+    @Test
+    public void addAnswerTest_twoAnswersSameComment() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        advisoryService.addAnswer(idRevComment.getId(), answerJson);
+        advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        Assertions.assertEquals(8, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment, 2 answers and an audit trail entry for each");
+
+        List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevComment.getId());
+        Assertions.assertEquals(2, answers.size(), "There should be two answers to the comment");
+    }
+
+    @Test
+    public void addAnswerTest_withNodeId() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> advisoryService.addAnswer(idRevComment.getId(), commentJsonObjectNode));
+    }
+
+    @Test
+    public void deleteAnswer_notPresent() {
+        Assertions.assertThrows(IdNotFoundException.class,
+                () -> advisoryService.deleteAnswer("not present", "no revision"));
+    }
+
+    @Test
+    public void deleteAnswer_badRevision() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        Assertions.assertThrows(DatabaseException.class,
+                () -> advisoryService.deleteAnswer(idRevAnswer.getId(), "bad revision"));
+    }
+
+    @Test
+    public void deleteAnswer() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
+
+        advisoryService.deleteAnswer(idRevAnswer.getId(), idRevAnswer.getRevision());
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory and 1 comment and an audit trail entry for each left after deletion");
+    }
+
+    @Test
+    void updateAnswerTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
+
+        CommentResponse comment = advisoryService.getComment(idRevAnswer.getId());
+        Assertions.assertEquals(answerText, comment.getCommentText());
+
+        advisoryService.updateComment(idRevAnswer.getId(), idRevAnswer.getRevision(), "updated answer text");
+
+        assertEquals(7, advisoryService.getDocumentCount(), "there should be an additional audit trail for the answer update");
+
+        CommentResponse newAnswer = advisoryService.getComment(idRevAnswer.getId());
+        Assertions.assertEquals("updated answer text", newAnswer.getCommentText());
 
     }
 

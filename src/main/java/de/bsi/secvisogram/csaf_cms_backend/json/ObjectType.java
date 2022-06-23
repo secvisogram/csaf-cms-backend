@@ -8,5 +8,6 @@ public enum ObjectType {
     AuditTrailDocument,
     AuditTrailWorkflow,
     Comment,
+    Answer,
     CommentAuditTrail
 }

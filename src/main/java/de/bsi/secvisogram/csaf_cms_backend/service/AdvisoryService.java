@@ -131,7 +131,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Delete advisory with given id
+     * Deletes an advisory with given id from the database and all comments and answers belonging to it
      *
      * @param advisoryId the ID of the advisory to delete
      * @param revision   the revision for concurrent control
@@ -156,8 +156,8 @@ public class AdvisoryService {
         Collection<IdAndRevision> bulkDeletes = new ArrayList<>(commentsToDelete.size());
         for (JsonNode doc : commentsToDelete) {
             String commentId = CouchDbField.ID_FIELD.stringVal(doc);
-            bulkDeletes.add(new IdAndRevision(commentId, CouchDbField.REVISION_FIELD.stringVal(doc)));
-            deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
+            String commentRev = CouchDbField.REVISION_FIELD.stringVal(doc);
+            deleteComment(commentId, commentRev);
         }
         this.couchDbService.bulkDeleteDocuments(bulkDeletes);
     }
@@ -267,7 +267,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Get a specific comment
+     * Get a specific comment (or answer)
      *
      * @param commentId the ID of the comment to get
      * @return the requested comment
@@ -285,7 +285,7 @@ public class AdvisoryService {
                     comment.getText(),
                     comment.getCsafNodeId(),
                     comment.getFieldName(),
-                    null
+                    comment.getAnswerTo()
             );
 
         } catch (IOException e) {
@@ -321,7 +321,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Deletes a comment from the database and an advisory
+     * Deletes a comment and all its answers from the database
      *
      * @param commentId       the ID of the comment to remove
      * @param commentRevision the comment's revision for concurrent control
@@ -331,12 +331,31 @@ public class AdvisoryService {
     public void deleteComment(String commentId, String commentRevision) throws DatabaseException, IOException {
 
         couchDbService.deleteDocument(commentId, commentRevision);
-
         deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
+        deleteAllAnswersFromDbForComment(commentId);
+    }
 
+    private void deleteAllAnswersFromDbForComment(String commentId) throws IOException, DatabaseException {
+        AndExpression searchExpr = new AndExpression(equal(ObjectType.Answer.name(), TYPE_FIELD.getDbName()),
+                equal(commentId, CommentField.ANSWER_TO.getDbName()));
+
+        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
+
+        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
+        List<JsonNode> answersToDelete = this.findDocuments(selector, fields);
+
+        Collection<IdAndRevision> bulkDeletes = new ArrayList<>(answersToDelete.size());
+        for (JsonNode doc : answersToDelete) {
+            String answerId = CouchDbField.ID_FIELD.stringVal(doc);
+            String answerRev = CouchDbField.REVISION_FIELD.stringVal(doc);
+            deleteAnswer(answerId, answerRev);
+        }
+        this.couchDbService.bulkDeleteDocuments(bulkDeletes);
     }
 
     /**
+     * Updates the text of a comment (or answer)
+     *
      * @param commentId the ID of the comment to update
      * @param revision  the revision for concurrent control
      * @param newText   the updated text of the comment
@@ -362,6 +381,73 @@ public class AdvisoryService {
         String newRevision = this.couchDbService.updateDocument(comment.commentAsString());
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
         return newRevision;
+    }
+
+    /**
+     * Adds an answer to a comment
+     *
+     * @param commentId   the ID of the comment to add the answer to
+     * @param answerJson  the answer to add as JSON string, requires a commentText
+     * @return a tuple of ID and revision of the added comment
+     * @throws DatabaseException when there are database errors
+     * @throws IOException       when there are errors in JSON handling
+     */
+    public IdAndRevision addAnswer(String commentId, String answerJson) throws DatabaseException, IOException {
+
+        UUID answerId = UUID.randomUUID();
+
+        CommentWrapper newAnswer = CommentWrapper.createNewAnswerFromJson(commentId, answerJson);
+        newAnswer.setAnswerTo(commentId);
+
+        AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newAnswer)
+                .setCommentId(answerId.toString())
+                .setChangeType(ChangeType.Create);
+
+        String user = newAnswer.getOwner();
+        if (user != null) {
+            auditTrail.setUser(user);
+        }
+
+        String commentRevision = couchDbService.writeDocument(answerId, newAnswer.commentAsString());
+        couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+        return new IdAndRevision(answerId.toString(), commentRevision);
+
+    }
+
+    /**
+     * Retrieves all answers for a given comment
+     *
+     * @param commentId the ID of the comment to get answers of
+     * @return a list of information on all answers for the requested comment
+     * @throws IOException when there are errors in JSON handling
+     */
+    public List<AnswerInformationResponse> getAnswers(String commentId) throws IOException {
+
+        List<DbField> fields = Arrays.asList(
+                CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD, CommentField.ANSWER_TO, CommentField.OWNER);
+
+        AndExpression searchExpr = new AndExpression(
+                equal(ObjectType.Answer.name(), TYPE_FIELD.getDbName()),
+                equal(commentId, CommentField.ANSWER_TO.getDbName())
+        );
+        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
+        List<JsonNode> answerInfosJson = this.findDocuments(selector, fields);
+
+        return answerInfosJson.stream().map(CommentWrapper::convertToAnswerInfo).toList();
+    }
+
+    /**
+     * Deletes an answer from the database
+     *
+     * @param answerId       the ID of the comment to remove
+     * @param answerRevision the comment's revision for concurrent control
+     * @throws DatabaseException when there are database errors
+     * @throws IOException       when there are errors in JSON handling
+     */
+    public void deleteAnswer(String answerId, String answerRevision) throws DatabaseException, IOException {
+        couchDbService.deleteDocument(answerId, answerRevision);
+        deleteAllAuditTrailDocumentsFromDbFor(answerId, CommentAuditTrailField.COMMENT_ID.getDbName());
     }
 
 }
