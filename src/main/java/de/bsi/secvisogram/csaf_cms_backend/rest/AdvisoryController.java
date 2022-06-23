@@ -641,7 +641,7 @@ public class AdvisoryController {
             IdAndRevision idRev = advisoryService.addComment(advisoryId, newComment);
             URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
-            return ResponseEntity.created(advisoryLocation).body(createResponse);
+            return ResponseEntity.created(commentLocation).body(createResponse);
         } catch (IOException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (DatabaseException dbEx) {
