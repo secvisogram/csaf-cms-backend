@@ -333,6 +333,10 @@ public class AdvisoryServiceTest {
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
+
+        List<CommentInformationResponse> commentInfos = advisoryService.getComments(idRevAdvisory.getId());
+        Assertions.assertEquals(2, commentInfos.size());
+
     }
 
     @Test
