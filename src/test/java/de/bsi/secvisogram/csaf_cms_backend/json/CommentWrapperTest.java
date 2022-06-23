@@ -13,7 +13,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
+@SuppressFBWarnings(value = {"VA_FORMAT_STRING_USES_NEWLINE", "CE_CLASS_ENVY"},
+        justification = "False positives on multiline format strings; class envy tolerated for tests")
 public class CommentWrapperTest {
 
     private static final String commentText = "This is a comment.";

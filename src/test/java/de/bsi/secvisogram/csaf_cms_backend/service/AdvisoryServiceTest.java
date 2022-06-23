@@ -399,7 +399,7 @@ public class AdvisoryServiceTest {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
-        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+        advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each before deletion");
