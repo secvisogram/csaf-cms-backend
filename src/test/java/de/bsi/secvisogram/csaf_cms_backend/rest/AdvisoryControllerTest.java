@@ -21,6 +21,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateServic
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
@@ -82,6 +83,10 @@ public class AdvisoryControllerTest {
     private static final String commentRoute = advisoryRoute + advisoryId + "/comments/";
     private static final String commentId = UUID.randomUUID().toString();
     private static final String commentText = "This is a comment.";
+
+    private static final String answerRoute = commentRoute + commentId + "/answers/";
+    private static final String answerId = UUID.randomUUID().toString();
+    private static final String answerText = "This is an answer";
 
 
     @Test
@@ -369,7 +374,7 @@ public class AdvisoryControllerTest {
     @Test
     void listCommentsTest_empty() throws Exception {
 
-        this.mockMvc.perform(get(advisoryRoute + advisoryId + "/comments"))
+        this.mockMvc.perform(get(commentRoute))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
@@ -413,7 +418,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void createCommentTest_invalidField() throws Exception {
+    void createCommentTest_missingCsafNodeId() throws Exception {
 
 
         String commentJson = """
@@ -514,5 +519,139 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
+
+    @Test
+    void listAnswersTest_empty() throws Exception {
+
+        this.mockMvc.perform(get(answerRoute))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void listAnswersTest_oneItem() throws Exception {
+
+        String owner = "Musterfrau";
+
+        AnswerInformationResponse info = new AnswerInformationResponse(answerId, commentId, owner);
+        when(advisoryService.getAnswers(commentId)).thenReturn(List.of(info));
+
+
+        String expected = String.format(
+                """
+                        [{
+                            "answerId": "%s",
+                            "answerTo": "%s",
+                            "owner": "%s"
+                        }]
+                        """, answerId, commentId, owner
+        );
+
+        this.mockMvc.perform(get(answerRoute))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void addAnswerTest_invalidJson() throws Exception {
+
+        String invalidJson = "not a valid JSON string";
+
+        when(advisoryService.addAnswer(commentId, invalidJson)).thenThrow(JsonProcessingException.class);
+
+        this.mockMvc.perform(
+                        post(answerRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void addAnswerTest() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
+        String answerJson = """
+                {
+                    "commentText": "This is an answer.",
+                }
+                """;
+
+        when(advisoryService.addAnswer(commentId, answerJson)).thenReturn(idRev);
+
+        String expected = String.format(
+                """
+                        {
+                            "id": "%s",
+                            "revision": "%s"
+                        }
+                        """, idRev.getId(), idRev.getRevision());
+
+        this.mockMvc.perform(
+                        post(answerRoute).with(csrf()).content(answerJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expected));
+
+    }
+
+
+    @Test
+    void changeAnswerTest_notExisting() throws Exception {
+
+        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(answerId, revision, answerText);
+
+        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void changeAnswerTest_invalidRevision() throws Exception {
+
+        String invalidRevision = "invalid";
+        doThrow(DatabaseException.class).when(advisoryService).updateComment(answerId, invalidRevision, answerText);
+
+        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", invalidRevision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void changeAnswerTest_invalidId() throws Exception {
+
+        String invalidId = "not an UUID";
+
+        this.mockMvc.perform(patch(answerRoute + invalidId).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changeAnswerTest() throws Exception {
+
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.updateComment(answerId, revision, answerText)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
+    }
+
 
 }
