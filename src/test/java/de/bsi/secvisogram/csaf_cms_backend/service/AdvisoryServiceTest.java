@@ -305,6 +305,23 @@ public class AdvisoryServiceTest {
                 }""".formatted(documentCategory, documentTitle);
     }
 
+
+    @Test
+    public void getCommentsTest_empty() throws IOException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        List<CommentInformationResponse> comments = advisoryService.getComments(idRevAdvisory.getId());
+        Assertions.assertEquals(0, comments.size());
+    }
+
+    @Test
+    public void getCommentsTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        List<CommentInformationResponse> comments = advisoryService.getComments(idRevAdvisory.getId());
+        Assertions.assertEquals(1, comments.size());
+        Assertions.assertEquals(idRevComment.getId(), comments.get(0).getCommentId());
+    }
+
     @Test
     public void addCommentTest_oneComment() throws DatabaseException, IOException {
 
@@ -432,6 +449,24 @@ public class AdvisoryServiceTest {
         CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("updated comment text", newComment.getCommentText());
 
+    }
+
+    @Test
+    public void getAnswersTest_empty() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevComment.getId());
+        Assertions.assertEquals(0, answers.size());
+    }
+
+    @Test
+    public void getAnswersTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
+        List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevComment.getId());
+        Assertions.assertEquals(1, answers.size());
+        Assertions.assertEquals(idRevAnswer.getId(), answers.get(0).getAnswerId());
     }
 
     @Test
