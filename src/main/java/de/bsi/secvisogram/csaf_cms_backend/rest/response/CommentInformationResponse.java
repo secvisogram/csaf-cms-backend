@@ -9,14 +9,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class CommentInformationResponse {
 
     private String commentId;
-    private String owner;
     private String advisoryId;
+    private String csafNodeId;
+    private String owner;
     private boolean changeable;
     private boolean deletable;
 
-    public CommentInformationResponse(String commentId, String advisoryId, String owner) {
+    public CommentInformationResponse(String commentId, String advisoryId, String csafNodeId, String owner) {
         this.commentId = commentId;
         this.advisoryId = advisoryId;
+        this.csafNodeId = csafNodeId;
         this.owner = owner;
         this.changeable = true;
         this.deletable = true;
@@ -38,6 +40,15 @@ public class CommentInformationResponse {
 
     public void setAdvisoryId(String advisoryId) {
         this.advisoryId = advisoryId;
+    }
+
+    @Schema(description = "The ID of the node this comment refers to.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
+    public String getCsafNodeId() {
+        return this.csafNodeId;
+    }
+
+    public void setCsafNodeId(String csafNodeId) {
+        this.csafNodeId = csafNodeId;
     }
 
     @Schema(description = "The current owner of the comment.", example = "Mustermann")

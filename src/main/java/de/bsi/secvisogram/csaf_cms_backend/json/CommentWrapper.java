@@ -156,8 +156,9 @@ public class CommentWrapper {
 
         String commentId = commentJson.get(ID_FIELD.getDbName()).asText();
         String advisoryId = commentJson.get(CommentField.ADVISORY_ID.getDbName()).asText();
+        String csafNodeId = commentJson.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentJson.get(CommentField.CSAF_NODE_ID.getDbName()).asText() : null;
         String owner = commentJson.has(CommentField.OWNER.getDbName()) ? commentJson.get(CommentField.OWNER.getDbName()).asText() : null;
-        return new CommentInformationResponse(commentId, advisoryId, owner);
+        return new CommentInformationResponse(commentId, advisoryId, csafNodeId, owner);
     }
 
 }

@@ -22,6 +22,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -373,6 +374,32 @@ public class AdvisoryServiceTest {
 
         CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("updated comment text", newComment.getCommentText());
+
+    }
+
+    @Test
+    void getCommentsTest_empty() throws IOException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
+        assertEquals(0, commentInfos.size());
+    }
+
+    @Test
+    void getCommentsTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        Comment anotherComment = new Comment("another comment text", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment1 = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        IdAndRevision idRevComment2 = advisoryService.addComment(idRevAdvisory.getId(), anotherComment);
+
+        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
+
+        List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
+        List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
+        Assertions.assertTrue(ids.size() == expectedIDs.size()
+                              && ids.containsAll(expectedIDs)
+                              && expectedIDs.containsAll(ids));
 
     }
 

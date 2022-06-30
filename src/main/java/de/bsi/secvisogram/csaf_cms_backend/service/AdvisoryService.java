@@ -302,7 +302,13 @@ public class AdvisoryService {
      */
     public List<CommentInformationResponse> getComments(String advisoryId) throws IOException {
 
-        List<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
+        List<DbField> fields = Arrays.asList(
+                CouchDbField.ID_FIELD,
+                CouchDbField.REVISION_FIELD,
+                CommentField.ADVISORY_ID,
+                CommentField.CSAF_NODE_ID,
+                CommentField.OWNER
+        );
 
         AndExpression searchExpr = new AndExpression(
                 equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),

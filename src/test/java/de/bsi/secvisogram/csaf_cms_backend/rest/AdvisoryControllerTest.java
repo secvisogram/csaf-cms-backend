@@ -380,7 +380,7 @@ public class AdvisoryControllerTest {
 
         String owner = "Musterfrau";
 
-        CommentInformationResponse info = new CommentInformationResponse(commentId, advisoryId, owner);
+        CommentInformationResponse info = new CommentInformationResponse(commentId, advisoryId, "nodeId123", owner);
         when(advisoryService.getComments(advisoryId)).thenReturn(List.of(info));
 
 
@@ -389,6 +389,7 @@ public class AdvisoryControllerTest {
                         [{
                             "commentId": "%s",
                             "advisoryId": "%s",
+                            "csafNodeId": "nodeId123",
                             "owner": "%s"
                         }]
                         """, commentId, advisoryId, owner
