@@ -12,6 +12,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 /**
  * Wrapper around JsonNode to read and write comment/answer objects from/to the CouchDB
@@ -47,6 +48,12 @@ public class CommentWrapper {
 
         commentRootNode.put(CommentField.TEXT.getDbName(), newComment.getCommentText());
         if (!newComment.isCommentWholeDocument()) {
+            String nodeId = newComment.getCsafNodeId();
+            try {
+                UUID.fromString(nodeId);
+            } catch (IllegalArgumentException iaEx) {
+                throw new IllegalArgumentException("csafNodeId is not a valid UUID!", iaEx);
+            }
             commentRootNode.put(CommentField.CSAF_NODE_ID.getDbName(), newComment.getCsafNodeId());
         }
         if (!newComment.isObjectComment()) {
