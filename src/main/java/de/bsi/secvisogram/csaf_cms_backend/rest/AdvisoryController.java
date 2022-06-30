@@ -609,8 +609,24 @@ public class AdvisoryController {
     @Operation(
             summary = "Create a new comment in the system.",
             description = "Creates a new comment associated with the advisory with the given ID." +
-                          " The comments are generated independently of the CSAF document.",
-            tags = {"Advisory"}
+                          " The comments are generated independently of the CSAF document and may link" +
+                          " to a specific node of the CSAF document by its $nodeId",
+            tags = {"Advisory"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "A comment in JSON format.",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(
+                                    title = "Comment schema",
+                                    description = "Comment schema with some metadata."
+                            ),
+                            examples = {@ExampleObject(
+                                    name = "A comment with text, CSAF Node Id and fieldName",
+                                    value = "{commentText: \"This is a comment\", csafNodeId: \"dd9683d8-be4b-4d09-a864-1a04092a071f\", fieldName: \"category\"}"
+                            )}
+                    )
+            )
     )
     public ResponseEntity<EntityCreateResponse> createComment(
             @PathVariable
@@ -679,7 +695,22 @@ public class AdvisoryController {
     @Operation(
             summary = "Change the text of a comment.",
             description = "Change the text of the comment with the given ID.",
-            tags = {"Advisory"}
+            tags = {"Advisory"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "A new comment text.",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.TEXT_PLAIN_VALUE,
+                            schema = @Schema(
+                                    type = "string",
+                                    format = "plain"
+                            ),
+                            examples = {@ExampleObject(
+                                    name = "A comment text",
+                                    value = "This is a new text for a comment."
+                            )}
+                    )
+            )
     )
     public ResponseEntity<EntityUpdateResponse> changeComment(
             @PathVariable

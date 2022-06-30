@@ -412,32 +412,32 @@ the `fieldName` in the objects is used to specify the concrete value.
 
 ```json
 {
-  "$uuid": "f3194f0c-a036-4999-9e42-5e442fb6474f",
+  "$nodeId": "f3194f0c-a036-4999-9e42-5e442fb6474f",
   "document": {
     "uuid": "7fccdb6c-802a-457e-bf71-9655eb8694fb",
     "category": "generic_csaf",
     "csaf_version": "2.0",
     "publisher": {
-      "$uuid": "563b81e0-8cec-4080-971c-e8b96d3c7d2b",
+      "$nodeId": "563b81e0-8cec-4080-971c-e8b96d3c7d2b",
       "category": "coordinator",
       "name": "exccellent",
       "namespace": "https://exccellent.de"
     },
     "title": "TestRSc",
     "tracking": {
-      "$uuid": "b5c2de93-d915-4434-946d-cc29acf6ad98",
+      "$nodeId": "b5c2de93-d915-4434-946d-cc29acf6ad98",
       "current_release_date": "2022-01-11T11:00:00.000Z",
       "id": "exxcellent-2021AB123",
       "initial_release_date": "2022-01-12T11:00:00.000Z",
       "revision_history": [
         {
-          "$uuid": "bfe7f3ea-5cfb-4be2-9205-e072de456f72",
+          "$nodeId": "bfe7f3ea-5cfb-4be2-9205-e072de456f72",
           "date": "2022-01-12T11:00:00.000Z",
           "number": "0.0.1",
           "summary": "Test rsvSummary"
         },
         {
-          "$uuid": "b4ed0282-f51d-4d7a-91f6-ba7ea9f34638",
+          "$nodeId": "b4ed0282-f51d-4d7a-91f6-ba7ea9f34638",
           "date": "2022-01-12T11:00:00.000Z",
           "number": "0.0.1",
           "summary": "Test rsvSummary"
@@ -446,10 +446,10 @@ the `fieldName` in the objects is used to specify the concrete value.
       "status": "draft",
       "version": "0.0.1",
       "generator": {
-        "$uuid": "f20ac652-fa60-4251-8724-c17dadfedd6f",
+        "$nodeId": "f20ac652-fa60-4251-8724-c17dadfedd6f",
         "date": "2022-01-11T04:07:27.246Z",
         "engine": {
-          "$uuid": "92620a71-8e34-486e-9519-9e7395ccc6d1",
+          "$nodeId": "92620a71-8e34-486e-9519-9e7395ccc6d1",
           "version": "1.10.0",
           "name": "Secvisogram"
         }
@@ -457,7 +457,7 @@ the `fieldName` in the objects is used to specify the concrete value.
     },
     "acknowledgments": [
       {
-        "$uuid": "be3c3867-763a-420f-b3b7-14cca728c9ae",
+        "$nodeId": "be3c3867-763a-420f-b3b7-14cca728c9ae",
         "names": [
           "Alice",
           "Bob"
@@ -775,6 +775,7 @@ fieldName in the objects is used to specify the concrete value.
 - The CSAF document does not change when a comment is created
 - The node IDs have to be removed before the CSAF document is validated
 - The node IDs have to be removed / ignored when exporting the document
+- The CSAF document with the uuid has to be saved before comments can be added.
 - The rest client has to manage the IDs of the object nodes
 - Deleting or changing the CSAF document may leave comments dangling
 - It _should_ be checked if a document is affected by deletion or modification

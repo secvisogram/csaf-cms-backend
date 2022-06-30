@@ -323,7 +323,6 @@ public class AdvisoryService {
     /**
      * Deletes a comment from the database and an advisory
      *
-     * @param advisoryId      the ID of the advisory to remove the comment from
      * @param commentId       the ID of the comment to remove
      * @param commentRevision the comment's revision for concurrent control
      * @throws DatabaseException when there are database errors
