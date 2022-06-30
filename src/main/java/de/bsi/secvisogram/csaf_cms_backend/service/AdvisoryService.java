@@ -253,6 +253,7 @@ public class AdvisoryService {
 
         AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newComment)
                 .setCommentId(commentId.toString())
+                .setCommentText(newComment.getText())
                 .setChangeType(ChangeType.Create);
 
         auditTrail.setUser("Mustermann");
@@ -347,6 +348,7 @@ public class AdvisoryService {
 
         AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(comment)
                 .setCommentId(commentId)
+                .setCommentText(newText)
                 .setCreatedAtToNow()
                 .setChangeType(ChangeType.Update)
                 .setUser("Mustermann");

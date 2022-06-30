@@ -23,8 +23,19 @@ public class CommentAuditTrailWrapper extends AuditTrailWrapper {
         return this;
     }
 
+    public String getCommentText() {
+
+        return this.getAuditTrailNode().get(CommentAuditTrailField.COMMENT_TEXT.getDbName()).asText();
+    }
+
+    public CommentAuditTrailWrapper setCommentText(String newValue) {
+
+        this.getAuditTrailNode().put(CommentAuditTrailField.COMMENT_TEXT.getDbName(), newValue);
+        return this;
+    }
+
     /**
-     * Calculate an comment audit trail for the given comment
+     * Create a new comment audit trail for the given comment
      *
      * @param comment the comment
      * @return the new wrapper
@@ -34,7 +45,8 @@ public class CommentAuditTrailWrapper extends AuditTrailWrapper {
         ObjectNode rootNode = new ObjectMapper().createObjectNode();
 
         CommentAuditTrailWrapper wrapper = new CommentAuditTrailWrapper(rootNode)
-                .setCommentId(comment.getCommentId());
+                .setCommentId(comment.getCommentId())
+                .setCommentText(comment.getText());
         wrapper.setType(ObjectType.CommentAuditTrail)
                 .setChangeType(ChangeType.Create)
                 .setCreatedAtToNow();

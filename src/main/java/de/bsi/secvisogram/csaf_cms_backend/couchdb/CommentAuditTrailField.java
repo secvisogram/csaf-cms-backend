@@ -2,7 +2,8 @@ package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
 public enum CommentAuditTrailField implements DbField {
 
-    COMMENT_ID("commentId");
+    COMMENT_ID("commentId"),
+    COMMENT_TEXT("commentText");
 
     private final String dbName;
     private final String[] fieldPath;
