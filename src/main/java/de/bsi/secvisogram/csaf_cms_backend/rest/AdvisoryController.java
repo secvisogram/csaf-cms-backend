@@ -10,6 +10,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
@@ -602,7 +603,7 @@ public class AdvisoryController {
      * Create a new comment in the system, belonging to the advisory with given ID
      *
      * @param advisoryId      the ID of the advisory to add the comment to
-     * @param newCommentJson  the comment to add as JSON string
+     * @param newComment      the comment to add as JSON string
      */
     @PostMapping("/{advisoryId}/comments")
     @Operation(
@@ -617,11 +618,11 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to add the comments to."
             ) String advisoryId,
-            @RequestBody String newCommentJson) {
+            @RequestBody Comment newComment) {
 
         checkValidUuid(advisoryId);
         try {
-            IdAndRevision idRev = advisoryService.addComment(advisoryId, newCommentJson);
+            IdAndRevision idRev = advisoryService.addComment(advisoryId, newComment);
             URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);

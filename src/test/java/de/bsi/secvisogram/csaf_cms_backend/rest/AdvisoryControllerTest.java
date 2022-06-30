@@ -1,5 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -16,6 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
@@ -27,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -401,26 +405,21 @@ public class AdvisoryControllerTest {
 
         String invalidJson = "not a valid JSON string";
 
-        when(advisoryService.addComment(advisoryId, invalidJson)).thenThrow(JsonProcessingException.class);
-
         this.mockMvc.perform(
-                        post(commentRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
+                        post(commentRoute).with(csrf()).content(invalidJson).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    void createCommentTest_missingAdvisoryId() throws Exception {
+    void createCommentTest_invalidField() throws Exception {
 
 
         String commentJson = """
                 {
-                    "commentText": "This is a comment."
+                    "content": "invalid as comment"
                 }
                 """;
-
-        when(advisoryService.addComment(advisoryId, commentJson)).thenThrow(IllegalArgumentException.class);
 
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
@@ -436,11 +435,11 @@ public class AdvisoryControllerTest {
         String commentJson = """
                 {
                     "commentText": "This is a comment.",
-                    "advisoryId": "some advisory ID we pretend exists."
+                    "csafNodeId": "some node ID we pretend exists."
                 }
                 """;
 
-        when(advisoryService.addComment(advisoryId, commentJson)).thenReturn(idRev);
+        when(advisoryService.addComment(eq(advisoryId), any(Comment.class))).thenReturn(idRev);
 
         String expected = String.format(
                 """

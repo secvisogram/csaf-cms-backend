@@ -18,6 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
@@ -240,16 +241,16 @@ public class AdvisoryService {
      * Adds a comment to the advisory
      *
      * @param advisoryId  the ID of the advisory to add the comment to
-     * @param commentJson the comment to add as JSON string, requires a commentText
+     * @param comment     the comment to add as JSON string, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
      */
-    public IdAndRevision addComment(String advisoryId, String commentJson) throws DatabaseException, IOException {
+    public IdAndRevision addComment(String advisoryId, Comment comment) throws DatabaseException, IOException {
 
         UUID commentId = UUID.randomUUID();
 
-        CommentWrapper newComment = CommentWrapper.createNewFromJson(advisoryId, commentJson);
+        CommentWrapper newComment = CommentWrapper.createNew(advisoryId, comment);
 
         AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newComment)
                 .setCommentId(commentId.toString())

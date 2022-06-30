@@ -8,11 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Wrapper around JsonNode to read and write comment/answer objects from/to the CouchDB
@@ -38,21 +37,20 @@ public class CommentWrapper {
      * The wrapper has no id and revision.
      *
      * @param advisoryId     the ID of the advisory to add the comment to
-     * @param newCommentJson the new comment in JSON format, requires a commentText field
+     * @param newComment     the new comment
      * @return the wrapper
      */
-    public static CommentWrapper createNewFromJson(String advisoryId, String newCommentJson) throws IOException {
+    public static CommentWrapper createNew(String advisoryId, Comment newComment) {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        final InputStream commentStream = new ByteArrayInputStream(newCommentJson.getBytes(StandardCharsets.UTF_8));
-        ObjectNode commentRootNode = jacksonMapper.readValue(commentStream, ObjectNode.class);
+        ObjectNode commentRootNode = jacksonMapper.createObjectNode();
 
-
-        if (!commentRootNode.has(CommentField.TEXT.getDbName())) {
-            throw new IllegalArgumentException("commentText must be provided!");
+        commentRootNode.put(CommentField.TEXT.getDbName(), newComment.getCommentText());
+        if (!newComment.isCommentWholeDocument()) {
+            commentRootNode.put(CommentField.CSAF_NODE_ID.getDbName(), newComment.getCsafNodeId());
         }
-        if (!commentRootNode.has(CommentField.CSAF_NODE_ID.getDbName())) {
-            throw new IllegalArgumentException("csafNodeId must be provided!");
+        if (!newComment.isObjectComment()) {
+            commentRootNode.put(CommentField.FIELD_NAME.getDbName(), newComment.getFieldName());
         }
         commentRootNode.put(CommentField.ADVISORY_ID.getDbName(), advisoryId);
         commentRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Comment.name());
@@ -96,7 +94,7 @@ public class CommentWrapper {
 
     public String getCsafNodeId() {
 
-        return this.commentNode.get(CommentField.CSAF_NODE_ID.getDbName()).asText();
+        return commentNode.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentNode.get(CommentField.CSAF_NODE_ID.getDbName()).asText() : null;
     }
 
     public CommentWrapper setCsafNodeId(String newValue) {
