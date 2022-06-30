@@ -255,10 +255,7 @@ public class AdvisoryService {
                 .setCommentId(commentId.toString())
                 .setChangeType(ChangeType.Create);
 
-        String user = newComment.getOwner();
-        if (user != null) {
-            auditTrail.setUser(user);
-        }
+        auditTrail.setUser("Mustermann");
 
         String commentRevision = couchDbService.writeDocument(commentId, newComment.commentAsString());
         couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
