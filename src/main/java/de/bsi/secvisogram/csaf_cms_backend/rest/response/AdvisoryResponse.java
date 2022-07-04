@@ -20,7 +20,7 @@ public class AdvisoryResponse extends AdvisoryInformationResponse {
 
     @Schema(
             description = "The current CSAF document enhanced with comment IDs.",
-            example = "{document: { $comment: [23454], category: \"generic_csaf\",..."
+            example = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
     )
     public JsonNode getCsaf() {
         return this.csaf;

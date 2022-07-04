@@ -1,15 +1,14 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
-public enum AuditTrailField implements DbField {
+public enum CommentAuditTrailField implements DbField {
 
-    CREATED_AT("createdAt"),
-    USER("user"),
-    CHANGE_TYPE("changeType");
+    COMMENT_ID("commentId"),
+    COMMENT_TEXT("commentText");
 
     private final String dbName;
     private final String[] fieldPath;
 
-    AuditTrailField(String dbName) {
+    CommentAuditTrailField(String dbName) {
         this.dbName = dbName;
         this.fieldPath = new String[] {dbName};
     }
