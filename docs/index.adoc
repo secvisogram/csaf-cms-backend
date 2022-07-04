@@ -86,7 +86,7 @@ Add a answer to the comment with the given ID.
 
 ===== Return Type
 
-<<AdvisoryCreateResponse>>
+<<EntityCreateResponse>>
 
 
 ===== Content Type
@@ -103,7 +103,7 @@ Add a answer to the comment with the given ID.
 
 | 200
 | OK
-|  <<AdvisoryCreateResponse>>
+|  <<EntityCreateResponse>>
 
 |===
 
@@ -206,7 +206,7 @@ Change the text of an answer to a comment.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+<<EntityUpdateResponse>>
 
 
 ===== Content Type
@@ -223,7 +223,7 @@ Change the text of an answer to a comment.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<EntityUpdateResponse>>
 
 |===
 
@@ -294,7 +294,7 @@ Change the text of the comment with the given ID.
 |Name| Description| Required| Default| Pattern
 
 | body
-|  <<string>>
+| A new comment text. <<string>>
 | X
 | 
 | 
@@ -320,7 +320,7 @@ Change the text of the comment with the given ID.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+<<EntityUpdateResponse>>
 
 
 ===== Content Type
@@ -337,7 +337,7 @@ Change the text of the comment with the given ID.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<EntityUpdateResponse>>
 
 |===
 
@@ -402,7 +402,7 @@ Change a CSAF document in the system. On saving a document its content (version)
 |Name| Description| Required| Default| Pattern
 
 | body
-| An advisory in CSAF JSON format including comments. <<string>>
+| An advisory in CSAF JSON format including node IDs. <<string>>
 | X
 | 
 | 
@@ -428,7 +428,7 @@ Change a CSAF document in the system. On saving a document its content (version)
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+<<EntityUpdateResponse>>
 
 
 ===== Content Type
@@ -445,7 +445,7 @@ Change a CSAF document in the system. On saving a document its content (version)
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<EntityUpdateResponse>>
 
 |===
 
@@ -476,11 +476,11 @@ endif::internal-generation[]
 
 `POST /api/2.0/advisories/{advisoryId}/comments`
 
-Add a comment to an advisory.
+Create a new comment in the system.
 
 ===== Description
 
-Add a comment to the advisory with the given ID. The comments are generated independently of the CSAF document. The IDs of the comments must be added manually to the appropriate place in the CSAF document and then saved with the document.
+Creates a new comment associated with the advisory with the given ID. The comments are generated independently of the CSAF document and may link to a specific node of the CSAF document by its $nodeId
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/POST/spec.adoc[opts=optional]
@@ -496,7 +496,7 @@ Add a comment to the advisory with the given ID. The comments are generated inde
 |Name| Description| Required| Default| Pattern
 
 | advisoryId
-| The ID of the advisory to add the comment to. 
+| The ID of the advisory to add the comments to. 
 | X
 | null
 | 
@@ -509,8 +509,8 @@ Add a comment to the advisory with the given ID. The comments are generated inde
 |===
 |Name| Description| Required| Default| Pattern
 
-| AdvisoryCreateComment
-|  <<AdvisoryCreateComment>>
+| body
+| A comment in JSON format. <<string>>
 | X
 | 
 | 
@@ -523,7 +523,7 @@ Add a comment to the advisory with the given ID. The comments are generated inde
 
 ===== Return Type
 
-<<AdvisoryCreateResponse>>
+<<EntityCreateResponse>>
 
 
 ===== Content Type
@@ -540,7 +540,7 @@ Add a comment to the advisory with the given ID. The comments are generated inde
 
 | 200
 | OK
-|  <<AdvisoryCreateResponse>>
+|  <<EntityCreateResponse>>
 
 |===
 
@@ -575,7 +575,7 @@ Create a new Advisory.
 
 ===== Description
 
-Create a new CSAF document with optional comments in the system.
+Create a new CSAF document with added node IDs in the system.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/POST/spec.adoc[opts=optional]
@@ -592,7 +592,7 @@ Create a new CSAF document with optional comments in the system.
 |Name| Description| Required| Default| Pattern
 
 | body
-| An advisory in CSAF JSON format including comments. <<string>>
+| An advisory in CSAF JSON format including node IDs. <<string>>
 | X
 | 
 | 
@@ -605,7 +605,7 @@ Create a new CSAF document with optional comments in the system.
 
 ===== Return Type
 
-<<AdvisoryCreateResponse>>
+<<EntityCreateResponse>>
 
 
 ===== Content Type
@@ -622,7 +622,7 @@ Create a new CSAF document with optional comments in the system.
 
 | 200
 | OK
-|  <<AdvisoryCreateResponse>>
+|  <<EntityCreateResponse>>
 
 |===
 
@@ -700,7 +700,7 @@ Increase the version of a CSAF document.
 
 ===== Return Type
 
-<<AdvisoryUpdateResponse>>
+<<EntityUpdateResponse>>
 
 
 ===== Content Type
@@ -717,7 +717,7 @@ Increase the version of a CSAF document.
 
 | 200
 | OK
-|  <<AdvisoryUpdateResponse>>
+|  <<EntityUpdateResponse>>
 
 |===
 
@@ -752,7 +752,7 @@ Delete an advisory.
 
 ===== Description
 
-Delete a CSAF document from the system. All older versions, comments and audit-trails are also deleted.
+Delete a CSAF document from the system. All older versions of the document, corresponding comments and audit-trails are also deleted.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/DELETE/spec.adoc[opts=optional]
@@ -1007,7 +1007,7 @@ endif::internal-generation[]
 [.listComments]
 ==== listComments
 
-`GET /api/2.0/advisories/{advisoryId}/comments/`
+`GET /api/2.0/advisories/{advisoryId}/comments`
 
 Show comments and answers of an advisory.
 
@@ -1043,7 +1043,7 @@ Show all comments and answers of the advisory with the given advisoryId.
 
 ===== Return Type
 
-array[<<AdvisoryCommentResponse>>]
+array[<<CommentInformation>>]
 
 
 ===== Content Type
@@ -1060,7 +1060,7 @@ array[<<AdvisoryCommentResponse>>]
 
 | 200
 | OK
-| List[<<AdvisoryCommentResponse>>] 
+| List[<<CommentInformation>>] 
 
 |===
 
@@ -1909,117 +1909,6 @@ endif::internal-generation[]
 == Models
 
 
-[#AdvisoryCommentResponse]
-=== _AdvisoryCommentResponse_ 
-
-
-
-[.fields-AdvisoryCommentResponse]
-[cols="2,1,2,4,1"]
-|===
-| Field Name| Required| Type| Description| Format
-
-| commentId
-| 
-| Long 
-| The unique ID of the comment.
-| int64 
-
-| advisoryId
-| 
-| Long 
-| The ID of the advisory.
-| int64 
-
-| createdBy
-| 
-| String 
-| The user who created the comment.
-|  
-
-| createdAt
-| 
-| date 
-| The date when the comment was created.
-| date 
-
-| advisoryVersion
-| 
-| String 
-| The version of the advisory.
-|  
-
-| fieldName
-| 
-| String 
-| A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When it is empty, the comment belongs to the whole object.
-|  
-
-| commentText
-| 
-| String 
-| The text of the comment.
-|  
-
-| questionId
-| 
-| Long 
-| Only present if the comment is an answer. The ID of the comment the answer belongs to.
-| int64 
-
-|===
-
-
-[#AdvisoryCreateComment]
-=== _AdvisoryCreateComment_ 
-
-
-
-[.fields-AdvisoryCreateComment]
-[cols="2,1,2,4,1"]
-|===
-| Field Name| Required| Type| Description| Format
-
-| fieldName
-| 
-| String 
-| A comment is added to an object in the CSAF document. This name specifies the concrete value and its path in the object the comment belongs to. When its empty, the comment belongs to the whole object.
-|  
-
-| commentText
-| 
-| String 
-| The text of the comment.
-|  
-
-|===
-
-
-[#AdvisoryCreateResponse]
-=== _AdvisoryCreateResponse_ 
-
-
-
-[.fields-AdvisoryCreateResponse]
-[cols="2,1,2,4,1"]
-|===
-| Field Name| Required| Type| Description| Format
-
-| id
-| 
-| String 
-| The unique ID of the create object.
-|  
-
-| revision
-| 
-| String 
-| The document revision for optimistic concurrency.
-|  
-
-|===
-
-
 [#AdvisoryDocument]
 === _AdvisoryDocument_ 
 
@@ -2179,12 +2068,86 @@ endif::internal-generation[]
 |===
 
 
-[#AdvisoryUpdateResponse]
-=== _AdvisoryUpdateResponse_ 
+[#CommentInformation]
+=== _CommentInformation_ 
 
 
 
-[.fields-AdvisoryUpdateResponse]
+[.fields-CommentInformation]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| commentId
+| 
+| String 
+| The unique ID of the comment.
+|  
+
+| advisoryId
+| 
+| String 
+| The ID of the advisory this is a comment to.
+|  
+
+| csafNodeId
+| 
+| String 
+| The ID of the node this comment refers to.
+|  
+
+| owner
+| 
+| String 
+| The current owner of the comment.
+|  
+
+| changeable
+| 
+| Boolean 
+| Indicates if the currently logged in user can change this comment.
+|  
+
+| deletable
+| 
+| Boolean 
+| Indicates if the logged in user can delete this comment.
+|  
+
+|===
+
+
+[#EntityCreateResponse]
+=== _EntityCreateResponse_ 
+
+
+
+[.fields-EntityCreateResponse]
+[cols="2,1,2,4,1"]
+|===
+| Field Name| Required| Type| Description| Format
+
+| id
+| 
+| String 
+| The unique ID of the create object.
+|  
+
+| revision
+| 
+| String 
+| The document revision for optimistic concurrency.
+|  
+
+|===
+
+
+[#EntityUpdateResponse]
+=== _EntityUpdateResponse_ 
+
+
+
+[.fields-EntityUpdateResponse]
 [cols="2,1,2,4,1"]
 |===
 | Field Name| Required| Type| Description| Format
