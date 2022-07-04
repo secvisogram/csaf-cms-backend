@@ -278,8 +278,8 @@ public class AdvisoryControllerTest {
     @Test
     void listAllTemplatesTest() throws Exception {
 
-        DocumentTemplateDescription[] templateDescs = {new DocumentTemplateDescription("T1", "Template1", "File1")};
-        when(this.templateService.getAllTemplates()).thenReturn(templateDescs);
+        when(this.templateService.getAllTemplates())
+                .thenReturn(new DocumentTemplateDescription[]{new DocumentTemplateDescription("T1", "Template1", "File1")});
 
         this.mockMvc.perform(get(advisoryRoute + "/templates"))
                 .andDo(print())

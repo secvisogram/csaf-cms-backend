@@ -37,7 +37,7 @@ public class CommentWrapperTest {
 
         String advisoryId = UUID.randomUUID().toString();
         CreateCommentRequest comment = new CreateCommentRequest("This is a comment", null);
-        CommentWrapper wrapper = CommentWrapper.createNew(advisoryId, comment);
+        CommentWrapper.createNew(advisoryId, comment);
     }
 
 

@@ -844,7 +844,7 @@ public class AdvisoryController {
     /**
      * Sanitize request parameter
      */
-    private String sanitize(Object value) {
+    public static String sanitize(Object value) {
         return (value != null) ? value.toString().replaceAll("[\r\n]", "") : "";
     }
 
