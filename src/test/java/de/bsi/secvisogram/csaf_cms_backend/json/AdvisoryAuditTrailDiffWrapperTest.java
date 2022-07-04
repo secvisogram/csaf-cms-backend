@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-public class AuditTrailDocumentWrapperTest {
+public class AdvisoryAuditTrailDiffWrapperTest {
 
 
     @Test
@@ -16,7 +16,7 @@ public class AuditTrailDocumentWrapperTest {
         var oldWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitleVersion("OldTitle", "0.0.1"), "John");
         var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitleVersion("NewTitle", "0.0.2"), "John");
 
-        AuditTrailDocumentWrapper wrapper = AuditTrailDocumentWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
+        AdvisoryAuditTrailDiffWrapper wrapper = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
         assertThat(wrapper.getDiffPatch().at("/0/op").asText(), equalTo("replace"));
         assertThat(wrapper.getDiffPatch().at("/0/path").asText(), equalTo("/csaf/document/title"));
         assertThat(wrapper.getDiffPatch().at("/0/value").asText(), equalTo("NewTitle"));
@@ -31,7 +31,7 @@ public class AuditTrailDocumentWrapperTest {
         var oldWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("OldTitle"), "John");
         var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitleVersion("NewTitle", "0.0.2"), "John");
 
-        AuditTrailDocumentWrapper wrapper = AuditTrailDocumentWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
+        AdvisoryAuditTrailDiffWrapper wrapper = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
         assertThat(wrapper.getDiffPatch().at("/0/op").asText(), equalTo("replace"));
         assertThat(wrapper.getDiffPatch().at("/0/path").asText(), equalTo("/csaf/document/title"));
         assertThat(wrapper.getDiffPatch().at("/0/value").asText(), equalTo("NewTitle"));

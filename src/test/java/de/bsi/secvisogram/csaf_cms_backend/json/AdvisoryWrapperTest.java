@@ -3,11 +3,13 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class AdvisoryWrapperTest {
@@ -79,7 +81,7 @@ public class AdvisoryWrapperTest {
         var updateCsafJson = """
                 { "document": {
                       "category": "CHANGED",
-                          "title": "New Title" 
+                          "title": "New Title"
                        }
                 }""";
 

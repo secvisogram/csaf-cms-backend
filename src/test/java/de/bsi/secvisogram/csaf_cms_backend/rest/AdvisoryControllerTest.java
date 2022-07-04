@@ -1,5 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -16,15 +18,19 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +40,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AdvisoryController.class)
+@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryControllerTest {
 
     @Autowired
@@ -52,22 +59,29 @@ public class AdvisoryControllerTest {
 
     private static final String advisoryRoute = "/api/2.0/advisories/";
 
-    private static final String csafJsonString = "{" +
-                                                 "    \"document\": {" +
-                                                 "        \"category\": \"CSAF_BASE\"" +
-                                                 "    }" +
-                                                 "}";
+    private static final String csafJsonString = """
+            {
+                "document": {
+                    "category": "CSAF_BASE"
+                }
+            }
+            """;
     private static final String advisoryId = UUID.randomUUID().toString();
-    private static final String fullAdvisoryJsonString = String.format("{" +
-                                                                       "    \"owner\": \"Musterfrau\"," +
-                                                                       "    \"type\": \"Advisory\"," +
-                                                                       "    \"workflowState\": \"Draft\"," +
-                                                                       "    \"csaf\": %s," +
-                                                                       "    \"_rev\": \"revision\"," +
-                                                                       "    \"_id\": \"%s\"" +
-                                                                       "}", csafJsonString, advisoryId);
+    private static final String fullAdvisoryJsonString = String.format(
+            """
+                            "owner": "Musterfrau",
+                            "type": "Advisory",
+                            "workflowState": "Draft",
+                            "csaf": %s,
+                            "_rev": "revision",
+                            "_id": "%s"
+                    """, csafJsonString, advisoryId);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
+
+    private static final String commentRoute = advisoryRoute + advisoryId + "/comments/";
+    private static final String commentId = UUID.randomUUID().toString();
+    private static final String commentText = "This is a comment.";
 
 
     @Test
@@ -270,7 +284,7 @@ public class AdvisoryControllerTest {
                         .json("""
                                 [{"templateId":"T1","templateDescription":"Template1"}]
                                 """
-                ));
+                        ));
     }
 
     @Test
@@ -350,6 +364,155 @@ public class AdvisoryControllerTest {
     @Test
     void createNewCsafDocumentVersionTest() {
         // to be filled
+    }
+
+    @Test
+    void listCommentsTest_empty() throws Exception {
+
+        this.mockMvc.perform(get(advisoryRoute + advisoryId + "/comments"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void listCommentsTest_oneItem() throws Exception {
+
+        String owner = "Musterfrau";
+
+        CommentInformationResponse info = new CommentInformationResponse(commentId, advisoryId, "nodeId123", owner);
+        when(advisoryService.getComments(advisoryId)).thenReturn(List.of(info));
+
+
+        String expected = String.format(
+                """
+                        [{
+                            "commentId": "%s",
+                            "advisoryId": "%s",
+                            "csafNodeId": "nodeId123",
+                            "owner": "%s"
+                        }]
+                        """, commentId, advisoryId, owner
+        );
+
+        this.mockMvc.perform(get(commentRoute))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void createCommentTest_invalidJson() throws Exception {
+
+        String invalidJson = "not a valid JSON string";
+
+        this.mockMvc.perform(
+                        post(commentRoute).with(csrf()).content(invalidJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createCommentTest_invalidField() throws Exception {
+
+
+        String commentJson = """
+                {
+                    "content": "invalid as comment"
+                }
+                """;
+
+        this.mockMvc.perform(
+                        post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void createCommentTest() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
+        String commentJson = """
+                {
+                    "commentText": "This is a comment.",
+                    "csafNodeId": "some node ID we pretend exists."
+                }
+                """;
+
+        when(advisoryService.addComment(eq(advisoryId), any(Comment.class))).thenReturn(idRev);
+
+        String expected = String.format(
+                """
+                        {
+                            "id": "%s",
+                            "revision": "%s"
+                        }
+                        """, idRev.getId(), idRev.getRevision());
+
+        this.mockMvc.perform(
+                        post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expected));
+
+    }
+
+
+    @Test
+    void changeCommentTest_notExisting() throws Exception {
+
+        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(commentId, revision, commentText);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void changeCommentTest_invalidRevision() throws Exception {
+
+        String invalidRevision = "invalid";
+        doThrow(DatabaseException.class).when(advisoryService).updateComment(commentId, invalidRevision, commentText);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", invalidRevision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void changeCommentTest_invalidId() throws Exception {
+
+        String invalidId = "not an UUID";
+
+        this.mockMvc.perform(patch(commentRoute + invalidId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changeCommentTest() throws Exception {
+
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.updateComment(commentId, revision, commentText)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
 
 }
