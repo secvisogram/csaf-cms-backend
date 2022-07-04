@@ -18,7 +18,7 @@ public class CreateCommentRequest {
 
     @JsonCreator
     public CreateCommentRequest(@JsonProperty(value = "commentText", required = true) String commentText,
-                                @JsonProperty(value = "csafNodeId", required = true) String csafNodeId,
+                                @JsonProperty(value = "csafNodeId") String csafNodeId,
                                 @JsonProperty("fieldName") String fieldName) {
         this.commentText = commentText;
         this.csafNodeId = csafNodeId;
