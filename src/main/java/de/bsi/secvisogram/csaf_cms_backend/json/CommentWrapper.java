@@ -224,7 +224,10 @@ public class CommentWrapper {
         String advisoryId = commentJson.get(CommentField.ADVISORY_ID.getDbName()).asText();
         String csafNodeId = commentJson.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentJson.get(CommentField.CSAF_NODE_ID.getDbName()).asText() : null;
         String owner = commentJson.has(CommentField.OWNER.getDbName()) ? commentJson.get(CommentField.OWNER.getDbName()).asText() : null;
-        return new CommentInformationResponse(commentId, advisoryId, csafNodeId, owner);
+        String answerTo = commentJson.has(CommentField.ANSWER_TO.getDbName()) ? commentJson.get(CommentField.ANSWER_TO.getDbName()).asText() : null;
+        CommentInformationResponse response = new CommentInformationResponse(commentId, advisoryId, csafNodeId, owner);
+        response.setAnswerTo(answerTo);
+        return response;
     }
 
     public static AnswerInformationResponse convertToAnswerInfo(JsonNode answerJson) {

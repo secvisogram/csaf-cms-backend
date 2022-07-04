@@ -304,7 +304,8 @@ public class AdvisoryService {
                 CouchDbField.REVISION_FIELD,
                 CommentField.ADVISORY_ID,
                 CommentField.CSAF_NODE_ID,
-                CommentField.OWNER
+                CommentField.OWNER,
+                CommentField.ANSWER_TO
         );
 
         AndExpression searchExpr = new AndExpression(
