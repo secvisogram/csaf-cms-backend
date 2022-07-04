@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
@@ -21,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -34,8 +36,10 @@ public class AdvisoryWrapper {
                    }
                 }""";
 
+
     /**
      * Convert an input stream from the couch db to an AdvisoryWrapper
+     *
      * @param advisoryStream the stream
      * @return the wrapper
      * @throws IOException error in processing the input stream
@@ -51,7 +55,7 @@ public class AdvisoryWrapper {
         final ObjectMapper jacksonMapper = new ObjectMapper();
         final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
         JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
-        if (csafRootNode.get("document") == null) {
+        if (!csafRootNode.has("document")) {
             throw new IllegalArgumentException("Csaf contains no document entry");
         }
 
@@ -62,6 +66,7 @@ public class AdvisoryWrapper {
 
     /**
      * Create an initial empty AdvisoryWrapper for the given user
+     *
      * @param userName the user
      * @return the wrapper
      * @throws IOException exception in handling json string
@@ -74,8 +79,9 @@ public class AdvisoryWrapper {
     /**
      * Convert an CSAF document to an initial AdvisoryWrapper for a given user.
      * The wrapper has no id and revision.
+     *
      * @param newCsafJson the csaf string
-     * @param userName the user
+     * @param userName    the user
      * @return the wrapper
      * @throws IOException exception in handling json string
      */
@@ -91,7 +97,8 @@ public class AdvisoryWrapper {
 
     /**
      * Creates a new AdvisoryWrapper based on the given one and set its CSAF document to the changed CSAF document
-     * @param existing the base AdvisoryWrapper
+     *
+     * @param existing        the base AdvisoryWrapper
      * @param changedCsafJson the new CSAF document
      * @return the new AdvisoryWrapper
      * @throws IOException exception in handling json
@@ -110,7 +117,7 @@ public class AdvisoryWrapper {
 
     private AdvisoryWrapper(ObjectNode advisoryNode) {
 
-         this.advisoryNode = advisoryNode;
+        this.advisoryNode = advisoryNode;
     }
 
     private JsonNode getAdvisoryNode() {
@@ -186,17 +193,13 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    /**
-     * Get the node in the wrapped advisory node specified by given JSON pointer instance
-     * @param jsonPtrExpr – Expression to compile as a JsonPointer instance
-     * @return Node that matches given JSON Pointer: if no match exists, will return a node for which TreeNode.isMissingNode() returns true.
-     */
     public JsonNode at(String jsonPtrExpr) {
         return this.advisoryNode.at(jsonPtrExpr);
     }
 
     /**
      * Get the node in the wrapped advisory node specified by given dbField.
+     *
      * @param dbField dbField converted to JSON pointer instance
      * @return Node that matches given JSON Pointer: if no match exists, will return a node for which TreeNode.isMissingNode() returns true.
      */
@@ -244,6 +247,7 @@ public class AdvisoryWrapper {
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
+     *
      * @param target either valid JSON objects or arrays or values
      * @return the resultant patch
      */
@@ -263,6 +267,7 @@ public class AdvisoryWrapper {
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
+     *
      * @param source either valid JSON objects or arrays or values
      * @param target either valid JSON objects or arrays or values
      * @return the resultant patch
@@ -275,7 +280,8 @@ public class AdvisoryWrapper {
 
     /**
      * Apply patch to JsonNode
-     * @param patch the patch to apply
+     *
+     * @param patch  the patch to apply
      * @param source the JsonNode the patch is applied to
      * @return the patched JsonNode
      */
@@ -286,6 +292,7 @@ public class AdvisoryWrapper {
 
     /**
      * Convert Search Expression to JSON String
+     *
      * @param expression2Convert the expression to convert
      * @return the converted expression
      * @throws JsonProcessingException a conversion problem has occurred
@@ -300,6 +307,7 @@ public class AdvisoryWrapper {
 
     /**
      * Convert JSON String to Search expression
+     *
      * @param jsonString the String to convert
      * @return the converted expression
      * @throws JsonProcessingException error in json

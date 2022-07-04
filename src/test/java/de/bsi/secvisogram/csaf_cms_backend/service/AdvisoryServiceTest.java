@@ -1,6 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.*;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.*;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE_TYPE;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
@@ -17,8 +19,12 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
@@ -34,30 +40,36 @@ import org.springframework.test.annotation.DirtiesContext;
 @SpringBootTest
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
+@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryServiceTest {
 
     @Autowired
     private AdvisoryService advisoryService;
 
-    private static final String csafJson = "{" +
-                                           "    \"document\": {" +
-                                           "        \"category\": \"CSAF_BASE\"" +
-                                           "    }" +
-                                           "}";
+    private static final String csafJson = ("""
+                    {
+                        "document": {
+                            "category": "CSAF_BASE"
+                        }
+                    }""");
 
-    private static final String updatedCsafJson = "{" +
-                                                  "    \"document\": {" +
-                                                  "        \"category\": \"CSAF_INFORMATIONAL_ADVISORY\"," +
-                                                  "         \"title\": \"Test Advisory\"" +
-                                                  "    }" +
-                                                  "}";
+    private static final String updatedCsafJson = ("""
+            {
+                "document": {
+                    "category": "CSAF_INFORMATIONAL_ADVISORY",
+                    "title": "Test Advisory"
+                }
+            }
+            """);
 
-    private static final String advisoryTemplateString = "{" +
-                                                         "    \"owner\": \"John Doe\"," +
-                                                         "    \"type\": \"Advisory\"," +
-                                                         "    \"workflowState\": \"Draft\"," +
-                                                         "    \"csaf\": %s" +
-                                                         "}";
+    private static final String advisoryTemplateString = ("""
+            {
+                "owner": "John Doe",
+                "type": "Advisory",
+                "workflowState": "Draft",
+                "csaf": %s
+            }
+            """);
 
     private static final String advisoryJsonString = String.format(advisoryTemplateString, csafJson);
 
@@ -149,15 +161,34 @@ public class AdvisoryServiceTest {
     @Test
     public void deleteAdvisoryTest() throws IOException, DatabaseException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.addAdvisory(csafJson);
-        // creates advisory and audit trail
-        assertEquals(4, advisoryService.getDocumentCount());
+        assertEquals(2, advisoryService.getDocumentCount(), "there should be one advisory and one audit trail");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        assertEquals(2, advisoryService.getDocumentCount());
+        assertEquals(0, advisoryService.getDocumentCount(), "the advisory and audit trail should be deleted");
     }
 
     @Test
-    public void   updateAdvisoryTest() throws IOException, DatabaseException {
+    public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        advisoryService.addAdvisory(csafJson);
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be two advisories with an audit trail each");
+        this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
+        assertEquals(2, advisoryService.getDocumentCount(), "one advisory and one audit trail should be deleted");
+    }
+
+    @Test
+    public void deleteAdvisoryTest_withComments() throws IOException, DatabaseException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        Comment comment = new Comment("This is a comment", UUID.randomUUID().toString());
+        advisoryService.addComment(idRev.getId(), comment);
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+        // the advisory changed as comments were added and thus has a new revision
+        String newRev = advisoryService.getAdvisory(idRev.getId()).getRevision();
+        this.advisoryService.deleteAdvisory(idRev.getId(), newRev);
+        assertEquals(0, advisoryService.getDocumentCount(), "the comment and its audit trail should also be deleted");
+    }
+
+    @Test
+    public void updateAdvisoryTest() throws IOException, DatabaseException {
 
         var updateJsafJson = csafDocumentJson("CSAF_INFORMATIONAL_ADVISORY", "Test Advisory");
 
@@ -171,7 +202,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void   updateAdvisoryTest_auditTrail() throws IOException, DatabaseException {
+    public void updateAdvisoryTest_auditTrail() throws IOException, DatabaseException {
 
         var idRev = advisoryService.addAdvisory(csafDocumentJson("Category1", "Title1"));
         var revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafDocumentJson("Category2", "Title2"));
@@ -204,8 +235,8 @@ public class AdvisoryServiceTest {
 
     private List<JsonNode> readAllAuditTrailDocumentsFromDb() throws IOException {
 
-        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, AuditTrailField.ADVISORY_ID, CREATED_AT,
-                CHANGE_TYPE, DIFF, AuditTrailField.DOC_VERSION);
+        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, ADVISORY_ID, CREATED_AT,
+                CHANGE_TYPE, DIFF, DOC_VERSION);
         Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.AuditTrailDocument.name(), TYPE_FIELD.getDbName()));
         return advisoryService.findDocuments(selector, fields);
     }
@@ -235,4 +266,141 @@ public class AdvisoryServiceTest {
                    }
                 }""".formatted(documentCategory, documentTitle);
     }
+
+    @Test
+    public void addCommentTest_oneComment() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentText = "This is a comment";
+
+        Comment comment = new Comment(commentText, UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment and an audit trail entry for both");
+
+        CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals(commentText, commentResp.getCommentText());
+
+    }
+
+
+    @Test
+    public void addCommentTest_leafNode() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentText = "This is a leaf node comment";
+
+        Comment comment = new Comment(commentText, UUID.randomUUID().toString(), "category");
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment and an audit trail entry for both");
+
+        CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals(commentText, commentResp.getCommentText());
+        Assertions.assertEquals("category", commentResp.getFieldName());
+
+    }
+
+    @Test
+    public void addCommentTest_twoComments() throws DatabaseException, IOException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        Comment commentOne = new Comment("This is a comment for a field", UUID.randomUUID().toString());
+        advisoryService.addComment(idRevAdvisory.getId(), commentOne);
+        Comment commentTwo = new Comment("This is another comment for the document", UUID.randomUUID().toString());
+        advisoryService.addComment(idRevAdvisory.getId(), commentTwo);
+
+        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
+    }
+
+    @Test
+    public void deleteComment_notPresent() {
+        Assertions.assertThrows(IdNotFoundException.class,
+                () -> advisoryService.deleteComment("not present", "no revision"));
+    }
+
+    @Test
+    public void deleteComment_badRevision() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        Comment comment = new Comment("a comment", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        Assertions.assertThrows(DatabaseException.class,
+                () -> advisoryService.deleteComment(idRevComment.getId(), "bad revision"));
+    }
+
+    @Test
+    public void deleteComment() throws IOException, DatabaseException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+        Comment comment = new Comment("a comment", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 comment and an audit trail entry for both before deletion");
+
+        advisoryService.deleteComment(idRevComment.getId(), idRevComment.getRevision());
+
+        Assertions.assertEquals(2, advisoryService.getDocumentCount(),
+                "There should be 1 advisory and 1 audit trail entry left after deletion");
+
+    }
+
+    @Test
+    void updateCommentTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+
+
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+
+        CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals("comment text", commentResp.getCommentText());
+
+        advisoryService.updateComment(idRevComment.getId(), idRevComment.getRevision(), "updated comment text");
+
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be an additional audit trail for the comment update");
+
+        CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals("updated comment text", newComment.getCommentText());
+
+    }
+
+    @Test
+    void getCommentsTest_empty() throws IOException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
+        assertEquals(0, commentInfos.size());
+    }
+
+    @Test
+    void getCommentsTest() throws IOException, DatabaseException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        Comment anotherComment = new Comment("another comment text", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment1 = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        IdAndRevision idRevComment2 = advisoryService.addComment(idRevAdvisory.getId(), anotherComment);
+
+        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
+
+        List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
+        List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
+        Assertions.assertTrue(ids.size() == expectedIDs.size()
+                              && ids.containsAll(expectedIDs)
+                              && expectedIDs.containsAll(ids));
+
+    }
+
 }

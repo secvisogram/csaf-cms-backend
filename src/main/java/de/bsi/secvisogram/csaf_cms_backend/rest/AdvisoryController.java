@@ -10,6 +10,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
@@ -22,7 +23,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,31 +133,31 @@ public class AdvisoryController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Create a new Advisory.",
-            description = "Create a new CSAF document with optional comments in the system.",
+            description = "Create a new CSAF document with added node IDs in the system.",
             tags = {"Advisory"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including comments.",
+                    description = "An advisory in CSAF JSON format including node IDs.",
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with comments.",
+                                    title = "Common Security Advisory Framework schema extended with node IDs.",
                                     description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
                             ),
                             examples = {@ExampleObject(
-                                    name = "A CSAF document in JSON format including comments.",
-                                    value = "{document: { $comment: [23454], category: \"CSAF Base\",... }, vulnerabilities: {...}}"
+                                    name = "A CSAF document in JSON format including additional node IDs.",
+                                    value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
                             )}
                     )
             )
     )
-    public ResponseEntity<AdvisoryCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
+    public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
 
         LOG.info("createCsafDocument");
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
             URI advisoryLocation = URI.create("advisories/" + idRev.getId());
-            AdvisoryCreateResponse createResponse = new AdvisoryCreateResponse(idRev.getId(), idRev.getRevision());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);
         } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
@@ -174,7 +178,7 @@ public class AdvisoryController {
                           " Thus, after changing a document, it must be reloaded on the client side.",
             tags = {"Advisory"}
     )
-    public ResponseEntity<AdvisoryUpdateResponse> changeCsafDocument(
+    public ResponseEntity<EntityUpdateResponse> changeCsafDocument(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -185,17 +189,17 @@ public class AdvisoryController {
                     description = "The optimistic locking revision."
             ) String revision,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including comments.",
+                    description = "An advisory in CSAF JSON format including node IDs.",
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with comments.",
+                                    title = "Common Security Advisory Framework schema extended with node IDs.",
                                     description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
                             ),
                             examples = {@ExampleObject(
-                                    name = "A CSAF document in JSON format including comments.",
-                                    value = "{document: { $comment: [23454], category: \"CSAF Base\",... }, vulnerabilities: {...}}"
+                                    name = "A CSAF document in JSON format including node IDs.",
+                                    value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
                             )}
                     )
             ) @RequestBody String changedCsafJson
@@ -205,7 +209,7 @@ public class AdvisoryController {
         checkValidUuid(advisoryId);
         try {
             String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
-            return ResponseEntity.ok(new AdvisoryUpdateResponse(newRevision));
+            return ResponseEntity.ok(new EntityUpdateResponse(newRevision));
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
@@ -227,7 +231,7 @@ public class AdvisoryController {
             description = "Increase the version of a CSAF document.",
             tags = {"Advisory"}
     )
-    public AdvisoryUpdateResponse createNewCsafDocumentVersion(
+    public EntityUpdateResponse createNewCsafDocumentVersion(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -242,7 +246,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("createNewCsafDocumentVersion {} {}", sanitize(advisoryId), sanitize(revision));
 
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
 
@@ -255,8 +259,8 @@ public class AdvisoryController {
     @DeleteMapping("/{advisoryId}")
     @Operation(
             summary = "Delete an advisory.",
-            description = "Delete a CSAF document from the system. All older versions, comments and audit-trails are" +
-                          " also deleted.",
+            description = "Delete a CSAF document from the system. All older versions of the document, corresponding" +
+                          " comments and audit-trails are also deleted.",
             tags = {"Advisory"}
     )
     public ResponseEntity<Void> deleteCsafDocument(
@@ -281,6 +285,8 @@ public class AdvisoryController {
             return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
+        } catch (IOException ioEx) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -573,54 +579,75 @@ public class AdvisoryController {
     /**
      * Get a list of all comments and answers of an CSAF document
      *
-     * @param advisoryId id of the CSAF document to add the answer
-     * @return list of comments and their metadata
+     * @param advisoryId id of the CSAF document to get comment ids for
+     * @return list of comment ids
      */
     @Operation(
             summary = "Show comments and answers of an advisory.",
             description = "Show all comments and answers of the advisory with the given advisoryId.",
             tags = {"Advisory"}
     )
-    @GetMapping("/{advisoryId}/comments/")
-    public List<AdvisoryCommentResponse> listComments(
+    @GetMapping("/{advisoryId}/comments")
+    public ResponseEntity<List<CommentInformationResponse>> listComments(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to get the comments of."
             ) String advisoryId
-    ) {
+    ) throws IOException {
 
-        // only for debugging, remove when implemented
-        LOG.info("listComments {}", sanitize(advisoryId));
-        return Collections.emptyList();
+        return ResponseEntity.ok(advisoryService.getComments(advisoryId));
     }
 
     /**
-     * Add a comment to an advisory
+     * Create a new comment in the system, belonging to the advisory with given ID
      *
-     * @param advisoryId  ID of the CSAF document to add the comment to
-     * @param commentText text content of the comment
+     * @param advisoryId      the ID of the advisory to add the comment to
+     * @param newComment      the comment to add as JSON string
      */
     @PostMapping("/{advisoryId}/comments")
     @Operation(
-            summary = "Add a comment to an advisory.",
-            description = "Add a comment to the advisory with the given ID. The comments are generated independently" +
-                          " of the CSAF document. The IDs of the comments must be added manually to the appropriate place in " +
-                          "the CSAF document and then saved with the document.",
-            tags = {"Advisory"}
+            summary = "Create a new comment in the system.",
+            description = "Creates a new comment associated with the advisory with the given ID." +
+                          " The comments are generated independently of the CSAF document and may link" +
+                          " to a specific node of the CSAF document by its $nodeId",
+            tags = {"Advisory"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "A comment in JSON format.",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(
+                                    title = "Comment schema",
+                                    description = "Comment schema with some metadata."
+                            ),
+                            examples = {@ExampleObject(
+                                    name = "A comment with text, CSAF Node Id and fieldName",
+                                    value = "{commentText: \"This is a comment\", csafNodeId: \"dd9683d8-be4b-4d09-a864-1a04092a071f\", fieldName: \"category\"}"
+                            )}
+                    )
+            )
     )
-    public AdvisoryCreateResponse createComment(
+    public ResponseEntity<EntityCreateResponse> createComment(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
-                    description = "The ID of the advisory to add the comment to."
+                    description = "The ID of the advisory to add the comments to."
             ) String advisoryId,
-            @RequestBody AdvisoryCreateCommentRequest commentText
-    ) {
+            @RequestBody Comment newComment) {
 
-        // only for debugging, remove when implemented
-        LOG.info("createComment {} {}", sanitize(advisoryId), sanitize(commentText));
-        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(advisoryId);
+        try {
+            IdAndRevision idRev = advisoryService.addComment(advisoryId, newComment);
+            URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
+            return ResponseEntity.created(advisoryLocation).body(createResponse);
+        } catch (IOException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (DatabaseException dbEx) {
+            LOG.error("Error creating comment");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -636,7 +663,7 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @PostMapping("/{advisoryId}/comments/{commentId}/answer")
-    public AdvisoryCreateResponse addAnswer(
+    public EntityCreateResponse addAnswer(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -652,7 +679,7 @@ public class AdvisoryController {
 
         // only for debugging, remove when implemented
         LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(answerText));
-        return new AdvisoryCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**
@@ -668,9 +695,24 @@ public class AdvisoryController {
     @Operation(
             summary = "Change the text of a comment.",
             description = "Change the text of the comment with the given ID.",
-            tags = {"Advisory"}
+            tags = {"Advisory"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "A new comment text.",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.TEXT_PLAIN_VALUE,
+                            schema = @Schema(
+                                    type = "string",
+                                    format = "plain"
+                            ),
+                            examples = {@ExampleObject(
+                                    name = "A comment text",
+                                    value = "This is a new text for a comment."
+                            )}
+                    )
+            )
     )
-    public AdvisoryUpdateResponse changeComment(
+    public ResponseEntity<EntityUpdateResponse> changeComment(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -680,15 +722,24 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change."
-            ) long commentId,
+            ) String commentId,
             @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
             @RequestBody String newCommentText
     ) {
 
-        // only for debugging, remove when implemented
-        LOG.info("changeComment {} {} {} {}",
-                sanitize(advisoryId), sanitize(commentId), sanitize(revision), sanitize(newCommentText));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(advisoryId);
+        checkValidUuid(commentId);
+        try {
+            String newRevision = advisoryService.updateComment(commentId, revision, newCommentText);
+            return ResponseEntity.ok(new EntityUpdateResponse(newRevision));
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Comment with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (IOException ioEx) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -707,7 +758,7 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @PatchMapping("/{advisoryId}/comments/{commentId}/answer/{answerId}")
-    public AdvisoryUpdateResponse changeAnswer(
+    public EntityUpdateResponse changeAnswer(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -731,7 +782,7 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId),
                 sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
-        return new AdvisoryUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
     }
 
     /**
@@ -743,7 +794,7 @@ public class AdvisoryController {
 
     /**
      * Check whether the given id is a valid uuid
-     * @param uuidString
+     * @param uuidString the string to check
      */
     private static void checkValidUuid(String uuidString) {
         try {
