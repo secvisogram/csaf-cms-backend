@@ -18,7 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -445,7 +444,7 @@ public class AdvisoryControllerTest {
                 }
                 """;
 
-        when(advisoryService.addComment(eq(advisoryId), any(Comment.class))).thenReturn(idRev);
+        when(advisoryService.addComment(eq(advisoryId), any(CreateCommentRequest.class))).thenReturn(idRev);
 
         String expected = String.format(
                 """
@@ -559,7 +558,7 @@ public class AdvisoryControllerTest {
 
         String invalidJson = "not a valid JSON string";
 
-        when(advisoryService.addAnswer(commentId, invalidJson)).thenThrow(JsonProcessingException.class);
+        when(advisoryService.addAnswer(advisoryId, commentId, invalidJson)).thenThrow(JsonProcessingException.class);
 
         this.mockMvc.perform(
                         post(answerRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
@@ -578,7 +577,7 @@ public class AdvisoryControllerTest {
                 }
                 """;
 
-        when(advisoryService.addAnswer(commentId, answerJson)).thenReturn(idRev);
+        when(advisoryService.addAnswer(advisoryId, commentId, answerJson)).thenReturn(idRev);
 
         String expected = String.format(
                 """

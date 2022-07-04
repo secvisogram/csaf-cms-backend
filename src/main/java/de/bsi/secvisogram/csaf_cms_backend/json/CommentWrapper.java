@@ -6,15 +6,15 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -44,28 +44,30 @@ public class CommentWrapper {
      * @param newComment     the new comment
      * @return the wrapper
      */
-    public static CommentWrapper createNew(String advisoryId, Comment newComment) {
+    public static CommentWrapper createNew(String advisoryId, CreateCommentRequest newComment) {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectNode commentRootNode = jacksonMapper.createObjectNode();
-
-        commentRootNode.put(CommentField.TEXT.getDbName(), newComment.getCommentText());
-        if (!newComment.isCommentWholeDocument()) {
-            String nodeId = newComment.getCsafNodeId();
-            try {
-                UUID.fromString(nodeId);
-            } catch (IllegalArgumentException iaEx) {
-                throw new IllegalArgumentException("csafNodeId is not a valid UUID!", iaEx);
-            }
-            commentRootNode.put(CommentField.CSAF_NODE_ID.getDbName(), newComment.getCsafNodeId());
-        }
+        CommentWrapper wrapper =  new CommentWrapper(jacksonMapper.createObjectNode());
+        wrapper.setAdvisoryId(advisoryId);
+        wrapper.setType(ObjectType.Comment);
+        wrapper.setText(newComment.getCommentText());
+        wrapper.setCreatedAtToNow();
         if (!newComment.isObjectComment()) {
-            commentRootNode.put(CommentField.FIELD_NAME.getDbName(), newComment.getFieldName());
+            wrapper.setFieldName(newComment.getFieldName());
         }
-        commentRootNode.put(CommentField.ADVISORY_ID.getDbName(), advisoryId);
-        commentRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Comment.name());
+        if (!newComment.isCommentWholeDocument()) {
+            checkValidUuid(newComment.getCsafNodeId());
+            wrapper.setCsafNodeId(newComment.getCsafNodeId());
+        }
+        return wrapper;
+    }
 
-        return new CommentWrapper(commentRootNode);
+    private static void checkValidUuid(String uuidString) {
+        try {
+            UUID.fromString(uuidString);
+        } catch (IllegalArgumentException iaEx) {
+            throw new IllegalArgumentException("csafNodeId is not a valid UUID!", iaEx);
+        }
     }
 
     /**
@@ -73,29 +75,28 @@ public class CommentWrapper {
      * The wrapper has no id and revision.
      *
      * @param commentId     the ID of the comment to add the answer to
-     * @param newAnswerJson the new comment in JSON format, requires a commentText field
+     * @param commentText   the new comment text
      * @return the wrapper
      */
-    public static CommentWrapper createNewAnswerFromJson(String commentId, String newAnswerJson) throws IOException {
+    public static CommentWrapper createNewAnswerFromJson(String advisoryId, String commentId, String commentText) {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        final InputStream commentStream = new ByteArrayInputStream(newAnswerJson.getBytes(StandardCharsets.UTF_8));
-        ObjectNode answerRootNode = jacksonMapper.readValue(commentStream, ObjectNode.class);
 
-
-        if (!answerRootNode.has(CommentField.TEXT.getDbName())) {
+        if (commentText == null) {
             throw new IllegalArgumentException("commentText must be provided!");
         }
-        if (answerRootNode.has(CommentField.ADVISORY_ID.getDbName())) {
-            throw new IllegalArgumentException("advisoryId must not be provided for answers!");
+        if (advisoryId == null) {
+            throw new IllegalArgumentException("advisoryId must be provided for answers!");
         }
-        if (answerRootNode.has(CommentField.CSAF_NODE_ID.getDbName())) {
-            throw new IllegalArgumentException("csafNodeId must not be provided for answers!");
-        }
-        answerRootNode.put(CommentField.ANSWER_TO.getDbName(), commentId);
-        answerRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Answer.name());
 
-        return new CommentWrapper(answerRootNode);
+        CommentWrapper wrapper = new CommentWrapper(jacksonMapper.createObjectNode());
+        wrapper.setAdvisoryId(advisoryId);
+        wrapper.setAnswerTo(commentId);
+        wrapper.setText(commentText);
+        wrapper.setType(ObjectType.Comment);
+        wrapper.setCreatedAtToNow();
+
+        return wrapper;
     }
 
     private final ObjectNode commentNode;
@@ -199,10 +200,23 @@ public class CommentWrapper {
         return this;
     }
 
+    private CommentWrapper setType(ObjectType newValue) {
+
+        this.commentNode.put(CouchDbField.TYPE_FIELD.getDbName(), newValue.name());
+        return this;
+    }
+
     public String commentAsString() {
 
         return this.commentNode.toString();
     }
+
+    public CommentWrapper setCreatedAtToNow() {
+
+        this.commentNode.put(AuditTrailField.CREATED_AT.getDbName(), Instant.now().toString());
+        return this;
+    }
+
 
     public static CommentInformationResponse convertToCommentInfo(JsonNode commentJson) {
 

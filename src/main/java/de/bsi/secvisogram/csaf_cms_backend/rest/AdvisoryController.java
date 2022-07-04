@@ -10,7 +10,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
@@ -634,7 +634,7 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to add the comments to."
             ) String advisoryId,
-            @RequestBody Comment newComment) {
+            @RequestBody CreateCommentRequest newComment) {
 
         checkValidUuid(advisoryId);
         try {
@@ -685,7 +685,7 @@ public class AdvisoryController {
      *
      * @param advisoryId ID of the CSAF document to add the answer to
      * @param commentId  ID of the comment to add the answer to
-     * @param newAnswerJson the answer to add as JSON string
+     * @param answerCommentText the answer text
      */
     @Operation(
             summary = "Add an answer to an advisory comment.",
@@ -704,16 +704,16 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to add the answer to."
             ) String commentId,
-            @RequestBody String newAnswerJson
+            @RequestBody String answerCommentText
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(newAnswerJson));
+        LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(answerCommentText));
 
         checkValidUuid(advisoryId);
         checkValidUuid(commentId);
         try {
-            IdAndRevision idRev = advisoryService.addAnswer(commentId, newAnswerJson);
+            IdAndRevision idRev = advisoryService.addAnswer(advisoryId, commentId, answerCommentText);
             URI answerLocation = URI.create("advisories/" + advisoryId + "/comments/" + commentId + "/answers/" + idRev.getId());
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(answerLocation).body(createResponse);

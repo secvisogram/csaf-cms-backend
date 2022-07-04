@@ -18,7 +18,7 @@ import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -243,7 +243,7 @@ public class AdvisoryService {
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
      */
-    public IdAndRevision addComment(String advisoryId, Comment comment) throws DatabaseException, IOException {
+    public IdAndRevision addComment(String advisoryId, CreateCommentRequest comment) throws DatabaseException, IOException {
 
         UUID commentId = UUID.randomUUID();
 
@@ -318,7 +318,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Deletes a comment and all its answers from the database
+     * Deletes a comment without its answers from the database
      *
      * @param commentId       the ID of the comment to remove
      * @param commentRevision the comment's revision for concurrent control
@@ -329,25 +329,6 @@ public class AdvisoryService {
 
         couchDbService.deleteDocument(commentId, commentRevision);
         deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
-        deleteAllAnswersFromDbForComment(commentId);
-    }
-
-    private void deleteAllAnswersFromDbForComment(String commentId) throws IOException, DatabaseException {
-        AndExpression searchExpr = new AndExpression(equal(ObjectType.Answer.name(), TYPE_FIELD.getDbName()),
-                equal(commentId, CommentField.ANSWER_TO.getDbName()));
-
-        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD);
-
-        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
-        List<JsonNode> answersToDelete = this.findDocuments(selector, fields);
-
-        Collection<IdAndRevision> bulkDeletes = new ArrayList<>(answersToDelete.size());
-        for (JsonNode doc : answersToDelete) {
-            String answerId = CouchDbField.ID_FIELD.stringVal(doc);
-            String answerRev = CouchDbField.REVISION_FIELD.stringVal(doc);
-            deleteAnswer(answerId, answerRev);
-        }
-        this.couchDbService.bulkDeleteDocuments(bulkDeletes);
     }
 
     /**
@@ -384,16 +365,16 @@ public class AdvisoryService {
      * Adds an answer to a comment
      *
      * @param commentId   the ID of the comment to add the answer to
-     * @param answerJson  the answer to add as JSON string, requires a commentText
+     * @param answer  the answer to add, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
      */
-    public IdAndRevision addAnswer(String commentId, String answerJson) throws DatabaseException, IOException {
+    public IdAndRevision addAnswer(String advisoryId, String commentId, String commentText) throws DatabaseException, IOException {
 
         UUID answerId = UUID.randomUUID();
 
-        CommentWrapper newAnswer = CommentWrapper.createNewAnswerFromJson(commentId, answerJson);
+        CommentWrapper newAnswer = CommentWrapper.createNewAnswerFromJson(advisoryId, commentId, commentText);
         newAnswer.setAnswerTo(commentId);
 
         AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newAnswer)
@@ -425,7 +406,7 @@ public class AdvisoryService {
                 CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD, CommentField.ANSWER_TO, CommentField.OWNER);
 
         AndExpression searchExpr = new AndExpression(
-                equal(ObjectType.Answer.name(), TYPE_FIELD.getDbName()),
+                equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
                 equal(commentId, CommentField.ANSWER_TO.getDbName())
         );
         Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
