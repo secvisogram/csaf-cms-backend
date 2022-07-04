@@ -20,10 +20,7 @@ import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.*;
@@ -84,14 +81,6 @@ public class AdvisoryServiceTest {
                     "csafNodeId": "%s"
                 }
             """.formatted(commentTextObject, commentCsafNodeId);
-
-    private static final String commentJsonLeafNode = """
-                {
-                    "commentText": "%s",
-                    "csafNodeId": "%s",
-                    "fieldName": "%s"
-                }
-            """.formatted(commentTextLeaf, commentCsafNodeId, commentFieldName);
 
     private static final String answerText = "This is an answer.";
 
@@ -216,7 +205,8 @@ public class AdvisoryServiceTest {
     @Test
     public void deleteAdvisoryTest_withCommentsAndAnswers() throws IOException, DatabaseException {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("This is a comment", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         assertEquals(6, advisoryService.getDocumentCount(), "there should be one advisory one comment and one answer each with an audit trail");
@@ -313,19 +303,31 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(0, comments.size());
     }
 
+
     @Test
-    public void getCommentsTest() throws IOException, DatabaseException {
+    void getCommentsTest() throws IOException, DatabaseException {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
-        List<CommentInformationResponse> comments = advisoryService.getComments(idRevAdvisory.getId());
-        Assertions.assertEquals(1, comments.size());
-        Assertions.assertEquals(idRevComment.getId(), comments.get(0).getCommentId());
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        Comment anotherComment = new Comment("another comment text", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment1 = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        IdAndRevision idRevComment2 = advisoryService.addComment(idRevAdvisory.getId(), anotherComment);
+
+        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
+
+        List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
+        List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
+        Assertions.assertTrue(ids.size() == expectedIDs.size()
+                && ids.containsAll(expectedIDs)
+                && expectedIDs.containsAll(ids));
+
     }
 
     @Test
     public void addCommentTest_oneComment() throws DatabaseException, IOException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentText = "This is a comment";
 
         Comment comment = new Comment(commentText, UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
@@ -343,6 +345,7 @@ public class AdvisoryServiceTest {
     public void addCommentTest_leafNode() throws DatabaseException, IOException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        String commentText = "This is a leaf node comment";
 
         Comment comment = new Comment(commentText, UUID.randomUUID().toString(), "category");
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
@@ -415,7 +418,9 @@ public class AdvisoryServiceTest {
     public void deleteCommentWithAnswer() throws IOException, DatabaseException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("a comment", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
@@ -454,7 +459,8 @@ public class AdvisoryServiceTest {
     @Test
     public void getAnswersTest_empty() throws IOException, DatabaseException {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevComment.getId());
         Assertions.assertEquals(0, answers.size());
     }
@@ -462,45 +468,23 @@ public class AdvisoryServiceTest {
     @Test
     public void getAnswersTest() throws IOException, DatabaseException {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
         List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevComment.getId());
         Assertions.assertEquals(1, answers.size());
         Assertions.assertEquals(idRevAnswer.getId(), answers.get(0).getAnswerId());
     }
 
-    @Test
-    void getCommentsTest_empty() throws IOException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
-        assertEquals(0, commentInfos.size());
-    }
 
-    @Test
-    void getCommentsTest() throws IOException, DatabaseException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
-        Comment anotherComment = new Comment("another comment text", UUID.randomUUID().toString());
-
-        IdAndRevision idRevComment1 = advisoryService.addComment(idRevAdvisory.getId(), comment);
-        IdAndRevision idRevComment2 = advisoryService.addComment(idRevAdvisory.getId(), anotherComment);
-
-        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
-
-        List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
-        List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
-        Assertions.assertTrue(ids.size() == expectedIDs.size()
-                              && ids.containsAll(expectedIDs)
-                              && expectedIDs.containsAll(ids));
-
-    }
 
 
     @Test
     public void addAnswerTest_oneAnswer() throws IOException, DatabaseException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
@@ -518,7 +502,8 @@ public class AdvisoryServiceTest {
     public void addAnswerTest_twoAnswersSameComment() throws IOException, DatabaseException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         advisoryService.addAnswer(idRevComment.getId(), answerJson);
         advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
@@ -533,7 +518,8 @@ public class AdvisoryServiceTest {
     public void addAnswerTest_withNodeId() throws IOException, DatabaseException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> advisoryService.addAnswer(idRevComment.getId(), commentJsonObjectNode));
@@ -549,7 +535,8 @@ public class AdvisoryServiceTest {
     public void deleteAnswer_badRevision() throws IOException, DatabaseException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         Assertions.assertThrows(DatabaseException.class,
@@ -560,7 +547,8 @@ public class AdvisoryServiceTest {
     public void deleteAnswer() throws IOException, DatabaseException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
@@ -575,14 +563,15 @@ public class AdvisoryServiceTest {
     @Test
     void updateAnswerTest() throws IOException, DatabaseException {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), commentJsonObjectNode);
+        Comment comment = new Comment("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevComment.getId(), answerJson);
 
         Assertions.assertEquals(6, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
 
-        CommentResponse comment = advisoryService.getComment(idRevAnswer.getId());
-        Assertions.assertEquals(answerText, comment.getCommentText());
+        CommentResponse commentResp = advisoryService.getComment(idRevAnswer.getId());
+        Assertions.assertEquals(answerText, commentResp.getCommentText());
 
         advisoryService.updateComment(idRevAnswer.getId(), idRevAnswer.getRevision(), "updated answer text");
 

@@ -639,7 +639,7 @@ public class AdvisoryController {
         checkValidUuid(advisoryId);
         try {
             IdAndRevision idRev = advisoryService.addComment(advisoryId, newComment);
-            URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
+            URI commentLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(commentLocation).body(createResponse);
         } catch (IOException | IllegalArgumentException e) {

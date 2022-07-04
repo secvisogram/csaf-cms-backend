@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -32,25 +33,18 @@ public class CommentWrapperTest {
                     "csafNodeId": "nodeId123"
                 }
                 """, owner);
+        Comment comment = new Comment(null, "nodeId123");
 
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> CommentWrapper.createNewCommentFromJson(advisoryId, commentJson), "missing commentText");
+                () -> CommentWrapper.createNew(advisoryId, comment), "missing commentText");
     }
 
     @Test
-    public void createNewCommentFromJsonTest_missingCsafNodeId() {
+    public void createNewCommentFromJsonTest_CsafNodeIdNUll() {
 
         String advisoryId = UUID.randomUUID().toString();
-        String commentJson = String.format(
-                """
-                {
-                    "owner": "%s",
-                    "commentText": "This is a comment"
-                }
-                """, owner);
-
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> CommentWrapper.createNewCommentFromJson(advisoryId, commentJson), "missing csafNodeId");
+        Comment comment = new Comment("This is a comment", null);
+        CommentWrapper wrapper = CommentWrapper.createNew(advisoryId, comment);
     }
 
 
@@ -58,15 +52,9 @@ public class CommentWrapperTest {
     public void createNewCommentFromJsonTest_minimumFields() throws IOException {
 
         String advisoryId = UUID.randomUUID().toString();
-        String docCommentJson = String.format(
-                """
-                {
-                    "commentText": "%s",
-                    "csafNodeId": "nodeId123"
-                }
-                """, commentText);
+        Comment comment = new Comment(commentText,  UUID.randomUUID().toString());
 
-        CommentWrapper wrapper = CommentWrapper.createNewCommentFromJson(advisoryId, docCommentJson);
+        CommentWrapper wrapper = CommentWrapper.createNew(advisoryId, comment);
 
         Assertions.assertEquals(commentText, wrapper.getText());
         Assertions.assertEquals(advisoryId, wrapper.getAdvisoryId());
@@ -76,23 +64,16 @@ public class CommentWrapperTest {
     public void createNewCommentFromJsonTest_allFields() throws IOException {
 
         String advisoryId = UUID.randomUUID().toString();
-        String fullCommentJson = String.format(
-                """
-                {
-                    "commentText": "%s",
-                    "csafNodeId": "nodeId123",
-                    "owner": "%s",
-                    "fieldName": "publisher"
-                }
-                """, commentText, owner);
+        String csafNodeId = UUID.randomUUID().toString();
+        Comment comment = new Comment(commentText,  csafNodeId, "publisher");
 
-        CommentWrapper wrapper = CommentWrapper.createNewCommentFromJson(advisoryId, fullCommentJson);
+        CommentWrapper wrapper = CommentWrapper.createNew(advisoryId, comment);
 
         Assertions.assertEquals(commentText, wrapper.getText());
         Assertions.assertNull(wrapper.getAnswerTo());
-        Assertions.assertEquals("nodeId123", wrapper.getCsafNodeId());
+        Assertions.assertEquals(csafNodeId, wrapper.getCsafNodeId());
         Assertions.assertEquals(advisoryId, wrapper.getAdvisoryId());
-        Assertions.assertEquals(owner, wrapper.getOwner());
+        Assertions.assertNull(wrapper.getOwner());
         Assertions.assertEquals("publisher", wrapper.getFieldName());
     }
 

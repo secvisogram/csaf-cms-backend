@@ -8,11 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -59,9 +61,6 @@ public class CommentWrapper {
         }
         if (!newComment.isObjectComment()) {
             commentRootNode.put(CommentField.FIELD_NAME.getDbName(), newComment.getFieldName());
-        }
-        if (commentRootNode.has(CommentField.ANSWER_TO.getDbName())) {
-            throw new IllegalArgumentException("answerTo must not be provided for comments!");
         }
         commentRootNode.put(CommentField.ADVISORY_ID.getDbName(), advisoryId);
         commentRootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Comment.name());
