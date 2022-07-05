@@ -10,7 +10,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.Comment;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
@@ -577,14 +577,14 @@ public class AdvisoryController {
     }
 
     /**
-     * Get a list of all comments and answers of an CSAF document
+     * Get a list of all comments of a CSAF document
      *
      * @param advisoryId id of the CSAF document to get comment ids for
      * @return list of comment ids
      */
     @Operation(
-            summary = "Show comments and answers of an advisory.",
-            description = "Show all comments and answers of the advisory with the given advisoryId.",
+            summary = "Show comments of an advisory.",
+            description = "Show all comments of the advisory with the given advisoryId.",
             tags = {"Advisory"}
     )
     @GetMapping("/{advisoryId}/comments")
@@ -634,14 +634,14 @@ public class AdvisoryController {
                     in = ParameterIn.PATH,
                     description = "The ID of the advisory to add the comments to."
             ) String advisoryId,
-            @RequestBody Comment newComment) {
+            @RequestBody CreateCommentRequest newComment) {
 
         checkValidUuid(advisoryId);
         try {
             IdAndRevision idRev = advisoryService.addComment(advisoryId, newComment);
-            URI advisoryLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
+            URI commentLocation = URI.create("advisories/" + advisoryId + "/comments/" + idRev.getId());
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
-            return ResponseEntity.created(advisoryLocation).body(createResponse);
+            return ResponseEntity.created(commentLocation).body(createResponse);
         } catch (IOException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (DatabaseException dbEx) {
@@ -651,19 +651,49 @@ public class AdvisoryController {
     }
 
     /**
+     * Get a list of all answers of a comment
+     *
+     * @param advisoryId ID of the advisory, the comment for which to get answers for belongs to
+     * @param commentId  ID of the comment to get answers for
+     * @return list of answers
+     */
+    @Operation(
+            summary = "Show answers of a comment.",
+            description = "Show all answers of the comment with the given commentId.",
+            tags = {"Advisory"}
+    )
+    @GetMapping("/{advisoryId}/comments/{commentId}/answers")
+    public ResponseEntity<List<AnswerInformationResponse>> listAnswers(
+            @PathVariable
+            @Parameter(
+                    in = ParameterIn.PATH,
+                    description = "The ID of the advisory to the comment belongs to."
+            ) String advisoryId,
+            @PathVariable
+            @Parameter(
+                    in = ParameterIn.PATH,
+                    description = "The ID of the comment to get answers of."
+            ) String commentId
+    ) throws IOException {
+
+        return ResponseEntity.ok(advisoryService.getAnswers(commentId));
+    }
+
+
+    /**
      * Add an answer to a comment of an advisory
      *
      * @param advisoryId ID of the CSAF document to add the answer to
      * @param commentId  ID of the comment to add the answer to
-     * @param answerText new text content of the answer
+     * @param answerCommentText the answer text
      */
     @Operation(
             summary = "Add an answer to an advisory comment.",
             description = "Add a answer to the comment with the given ID.",
             tags = {"Advisory"}
     )
-    @PostMapping("/{advisoryId}/comments/{commentId}/answer")
-    public EntityCreateResponse addAnswer(
+    @PostMapping("/{advisoryId}/comments/{commentId}/answers")
+    public ResponseEntity<EntityCreateResponse> addAnswer(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -673,13 +703,26 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to add the answer to."
-            ) long commentId,
-            @RequestBody String answerText
+            ) String commentId,
+            @RequestBody String answerCommentText
     ) {
 
         // only for debugging, remove when implemented
-        LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(answerText));
-        return new EntityCreateResponse(UUID.randomUUID().toString(), "2-efaa5db9409b2d4300535c70aaf6a66b");
+        LOG.info("addAnswer {} {} {}", sanitize(advisoryId), sanitize(commentId), sanitize(answerCommentText));
+
+        checkValidUuid(advisoryId);
+        checkValidUuid(commentId);
+        try {
+            IdAndRevision idRev = advisoryService.addAnswer(advisoryId, commentId, answerCommentText);
+            URI answerLocation = URI.create("advisories/" + advisoryId + "/comments/" + commentId + "/answers/" + idRev.getId());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
+            return ResponseEntity.created(answerLocation).body(createResponse);
+        } catch (IOException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (DatabaseException dbEx) {
+            LOG.error("Error creating answer");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -757,8 +800,8 @@ public class AdvisoryController {
             description = "Change the text of an answer to a comment.",
             tags = {"Advisory"}
     )
-    @PatchMapping("/{advisoryId}/comments/{commentId}/answer/{answerId}")
-    public EntityUpdateResponse changeAnswer(
+    @PatchMapping("/{advisoryId}/comments/{commentId}/answers/{answerId}")
+    public ResponseEntity<EntityUpdateResponse> changeAnswer(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -768,12 +811,12 @@ public class AdvisoryController {
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the comment to change an answer of."
-            ) long commentId,
+            ) String commentId,
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
                     description = "The ID of the answer to change."
-            ) long answerId,
+            ) String answerId,
             @RequestParam
             @Parameter(description = "Optimistic locking revision of the answer.") String revision,
             @RequestBody String newAnswerText
@@ -782,13 +825,26 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("changeAnswer {} {} {} {} {}", sanitize(advisoryId), sanitize(commentId),
                 sanitize(answerId), sanitize(revision), sanitize(newAnswerText));
-        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        checkValidUuid(advisoryId);
+        checkValidUuid(commentId);
+        checkValidUuid(answerId);
+        try {
+            String newRevision = advisoryService.updateComment(answerId, revision, newAnswerText);
+            return ResponseEntity.ok(new EntityUpdateResponse(newRevision));
+        } catch (IdNotFoundException idNfEx) {
+            LOG.info("Comment with given ID not found");
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (IOException ioEx) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
      * Sanitize request parameter
      */
-    private String sanitize(Object value) {
+    public static String sanitize(Object value) {
         return (value != null) ? value.toString().replaceAll("[\r\n]", "") : "";
     }
 
