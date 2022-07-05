@@ -5,21 +5,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "Comment")
-public class Comment {
+public class CreateCommentRequest {
 
     private String commentText;
     private String csafNodeId;
     private String fieldName;
 
-    public Comment(String commentText, String csafNodeId) {
+    public CreateCommentRequest(String commentText, String csafNodeId) {
         this.commentText = commentText;
         this.csafNodeId = csafNodeId;
     }
 
     @JsonCreator
-    public Comment(@JsonProperty(value = "commentText", required = true) String commentText,
-                   @JsonProperty(value = "csafNodeId", required = true) String csafNodeId,
-                   @JsonProperty("fieldName") String fieldName) {
+    public CreateCommentRequest(@JsonProperty(value = "commentText", required = true) String commentText,
+                                @JsonProperty(value = "csafNodeId") String csafNodeId,
+                                @JsonProperty("fieldName") String fieldName) {
         this.commentText = commentText;
         this.csafNodeId = csafNodeId;
         this.fieldName = fieldName;

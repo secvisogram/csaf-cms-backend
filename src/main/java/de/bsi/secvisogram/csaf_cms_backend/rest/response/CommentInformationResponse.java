@@ -11,6 +11,9 @@ public class CommentInformationResponse {
     private String commentId;
     private String advisoryId;
     private String csafNodeId;
+
+    private String answerTo;
+
     private String owner;
     private boolean changeable;
     private boolean deletable;
@@ -70,4 +73,12 @@ public class CommentInformationResponse {
         return deletable;
     }
 
+    public String getAnswerTo() {
+        return answerTo;
+    }
+
+    public CommentInformationResponse setAnswerTo(String answerTo) {
+        this.answerTo = answerTo;
+        return this;
+    }
 }
