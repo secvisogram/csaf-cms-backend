@@ -196,8 +196,8 @@ font-style: italic;
   <div class="method-summary"></div>
   <h4><a href="#Advisory">Advisory</a></h4>
   <ul>
-  <li><a href="#addAnswer"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></a></li>
-  <li><a href="#changeAnswer"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></a></li>
+  <li><a href="#addAnswer"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers</code></a></li>
+  <li><a href="#changeAnswer"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers/{answerId}</code></a></li>
   <li><a href="#changeComment"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}</code></a></li>
   <li><a href="#changeCsafDocument"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}</code></a></li>
   <li><a href="#createComment"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
@@ -206,6 +206,7 @@ font-style: italic;
   <li><a href="#deleteCsafDocument"><code><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}</code></a></li>
   <li><a href="#exportAdvisory"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></a></li>
   <li><a href="#listAllTemplates"><code><span class="http-method">get</span> /api/2.0/advisories/templates</code></a></li>
+  <li><a href="#listAnswers"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers</code></a></li>
   <li><a href="#listComments"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
   <li><a href="#listCsafDocuments"><code><span class="http-method">get</span> /api/2.0/advisories</code></a></li>
   <li><a href="#readCsafDocument"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}</code></a></li>
@@ -225,7 +226,7 @@ font-style: italic;
   <div class="method"><a name="addAnswer"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer</code></pre></div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers</code></pre></div>
     <div class="method-summary">Add an answer to an advisory comment. (<span class="nickname">addAnswer</span>)</div>
     <div class="method-notes">Add a answer to the comment with the given ID.</div>
 
@@ -235,7 +236,7 @@ font-style: italic;
 
       <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory the answered comment belongs to. default: null </div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to add the answer to. default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to add the answer to. default: null </div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -286,7 +287,7 @@ font-style: italic;
   <div class="method"><a name="changeAnswer"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}</code></pre></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers/{answerId}</code></pre></div>
     <div class="method-summary">Change answer text to an advisory comment. (<span class="nickname">changeAnswer</span>)</div>
     <div class="method-notes">Change the text of an answer to a comment.</div>
 
@@ -296,9 +297,9 @@ font-style: italic;
 
       <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory the answered comment belongs to. default: null </div><div class="param">commentId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to change an answer of. default: null format: int64</div><div class="param">answerId (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to change an answer of. default: null </div><div class="param">answerId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the answer to change. default: null format: int64</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the answer to change. default: null </div>
     </div>  <!-- field-items -->
 
     <h3 class="field-label">Consumes</h3>
@@ -772,12 +773,66 @@ font-style: italic;
         
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="listAnswers"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers</code></pre></div>
+    <div class="method-summary">Show answers of a comment. (<span class="nickname">listAnswers</span>)</div>
+    <div class="method-notes">Show all answers of the comment with the given commentId.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">advisoryId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the advisory to the comment belongs to. default: null </div><div class="param">commentId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The ID of the comment to get answers of. default: null </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#CommentInformation">CommentInformation</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "answerTo" : "answerTo",
+  "owner" : "Mustermann",
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "csafNodeId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "commentId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "changeable" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listComments"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/comments</code></pre></div>
-    <div class="method-summary">Show comments and answers of an advisory. (<span class="nickname">listComments</span>)</div>
-    <div class="method-notes">Show all comments and answers of the advisory with the given advisoryId.</div>
+    <div class="method-summary">Show comments of an advisory. (<span class="nickname">listComments</span>)</div>
+    <div class="method-notes">Show all comments of the advisory with the given advisoryId.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -802,6 +857,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
+  "answerTo" : "answerTo",
   "owner" : "Mustermann",
   "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "csafNodeId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
@@ -1319,6 +1375,7 @@ font-style: italic;
       <div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the comment. </div>
 <div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The ID of the advisory this is a comment to. </div>
 <div class="param">csafNodeId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The ID of the node this comment refers to. </div>
+<div class="param">answerTo (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the comment. </div>
 <div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this comment. </div>
 <div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this comment. </div>

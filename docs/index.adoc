@@ -31,7 +31,7 @@ CSAF Content Management Systems: Secvisogram 2.0
 [.addAnswer]
 ==== addAnswer
 
-`POST /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer`
+`POST /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers`
 
 Add an answer to an advisory comment.
 
@@ -40,7 +40,7 @@ Add an answer to an advisory comment.
 Add a answer to the comment with the given ID.
 
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/POST/spec.adoc[opts=optional]
 
 
 
@@ -110,20 +110,20 @@ Add a answer to the comment with the given ID.
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/POST/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/POST/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/POST/POST.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answers/POST/POST.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/POST/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/POST/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -132,7 +132,7 @@ endif::internal-generation[]
 [.changeAnswer]
 ==== changeAnswer
 
-`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}`
+`PATCH /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers/{answerId}`
 
 Change answer text to an advisory comment.
 
@@ -141,7 +141,7 @@ Change answer text to an advisory comment.
 Change the text of an answer to a comment.
 
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/\{answerId\}/PATCH/spec.adoc[opts=optional]
 
 
 
@@ -230,20 +230,20 @@ Change the text of an answer to a comment.
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/\{answerId\}/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/\{answerId\}/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answer/{answerId}/PATCH/PATCH.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answers/{answerId}/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answer/\{answerId\}/PATCH/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/\{answerId\}/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -1004,16 +1004,104 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
+[.listAnswers]
+==== listAnswers
+
+`GET /api/2.0/advisories/{advisoryId}/comments/{commentId}/answers`
+
+Show answers of a comment.
+
+===== Description
+
+Show all answers of the comment with the given commentId.
+
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| advisoryId
+| The ID of the advisory to the comment belongs to. 
+| X
+| null
+| 
+
+| commentId
+| The ID of the comment to get answers of. 
+| X
+| null
+| 
+
+|===
+
+
+
+
+
+
+===== Return Type
+
+array[<<CommentInformation>>]
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+| List[<<CommentInformation>>] 
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/comments/{commentId}/answers/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/\{commentId\}/answers/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
 [.listComments]
 ==== listComments
 
 `GET /api/2.0/advisories/{advisoryId}/comments`
 
-Show comments and answers of an advisory.
+Show comments of an advisory.
 
 ===== Description
 
-Show all comments and answers of the advisory with the given advisoryId.
+Show all comments of the advisory with the given advisoryId.
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/comments/GET/spec.adoc[opts=optional]
@@ -2094,6 +2182,12 @@ endif::internal-generation[]
 | 
 | String 
 | The ID of the node this comment refers to.
+|  
+
+| answerTo
+| 
+| String 
+| 
 |  
 
 | owner
