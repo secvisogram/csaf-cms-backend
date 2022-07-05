@@ -72,7 +72,7 @@ services:
     environment:
       # listening address and proxy target
       OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
-      OAUTH2_PROXY_UPSTREAMS: "http://host.docker.internal:${CSAF_CMS_BACKEND_PORT}/api/"
+      OAUTH2_PROXY_UPSTREAMS: "http://host.docker.internal:${CSAF_CMS_BACKEND_PORT}/api/2.0/,http://host.docker.internal:${CSAF_VALIDATOR_PORT}/api/v1/"
 
       # Security related config
       OAUTH2_PROXY_COOKIE_SECURE: "false"
