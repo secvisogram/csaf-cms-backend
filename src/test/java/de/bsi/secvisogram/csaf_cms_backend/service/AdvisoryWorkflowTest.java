@@ -11,6 +11,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +44,7 @@ public class AdvisoryWorkflowTest {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
 
-        String dateNowMinutes = Instant.now().toString().substring(0, 16);
+        String dateNowMinutes =  DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
         assertThat(advisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0.0.1"));
         assertThat(advisory.getCsaf().at("/document/tracking/status").asText(), equalTo("draft"));
         assertThat(advisory.getCsaf().at("/document/tracking/current_release_date").asText(), startsWith(dateNowMinutes));
