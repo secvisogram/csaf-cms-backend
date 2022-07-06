@@ -1,6 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.*;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.CSAF;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 
@@ -9,12 +9,12 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
@@ -22,7 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
+import java.time.Instant;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -30,6 +30,8 @@ import java.util.function.BiConsumer;
  * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
  */
 public class AdvisoryWrapper {
+
+    private static final String INITIAL_VERSION = "0.0.1";
 
     public static final String emptyCsafDocument = """
                 { "document": {
@@ -87,12 +89,16 @@ public class AdvisoryWrapper {
      */
     public static AdvisoryWrapper createNewFromCsaf(String newCsafJson, String userName) throws IOException {
 
-        ObjectNode rootNode = createAdvisoryNodeFromString(newCsafJson);
-        rootNode.put(WORKFLOW_STATE.getDbName(), WorkflowState.Draft.name());
-        rootNode.put(OWNER.getDbName(), userName);
-        rootNode.put(CouchDbField.TYPE_FIELD.getDbName(), ObjectType.Advisory.name());
+        AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromString(newCsafJson));
+        wrapper.setCreatedAtToNow()
+                .setOwner(userName)
+                .setWorkflowState(WorkflowState.Draft)
+                .setType(ObjectType.Advisory)
+                .setDocumentTrackingVersion(INITIAL_VERSION)
+                .setDocumentTrackingStatus(DocumentTrackingStatus.Draft)
+                .setDocumentTrackingCurrentReleaseDate(Instant.now().toString());
 
-        return new AdvisoryWrapper(rootNode);
+        return wrapper;
     }
 
     /**
@@ -193,6 +199,13 @@ public class AdvisoryWrapper {
         return this;
     }
 
+    public AdvisoryWrapper setCreatedAtToNow() {
+
+        this.advisoryNode.put(AuditTrailField.CREATED_AT.getDbName(), Instant.now().toString());
+        return this;
+    }
+
+
     public JsonNode at(String jsonPtrExpr) {
         return this.advisoryNode.at(jsonPtrExpr);
     }
@@ -209,10 +222,81 @@ public class AdvisoryWrapper {
         return this.advisoryNode.at("/" + jsonPtrExpr);
     }
 
+
+
     public String getDocumentTrackingVersion() {
 
         JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_VERSION);
         return (versionNode.isMissingNode()) ? "" : versionNode.asText();
+    }
+
+    public String getDocumentTrackingStatus() {
+
+        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_STATUS);
+        return (versionNode.isMissingNode()) ? "" : versionNode.asText();
+    }
+
+    public String getDocumentTrackingCurrentReleaseDate() {
+
+        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE);
+        return (versionNode.isMissingNode()) ? "" : versionNode.asText();
+    }
+
+    /**
+     * Set tracking field in the document tracking node.
+     * Create nodes when they not exist.
+     * @param newVersion the new version
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingVersion(String newVersion) {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
+        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
+        if (trackingNode == null) {
+            trackingNode = jacksonMapper.createObjectNode();
+            versionNode.set("tracking", trackingNode);
+        }
+        trackingNode.put("version", newVersion);
+        return this;
+    }
+
+    /**
+     * Set status field in the document tracking node.
+     * Create nodes when they not exist.
+     * @param newState the new state
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingStatus(DocumentTrackingStatus newState) {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
+        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
+        if (trackingNode == null) {
+            trackingNode = jacksonMapper.createObjectNode();
+            versionNode.set("tracking", trackingNode);
+        }
+        trackingNode.put("status", newState.getCsafValue());
+        return this;
+    }
+
+    /**
+     * Set current_release_date in document tracking node.
+     * Create nodes when they not exist.
+     * @param newDate the new date as ISO-8601 string
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingCurrentReleaseDate(String newDate) {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
+        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
+        if (trackingNode == null) {
+            trackingNode = jacksonMapper.createObjectNode();
+            versionNode.set("tracking", trackingNode);
+        }
+        trackingNode.put("current_release_date", newDate);
+        return this;
     }
 
 
@@ -289,6 +373,7 @@ public class AdvisoryWrapper {
 
         return JsonPatch.apply(patch, source);
     }
+
 
     /**
      * Convert Search Expression to JSON String
