@@ -75,7 +75,11 @@ public class AdvisoryWrapper {
      */
     public static AdvisoryWrapper createInitialEmptyAdvisoryForUser(String userName) throws IOException {
 
-        return createNewFromCsaf(emptyCsafDocument, userName);
+        AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromString(emptyCsafDocument));
+        wrapper.setOwner(userName)
+               .setWorkflowState(WorkflowState.Draft)
+               .setType(ObjectType.Advisory);
+        return wrapper;
     }
 
     /**
