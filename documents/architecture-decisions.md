@@ -111,7 +111,9 @@ All changes to documents are tracked by the system.
 
 #### Roles
 
-The Client could have one of the following roles:
+The Client could have the following roles.
+Inherited rights are done be the user management.
+A user with the role 'Editor' for Example has always also the role 'Author'.
 
 ##### Role: Registered
 

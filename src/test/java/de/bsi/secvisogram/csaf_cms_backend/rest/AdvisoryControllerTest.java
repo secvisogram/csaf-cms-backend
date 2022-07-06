@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AdvisoryController.class)
@@ -175,6 +176,18 @@ public class AdvisoryControllerTest {
                 .andExpect(content().json(String.format("{\"id\": \"%s\", \"revision\": \"%s\"}", advisoryId, revision)));
     }
 
+    @Test
+    void createCsafDocumentTest_unauthorized() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
+        when(advisoryService.addAdvisory(csafJsonString)).thenReturn(idRev);
+        doThrow(AccessDeniedException.class).when(advisoryService).addAdvisory(csafJsonString);
+
+        this.mockMvc.perform(
+                        post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
 
     @Test
     void changeCsafDocumentTest_notExisting() throws Exception {
