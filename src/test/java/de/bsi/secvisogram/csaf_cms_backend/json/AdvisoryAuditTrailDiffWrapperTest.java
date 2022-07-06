@@ -1,9 +1,11 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonCategoryTitleId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +27,7 @@ public class AdvisoryAuditTrailDiffWrapperTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void createNewFromCsafTest_emptyAdvisory() throws IOException {
 
         var oldWrapper = AdvisoryWrapper.createInitialEmptyAdvisoryForUser("John");
@@ -39,27 +42,6 @@ public class AdvisoryAuditTrailDiffWrapperTest {
         assertThat(wrapper.getOldDocVersion(), is(""));
     }
 
-    private String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
 
-        return """
-                { "document": {
-                      "category": "%s",
-                      "title": "%s",
-                      "tracking": {
-                        "id": "%s"
-                      }
-                   }
-                }""".formatted(category, documentTitle, documentTrackingId);
-    }
-
-    private String csafJsonTitle(String documentTitle) {
-
-        return """
-                { "document": {
-                      "category": "Category1",
-                      "title": "%s"
-                   }
-                }""".formatted(documentTitle);
-    }
 
 }

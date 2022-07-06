@@ -15,6 +15,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationRespo
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 /**
@@ -213,7 +214,7 @@ public class CommentWrapper {
 
     public CommentWrapper setCreatedAtToNow() {
 
-        this.commentNode.put(AuditTrailField.CREATED_AT.getDbName(), Instant.now().toString());
+        this.commentNode.put(AuditTrailField.CREATED_AT.getDbName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
         return this;
     }
 

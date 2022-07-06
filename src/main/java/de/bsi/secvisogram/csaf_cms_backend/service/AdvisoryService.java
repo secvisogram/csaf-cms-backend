@@ -5,12 +5,12 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.e
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.canDeleteAdvisory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.ibm.cloud.cloudant.v1.model.Document;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
@@ -29,6 +29,7 @@ import javax.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
-    public List<AdvisoryInformationResponse> getAdvisoryInformations() {
+    public List<AdvisoryInformationResponse> getAdvisoryInformations() throws IOException {
 
         Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = Map.of(
                 AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
@@ -64,10 +65,19 @@ public class AdvisoryService {
                 CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId
         );
 
-        List<Document> docList = couchDbService.readAllDocuments(ObjectType.Advisory, new ArrayList<>(infoFields.keySet()));
-        return docList.stream()
+        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
+        List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
+
+        List<AdvisoryInformationResponse> allResposes =  docList.stream()
                 .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
                 .toList();
+
+        Authentication credentials = SecurityContextHolder.getContext().getAuthentication();
+        // set calculated fields in response
+        for (AdvisoryInformationResponse response : allResposes) {
+            response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
+        }
+        return allResposes;
     }
 
     /**
@@ -143,10 +153,19 @@ public class AdvisoryService {
      * @throws BadRequestException if the request was
      * @throws NotFoundException   if there is no advisory with given ID
      */
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException {
-        this.couchDbService.deleteDocument(advisoryId, revision);
-        deleteAllAuditTrailDocumentsFromDbFor(advisoryId, ADVISORY_ID.getDbName());
-        deleteAllCommentsFromDbForAdvisory(advisoryId);
+
+        InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
+        AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        if (canDeleteAdvisory(advisory, SecurityContextHolder.getContext().getAuthentication())) {
+
+            this.couchDbService.deleteDocument(advisoryId, revision);
+            deleteAllAuditTrailDocumentsFromDbFor(advisoryId, ADVISORY_ID.getDbName());
+            deleteAllCommentsFromDbForAdvisory(advisoryId);
+        } else {
+            throw new AccessDeniedException("User has not the permission to delete the advisory");
+        }
     }
 
     private void deleteAllCommentsFromDbForAdvisory(String advisoryId) throws IOException, DatabaseException {
