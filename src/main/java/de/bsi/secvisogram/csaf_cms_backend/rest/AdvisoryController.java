@@ -88,7 +88,12 @@ public class AdvisoryController {
     ) {
 
         LOG.info("findAdvisories {} ", sanitize(expression));
-        return ResponseEntity.ok(advisoryService.getAdvisoryInformations());
+        try {
+            return ResponseEntity.ok(advisoryService.getAdvisoryInformations());
+        } catch (IOException e) {
+            LOG.info("Error reading Advisory");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

@@ -289,6 +289,16 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void deleteCsafDocumentTest_unauthorized() throws Exception {
+
+        doThrow(AccessDeniedException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
+
+        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void listAllTemplatesTest() throws Exception {
 
         when(this.templateService.getAllTemplates())
