@@ -3,13 +3,12 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class AdvisoryWrapperTest {
@@ -95,6 +94,77 @@ public class AdvisoryWrapperTest {
         assertThat(updatedWrapper.getAdvisoryId(), equalTo(id));
         assertThat(updatedWrapper.at("/csaf/document/category").asText(), equalTo("CHANGED"));
         assertThat(updatedWrapper.at("/csaf/document/title").asText(), equalTo("New Title"));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void setDocumentTrackingVersionTest() throws IOException {
+
+        var csafJson = """
+                { "document": {
+                      "category": "CSAF_BASE"    }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        advisory.setDocumentTrackingVersion("0.0.1");
+        assertThat(advisory.getDocumentTrackingVersion(), equalTo("0.0.1"));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void setDocumentTrackingVersionTest_updateVersion() throws IOException {
+
+        var csafJson = """
+                { "document": {
+                      "category": "CSAF_BASE",
+                      "tracking": {
+                            "current_release_date": "2022-01-11T11:00:00.000Z",
+                            "id": "exxcellent-2021AB123",
+                            "initial_release_date": "2022-01-12T11:00:00.000Z",
+                            "revision_history": [
+                              {
+                                "date": "2022-01-12T11:00:00.000Z",
+                                "number": "0.0.1",
+                                "summary": "Test rsvSummary"
+                              }
+                            ],
+                            "status": "draft",
+                            "version": "2.0.1"
+                      }
+                  }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        advisory.setDocumentTrackingVersion("0.0.1");
+        assertThat(advisory.getDocumentTrackingVersion(), equalTo("0.0.1"));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void setDocumentTrackingStatusTest() throws IOException {
+
+        var csafJson = """
+                { "document": {
+                      "category": "CSAF_BASE"    }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        advisory.setDocumentTrackingStatus(DocumentTrackingStatus.Interim);
+        assertThat(advisory.getDocumentTrackingStatus(), equalTo("interim"));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void setDocumentTrackingCurrentReleaseDateTest() throws IOException {
+
+        var csafJson = """
+                { "document": {
+                      "category": "CSAF_BASE"    }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        advisory.setDocumentTrackingCurrentReleaseDate("2022");
+        assertThat(advisory.getDocumentTrackingCurrentReleaseDate(), equalTo("2022"));
     }
 
 }

@@ -149,6 +149,9 @@ list all CSAF documents within the system
 [Leistungbeschr 2.2]
 
 - `Author darf neue CSAF-Dokumente anlegen`
+- `Editor darf neue CSAF-Dokumente anlegen`
+- `Publisher darf neue CSAF-Dokumente anlegen`
+- `Manager darf neue CSAF-Dokumente anlegen`
 - `Author darf eigene (von dem Nutzer) CSAF-Dokumente im Status „Draft“
  auflisten, ansehen, bearbeiten und löschen.`
 - `Editor darf alle Advisories im Status „Draft“ auflisten, ansehen, bearbeiten
