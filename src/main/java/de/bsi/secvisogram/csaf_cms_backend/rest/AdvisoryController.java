@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -132,9 +133,8 @@ public class AdvisoryController {
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            summary = "Create a new Advisory.",
+            summary = "Create a new Advisory.", tags = {"Advisory"},
             description = "Create a new CSAF document with added node IDs in the system.",
-            tags = {"Advisory"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "An advisory in CSAF JSON format including node IDs.",
                     required = true,
@@ -153,7 +153,7 @@ public class AdvisoryController {
     )
     public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
 
-        LOG.info("createCsafDocument");
+        LOG.debug("createCsafDocument");
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
             URI advisoryLocation = URI.create("advisories/" + idRev.getId());
@@ -161,6 +161,8 @@ public class AdvisoryController {
             return ResponseEntity.created(advisoryLocation).body(createResponse);
         } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
