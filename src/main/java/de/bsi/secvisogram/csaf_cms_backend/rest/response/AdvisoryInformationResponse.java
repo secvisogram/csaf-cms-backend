@@ -129,6 +129,16 @@ public class AdvisoryInformationResponse {
         return deletable;
     }
 
+    public AdvisoryInformationResponse setChangeable(boolean changeable) {
+        this.changeable = changeable;
+        return this;
+    }
+
+    public AdvisoryInformationResponse setDeletable(boolean deletable) {
+        this.deletable = deletable;
+        return this;
+    }
+
     @Schema(
             description = "A list of allowed state changes of the logged in user.",
             example = "[\"Approved\", \"Published\"]"

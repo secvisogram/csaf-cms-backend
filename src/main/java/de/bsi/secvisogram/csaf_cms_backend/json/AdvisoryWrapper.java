@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
-import com.ibm.cloud.cloudant.v1.model.Document;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -23,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -100,7 +100,7 @@ public class AdvisoryWrapper {
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(INITIAL_VERSION)
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft)
-                .setDocumentTrackingCurrentReleaseDate(Instant.now().toString());
+                .setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
 
         return wrapper;
     }
@@ -205,7 +205,7 @@ public class AdvisoryWrapper {
 
     public AdvisoryWrapper setCreatedAtToNow() {
 
-        this.advisoryNode.put(AuditTrailField.CREATED_AT.getDbName(), Instant.now().toString());
+        this.advisoryNode.put(AuditTrailField.CREATED_AT.getDbName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
         return this;
     }
 
@@ -309,24 +309,25 @@ public class AdvisoryWrapper {
         return this.advisoryNode.toString();
     }
 
-    public static AdvisoryInformationResponse convertToAdvisoryInfo(Document doc, Map<DbField,
+    public static AdvisoryInformationResponse convertToAdvisoryInfo(JsonNode doc, Map<DbField,
             BiConsumer<AdvisoryInformationResponse, String>> infoFields) {
-        String advisoryId = doc.getId();
+        String advisoryId = doc.get(ID_FIELD.getDbName()).asText();
         final AdvisoryInformationResponse response = new AdvisoryInformationResponse(advisoryId, null);
         infoFields.forEach((key, value) -> setValueInResponse(response, key, doc, value));
 
         return response;
     }
 
-    private static void setValueInResponse(AdvisoryInformationResponse response, DbField field, Document doc, BiConsumer<AdvisoryInformationResponse, String> advisorySetter) {
+    private static void setValueInResponse(AdvisoryInformationResponse response, DbField field, JsonNode doc, BiConsumer<AdvisoryInformationResponse, String> advisorySetter) {
 
         String value;
         if (field.equals(ID_FIELD)) {
-            value = doc.getId();
+            value = doc.get(ID_FIELD.getDbName()).asText();
         } else if (field.equals(REVISION_FIELD)) {
-            value = doc.getRev();
+            value = doc.get(REVISION_FIELD.getDbName()).asText();
         } else {
-            value = CouchDbService.getStringFieldValue(field, doc);
+            String jsonPtrExpr = String.join("/", field.getFieldPath());
+            value = doc.at("/" + jsonPtrExpr).asText();
         }
         advisorySetter.accept(response, value);
     }
