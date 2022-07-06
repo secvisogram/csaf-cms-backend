@@ -77,7 +77,7 @@ jobs:
       - name: Run Coverage
         run: |
           chmod +x gradlew
-          ./gradlew build jacocoTestReport
+          ./gradlew clean build jacocoTestReport
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.2  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
