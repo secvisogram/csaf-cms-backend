@@ -5,6 +5,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Superclass for all audit trail entries
@@ -60,7 +61,7 @@ public abstract class AuditTrailWrapper {
 
     public AuditTrailWrapper setCreatedAtToNow() {
 
-        this.auditTrailNode.put(AuditTrailField.CREATED_AT.getDbName(), Instant.now().toString());
+        this.auditTrailNode.put(AuditTrailField.CREATED_AT.getDbName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
         return this;
     }
 

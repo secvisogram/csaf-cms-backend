@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonCategoryTitleId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -39,27 +40,6 @@ public class AdvisoryAuditTrailDiffWrapperTest {
         assertThat(wrapper.getOldDocVersion(), is(""));
     }
 
-    private String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
 
-        return """
-                { "document": {
-                      "category": "%s",
-                      "title": "%s",
-                      "tracking": {
-                        "id": "%s"
-                      }
-                   }
-                }""".formatted(category, documentTitle, documentTrackingId);
-    }
-
-    private String csafJsonTitle(String documentTitle) {
-
-        return """
-                { "document": {
-                      "category": "Category1",
-                      "title": "%s"
-                   }
-                }""".formatted(documentTitle);
-    }
 
 }
