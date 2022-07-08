@@ -242,7 +242,7 @@ public class AdvisoryController {
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
             String advisoryId,
-            @RequestParam @Parameter( description = "The optimistic locking revision.")
+            @RequestParam @Parameter(description = "The optimistic locking revision.")
             String revision
     ) {
 
