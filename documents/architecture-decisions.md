@@ -695,7 +695,6 @@ The editor edits the advisory several times.
   - `changeComment (PATCH advisories/{id}/comments/{commentId}/)`
   - `changeAnswer (PATCH advisories/{id}/comments/{commentId}/answer/{answerId})`,
 
-
 #### Workflow State: Review
 
 When the editor has finished editing the advisory the document is ready for review.
