@@ -13,6 +13,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateServic
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
+import de.bsi.secvisogram.csaf_cms_backend.service.PandocService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -20,18 +21,29 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.Media;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -53,7 +65,6 @@ public class AdvisoryController {
 
     @Autowired
     private DocumentTemplateService templateService;
-
 
     /**
      * Read all advisories, optionally filtered by a search expression
@@ -365,7 +376,7 @@ public class AdvisoryController {
             description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.",
             tags = {"Advisory"}
     )
-    public ResponseEntity<String> exportAdvisory(
+    public ResponseEntity<InputStreamResource> exportAdvisory(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -376,21 +387,43 @@ public class AdvisoryController {
                     description = "The format in which the document shall be exported."
             ) ExportFormat format
     ) {
-
         // only for debugging, remove when implemented
         LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
         checkValidUuid(advisoryId);
         try {
-            String html = advisoryService.exportAdvisory(advisoryId, format);
-            return ResponseEntity.ok(html);
+            // export to local temporary file
+            final Path filePath = advisoryService.exportAdvisory(advisoryId, format);
+
+            // return the export file through a stream (should be okay even with big files)
+            final InputStream inputStream = new FileInputStream(filePath.toFile());
+            final InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+            return ResponseEntity.ok()
+                    .contentLength(Files.size(filePath))
+                    .contentType(determineExportResponseContentType(format))
+                    .body(inputStreamResource);
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
-        } catch (DatabaseException dbEx) {
+        } catch (DatabaseException | IllegalArgumentException e) {
+            LOG.error("Got bad request: ", e);
             return ResponseEntity.badRequest().build();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
+            LOG.error("Error happened when creating the export: ", e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private static MediaType determineExportResponseContentType(@Nullable final ExportFormat format) {
+        if (ExportFormat.PDF.equals(format)) {
+            return MediaType.APPLICATION_PDF;
+        } else if (ExportFormat.Markdown.equals(format)) {
+            return MediaType.TEXT_MARKDOWN;
+        } else if (ExportFormat.HTML.equals(format)) {
+            return MediaType.TEXT_HTML;
+        } else if (ExportFormat.JSON.equals(format) || format == null){
+            return MediaType.APPLICATION_JSON;
+        }
+        throw new IllegalArgumentException("Unknown export format: " + format);
     }
 
     /**
