@@ -1,11 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.ADVISORY_ID;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,14 +16,25 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.BiConsumer;
+
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.ADVISORY_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
 @Service
 public class AdvisoryService {
@@ -37,6 +42,9 @@ public class AdvisoryService {
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryService.class);
     @Autowired
     private CouchDbService couchDbService;
+
+    @Autowired
+    private PandocService pandocService;
 
     /**
      * get number of documents
@@ -192,14 +200,56 @@ public class AdvisoryService {
         return result;
     }
 
-    public String exportAdvisory(final String advisoryId, final ExportFormat format) throws DatabaseException, IOException {
-
-        InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
+    /**
+     * Export the Advisory with the given advisoryId in the given format. The export will be written to a
+     * temporary file and the path to the file will be returned.
+     *
+     * @param advisoryId the id of the advisory that should be exported
+     * @param format the format in which the export should be written (default JSON on null)
+     * @return the path to the temporary file that contains the export
+     * @throws DatabaseException if the advisory with the given id does not exist
+     * @throws IOException on any error regarding writing/reading from disk
+     * @throws InterruptedException if the export did take too long and thus timed out
+     */
+    public Path exportAdvisory(
+            @Nonnull final String advisoryId,
+            @Nullable final ExportFormat format)
+            throws DatabaseException, IOException, InterruptedException {
+        // read the advisory form the database
+        final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
         if (existingAdvisoryStream == null) {
             throw new DatabaseException("Invalid advisory ID!");
         }
-        AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-        return new JavascriptExporter().createHtml(advisoryNode.getCsaf().toString());
+        final AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+        final String csafDocument = advisoryNode.getCsaf().toString();
+
+        // if format is JSON - write it to temporary file and return the path
+        final String filePrefix = advisoryId + "--";
+        if (ExportFormat.JSON.equals(format) || format == null) {
+            final Path jsonFile = Files.createTempFile(filePrefix, ".json");
+            Files.writeString(jsonFile, csafDocument);
+            return jsonFile;
+        } else {
+            // other formats have to start with an HTML export first
+            final String htmlExport = new JavascriptExporter().createHtml(csafDocument);
+            final Path htmlFile = Files.createTempFile(advisoryId + "--", ".html");
+            Files.writeString(htmlFile, htmlExport);
+            if (ExportFormat.HTML.equals(format)) {
+                // we already have an HTML file - done!
+                return htmlFile;
+            } else if (ExportFormat.Markdown.equals(format) && pandocService.isReady()) {
+                final Path markdownFile = Files.createTempFile(advisoryId + "--", ".md");
+                pandocService.convert(htmlFile, markdownFile);
+                Files.delete(htmlFile);
+                return markdownFile;
+            } else if (ExportFormat.PDF.equals(format) && pandocService.isReady()) {
+                final Path pdfFile = Files.createTempFile(advisoryId + "--", ".pdf");
+                pandocService.convert(htmlFile, pdfFile);
+                Files.delete(htmlFile);
+                return pdfFile;
+            }
+        }
+        throw new IllegalArgumentException("Unknown export format: " + format);
     }
 
     /**
