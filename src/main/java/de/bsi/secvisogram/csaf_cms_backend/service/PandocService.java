@@ -29,7 +29,7 @@ public class PandocService {
     /**
      * Convert the input file into a new file format given by the extension of the output file.
      *
-     * @param input the input file; only existing files are valid
+     * @param input  the input file; only existing files are valid
      * @param output the output file; the extension defines in what format the file will be converted
      * @throws IOException on any error regarding the pandoc cli tool
      */

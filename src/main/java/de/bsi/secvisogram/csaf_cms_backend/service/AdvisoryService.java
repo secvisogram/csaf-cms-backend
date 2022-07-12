@@ -44,6 +44,9 @@ public class AdvisoryService {
     private CouchDbService couchDbService;
 
     @Autowired
+    private JavascriptExporter javascriptExporter;
+
+    @Autowired
     private PandocService pandocService;
 
     /**
@@ -231,7 +234,7 @@ public class AdvisoryService {
             return jsonFile;
         } else {
             // other formats have to start with an HTML export first
-            final String htmlExport = new JavascriptExporter().createHtml(csafDocument);
+            final String htmlExport = javascriptExporter.createHtml(csafDocument);
             final Path htmlFile = Files.createTempFile(advisoryId + "--", ".html");
             Files.writeString(htmlFile, htmlExport);
             if (ExportFormat.HTML.equals(format)) {

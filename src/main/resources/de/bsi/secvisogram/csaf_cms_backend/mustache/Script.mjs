@@ -83,9 +83,12 @@ const REFERENCE = `
 {{/.}}`
 
 
-export function renderWithMustache(template, json) {
+export function renderWithMustache(template, json, logo) {
     const obj = JSON.parse(json);
-    print(json)
+    if (logo) {
+        obj['logo'] = JSON.parse(logo);
+    }
+    print(JSON.stringify(obj, null, 2))
     const documentEntity = new DocumentEntity();
     const doc = documentEntity.preview(obj);
     print(doc.document.title)
