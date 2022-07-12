@@ -5,12 +5,30 @@
   <link rel="stylesheet" href="https://unpkg.com/gutenberg-css" charset="utf-8">
   <link rel="stylesheet" href="https://unpkg.com/gutenberg-css/dist/themes/modern.min.css" charset="utf-8">
   <meta charset="utf-8" />
+  <style>
+    .logo-container {
+      width: 100%;
+      text-align: right;
+      margin-bottom: 20mm;
+    }
+
+    .logo {
+      display: inline-block;
+      max-height: 40mm;
+    }
+  </style>
 </head>
 
 <body>
   {{#logo}}
-    <img src="data:{{logo.mediaType}};base64, {{logo.data}}" alt="logo"/>
+  <div class="logo-container">
+    <img class="logo" src="data:{{logo.mediaType}};base64, {{logo.data}}" alt="logo"/>
+  </div>
   {{/logo}}
+
+  {{#document.distribution.tlp.label}}
+  <p>TLP: {{document.distribution.tlp.label}}</p>
+  {{/document.distribution.tlp.label}}
 
   <h1>{{#document.tracking.id}}{{document.tracking.id}}: {{/document.tracking.id}}{{document.title}}</h1>
 
