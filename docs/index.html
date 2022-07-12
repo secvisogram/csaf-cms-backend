@@ -202,7 +202,7 @@ font-style: italic;
   <li><a href="#changeCsafDocument"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}</code></a></li>
   <li><a href="#createComment"><code><span class="http-method">post</span> /api/2.0/advisories/{advisoryId}/comments</code></a></li>
   <li><a href="#createCsafDocument"><code><span class="http-method">post</span> /api/2.0/advisories</code></a></li>
-  <li><a href="#createNewCsafDocumentVersion"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version</code></a></li>
+  <li><a href="#createNewCsafDocumentVersion"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/createNewVersion</code></a></li>
   <li><a href="#deleteCsafDocument"><code><span class="http-method">delete</span> /api/2.0/advisories/{advisoryId}</code></a></li>
   <li><a href="#exportAdvisory"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}/csaf</code></a></li>
   <li><a href="#listAllTemplates"><code><span class="http-method">get</span> /api/2.0/advisories/templates</code></a></li>
@@ -211,9 +211,9 @@ font-style: italic;
   <li><a href="#listCsafDocuments"><code><span class="http-method">get</span> /api/2.0/advisories</code></a></li>
   <li><a href="#readCsafDocument"><code><span class="http-method">get</span> /api/2.0/advisories/{advisoryId}</code></a></li>
   <li><a href="#readTemplate"><code><span class="http-method">get</span> /api/2.0/advisories/templates/{templateId}</code></a></li>
-  <li><a href="#setWorkflowStateToApprove"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approve</code></a></li>
+  <li><a href="#setWorkflowStateToApproved"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approved</code></a></li>
   <li><a href="#setWorkflowStateToDraft"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Draft</code></a></li>
-  <li><a href="#setWorkflowStateToPublish"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Publish</code></a></li>
+  <li><a href="#setWorkflowStateToPublished"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Published</code></a></li>
   <li><a href="#setWorkflowStateToReview"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Review</code></a></li>
   <li><a href="#setWorkflowStateToRfPublication"><code><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication</code></a></li>
   </ul>
@@ -597,9 +597,9 @@ font-style: italic;
   <div class="method"><a name="createNewCsafDocumentVersion"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version</code></pre></div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/createNewVersion</code></pre></div>
     <div class="method-summary">Increase version of an advisory. (<span class="nickname">createNewCsafDocumentVersion</span>)</div>
-    <div class="method-notes">Increase the version of a CSAF document.</div>
+    <div class="method-notes">Increase the version of a CSAF document. This can only be done in workflow state Published</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -1031,11 +1031,11 @@ font-style: italic;
         <a href="#Object">Object</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="setWorkflowStateToApprove"/>
+  <div class="method"><a name="setWorkflowStateToApproved"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approve</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Approve. (<span class="nickname">setWorkflowStateToApprove</span>)</div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Approved</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to Approved. (<span class="nickname">setWorkflowStateToApproved</span>)</div>
     <div class="method-notes">Change the workflow state of the advisory with the given id to Approve.</div>
 
     <h3 class="field-label">Path parameters</h3>
@@ -1125,12 +1125,12 @@ font-style: italic;
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="setWorkflowStateToPublish"/>
+  <div class="method"><a name="setWorkflowStateToPublished"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Publish</code></pre></div>
-    <div class="method-summary">Change workflow state of an advisory to Publish. (<span class="nickname">setWorkflowStateToPublish</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to Publish.</div>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/Published</code></pre></div>
+    <div class="method-summary">Change workflow state of an advisory to Published. (<span class="nickname">setWorkflowStateToPublished</span>)</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Published.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -1228,7 +1228,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/2.0/advisories/{advisoryId}/workflowstate/RfPublication</code></pre></div>
     <div class="method-summary">Change workflow state of an advisory to RfPublication. (<span class="nickname">setWorkflowStateToRfPublication</span>)</div>
-    <div class="method-notes">Change the workflow state of the advisory with the given id to RfPublication (Request for Publication).</div>
+    <div class="method-notes">Change the workflow state of the advisory with the given id to Request for Publication (Request for Publication).</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">

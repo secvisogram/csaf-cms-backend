@@ -651,16 +651,16 @@ endif::internal-generation[]
 [.createNewCsafDocumentVersion]
 ==== createNewCsafDocumentVersion
 
-`PATCH /api/2.0/advisories/{advisoryId}/csaf/document/tracking/version`
+`PATCH /api/2.0/advisories/{advisoryId}/createNewVersion`
 
 Increase version of an advisory.
 
 ===== Description
 
-Increase the version of a CSAF document.
+Increase the version of a CSAF document. This can only be done in workflow state Published
 
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/createNewVersion/PATCH/spec.adoc[opts=optional]
 
 
 
@@ -724,20 +724,20 @@ Increase the version of a CSAF document.
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/createNewVersion/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/createNewVersion/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/csaf/document/tracking/version/PATCH/PATCH.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/createNewVersion/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/csaf/document/tracking/version/PATCH/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/createNewVersion/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -1421,19 +1421,19 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.setWorkflowStateToApprove]
-==== setWorkflowStateToApprove
+[.setWorkflowStateToApproved]
+==== setWorkflowStateToApproved
 
-`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Approve`
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Approved`
 
-Change workflow state of an advisory to Approve.
+Change workflow state of an advisory to Approved.
 
 ===== Description
 
 Change the workflow state of the advisory with the given id to Approve.
 
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approved/PATCH/spec.adoc[opts=optional]
 
 
 
@@ -1498,20 +1498,20 @@ Change the workflow state of the advisory with the given id to Approve.
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approved/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approved/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Approve/PATCH/PATCH.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Approved/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approve/PATCH/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Approved/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -1613,19 +1613,19 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.setWorkflowStateToPublish]
-==== setWorkflowStateToPublish
+[.setWorkflowStateToPublished]
+==== setWorkflowStateToPublished
 
-`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Publish`
+`PATCH /api/2.0/advisories/{advisoryId}/workflowstate/Published`
 
-Change workflow state of an advisory to Publish.
+Change workflow state of an advisory to Published.
 
 ===== Description
 
-Change the workflow state of the advisory with the given id to Publish.
+Change the workflow state of the advisory with the given id to Published.
 
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Published/PATCH/spec.adoc[opts=optional]
 
 
 
@@ -1702,20 +1702,20 @@ Change the workflow state of the advisory with the given id to Publish.
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Published/PATCH/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Published/PATCH/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Publish/PATCH/PATCH.json[]
+// file not found, no * wiremock data link :api/2.0/advisories/{advisoryId}/workflowstate/Published/PATCH/PATCH.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Publish/PATCH/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/Published/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -1826,7 +1826,7 @@ Change workflow state of an advisory to RfPublication.
 
 ===== Description
 
-Change the workflow state of the advisory with the given id to RfPublication (Request for Publication).
+Change the workflow state of the advisory with the given id to Request for Publication (Request for Publication).
 
 
 // markup not found, no include::{specDir}api/2.0/advisories/\{advisoryId\}/workflowstate/RfPublication/PATCH/spec.adoc[opts=optional]
