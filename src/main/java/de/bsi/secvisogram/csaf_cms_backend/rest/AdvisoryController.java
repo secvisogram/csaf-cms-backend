@@ -508,7 +508,7 @@ public class AdvisoryController {
     @PatchMapping("/{advisoryId}/workflowstate/RfPublication")
     @Operation(
             summary = "Change workflow state of an advisory to RfPublication.",
-            description = "Change the workflow state of the advisory with the given id to Rewuest for Publication" +
+            description = "Change the workflow state of the advisory with the given id to Request for Publication" +
                           " (Request for Publication).",
             tags = {"Advisory"}
     )
