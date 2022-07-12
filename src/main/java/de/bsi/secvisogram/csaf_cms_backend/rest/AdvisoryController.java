@@ -232,22 +232,18 @@ public class AdvisoryController {
      * @param revision   optimistic locking revision
      * @return response with the new optimistic locking revision
      */
-    @PatchMapping("/{advisoryId}/csaf/document/tracking/version")
+    @PatchMapping("/{advisoryId}/createNewVersion")
     @Operation(
             summary = "Increase version of an advisory.",
-            description = "Increase the version of a CSAF document.",
+            description = "Increase the version of a CSAF document. This can only be done in workflow state Published",
             tags = {"Advisory"}
     )
     public EntityUpdateResponse createNewCsafDocumentVersion(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change."
-            ) String advisoryId,
-            @RequestParam
-            @Parameter(
-                    description = "The optimistic locking revision."
-            ) String revision
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
+            String advisoryId,
+            @RequestParam @Parameter(description = "The optimistic locking revision.")
+            String revision
     ) {
 
         // only for debugging, remove when implemented
@@ -473,13 +469,13 @@ public class AdvisoryController {
      * @param revision   optimistic locking revision
      * @return new optimistic locking revision
      */
-    @PatchMapping("/{advisoryId}/workflowstate/Approve")
+    @PatchMapping("/{advisoryId}/workflowstate/Approved")
     @Operation(
-            summary = "Change workflow state of an advisory to Approve.",
+            summary = "Change workflow state of an advisory to Approved.",
             description = "Change the workflow state of the advisory with the given id to Approve.",
             tags = {"Advisory"}
     )
-    public ResponseEntity<String> setWorkflowStateToApprove(
+    public ResponseEntity<String> setWorkflowStateToApproved(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
@@ -512,7 +508,7 @@ public class AdvisoryController {
     @PatchMapping("/{advisoryId}/workflowstate/RfPublication")
     @Operation(
             summary = "Change workflow state of an advisory to RfPublication.",
-            description = "Change the workflow state of the advisory with the given id to RfPublication" +
+            description = "Change the workflow state of the advisory with the given id to Request for Publication" +
                           " (Request for Publication).",
             tags = {"Advisory"}
     )
@@ -541,7 +537,7 @@ public class AdvisoryController {
     }
 
     /**
-     * Change workflow state of a CSAF document to Publish
+     * Change workflow state of a CSAF document to Published
      *
      * @param advisoryId             advisoryId id of the CSAF document to change
      * @param revision               optimistic locking revision
@@ -550,12 +546,12 @@ public class AdvisoryController {
      * @return new optimistic locking revision
      */
     @Operation(
-            summary = "Change workflow state of an advisory to Publish.",
-            description = "Change the workflow state of the advisory with the given id to Publish.",
+            summary = "Change workflow state of an advisory to Published.",
+            description = "Change the workflow state of the advisory with the given id to Published.",
             tags = {"Advisory"}
     )
-    @PatchMapping("/{advisoryId}/workflowstate/Publish")
-    public ResponseEntity<String> setWorkflowStateToPublish(
+    @PatchMapping("/{advisoryId}/workflowstate/Published")
+    public ResponseEntity<String> setWorkflowStateToPublished(
             @PathVariable
             @Parameter(
                     in = ParameterIn.PATH,
