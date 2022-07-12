@@ -738,7 +738,7 @@ In the state `Approved` the Publisher has 2 options:
 
 `Possible actions`
 
-- `publish` / `setWkfStatePublish (PATCH advisories/{id}/workflowstate/Published)`
+- `publish` / `setWkfStatePublished (PATCH advisories/{id}/workflowstate/Published)`
   - change workflow state to `Published`
   - set version to `1.0.0`
 
@@ -749,7 +749,7 @@ In the state `Approved` the Publisher has 2 options:
 - `createNewDocVersion` / `changeWorkflowStateDraft  (PATCH advisories/{id}/workflowstate/Draft)`
   - change workflow state to `Draft`
   - set version to `X.0.0` where `X` is the major version increased by `1`
-- `createNewCsafDocumentVersion (PATCH advisories/{advisoryId}/csaf/document/tracking/version)`
+- `createNewCsafDocumentVersion (PATCH advisories/{advisoryId}/createNewVersion)`
   - create new Version of the CSAF document
 
 ## 9 Design Decisions
