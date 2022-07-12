@@ -16,6 +16,7 @@ import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
@@ -191,7 +192,7 @@ public class AdvisoryService {
         return result;
     }
 
-    public String exportAdvisory(String advisoryId) throws DatabaseException, IOException {
+    public String exportAdvisory(final String advisoryId, final ExportFormat format) throws DatabaseException, IOException {
 
         InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
         if (existingAdvisoryStream == null) {

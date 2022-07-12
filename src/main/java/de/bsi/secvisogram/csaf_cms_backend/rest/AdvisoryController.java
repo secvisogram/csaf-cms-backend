@@ -381,7 +381,7 @@ public class AdvisoryController {
         LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
         checkValidUuid(advisoryId);
         try {
-            String html = advisoryService.exportAdvisory(advisoryId);
+            String html = advisoryService.exportAdvisory(advisoryId, format);
             return ResponseEntity.ok(html);
         } catch (IdNotFoundException idNfEx) {
             LOG.info("Advisory with given ID not found");
