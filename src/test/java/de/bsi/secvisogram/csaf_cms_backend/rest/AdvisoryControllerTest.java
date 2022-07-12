@@ -473,7 +473,6 @@ public class AdvisoryControllerTest {
     @Test
     void createCommentTest_unauthorized() throws Exception {
 
-        IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
         when(advisoryService.addComment(eq(advisoryId), any(CreateCommentRequest.class)))
                 .thenThrow(AccessDeniedException.class);
 

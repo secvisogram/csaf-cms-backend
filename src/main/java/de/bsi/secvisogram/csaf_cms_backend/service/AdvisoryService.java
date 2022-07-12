@@ -15,6 +15,7 @@ import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -29,6 +30,7 @@ import javax.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -268,6 +270,7 @@ public class AdvisoryService {
         if (AdvisoryWorkflowUtil.canAddAndReplyCommentToAdvisory(advisoryInfo, credentials)) {
 
             CommentWrapper newComment = CommentWrapper.createNew(advisoryId, comment);
+            newComment.setOwner(credentials.getName());
             String commentRevision = this.couchDbService.writeDocument(commentId, newComment.commentAsString());
 
             AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newComment)
@@ -308,7 +311,8 @@ public class AdvisoryService {
                         comment.getAnswerTo()
                 );
             } else {
-                throw new AccessDeniedException("User has not the permission to view comment from the advisory");
+                throw new CsafException("User has not the permission to view comment from the advisory",
+                        CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
             }
 
         } catch (IOException e) {
@@ -383,7 +387,8 @@ public class AdvisoryService {
             throw new DatabaseException("Invalid comment ID!");
         }
         CommentWrapper comment = CommentWrapper.createFromCouchDb(existingCommentStream);
-        if (comment.getOwner() == null || !comment.getOwner().equals(credentials.getName())) {
+        final String commentOwner = comment.getOwner();
+        if (commentOwner == null || !commentOwner.equals(credentials.getName())) {
             throw new AccessDeniedException("User has not the permission to change the comment");
         }
         comment.setRevision(revision);

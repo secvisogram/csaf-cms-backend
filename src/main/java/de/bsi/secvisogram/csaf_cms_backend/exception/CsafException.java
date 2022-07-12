@@ -13,6 +13,12 @@ public class CsafException extends Exception {
         this.recommendedHttpState = HttpStatus.NOT_FOUND;
     }
 
+    public CsafException(String message, CsafExceptionKey exceptionKey, HttpStatus recommendedHttpState) {
+        super(message);
+        this.exceptionKey = exceptionKey;
+        this.recommendedHttpState = recommendedHttpState;
+    }
+
     public CsafException(Throwable cause, CsafExceptionKey exceptionKey, HttpStatus httpState) {
         super(cause);
         this.exceptionKey = exceptionKey;
