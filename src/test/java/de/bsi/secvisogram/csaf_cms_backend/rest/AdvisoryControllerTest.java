@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
@@ -429,6 +431,19 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void listCommentsTest_unauthorized() throws Exception {
+
+        String owner = "Musterfrau";
+
+        when(advisoryService.getComments(advisoryId)).thenThrow(AccessDeniedException.class);
+
+
+        this.mockMvc.perform(get(commentRoute))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void createCommentTest_invalidJson() throws Exception {
 
         String invalidJson = "not a valid JSON string";
@@ -453,6 +468,25 @@ public class AdvisoryControllerTest {
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createCommentTest_unauthorized() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
+        when(advisoryService.addComment(eq(advisoryId), any(CreateCommentRequest.class)))
+                .thenThrow(AccessDeniedException.class);
+
+        String commentJson = """
+                {
+                    "commentText": "This is a comment.",
+                    "csafNodeId": "some node ID we pretend exists."
+                }
+                """;
+        this.mockMvc.perform(
+                        post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
 
@@ -489,7 +523,7 @@ public class AdvisoryControllerTest {
     @Test
     void changeCommentTest_notExisting() throws Exception {
 
-        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(commentId, revision, commentText);
+        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(advisoryId, commentId, revision, commentText);
 
         this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
                         .content(commentText)
@@ -503,7 +537,7 @@ public class AdvisoryControllerTest {
     void changeCommentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
-        doThrow(DatabaseException.class).when(advisoryService).updateComment(commentId, invalidRevision, commentText);
+        doThrow(DatabaseException.class).when(advisoryService).updateComment(advisoryId, commentId, invalidRevision, commentText);
 
         this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
                         .content(commentText)
@@ -531,7 +565,7 @@ public class AdvisoryControllerTest {
     void changeCommentTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
-        when(advisoryService.updateComment(commentId, revision, commentText)).thenReturn(newRevision);
+        when(advisoryService.updateComment(advisoryId, commentId, revision, commentText)).thenReturn(newRevision);
 
         this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
                         .content(commentText)
@@ -540,6 +574,20 @@ public class AdvisoryControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
+    }
+
+    @Test
+    void changeCommentTest_unauthorized() throws Exception {
+
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.updateComment(advisoryId, commentId, revision, commentText)).thenThrow(AccessDeniedException.class);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -557,7 +605,7 @@ public class AdvisoryControllerTest {
         String owner = "Musterfrau";
 
         AnswerInformationResponse info = new AnswerInformationResponse(answerId, commentId, owner);
-        when(advisoryService.getAnswers(commentId)).thenReturn(List.of(info));
+        when(advisoryService.getAnswers(advisoryId, commentId)).thenReturn(List.of(info));
 
 
         String expected = String.format(
@@ -577,16 +625,41 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void addAnswerTest_invalidJson() throws Exception {
+    void listAnswersTest_unauthorized() throws Exception {
+
+        when(advisoryService.getAnswers(advisoryId, commentId)).thenThrow(AccessDeniedException.class);
+
+        this.mockMvc.perform(get(answerRoute))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void addAnswerTest_advisoryNotFound() throws Exception {
 
         String invalidJson = "not a valid JSON string";
 
-        when(advisoryService.addAnswer(advisoryId, commentId, invalidJson)).thenThrow(JsonProcessingException.class);
+        when(advisoryService.addAnswer(advisoryId, commentId, invalidJson)).thenThrow(new CsafException("Advisory not found", CsafExceptionKey.AdvisoryNotFound));
 
         this.mockMvc.perform(
                         post(answerRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void addAnswerTest_unauthorized() throws Exception {
+
+        String answerText = "This is an answer.";
+
+        when(advisoryService.addAnswer(advisoryId, commentId, answerText)).thenThrow(AccessDeniedException.class);
+
+        this.mockMvc.perform(post(answerRoute).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
 
@@ -622,7 +695,7 @@ public class AdvisoryControllerTest {
     @Test
     void changeAnswerTest_notExisting() throws Exception {
 
-        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(answerId, revision, answerText);
+        doThrow(IdNotFoundException.class).when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
 
         this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
                         .content(answerText)
@@ -633,10 +706,24 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void changeAnswerTest_unauthorized() throws Exception {
+
+        doThrow(AccessDeniedException.class).when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
+
+        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+
+    @Test
     void changeAnswerTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
-        doThrow(DatabaseException.class).when(advisoryService).updateComment(answerId, invalidRevision, answerText);
+        doThrow(DatabaseException.class).when(advisoryService).updateComment(advisoryId, answerId, invalidRevision, answerText);
 
         this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
                         .content(answerText)
@@ -664,7 +751,7 @@ public class AdvisoryControllerTest {
     void changeAnswerTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
-        when(advisoryService.updateComment(answerId, revision, answerText)).thenReturn(newRevision);
+        when(advisoryService.updateComment(advisoryId, answerId, revision, answerText)).thenReturn(newRevision);
 
         this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
                         .content(answerText)
@@ -674,6 +761,4 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
-
-
 }

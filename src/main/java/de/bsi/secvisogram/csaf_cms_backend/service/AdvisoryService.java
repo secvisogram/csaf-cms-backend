@@ -6,15 +6,15 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIEL
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.canDeleteAdvisory;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.getAdvisoryForId;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -57,14 +57,7 @@ public class AdvisoryService {
      */
     public List<AdvisoryInformationResponse> getAdvisoryInformations() throws IOException {
 
-        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = Map.of(
-                AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
-                AdvisoryField.OWNER, AdvisoryInformationResponse::setOwner,
-                AdvisorySearchField.DOCUMENT_TITLE, AdvisoryInformationResponse::setTitle,
-                AdvisorySearchField.DOCUMENT_TRACKING_ID, AdvisoryInformationResponse::setDocumentTrackingId,
-                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId
-        );
-
+        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.adivoryReadFields();
         Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
         List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
 
@@ -72,7 +65,7 @@ public class AdvisoryService {
                 .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
                 .toList();
 
-        Authentication credentials = SecurityContextHolder.getContext().getAuthentication();
+        Authentication credentials = getAuthentication();
         // set calculated fields in response
         for (AdvisoryInformationResponse response : allResposes) {
             response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
@@ -89,13 +82,7 @@ public class AdvisoryService {
      */
     List<JsonNode> findDocuments(Map<String, Object> selector, Collection<DbField> fields) throws IOException {
 
-        InputStream inputStream = couchDbService.findDocumentsAsStream(selector, fields);
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode couchDbResultNode = mapper.readValue(inputStream, JsonNode.class);
-        ArrayNode couchDbDocs = (ArrayNode) couchDbResultNode.get("docs");
-        List<JsonNode> docNodes = new ArrayList<>();
-        couchDbDocs.forEach(docNodes::add);
-        return docNodes;
+        return AdvisoryWorkflowUtil.findDocuments(this.couchDbService, selector, fields);
     }
 
     /**
@@ -109,7 +96,7 @@ public class AdvisoryService {
     public IdAndRevision addAdvisory(String newCsafJson) throws IOException {
 
         LOG.debug("addAdvisory");
-        Authentication credentials = SecurityContextHolder.getContext().getAuthentication();
+        Authentication credentials = getAuthentication();
 
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
@@ -158,7 +145,7 @@ public class AdvisoryService {
 
         InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
         AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
-        if (canDeleteAdvisory(advisory, SecurityContextHolder.getContext().getAuthentication())) {
+        if (canDeleteAdvisory(advisory, getAuthentication())) {
 
             this.couchDbService.deleteDocument(advisoryId, revision);
             deleteAllAuditTrailDocumentsFromDbFor(advisoryId, ADVISORY_ID.getDbName());
@@ -268,26 +255,29 @@ public class AdvisoryService {
      * @param comment     the comment to add as JSON string, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
-     * @throws IOException       when there are errors in JSON handling
+     * @throws CsafException   when a known csaf exception occurs
      */
-    public IdAndRevision addComment(String advisoryId, CreateCommentRequest comment) throws DatabaseException, IOException {
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER })
+    public IdAndRevision addComment(String advisoryId, CreateCommentRequest comment) throws DatabaseException, CsafException {
 
+        LOG.debug("addComment");
         UUID commentId = UUID.randomUUID();
+        Authentication credentials = getAuthentication();
+        AdvisoryInformationResponse advisoryInfo = getAdvisoryForId(advisoryId, this.couchDbService);
 
-        CommentWrapper newComment = CommentWrapper.createNew(advisoryId, comment);
+        if (AdvisoryWorkflowUtil.canAddAndReplyCommentToAdvisory(advisoryInfo, credentials)) {
 
-        AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newComment)
-                .setCommentId(commentId.toString())
-                .setCommentText(newComment.getText())
-                .setChangeType(ChangeType.Create);
+            CommentWrapper newComment = CommentWrapper.createNew(advisoryId, comment);
+            String commentRevision = this.couchDbService.writeDocument(commentId, newComment.commentAsString());
 
-        auditTrail.setUser("Mustermann");
-
-        String commentRevision = couchDbService.writeDocument(commentId, newComment.commentAsString());
-        couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
-
-        return new IdAndRevision(commentId.toString(), commentRevision);
-
+            AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newComment)
+                    .setCommentId(commentId.toString())
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+            return new IdAndRevision(commentId.toString(), commentRevision);
+        } else {
+            throw new AccessDeniedException("User has not the permission to add a comment to the advisory");
+        }
     }
 
     /**
@@ -297,20 +287,29 @@ public class AdvisoryService {
      * @return the requested comment
      * @throws IdNotFoundException if there is no comment with given ID
      */
-    public CommentResponse getComment(String commentId) throws DatabaseException {
-        InputStream commentStream = couchDbService.readDocumentAsStream(commentId);
-        try {
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR })
+    public CommentResponse getComment(String commentId) throws DatabaseException, CsafException {
+
+
+        try (InputStream commentStream = couchDbService.readDocumentAsStream(commentId)) {
             CommentWrapper comment = CommentWrapper.createFromCouchDb(commentStream);
-            return new CommentResponse(
-                    commentId,
-                    comment.getRevision(),
-                    comment.getAdvisoryId(),
-                    comment.getOwner(),
-                    comment.getText(),
-                    comment.getCsafNodeId(),
-                    comment.getFieldName(),
-                    comment.getAnswerTo()
-            );
+
+            Authentication credentials = getAuthentication();
+            AdvisoryInformationResponse advisoryInfo = getAdvisoryForId(comment.getAdvisoryId(), this.couchDbService);
+            if (AdvisoryWorkflowUtil.canViewComment(advisoryInfo, credentials)) {
+                return new CommentResponse(
+                        commentId,
+                        comment.getRevision(),
+                        comment.getAdvisoryId(),
+                        comment.getOwner(),
+                        comment.getText(),
+                        comment.getCsafNodeId(),
+                        comment.getFieldName(),
+                        comment.getAnswerTo()
+                );
+            } else {
+                throw new AccessDeniedException("User has not the permission to view comment from the advisory");
+            }
 
         } catch (IOException e) {
             throw new DatabaseException(e);
@@ -324,25 +323,33 @@ public class AdvisoryService {
      * @return a list of information on all comments for the requested advisory
      * @throws IOException when there are errors in JSON handling
      */
-    public List<CommentInformationResponse> getComments(String advisoryId) throws IOException {
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR })
+    public List<CommentInformationResponse> getComments(String advisoryId) throws IOException, CsafException {
 
-        List<DbField> fields = Arrays.asList(
+        Authentication credentials = getAuthentication();
+        AdvisoryInformationResponse advisoryInfo = getAdvisoryForId(advisoryId, this.couchDbService);
+        if (AdvisoryWorkflowUtil.canViewComment(advisoryInfo, credentials)) {
+
+            List<DbField> fields = Arrays.asList(
                 CouchDbField.ID_FIELD,
                 CouchDbField.REVISION_FIELD,
                 CommentField.ADVISORY_ID,
                 CommentField.CSAF_NODE_ID,
                 CommentField.OWNER,
                 CommentField.ANSWER_TO
-        );
+            );
 
-        AndExpression searchExpr = new AndExpression(
-                equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
-                equal(advisoryId, CommentField.ADVISORY_ID.getDbName())
-        );
-        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
-        List<JsonNode> commentInfosJson = this.findDocuments(selector, fields);
+            AndExpression searchExpr = new AndExpression(
+                    equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
+                    equal(advisoryId, CommentField.ADVISORY_ID.getDbName())
+            );
+            Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
+            List<JsonNode> commentInfosJson = this.findDocuments(selector, fields);
 
-        return commentInfosJson.stream().map(CommentWrapper::convertToCommentInfo).toList();
+          return commentInfosJson.stream().map(CommentWrapper::convertToCommentInfo).toList();
+        } else {
+            throw new AccessDeniedException("User has not the permission to add a comment to the advisory");
+        }
     }
 
     /**
@@ -353,7 +360,7 @@ public class AdvisoryService {
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
      */
-    public void deleteComment(String commentId, String commentRevision) throws DatabaseException, IOException {
+    void deleteComment(String commentId, String commentRevision) throws DatabaseException, IOException {
 
         couchDbService.deleteDocument(commentId, commentRevision);
         deleteAllAuditTrailDocumentsFromDbFor(commentId, CommentAuditTrailField.COMMENT_ID.getDbName());
@@ -367,13 +374,18 @@ public class AdvisoryService {
      * @param newText   the updated text of the comment
      * @return the new revision of the updated comment
      */
-    public String updateComment(String commentId, String revision, String newText) throws IOException, DatabaseException {
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER })
+    public String updateComment(String advisoryId, String commentId, String revision, String newText) throws IOException, DatabaseException {
 
+        Authentication credentials = getAuthentication();
         InputStream existingCommentStream = this.couchDbService.readDocumentAsStream(commentId);
         if (existingCommentStream == null) {
             throw new DatabaseException("Invalid comment ID!");
         }
         CommentWrapper comment = CommentWrapper.createFromCouchDb(existingCommentStream);
+        if (comment.getOwner() == null || !comment.getOwner().equals(credentials.getName())) {
+            throw new AccessDeniedException("User has not the permission to change the comment");
+        }
         comment.setRevision(revision);
         comment.setText(newText);
 
@@ -396,29 +408,31 @@ public class AdvisoryService {
      * @param commentText  the answer to add, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
-     * @throws IOException       when there are errors in JSON handling
+     * @throws CsafException       when there are errors in reading advisory
      */
-    public IdAndRevision addAnswer(String advisoryId, String commentId, String commentText) throws DatabaseException, IOException {
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER })
+    public IdAndRevision addAnswer(String advisoryId, String commentId, String commentText) throws DatabaseException, CsafException {
 
-        UUID answerId = UUID.randomUUID();
+        Authentication credentials = getAuthentication();
+        AdvisoryInformationResponse advisoryInfo = getAdvisoryForId(advisoryId, this.couchDbService);
+        if (AdvisoryWorkflowUtil.canAddAndReplyCommentToAdvisory(advisoryInfo, credentials)) {
 
-        CommentWrapper newAnswer = CommentWrapper.createNewAnswerFromJson(advisoryId, commentId, commentText);
-        newAnswer.setAnswerTo(commentId);
+            UUID answerId = UUID.randomUUID();
 
-        AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newAnswer)
-                .setCommentId(answerId.toString())
-                .setChangeType(ChangeType.Create);
+            CommentWrapper newAnswer = CommentWrapper.createNewAnswerFromJson(advisoryId, commentId, commentText);
+            newAnswer.setOwner(credentials.getName());
+            String commentRevision = this.couchDbService.writeDocument(answerId, newAnswer.commentAsString());
 
-        String user = newAnswer.getOwner();
-        if (user != null) {
-            auditTrail.setUser(user);
+            AuditTrailWrapper auditTrail = CommentAuditTrailWrapper.createNew(newAnswer)
+                    .setCommentId(answerId.toString())
+                    .setChangeType(ChangeType.Create)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+            return new IdAndRevision(answerId.toString(), commentRevision);
+        } else {
+            throw new AccessDeniedException("User has not the permission to add a comment to the advisory");
         }
-
-        String commentRevision = couchDbService.writeDocument(answerId, newAnswer.commentAsString());
-        couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
-
-        return new IdAndRevision(answerId.toString(), commentRevision);
-
     }
 
     /**
@@ -428,19 +442,26 @@ public class AdvisoryService {
      * @return a list of information on all answers for the requested comment
      * @throws IOException when there are errors in JSON handling
      */
-    public List<AnswerInformationResponse> getAnswers(String commentId) throws IOException {
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR })
+    public List<AnswerInformationResponse> getAnswers(String advisoryId, String commentId) throws IOException, CsafException {
 
-        List<DbField> fields = Arrays.asList(
-                CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD, CommentField.ANSWER_TO, CommentField.OWNER);
+        Authentication credentials = getAuthentication();
+        AdvisoryInformationResponse advisoryInfo = getAdvisoryForId(advisoryId, this.couchDbService);
+        if (AdvisoryWorkflowUtil.canViewComment(advisoryInfo, credentials)) {
+            List<DbField> fields = Arrays.asList(
+                    CouchDbField.ID_FIELD, CouchDbField.REVISION_FIELD, CommentField.ANSWER_TO, CommentField.OWNER);
 
-        AndExpression searchExpr = new AndExpression(
-                equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
-                equal(commentId, CommentField.ANSWER_TO.getDbName())
-        );
-        Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
-        List<JsonNode> answerInfosJson = this.findDocuments(selector, fields);
+            AndExpression searchExpr = new AndExpression(
+                    equal(ObjectType.Comment.name(), TYPE_FIELD.getDbName()),
+                    equal(commentId, CommentField.ANSWER_TO.getDbName())
+            );
+            Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
+            List<JsonNode> answerInfosJson = this.findDocuments(selector, fields);
 
-        return answerInfosJson.stream().map(CommentWrapper::convertToAnswerInfo).toList();
+            return answerInfosJson.stream().map(CommentWrapper::convertToAnswerInfo).toList();
+        } else {
+            throw new AccessDeniedException("User has not the permission to view comments of the advisory");
+        }
     }
 
     /**
@@ -451,9 +472,16 @@ public class AdvisoryService {
      * @throws DatabaseException when there are database errors
      * @throws IOException       when there are errors in JSON handling
      */
-    public void deleteAnswer(String answerId, String answerRevision) throws DatabaseException, IOException {
+    void deleteAnswer(String answerId, String answerRevision) throws DatabaseException, IOException {
         couchDbService.deleteDocument(answerId, answerRevision);
         deleteAllAuditTrailDocumentsFromDbFor(answerId, CommentAuditTrailField.COMMENT_ID.getDbName());
     }
 
+    /**
+     * Get the credentials for the authenticated in user.
+     * @return the credentials
+     */
+    private Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
 }
