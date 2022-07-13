@@ -91,6 +91,71 @@ public class AdvisoryWorkflowUtilTest {
     }
 
     @Test
+    public void canChangeAdvisoryTest_registeredDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(userName, REGISTERED);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canChangeAdvisoryTest_authorDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(userName, AUTHOR);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canChangeAdvisoryTest_authorDraftNotOwn() {
+
+        var userName = "John";
+        var otherName = "Jack";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(otherName, AUTHOR);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canChangeAdvisoryTest_authorNotDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
+        Authentication credentials = createAuthentication(userName, AUTHOR);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canChangeAdvisoryTest_editorDraftNotOwn() {
+
+        var userName = "John";
+        var otherName = "Jack";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(otherName, EDITOR);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canChangeAdvisoryTest_editorNotDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
+        var credentials = createAuthentication(userName, EDITOR);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canChangeAdvisoryTest_managerNotDraftNotOwn() {
+
+        var userName = "John";
+        var otherName = "Jack";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
+        var credentials = createAuthentication(otherName, EDITOR.getRoleName(), MANAGER.getRoleName());
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
+    }
+    @Test
     public void canViewComment_registeredDraftOwn() {
 
         var userName = "John";
@@ -278,4 +343,12 @@ public class AdvisoryWorkflowUtilTest {
         var principal =  new User(userName, EMPTY_PASSWD, singletonList(authority));
         return new TestingAuthenticationToken(principal, null, role.getRoleName());
     }
+
+    private Authentication createAuthentication(String userName, String ... roles) {
+
+        var authority = new SimpleGrantedAuthority(roles[0]);
+        var principal =  new User(userName, EMPTY_PASSWD, singletonList(authority));
+        return new TestingAuthenticationToken(principal, null, roles);
+    }
+
 }

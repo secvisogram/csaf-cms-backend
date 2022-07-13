@@ -180,27 +180,19 @@ public class AdvisoryController {
      * @return response with the new optimistic locking revision
      */
     @PatchMapping("/{advisoryId}")
-    @Operation(
-            summary = "Change advisory.",
+    @Operation(summary = "Change advisory.", tags = {"Advisory"},
             description = "Change a CSAF document in the system. On saving a document its content (version) may change " +
-                          " Thus, after changing a document, it must be reloaded on the client side.",
-            tags = {"Advisory"}
-    )
+                          " Thus, after changing a document, it must be reloaded on the client side.")
     public ResponseEntity<EntityUpdateResponse> changeCsafDocument(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
+            String advisoryId,
             @RequestParam
-            @Parameter(
-                    description = "The optimistic locking revision."
-            ) String revision,
+            @Parameter(description = "The optimistic locking revision.")
+            String revision,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including node IDs.",
-                    required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    description = "An advisory in CSAF JSON format including node IDs.", required = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
                                     title = "Common Security Advisory Framework schema extended with node IDs.",
                                     description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
@@ -223,6 +215,8 @@ public class AdvisoryController {
             return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 

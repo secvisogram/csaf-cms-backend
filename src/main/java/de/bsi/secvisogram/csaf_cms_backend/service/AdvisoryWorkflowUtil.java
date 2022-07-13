@@ -59,20 +59,20 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Check whether a advisory with the geiven user and state can be deleted with the given credentials
-     * @param userToCheck the advisory user to checck
-     * @param stateToCheck the advisory workflow state to check
+     * Check whether an advisory with the given user and state can be deleted with the given credentials
+     * @param userToCheck the advisory user to check
+     * @param advisoryState the advisory workflow state to check
      * @param credentials the credentials for the check
      * @return true - info can be deleted
      */
-    public static boolean canDeleteAdvisory(String userToCheck, WorkflowState stateToCheck, Authentication credentials) {
+    static boolean canDeleteAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials) {
 
         boolean canBeDeleted = false;
         if (hasRole(AUTHOR, credentials)) {
-            canBeDeleted = isOwnAdvisory(userToCheck, credentials) && isInStateDraft(stateToCheck);
+            canBeDeleted = isOwnAdvisory(userToCheck, credentials) && isInStateDraft(advisoryState);
         }
         if (hasRole(EDITOR, credentials)) {
-            canBeDeleted = isInStateDraft(stateToCheck);
+            canBeDeleted = isInStateDraft(advisoryState);
         }
         if (hasRole(MANAGER, credentials)) {
             canBeDeleted = true;
@@ -81,17 +81,35 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Check whether the given advisory info can be deleted with the given credentials
+     * Check whether the given advisory info can be changed with the given credentials
      * @param response the advisory info to check
      * @param credentials the credentials for the check
-     * @return true - info can be deleted
+     * @return true - info can be changed
      */
     public static boolean canChangeAdvisory(AdvisoryInformationResponse response, Authentication credentials) {
 
         return canChangeAdvisory(response.getOwner(), response.getWorkflowState(), credentials);
     }
 
-    public static boolean canChangeAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials) {
+    /**
+     * Check whether the given advisory can be deleted with the given credentials
+     * @param advisory the advisory to check
+     * @param credentials the credentials for the check
+     * @return true - info can be deleted
+     */
+    public static boolean canChangeAdvisory(AdvisoryWrapper advisory, Authentication credentials) {
+
+        return canChangeAdvisory(advisory.getOwner(), advisory.getWorkflowState(), credentials);
+    }
+
+    /**
+     * Check whether an advisory with the given user and state can be changed with the given credentials
+     * @param userToCheck the advisory user to check
+     * @param advisoryState the advisory workflow state to check
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    static boolean canChangeAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials) {
 
         boolean canBeChanged = false;
         if (hasRole(AUTHOR, credentials)) {
@@ -105,7 +123,7 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Check whether comments or Answers can be added to the  given advisory with the given credentials
+     * Check whether comments or Answers can be added to the given advisory with the given credentials
      * @param advisory the advisory info to check
      * @param credentials the credentials for the check
      * @return true - comments/answers can be added

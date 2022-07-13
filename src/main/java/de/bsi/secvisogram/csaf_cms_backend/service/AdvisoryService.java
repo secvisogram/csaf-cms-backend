@@ -5,8 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.e
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
-import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.canDeleteAdvisory;
-import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.getAdvisoryForId;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -71,6 +70,7 @@ public class AdvisoryService {
         // set calculated fields in response
         for (AdvisoryInformationResponse response : allResposes) {
             response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
+            response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
         }
         return allResposes;
     }
@@ -100,6 +100,11 @@ public class AdvisoryService {
         LOG.debug("addAdvisory");
         Authentication credentials = getAuthentication();
 
+        return addAdvisoryForCredentials(newCsafJson, credentials);
+    }
+
+    IdAndRevision addAdvisoryForCredentials(String newCsafJson, Authentication credentials) throws IOException {
+
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, credentials.getName());
@@ -122,10 +127,20 @@ public class AdvisoryService {
      * @throws IdNotFoundException if there is no advisory with given ID
      */
     public AdvisoryResponse getAdvisory(String advisoryId) throws DatabaseException {
-        InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
-        try {
+
+        try (InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId)) {
+
             AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+            Authentication credentials = getAuthentication();
+
             AdvisoryResponse response = new AdvisoryResponse(advisoryId, advisory.getWorkflowState(), advisory.getCsaf());
+            response.setTitle(advisory.getDocumentTitle());
+            response.setDocumentTrackingId(advisory.getDocumentTrackingId());
+            response.setOwner(advisory.getOwner());
+            response.setRevision(advisory.getRevision());
+            response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
+            response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
+
             response.setRevision(advisory.getRevision());
             return response;
 
@@ -145,6 +160,7 @@ public class AdvisoryService {
     @RolesAllowed({ CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException {
 
+        LOG.debug("deleteAdvisory");
         InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
         AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
         if (canDeleteAdvisory(advisory, getAuthentication())) {
@@ -203,22 +219,30 @@ public class AdvisoryService {
      */
     public String updateAdvisory(String advisoryId, String revision, String changedCsafJson) throws IOException, DatabaseException {
 
-        InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
-        if (existingAdvisoryStream == null) {
-            throw new DatabaseException("Invalid advisory ID!");
+        LOG.debug("updateAdvisory");
+        try (InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId)) {
+
+            if (existingAdvisoryStream == null) {
+                throw new DatabaseException("Invalid advisory ID!");
+            }
+            AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            Authentication credentials = getAuthentication();
+            if (canChangeAdvisory(oldAdvisoryNode, credentials)) {
+
+                AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
+                newAdvisoryNode.setRevision(revision);
+                String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
+
+                AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
+                        .setAdvisoryId(advisoryId)
+                        .setChangeType(ChangeType.Update)
+                        .setUser(credentials.getName());
+                this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+                return result;
+            } else {
+                throw new AccessDeniedException("User has not the permission to change the advisory");
+            }
         }
-        AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
-        newAdvisoryNode.setRevision(revision);
-
-        AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
-                .setAdvisoryId(advisoryId)
-                .setChangeType(ChangeType.Update)
-                .setUser("Mustermann");
-
-        String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
-        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
-        return result;
     }
 
     /**

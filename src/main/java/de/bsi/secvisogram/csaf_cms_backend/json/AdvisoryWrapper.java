@@ -227,6 +227,17 @@ public class AdvisoryWrapper {
     }
 
 
+    public String getDocumentTitle() {
+
+        JsonNode titleNode = this.at(AdvisorySearchField.DOCUMENT_TITLE);
+        return (titleNode.isMissingNode()) ? "" : titleNode.asText();
+    }
+
+    public String getDocumentTrackingId() {
+
+        JsonNode idNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_ID);
+        return (idNode.isMissingNode()) ? "" : idNode.asText();
+    }
 
     public String getDocumentTrackingVersion() {
 

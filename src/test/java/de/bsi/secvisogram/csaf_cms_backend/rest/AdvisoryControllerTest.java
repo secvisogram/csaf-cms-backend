@@ -205,6 +205,18 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void changeCsafDocumentTest_unauthorized() throws Exception {
+
+        doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(advisoryId, revision, fullAdvisoryJsonString);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+                        .content(fullAdvisoryJsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+    @Test
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
