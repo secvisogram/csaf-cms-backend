@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Arrays;
@@ -21,6 +22,8 @@ public class AdvisoryInformationResponse {
     private boolean changeable;
     private boolean deletable;
     private List<WorkflowState> allowedStateChanges;
+
+    private String currentReleaseDate;
 
     public AdvisoryInformationResponse() {
 
@@ -149,4 +152,17 @@ public class AdvisoryInformationResponse {
         return Collections.unmodifiableList(allowedStateChanges);
     }
 
+    /**
+     * The value of the advisory at "document/tracking/current_release_date"
+     * @return the date as iso string
+     */
+    @JsonIgnore
+    public String getCurrentReleaseDate() {
+        return currentReleaseDate;
+    }
+
+    public AdvisoryInformationResponse setCurrentReleaseDate(String currentReleaseDate) {
+        this.currentReleaseDate = currentReleaseDate;
+        return this;
+    }
 }

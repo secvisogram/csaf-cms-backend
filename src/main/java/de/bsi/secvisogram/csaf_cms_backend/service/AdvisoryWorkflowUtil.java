@@ -21,6 +21,8 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
@@ -122,6 +124,66 @@ public class AdvisoryWorkflowUtil {
         return canBeChanged;
     }
 
+
+    /**
+     * Check whether the given advisory can be viewed with the given credentials
+     * @param advisory the advisory to check
+     * @param credentials the credentials for the check
+     * @return true - info can be deleted
+     */
+    public static boolean canViewAdvisory(AdvisoryWrapper advisory, Authentication credentials) {
+
+        return canViewAdvisory(advisory.getOwner(), advisory.getWorkflowState(), credentials,
+                advisory.getDocumentTrackingCurrentReleaseDate());
+    }
+
+
+    /**
+     * Check whether the given advisory info can be viewed with the given credentials
+     * @param response the advisory info to check
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    public static boolean canViewAdvisory(AdvisoryInformationResponse response, Authentication credentials) {
+
+        return canViewAdvisory(response.getOwner(), response.getWorkflowState(), credentials,
+                response.getCurrentReleaseDate());
+    }
+
+    /**
+     * Check whether an advisory with the given user and state can be viewed with the given credentials
+     * @param userToCheck the advisory user to check
+     * @param advisoryState the advisory workflow state to check
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    static boolean canViewAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials,
+            String releaseDate) {
+
+        boolean canBeViewed = isPublished(advisoryState, releaseDate);
+        if (hasRole(AUTHOR, credentials)) {
+            canBeViewed = isOwnAdvisory(userToCheck, credentials)
+                    || isPublished(advisoryState, releaseDate);
+        }
+        if (hasRole(EDITOR, credentials)) {
+            canBeViewed = true;
+        }
+        if (hasRole(PUBLISHER, credentials)) {
+            canBeViewed = isInState(advisoryState, WorkflowState.Draft, WorkflowState.Approved,
+                    WorkflowState.RfPublication) || isPublished(advisoryState, releaseDate);
+        }
+        if (hasRole(REVIEWER, credentials)) {
+            canBeViewed |= (!isOwnAdvisory(userToCheck, credentials) && isInState(advisoryState, WorkflowState.Review))
+                    || isPublished(advisoryState, releaseDate);
+        }
+
+        if (hasRole(AUDITOR, credentials)) {
+            canBeViewed = true;
+        }
+
+        return canBeViewed;
+    }
+
     /**
      * Check whether comments or Answers can be added to the given advisory with the given credentials
      * @param advisory the advisory info to check
@@ -189,6 +251,14 @@ public class AdvisoryWorkflowUtil {
         return userToCheck.equals(credentials.getName());
     }
 
+    static boolean isPublished(WorkflowState advisoryState, String releaseDate) {
+        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+        return isInState(advisoryState, WorkflowState.Published)
+                && (releaseDate != null && !releaseDate.isBlank()
+                        && releaseDate.compareTo(now) < 0);
+    }
+
+
     public static boolean isInStateDraft(WorkflowState stateToCheck) {
         return stateToCheck == WorkflowState.Draft;
     }
@@ -206,7 +276,8 @@ public class AdvisoryWorkflowUtil {
                 AdvisoryField.OWNER, AdvisoryInformationResponse::setOwner,
                 AdvisorySearchField.DOCUMENT_TITLE, AdvisoryInformationResponse::setTitle,
                 AdvisorySearchField.DOCUMENT_TRACKING_ID, AdvisoryInformationResponse::setDocumentTrackingId,
-                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId
+                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId,
+                AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE, AdvisoryInformationResponse::setCurrentReleaseDate
         );
     }
 

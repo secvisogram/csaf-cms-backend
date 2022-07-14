@@ -11,6 +11,9 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -155,6 +158,95 @@ public class AdvisoryWorkflowUtilTest {
         var credentials = createAuthentication(otherName, EDITOR.getRoleName(), MANAGER.getRoleName());
         assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
     }
+
+    @Test
+    public void canViewAdvisoryTest_registeredDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(userName, REGISTERED);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_registeredPublishedTimeInPast() {
+
+        String nowMinus1h = DateTimeFormatter.ISO_INSTANT.format(Instant.now().minus(1, ChronoUnit.HOURS));
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Published).setOwner(userName)
+                .setCurrentReleaseDate(nowMinus1h);
+        Authentication credentials = createAuthentication(userName, REGISTERED);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_registeredPublishedTimeInFuture() {
+
+        String nowPlus1h = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS));
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Published).setOwner(userName)
+                .setCurrentReleaseDate(nowPlus1h);
+        Authentication credentials = createAuthentication(userName, REGISTERED);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_authorDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(userName, AUTHOR);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_authorDraftNotOwn() {
+
+        var userName = "John";
+        var otherName = "Jack";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(otherName, AUTHOR);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(false));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_authorNotDraftOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
+        Authentication credentials = createAuthentication(userName, AUTHOR);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_editorDraftNotOwn() {
+
+        var userName = "John";
+        var otherName = "Jack";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Draft).setOwner(userName);
+        Authentication credentials = createAuthentication(otherName, EDITOR);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_editorApprovedOwn() {
+
+        var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
+        var credentials = createAuthentication(userName, EDITOR);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+    }
+
+    @Test
+    public void canViewAdvisoryTest_managerApprovedNotOwn() {
+
+        var userName = "John";
+        var otherName = "Jack";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
+        var credentials = createAuthentication(otherName, EDITOR.getRoleName(), PUBLISHER.getRoleName(), MANAGER.getRoleName());
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+    }
+
     @Test
     public void canViewComment_registeredDraftOwn() {
 

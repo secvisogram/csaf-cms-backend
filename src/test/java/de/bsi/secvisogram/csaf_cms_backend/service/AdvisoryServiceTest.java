@@ -286,7 +286,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
     public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review);

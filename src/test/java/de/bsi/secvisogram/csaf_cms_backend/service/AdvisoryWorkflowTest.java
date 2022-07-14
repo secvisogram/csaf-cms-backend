@@ -5,6 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
@@ -85,9 +86,20 @@ public class AdvisoryWorkflowTest {
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
         IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafJson, createAuthentication(advisoryUser, AUTHOR.getRoleName()));
+        assertThrows(AccessDeniedException.class, () -> advisoryService.getAdvisory(idRev.getId()));
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_EDITOR})
+    public void readAdvisoryTest_EditorNotOwn() throws IOException, DatabaseException {
+
+        final String advisoryUser = "John";
+        final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
+        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafJson, createAuthentication(advisoryUser, AUTHOR.getRoleName()));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
-        assertThat(advisory.isChangeable(), is(false));
-        assertThat(advisory.isDeletable(), is(false));
+
+        assertThat(advisory.isChangeable(), is(true));
+        assertThat(advisory.isDeletable(), is(true));
     }
 
     private Authentication createAuthentication(String userName, String ... roles) {

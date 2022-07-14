@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import javax.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,17 +63,20 @@ public class AdvisoryService {
         Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
         List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
 
-        List<AdvisoryInformationResponse> allResposes =  docList.stream()
+        List<AdvisoryInformationResponse> allResponses =  docList.stream()
                 .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
                 .toList();
 
         Authentication credentials = getAuthentication();
         // set calculated fields in response
-        for (AdvisoryInformationResponse response : allResposes) {
+        for (AdvisoryInformationResponse response : allResponses) {
             response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
             response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
         }
-        return allResposes;
+        return allResponses
+                .stream()
+                .filter(response -> canViewAdvisory(response, credentials))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -131,19 +135,22 @@ public class AdvisoryService {
         try (InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId)) {
 
             AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
-            Authentication credentials = getAuthentication();
+            if (canViewAdvisory(advisory, getAuthentication())) {
 
-            AdvisoryResponse response = new AdvisoryResponse(advisoryId, advisory.getWorkflowState(), advisory.getCsaf());
-            response.setTitle(advisory.getDocumentTitle());
-            response.setDocumentTrackingId(advisory.getDocumentTrackingId());
-            response.setOwner(advisory.getOwner());
-            response.setRevision(advisory.getRevision());
-            response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
-            response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
+                Authentication credentials = getAuthentication();
 
-            response.setRevision(advisory.getRevision());
-            return response;
-
+                AdvisoryResponse response = new AdvisoryResponse(advisoryId, advisory.getWorkflowState(), advisory.getCsaf());
+                response.setTitle(advisory.getDocumentTitle());
+                response.setCurrentReleaseDate(advisory.getDocumentTrackingCurrentReleaseDate());
+                response.setDocumentTrackingId(advisory.getDocumentTrackingId());
+                response.setOwner(advisory.getOwner());
+                response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
+                response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
+                response.setRevision(advisory.getRevision());
+                return response;
+            } else {
+                throw new AccessDeniedException("User has not the permission to view the advisory");
+            }
         } catch (IOException e) {
             throw new DatabaseException(e);
         }

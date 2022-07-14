@@ -124,7 +124,6 @@ public class AdvisoryControllerTest {
 
     }
 
-
     @Test
     void readCsafDocumentTest_notExisting() throws Exception {
 
@@ -138,6 +137,17 @@ public class AdvisoryControllerTest {
 
     }
 
+    @Test
+    void readCsafDocumentTest_unauthorized() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(AccessDeniedException.class);
+
+        this.mockMvc.perform(get(advisoryRoute + advisoryId))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
+    }
     @Test
     void readCsafDocumentTest() throws Exception {
 
