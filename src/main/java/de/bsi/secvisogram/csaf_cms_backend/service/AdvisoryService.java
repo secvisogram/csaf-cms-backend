@@ -17,12 +17,15 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -72,12 +75,21 @@ public class AdvisoryService {
         for (AdvisoryInformationResponse response : allResponses) {
             response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
             response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
+            response.setAllowedStateChanges(getAllowedStates(response, credentials));
         }
         return allResponses
                 .stream()
                 .filter(response -> canViewAdvisory(response, credentials))
                 .collect(Collectors.toList());
     }
+
+    private List<WorkflowState> getAllowedStates(AdvisoryInformationResponse response, Authentication credentials) {
+
+        return Arrays.stream(WorkflowState.values())
+                .filter(state -> AdvisoryWorkflowUtil.canChangeWorkflow(response, state, credentials))
+                .collect(Collectors.toList());
+    }
+
 
     /**
      * read from {@link CouchDbService#findDocumentsAsStream(Map, Collection)} and convert it to a list of JsonNode
@@ -99,7 +111,7 @@ public class AdvisoryService {
      * @throws JsonProcessingException if the given JSON string is not valid
      */
     @RolesAllowed({ CsafRoles.ROLE_AUTHOR})
-    public IdAndRevision addAdvisory(String newCsafJson) throws IOException {
+    public IdAndRevision addAdvisory(String newCsafJson) throws IOException, CsafException {
 
         LOG.debug("addAdvisory");
         Authentication credentials = getAuthentication();
@@ -107,7 +119,7 @@ public class AdvisoryService {
         return addAdvisoryForCredentials(newCsafJson, credentials);
     }
 
-    IdAndRevision addAdvisoryForCredentials(String newCsafJson, Authentication credentials) throws IOException {
+    IdAndRevision addAdvisoryForCredentials(String newCsafJson, Authentication credentials) throws IOException, CsafException {
 
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
@@ -130,7 +142,7 @@ public class AdvisoryService {
      * @return the requested advisory
      * @throws IdNotFoundException if there is no advisory with given ID
      */
-    public AdvisoryResponse getAdvisory(String advisoryId) throws DatabaseException {
+    public AdvisoryResponse getAdvisory(String advisoryId) throws DatabaseException, CsafException {
 
         try (InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId)) {
 
@@ -146,10 +158,12 @@ public class AdvisoryService {
                 response.setOwner(advisory.getOwner());
                 response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
                 response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
+                response.setAllowedStateChanges(getAllowedStates(response, credentials));
                 response.setRevision(advisory.getRevision());
                 return response;
             } else {
-                throw new AccessDeniedException("User has not the permission to view the advisory");
+                throw new CsafException("User has not the permission to view comment from the advisory",
+                        CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
             }
         } catch (IOException e) {
             throw new DatabaseException(e);
@@ -224,7 +238,7 @@ public class AdvisoryService {
      * @throws JsonProcessingException if the given JSON string is not valid
      * @throws DatabaseException       if there was an error updating the advisory in the DB
      */
-    public String updateAdvisory(String advisoryId, String revision, String changedCsafJson) throws IOException, DatabaseException {
+    public String updateAdvisory(String advisoryId, String revision, String changedCsafJson) throws IOException, DatabaseException, CsafException {
 
         LOG.debug("updateAdvisory");
         try (InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId)) {
@@ -247,7 +261,8 @@ public class AdvisoryService {
                 this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
                 return result;
             } else {
-                throw new AccessDeniedException("User has not the permission to change the advisory");
+                throw new CsafException("User has not the permission to view comment from the advisory",
+                        CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
             }
         }
     }
@@ -259,26 +274,81 @@ public class AdvisoryService {
      * @return the new revision of the updated csaf document
      * @throws DatabaseException if there was an error updating the advisory in the DB
      */
-    public String changeAdvisoryWorkflowState(String advisoryId, String revision, WorkflowState newWorkflowState) throws IOException, DatabaseException {
+    public String changeAdvisoryWorkflowState(String advisoryId, String revision, WorkflowState newWorkflowState,
+                                              String proposedTime, DocumentTrackingStatus documentTrackingStatus)
+            throws IOException, DatabaseException, CsafException {
 
+        Authentication credentials = getAuthentication();
         InputStream existingAdvisoryStream = couchDbService.readDocumentAsStream(advisoryId);
         if (existingAdvisoryStream == null) {
             throw new DatabaseException("Invalid advisory ID!");
         }
         AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
 
-        AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
-                .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                .setAdvisoryId(advisoryId)
-                .setCreatedAtToNow()
-                .setChangeType(ChangeType.Update)
-                .setUser("Mustermann");
-        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+        if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials)) {
 
-        existingAdvisoryNode.setWorkflowState(newWorkflowState);
-        existingAdvisoryNode.setRevision(revision);
-        return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+                    .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setAdvisoryId(advisoryId)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+            existingAdvisoryNode.setWorkflowState(newWorkflowState);
+            if (documentTrackingStatus != null) {
+                existingAdvisoryNode.setDocumentTrackingStatus(documentTrackingStatus);
+            }
+
+            if (proposedTime != null) {
+                existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(proposedTime);
+            }
+
+            if (newWorkflowState == WorkflowState.Published) {
+                existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
+                        ? proposedTime
+                        : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+            }
+
+            existingAdvisoryNode.setRevision(revision);
+            return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+        } else {
+            throw new CsafException("User has not the permission to view change the workflow state of the advisory",
+                    CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+
+        }
+    }
+
+    public String createNewCsafDocumentVersion(String advisoryId, String revision)
+            throws IOException, DatabaseException, CsafException {
+
+        LOG.debug("createNewCsafDocumentVersion");
+        Authentication credentials = getAuthentication();
+        InputStream existingAdvisoryStream = couchDbService.readDocumentAsStream(advisoryId);
+        if (existingAdvisoryStream == null) {
+            throw new DatabaseException("Invalid advisory ID!");
+        }
+        AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+
+        if (canCreateNewVersion(existingAdvisoryNode)) {
+
+            existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);
+            existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
+            existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+            existingAdvisoryNode.setRevision(revision);
+
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())
+                    .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setAdvisoryId(advisoryId)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+            return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+        } else {
+            throw new CsafException("User has not the permission to create a new Version in this state",
+                    CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+
+        }
     }
 
     /**

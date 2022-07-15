@@ -185,11 +185,111 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Check whether comments or Answers can be added to the given advisory with the given credentials
-     * @param advisory the advisory info to check
+     * Check whether the workflow state of the given advisory can be changed with the given credentials
+     * @param advisory the advisory to check
      * @param credentials the credentials for the check
-     * @return true - comments/answers can be added
+     * @param newWorkflowState the state to change into
+     * @return true - info can be deleted
      */
+    public static boolean canChangeWorkflow(AdvisoryWrapper advisory, WorkflowState newWorkflowState, Authentication credentials) {
+
+        return canChangeWorkflow(advisory.getOwner(), advisory.getWorkflowState(), newWorkflowState, credentials);
+    }
+
+    /**
+     * Check whether the given advisory info can be viewed with the given credentials
+     * @param response the advisory info to check
+     * @param newWorkflowState the state to change into
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    public static boolean canChangeWorkflow(AdvisoryInformationResponse response, WorkflowState newWorkflowState,
+                                            Authentication credentials) {
+
+        return canChangeWorkflow(response.getOwner(), response.getWorkflowState(), newWorkflowState, credentials);
+    }
+
+    /**
+     * Check whether  the workflow state of an advisory with the given user and state can be changed
+     * @param userToCheck the advisory user to check
+     * @param oldWorkflowState the advisory workflow state to check
+     * @param newWorkflowState the state to change into
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    static boolean canChangeWorkflow(String userToCheck, WorkflowState oldWorkflowState,
+                                     WorkflowState newWorkflowState, Authentication credentials) {
+
+        boolean canBeChanged = false;
+        if (oldWorkflowState == WorkflowState.Draft && newWorkflowState == WorkflowState.Review) {
+            canBeChanged = hasRole(AUTHOR, credentials) && isOwnAdvisory(userToCheck, credentials)
+                    ||  hasRole(EDITOR, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Review && newWorkflowState == WorkflowState.Draft) {
+            canBeChanged = hasRole(REVIEWER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Review && newWorkflowState == WorkflowState.Approved) {
+            canBeChanged = hasRole(REVIEWER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.RfPublication) {
+            canBeChanged = hasRole(AUTHOR, credentials) && isOwnAdvisory(userToCheck, credentials)
+                    ||  hasRole(PUBLISHER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.Draft) {
+            canBeChanged = hasRole(PUBLISHER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.RfPublication && newWorkflowState == WorkflowState.Published) {
+            canBeChanged = hasRole(PUBLISHER, credentials);
+        }
+
+        return canBeChanged;
+    }
+
+    /**
+     * Check whether a new version of the given advisory can be created
+     * @param advisory the advisory to check
+     * @return true - info can be deleted
+     */
+    public static boolean canCreateNewVersion(AdvisoryWrapper advisory) {
+
+        return canCreateNewVersion(advisory.getWorkflowState());
+    }
+
+    /**
+     * Check whether a new version of the given advisory can be created
+     * @param advisory the advisory to check
+     * @return true - info can be deleted
+     */
+    public static boolean canCreateNewVersion(AdvisoryInformationResponse advisory) {
+
+        return canCreateNewVersion(advisory.getWorkflowState());
+    }
+
+    /**
+     * Check whether a new version of the given advisory can be created
+     * @param oldWorkflowState the advisory workflow state
+     * @return true - info can be deleted
+     */
+    static boolean canCreateNewVersion(WorkflowState oldWorkflowState) {
+
+        boolean canCreateNewVersion = false;
+        if (oldWorkflowState == WorkflowState.Published) {
+            canCreateNewVersion = true;
+        }
+        return canCreateNewVersion;
+    }
+
+    /**
+         * Check whether comments or Answers can be added to the given advisory with the given credentials
+         * @param advisory the advisory info to check
+         * @param credentials the credentials for the check
+         * @return true - comments/answers can be added
+         */
     public static boolean canAddAndReplyCommentToAdvisory(AdvisoryInformationResponse advisory, Authentication credentials) {
 
         String advisoryOwner = advisory.getOwner();

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class AdvisoryWorkflowTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR})
-    public void addAdvisoryTest() throws IOException, DatabaseException {
+    public void addAdvisoryTest() throws IOException, DatabaseException, CsafException {
 
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
@@ -69,7 +70,7 @@ public class AdvisoryWorkflowTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR})
-    public void readAdvisoryTest_AuthorOwn() throws IOException, DatabaseException {
+    public void readAdvisoryTest_AuthorOwn() throws IOException, DatabaseException, CsafException {
 
         final String userName = "editor1";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
@@ -81,17 +82,17 @@ public class AdvisoryWorkflowTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR})
-    public void readAdvisoryTest_AuthorNotOwn() throws IOException, DatabaseException {
+    public void readAdvisoryTest_AuthorNotOwn() throws IOException, CsafException {
 
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
         IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafJson, createAuthentication(advisoryUser, AUTHOR.getRoleName()));
-        assertThrows(AccessDeniedException.class, () -> advisoryService.getAdvisory(idRev.getId()));
+        assertThrows(CsafException.class, () -> advisoryService.getAdvisory(idRev.getId()));
     }
 
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_EDITOR})
-    public void readAdvisoryTest_EditorNotOwn() throws IOException, DatabaseException {
+    public void readAdvisoryTest_EditorNotOwn() throws IOException, DatabaseException, CsafException {
 
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");

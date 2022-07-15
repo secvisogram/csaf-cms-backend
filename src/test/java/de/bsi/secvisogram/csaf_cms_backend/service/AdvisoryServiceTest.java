@@ -91,7 +91,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryCount() throws IOException {
+    public void getAdvisoryCount() throws IOException, CsafException {
         this.advisoryService.addAdvisory(csafJson);
         // creates advisory and 1 audit trail
         assertEquals(2, this.advisoryService.getDocumentCount());
@@ -105,7 +105,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryIdsTest() throws IOException {
+    public void getAdvisoryIdsTest() throws IOException, CsafException {
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJson);
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJson);
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations();
@@ -134,7 +134,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void addAdvisoryTest() throws IOException {
+    public void addAdvisoryTest() throws IOException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         Assertions.assertNotNull(idRev);
     }
@@ -147,7 +147,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryTest() throws IOException, DatabaseException {
+    public void getAdvisoryTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(idRev.getId(), advisory.getAdvisoryId());
@@ -162,7 +162,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisoryTest_badRevision() throws IOException {
+    public void deleteAdvisoryTest_badRevision() throws IOException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         // creates advisory and 1 audit trail
         assertEquals(2, advisoryService.getDocumentCount());
@@ -172,7 +172,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisoryTest() throws IOException, DatabaseException {
+    public void deleteAdvisoryTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         assertEquals(2, advisoryService.getDocumentCount(), "there should be one advisory and one audit trail");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
@@ -181,16 +181,16 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisoryTest_NoPermission() throws IOException, DatabaseException {
+    public void deleteAdvisoryTest_NoPermission() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review);
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
         // author could only delete advisory in workflow state draft
         assertThrows(AccessDeniedException.class, () -> this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision()));
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException {
+    public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
         advisoryService.addAdvisory(csafJson);
         assertEquals(4, advisoryService.getDocumentCount(), "there should be two advisories with an audit trail each");
@@ -225,7 +225,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void updateAdvisoryTest() throws IOException, DatabaseException {
+    public void updateAdvisoryTest() throws IOException, DatabaseException, CsafException {
 
         var updateJsafJson = csafDocumentJson("CSAF_INFORMATIONAL_ADVISORY", "Test Advisory");
 
@@ -240,7 +240,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void updateAdvisoryTest_auditTrail() throws IOException, DatabaseException {
+    public void updateAdvisoryTest_auditTrail() throws IOException, DatabaseException, CsafException {
 
         var idRev = advisoryService.addAdvisory(csafDocumentJson("Category1", "Title1"));
         var revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafDocumentJson("Category2", "Title2"));
@@ -287,14 +287,30 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
-    public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException {
+    public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review);
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
         // an advisory and 2 audit trails are created
         assertEquals(3, advisoryService.getDocumentCount());
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(WorkflowState.Review, advisory.getWorkflowState());
     }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    public void createNewCsafDocumentVersionTest() throws IOException, DatabaseException, CsafException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+        revision = advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
+        // an advisory and 5 audit trails are created
+        assertEquals(7, advisoryService.getDocumentCount());
+        AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+        assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+    }
+
 
     private String csafDocumentJson(String documentCategory, String documentTitle) {
 

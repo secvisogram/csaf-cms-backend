@@ -29,30 +29,32 @@ public class AdvisoryInformationResponse {
 
         this.changeable = false;
         this.deletable = false;
+        this.allowedStateChanges = Collections.emptyList();
 
     }
 
-    public AdvisoryInformationResponse(String advisoryId, WorkflowState status) {
-        this(advisoryId, status, "");
+    public AdvisoryInformationResponse(String advisoryId) {
+
+        this.advisoryId = advisoryId;
+        this.changeable = false;
+        this.deletable = false;
+        this.allowedStateChanges = Collections.emptyList();
     }
 
-    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId) {
-        this(advisoryId, workflowState, documentTrackingId, "Title of: " + documentTrackingId, "unknown");
+    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState) {
+        this.advisoryId = advisoryId;
+        this.workflowState = workflowState;
+        this.changeable = false;
+        this.deletable = false;
+        this.allowedStateChanges = Collections.emptyList();
     }
 
     public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId, String title, String owner) {
         this.advisoryId = advisoryId;
         this.workflowState = workflowState;
         this.documentTrackingId = documentTrackingId;
-        this.changeable = true;
-        this.deletable = true;
-        if (WorkflowState.Draft == workflowState) {
-            this.allowedStateChanges = List.of(WorkflowState.Review);
-        } else if (WorkflowState.Approved == workflowState) {
-            this.allowedStateChanges = List.of(WorkflowState.Published);
-        } else if (WorkflowState.Review == workflowState) {
-            this.allowedStateChanges = Arrays.asList(WorkflowState.Draft, WorkflowState.Approved);
-        }
+        this.changeable = false;
+        this.deletable = false;
         this.title = title;
         this.owner = owner;
     }
