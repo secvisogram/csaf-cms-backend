@@ -481,7 +481,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/csaf/document/tracking/version").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -493,7 +493,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenThrow(new CsafException("access denied", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED));
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/csaf/document/tracking/version").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
