@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.ArrayMatching.arrayContaining;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
+import de.bsi.secvisogram.csaf_cms_backend.service.AdvisorySearchUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ public class ExpressionTest {
         OperatorExpression opExpr = new OperatorExpression(new String[] {"document"}, TypeOfOperator.Equal, "123.45", TypeOfValue.Decimal);
         AndExpression andExpr = new AndExpression(opExpr);
 
-        String expressionString = AdvisoryWrapper.expression2Json(andExpr);
+        String expressionString = AdvisorySearchUtil.expression2Json(andExpr);
 
         assertThat(expressionString, equalToIgnoringWhiteSpace("{" +
                 "  \"type\" : \"AND\"," +
@@ -45,7 +45,7 @@ public class ExpressionTest {
                 "  } ]\n" +
                 "}";
 
-        Expression expression = AdvisoryWrapper.json2Expression(expressionString);
+        Expression expression = AdvisorySearchUtil.json2Expression(expressionString);
 
         assertThat(expression, instanceOf(AndExpression.class));
         assertThat(((AndExpression) expression).getExpressions().size(), equalTo(1));
@@ -73,7 +73,7 @@ public class ExpressionTest {
                 "}";
 
         Throwable thrown = Assertions.assertThrows(JsonProcessingException.class,
-                () ->  AdvisoryWrapper.json2Expression(expressionString));
+                () ->  AdvisorySearchUtil.json2Expression(expressionString));
         assertThat(thrown.getMessage(), startsWith("Unrecognized field \"expressi\""));
     }
 }

@@ -102,7 +102,7 @@ public class AdvisoryControllerTest {
     @Test
     void listCsafDocumentsTest_empty() throws Exception {
 
-        when(advisoryService.getAdvisoryInformations()).thenReturn(Collections.emptyList());
+        when(advisoryService.getAdvisoryInformations(null)).thenReturn(Collections.emptyList());
 
         this.mockMvc.perform(get(advisoryRoute))
                 .andDo(print())
@@ -115,7 +115,7 @@ public class AdvisoryControllerTest {
     void listCsafDocumentsTest_oneItem() throws Exception {
 
         AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId, WorkflowState.Draft);
-        when(advisoryService.getAdvisoryInformations()).thenReturn(List.of(info));
+        when(advisoryService.getAdvisoryInformations(null)).thenReturn(List.of(info));
 
         this.mockMvc.perform(get(advisoryRoute))
                 .andDo(print())

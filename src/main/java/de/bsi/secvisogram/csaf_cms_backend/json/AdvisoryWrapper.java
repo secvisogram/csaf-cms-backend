@@ -4,11 +4,8 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.CSAF;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
@@ -17,7 +14,6 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -429,32 +425,5 @@ public class AdvisoryWrapper {
     }
 
 
-    /**
-     * Convert Search Expression to JSON String
-     *
-     * @param expression2Convert the expression to convert
-     * @return the converted expression
-     * @throws JsonProcessingException a conversion problem has occurred
-     */
-    public static String expression2Json(Expression expression2Convert) throws JsonProcessingException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
-
-        return writer.writeValueAsString(expression2Convert);
-    }
-
-    /**
-     * Convert JSON String to Search expression
-     *
-     * @param jsonString the String to convert
-     * @return the converted expression
-     * @throws JsonProcessingException error in json
-     */
-    public static Expression json2Expression(String jsonString) throws JsonProcessingException {
-
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        return jacksonMapper.readValue(jsonString, Expression.class);
-
-    }
 }
