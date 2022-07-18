@@ -68,8 +68,9 @@ public class AdvisoryInformationResponse {
         return workflowState;
     }
 
-    public void setWorkflowState(WorkflowState workflowState) {
+    public AdvisoryInformationResponse setWorkflowState(WorkflowState workflowState) {
         this.workflowState = workflowState;
+        return this;
     }
 
     public void setWorkflowState(String workflowStateString) {
@@ -115,8 +116,9 @@ public class AdvisoryInformationResponse {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public AdvisoryInformationResponse setOwner(String owner) {
         this.owner = owner;
+        return this;
     }
 
     @Schema(description = "Indicates if the currently logged in user can change this advisory.", example = "true")

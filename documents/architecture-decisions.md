@@ -688,6 +688,12 @@ The editor edits the advisory several times.
   - set workflow state of the advisory to `Review`
 - `deleteCsafDocument (DELETE advisories/{id})`
   - removes advisory from system
+- _add and change comments and answers_
+  - `listComments (GET advisories/{id}/comments/)`
+  - `addComment (POST advisories/{id}/comments/)`
+  - `addAnswer (POST advisories/{id}/comments/{commentId}/answer)`
+  - `changeComment (PATCH advisories/{id}/comments/{commentId}/)`
+  - `changeAnswer (PATCH advisories/{id}/comments/{commentId}/answer/{answerId})`,
 
 #### Workflow State: Review
 
@@ -733,6 +739,12 @@ In the state `Approved` the Publisher has 2 options:
   - optionally set a time for when the publication should take place
 - `createNewCsafDocumentVersion`
   - create new Version of the CSAF document
+- _add and change comments and answers_
+  - `listComments (GET advisories/{id}/comments/)`
+  - `addComment (POST advisories/{id}/comments/)`
+  - `addAnswer (POST advisories/{id}/comments/{commentId}/answer)`
+  - `changeComment (PATCH advisories/{id}/comments/{commentId}/)`
+  - `changeAnswer (PATCH advisories/{id}/comments/{commentId}/answer/{answerId})`,
 
 #### Workflow State: RfPublication
 
