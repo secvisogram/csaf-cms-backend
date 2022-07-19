@@ -60,10 +60,10 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
-    public List<AdvisoryInformationResponse> getAdvisoryInformations() throws IOException {
+    public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
-        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.adivoryReadFields();
-        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
+        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
+        Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression);
         List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
 
         List<AdvisoryInformationResponse> allResponses =  docList.stream()
