@@ -62,7 +62,7 @@ public class AdvisoryService {
      */
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
-        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.adivoryReadFields();
+        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
         Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression);
         List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
 
