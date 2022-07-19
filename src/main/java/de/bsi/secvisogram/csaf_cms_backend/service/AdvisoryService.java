@@ -162,7 +162,7 @@ public class AdvisoryService {
                 response.setRevision(advisory.getRevision());
                 return response;
             } else {
-                throw new CsafException("User has not the permission to view comment from the advisory",
+                throw new CsafException("The user has no permission to view this advisory",
                         CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
             }
         } catch (IOException e) {
@@ -261,7 +261,7 @@ public class AdvisoryService {
                 this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
                 return result;
             } else {
-                throw new CsafException("User has not the permission to view comment from the advisory",
+                throw new CsafException("User has no permission to edit the advisory",
                         CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
             }
         }
