@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
@@ -23,8 +25,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import org.springframework.http.HttpStatus;
 
 /**
  * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
@@ -91,7 +95,7 @@ public class AdvisoryWrapper {
      * @return the wrapper
      * @throws IOException exception in handling json string
      */
-    public static AdvisoryWrapper createNewFromCsaf(String newCsafJson, String userName) throws IOException {
+    public static AdvisoryWrapper createNewFromCsaf(String newCsafJson, String userName) throws IOException, CsafException {
 
         AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromString(newCsafJson));
         wrapper.setCreatedAtToNow()
@@ -227,6 +231,17 @@ public class AdvisoryWrapper {
     }
 
 
+    public String getDocumentTitle() {
+
+        JsonNode titleNode = this.at(AdvisorySearchField.DOCUMENT_TITLE);
+        return (titleNode.isMissingNode()) ? "" : titleNode.asText();
+    }
+
+    public String getDocumentTrackingId() {
+
+        JsonNode idNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_ID);
+        return (idNode.isMissingNode()) ? "" : idNode.asText();
+    }
 
     public String getDocumentTrackingVersion() {
 
@@ -290,7 +305,14 @@ public class AdvisoryWrapper {
      * @param newDate the new date as ISO-8601 string
      * @return this
      */
-    public AdvisoryWrapper setDocumentTrackingCurrentReleaseDate(String newDate) {
+    public AdvisoryWrapper setDocumentTrackingCurrentReleaseDate(String newDate) throws CsafException {
+
+        try {
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(newDate);
+        } catch (DateTimeParseException ex) {
+            throw new CsafException("Invalid format for document - tracking - current_release_date",
+                    CsafExceptionKey.InvalidDateTimeFormat, HttpStatus.BAD_REQUEST);
+        }
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
         ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
@@ -303,6 +325,33 @@ public class AdvisoryWrapper {
         return this;
     }
 
+    /**
+     * Set current_release_date in document tracking node.
+     * Create nodes when they not exist.
+     * @param newDate the new date as ISO-8601 string
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingInitialReleaseDate(String newDate) throws CsafException {
+
+        try {
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(newDate);
+        } catch (DateTimeParseException ex) {
+            throw new CsafException("Invalid format for document - tracking - initial_release_date",
+                    CsafExceptionKey.InvalidDateTimeFormat, HttpStatus.BAD_REQUEST);
+        }
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
+        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
+        if (trackingNode == null) {
+            trackingNode = jacksonMapper.createObjectNode();
+            versionNode.set("tracking", trackingNode);
+        }
+        trackingNode.put("initial_release_date", newDate);
+        return this;
+    }
+
+
 
     public String advisoryAsString() {
 
@@ -312,7 +361,7 @@ public class AdvisoryWrapper {
     public static AdvisoryInformationResponse convertToAdvisoryInfo(JsonNode doc, Map<DbField,
             BiConsumer<AdvisoryInformationResponse, String>> infoFields) {
         String advisoryId = doc.get(ID_FIELD.getDbName()).asText();
-        final AdvisoryInformationResponse response = new AdvisoryInformationResponse(advisoryId, null);
+        final AdvisoryInformationResponse response = new AdvisoryInformationResponse(advisoryId);
         infoFields.forEach((key, value) -> setValueInResponse(response, key, doc, value));
 
         return response;

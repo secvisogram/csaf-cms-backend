@@ -3,6 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -15,7 +16,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createNewFromCsafTest() throws IOException {
+    public void createNewFromCsafTest() throws IOException, CsafException {
 
         var csafJson = """
                 { "document": {
@@ -98,7 +99,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void setDocumentTrackingVersionTest() throws IOException {
+    public void setDocumentTrackingVersionTest() throws IOException, CsafException {
 
         var csafJson = """
                 { "document": {
@@ -112,7 +113,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void setDocumentTrackingVersionTest_updateVersion() throws IOException {
+    public void setDocumentTrackingVersionTest_updateVersion() throws IOException, CsafException {
 
         var csafJson = """
                 { "document": {
@@ -141,7 +142,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void setDocumentTrackingStatusTest() throws IOException {
+    public void setDocumentTrackingStatusTest() throws IOException, CsafException {
 
         var csafJson = """
                 { "document": {
@@ -155,7 +156,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void setDocumentTrackingCurrentReleaseDateTest() throws IOException {
+    public void setDocumentTrackingCurrentReleaseDateTest() throws IOException, CsafException {
 
         var csafJson = """
                 { "document": {
@@ -163,8 +164,8 @@ public class AdvisoryWrapperTest {
                 }""";
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
-        advisory.setDocumentTrackingCurrentReleaseDate("2022");
-        assertThat(advisory.getDocumentTrackingCurrentReleaseDate(), equalTo("2022"));
+        advisory.setDocumentTrackingCurrentReleaseDate("2019-09-07T15:50Z");
+        assertThat(advisory.getDocumentTrackingCurrentReleaseDate(), equalTo("2019-09-07T15:50Z"));
     }
 
 }

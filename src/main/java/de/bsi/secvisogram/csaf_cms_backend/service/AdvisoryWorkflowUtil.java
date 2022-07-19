@@ -21,6 +21,8 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
@@ -59,20 +61,20 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Check whether a advisory with the geiven user and state can be deleted with the given credentials
-     * @param userToCheck the advisory user to checck
-     * @param stateToCheck the advisory workflow state to check
+     * Check whether an advisory with the given user and state can be deleted with the given credentials
+     * @param userToCheck the advisory user to check
+     * @param advisoryState the advisory workflow state to check
      * @param credentials the credentials for the check
      * @return true - info can be deleted
      */
-    public static boolean canDeleteAdvisory(String userToCheck, WorkflowState stateToCheck, Authentication credentials) {
+    static boolean canDeleteAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials) {
 
         boolean canBeDeleted = false;
         if (hasRole(AUTHOR, credentials)) {
-            canBeDeleted = isOwnAdvisory(userToCheck, credentials) && isInStateDraft(stateToCheck);
+            canBeDeleted = isOwnAdvisory(userToCheck, credentials) && isInStateDraft(advisoryState);
         }
         if (hasRole(EDITOR, credentials)) {
-            canBeDeleted = isInStateDraft(stateToCheck);
+            canBeDeleted = isInStateDraft(advisoryState);
         }
         if (hasRole(MANAGER, credentials)) {
             canBeDeleted = true;
@@ -81,17 +83,35 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Check whether the given advisory info can be deleted with the given credentials
+     * Check whether the given advisory info can be changed with the given credentials
      * @param response the advisory info to check
      * @param credentials the credentials for the check
-     * @return true - info can be deleted
+     * @return true - info can be changed
      */
     public static boolean canChangeAdvisory(AdvisoryInformationResponse response, Authentication credentials) {
 
         return canChangeAdvisory(response.getOwner(), response.getWorkflowState(), credentials);
     }
 
-    public static boolean canChangeAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials) {
+    /**
+     * Check whether the given advisory can be deleted with the given credentials
+     * @param advisory the advisory to check
+     * @param credentials the credentials for the check
+     * @return true - info can be deleted
+     */
+    public static boolean canChangeAdvisory(AdvisoryWrapper advisory, Authentication credentials) {
+
+        return canChangeAdvisory(advisory.getOwner(), advisory.getWorkflowState(), credentials);
+    }
+
+    /**
+     * Check whether an advisory with the given user and state can be changed with the given credentials
+     * @param userToCheck the advisory user to check
+     * @param advisoryState the advisory workflow state to check
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    static boolean canChangeAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials) {
 
         boolean canBeChanged = false;
         if (hasRole(AUTHOR, credentials)) {
@@ -104,12 +124,172 @@ public class AdvisoryWorkflowUtil {
         return canBeChanged;
     }
 
+
     /**
-     * Check whether comments or Answers can be added to the  given advisory with the given credentials
-     * @param advisory the advisory info to check
+     * Check whether the given advisory can be viewed with the given credentials
+     * @param advisory the advisory to check
      * @param credentials the credentials for the check
-     * @return true - comments/answers can be added
+     * @return true - info can be deleted
      */
+    public static boolean canViewAdvisory(AdvisoryWrapper advisory, Authentication credentials) {
+
+        return canViewAdvisory(advisory.getOwner(), advisory.getWorkflowState(), credentials,
+                advisory.getDocumentTrackingCurrentReleaseDate());
+    }
+
+
+    /**
+     * Check whether the given advisory info can be viewed with the given credentials
+     * @param response the advisory info to check
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    public static boolean canViewAdvisory(AdvisoryInformationResponse response, Authentication credentials) {
+
+        return canViewAdvisory(response.getOwner(), response.getWorkflowState(), credentials,
+                response.getCurrentReleaseDate());
+    }
+
+    /**
+     * Check whether an advisory with the given user and state can be viewed with the given credentials
+     * @param userToCheck the advisory user to check
+     * @param advisoryState the advisory workflow state to check
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    static boolean canViewAdvisory(String userToCheck, WorkflowState advisoryState, Authentication credentials,
+            String releaseDate) {
+
+        boolean canBeViewed = isPublished(advisoryState, releaseDate);
+        if (hasRole(AUTHOR, credentials)) {
+            canBeViewed = isOwnAdvisory(userToCheck, credentials)
+                    || isPublished(advisoryState, releaseDate);
+        }
+        if (hasRole(EDITOR, credentials)) {
+            canBeViewed = true;
+        }
+        if (hasRole(PUBLISHER, credentials)) {
+            canBeViewed = isInState(advisoryState, WorkflowState.Draft, WorkflowState.Approved,
+                    WorkflowState.RfPublication) || isPublished(advisoryState, releaseDate);
+        }
+        if (hasRole(REVIEWER, credentials)) {
+            canBeViewed |= (!isOwnAdvisory(userToCheck, credentials) && isInState(advisoryState, WorkflowState.Review))
+                    || isPublished(advisoryState, releaseDate);
+        }
+
+        if (hasRole(AUDITOR, credentials)) {
+            canBeViewed = true;
+        }
+
+        return canBeViewed;
+    }
+
+    /**
+     * Check whether the workflow state of the given advisory can be changed with the given credentials
+     * @param advisory the advisory to check
+     * @param credentials the credentials for the check
+     * @param newWorkflowState the state to change into
+     * @return true - info can be deleted
+     */
+    public static boolean canChangeWorkflow(AdvisoryWrapper advisory, WorkflowState newWorkflowState, Authentication credentials) {
+
+        return canChangeWorkflow(advisory.getOwner(), advisory.getWorkflowState(), newWorkflowState, credentials);
+    }
+
+    /**
+     * Check whether the given advisory info can be viewed with the given credentials
+     * @param response the advisory info to check
+     * @param newWorkflowState the state to change into
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    public static boolean canChangeWorkflow(AdvisoryInformationResponse response, WorkflowState newWorkflowState,
+                                            Authentication credentials) {
+
+        return canChangeWorkflow(response.getOwner(), response.getWorkflowState(), newWorkflowState, credentials);
+    }
+
+    /**
+     * Check whether  the workflow state of an advisory with the given user and state can be changed
+     * @param userToCheck the advisory user to check
+     * @param oldWorkflowState the advisory workflow state to check
+     * @param newWorkflowState the state to change into
+     * @param credentials the credentials for the check
+     * @return true - info can be changed
+     */
+    static boolean canChangeWorkflow(String userToCheck, WorkflowState oldWorkflowState,
+                                     WorkflowState newWorkflowState, Authentication credentials) {
+
+        boolean canBeChanged = false;
+        if (oldWorkflowState == WorkflowState.Draft && newWorkflowState == WorkflowState.Review) {
+            canBeChanged = hasRole(AUTHOR, credentials) && isOwnAdvisory(userToCheck, credentials)
+                    ||  hasRole(EDITOR, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Review && newWorkflowState == WorkflowState.Draft) {
+            canBeChanged = hasRole(REVIEWER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Review && newWorkflowState == WorkflowState.Approved) {
+            canBeChanged = hasRole(REVIEWER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.RfPublication) {
+            canBeChanged = hasRole(AUTHOR, credentials) && isOwnAdvisory(userToCheck, credentials)
+                    ||  hasRole(PUBLISHER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.Draft) {
+            canBeChanged = hasRole(PUBLISHER, credentials);
+        }
+
+        if (oldWorkflowState == WorkflowState.RfPublication && newWorkflowState == WorkflowState.Published) {
+            canBeChanged = hasRole(PUBLISHER, credentials);
+        }
+
+        return canBeChanged;
+    }
+
+    /**
+     * Check whether a new version of the given advisory can be created
+     * @param advisory the advisory to check
+     * @return true - info can be deleted
+     */
+    public static boolean canCreateNewVersion(AdvisoryWrapper advisory) {
+
+        return canCreateNewVersion(advisory.getWorkflowState());
+    }
+
+    /**
+     * Check whether a new version of the given advisory can be created
+     * @param advisory the advisory to check
+     * @return true - info can be deleted
+     */
+    public static boolean canCreateNewVersion(AdvisoryInformationResponse advisory) {
+
+        return canCreateNewVersion(advisory.getWorkflowState());
+    }
+
+    /**
+     * Check whether a new version of the given advisory can be created
+     * @param oldWorkflowState the advisory workflow state
+     * @return true - info can be deleted
+     */
+    static boolean canCreateNewVersion(WorkflowState oldWorkflowState) {
+
+        boolean canCreateNewVersion = false;
+        if (oldWorkflowState == WorkflowState.Published) {
+            canCreateNewVersion = true;
+        }
+        return canCreateNewVersion;
+    }
+
+    /**
+         * Check whether comments or Answers can be added to the given advisory with the given credentials
+         * @param advisory the advisory info to check
+         * @param credentials the credentials for the check
+         * @return true - comments/answers can be added
+         */
     public static boolean canAddAndReplyCommentToAdvisory(AdvisoryInformationResponse advisory, Authentication credentials) {
 
         String advisoryOwner = advisory.getOwner();
@@ -171,6 +351,14 @@ public class AdvisoryWorkflowUtil {
         return userToCheck.equals(credentials.getName());
     }
 
+    static boolean isPublished(WorkflowState advisoryState, String releaseDate) {
+        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+        return isInState(advisoryState, WorkflowState.Published)
+                && (releaseDate != null && !releaseDate.isBlank()
+                        && releaseDate.compareTo(now) < 0);
+    }
+
+
     public static boolean isInStateDraft(WorkflowState stateToCheck) {
         return stateToCheck == WorkflowState.Draft;
     }
@@ -188,7 +376,8 @@ public class AdvisoryWorkflowUtil {
                 AdvisoryField.OWNER, AdvisoryInformationResponse::setOwner,
                 AdvisorySearchField.DOCUMENT_TITLE, AdvisoryInformationResponse::setTitle,
                 AdvisorySearchField.DOCUMENT_TRACKING_ID, AdvisoryInformationResponse::setDocumentTrackingId,
-                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId
+                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId,
+                AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE, AdvisoryInformationResponse::setCurrentReleaseDate
         );
     }
 
