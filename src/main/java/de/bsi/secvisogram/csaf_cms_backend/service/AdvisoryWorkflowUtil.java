@@ -369,7 +369,7 @@ public class AdvisoryWorkflowUtil {
                 .anyMatch(state -> stateToCheck == state);
     }
 
-    public static Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> adivoryReadFields() {
+    public static Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> advisoryReadFields() {
 
         return Map.of(
                 AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
@@ -383,7 +383,7 @@ public class AdvisoryWorkflowUtil {
 
     public static AdvisoryInformationResponse getAdvisoryForId(String advisoryId, CouchDbService couchDbService) throws CsafException {
 
-        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.adivoryReadFields();
+        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
         OperatorExpression typeIsAdvisory = equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName());
         OperatorExpression advisoryIdIsEqual = equal(advisoryId, ID_FIELD.getDbName());
         Map<String, Object> selector = expr2CouchDBFilter(new AndExpression(typeIsAdvisory, advisoryIdIsEqual));

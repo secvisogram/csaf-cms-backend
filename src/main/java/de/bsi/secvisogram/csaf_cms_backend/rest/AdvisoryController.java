@@ -24,10 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,32 +65,35 @@ public class AdvisoryController {
      * @return response with list of advisories satisfying the search criteria
      */
     @GetMapping("")
-    @Operation(
-            summary = "Get all authorized advisories.",
+    @Operation(summary = "Get all authorized advisories.", tags = {"Advisory"},
             description = "All CSAF documents for which the logged in user is authorized are returned." +
-                          " This depends on the user's role and the state of the CSAF document.",
-            tags = {"Advisory"}
-    )
+                          " This depends on the user's role and the state of the CSAF document.")
     public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
             @RequestParam(required = false)
-            @Parameter(
-                    in = ParameterIn.QUERY,
-                    name = "expression",
-                    description = "The filter expression in JSON format.",
-                    schema = @Schema(
-                            type = "string",
-                            format = "json",
-                            description = "An optional expression to filter documents by."
-                    )
-            ) String expression
+            @Parameter(in = ParameterIn.QUERY, name = "expression",
+                    description = """
+                            The filter expression in JSON format. Example to find documents with title equal 'title1': { "type" : "Operator",
+                              "selector" : [ "csaf", "document", "title" ],
+                              "operatorType" : "Equal",
+                              "value" : "title1",
+                              "valueType" : "Text"
+                            }.
+                             Possible operatorType's: 'Equal', 'NotEqual', 'Greater', 'GreaterOrEqual', 'Less', 'LessOrEqual', 'ContainsIgnoreCase'. 
+                             Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attributes in 'csaf/document""",
+                    schema = @Schema(type = "string", format = "json",
+                            description = "An optional expression in JSON to filter documents by.")
+            )
+            String expression
     ) {
 
-        LOG.info("findAdvisories {} ", sanitize(expression));
+        LOG.debug("findAdvisories");
         try {
-            return ResponseEntity.ok(advisoryService.getAdvisoryInformations());
+            return ResponseEntity.ok(advisoryService.getAdvisoryInformations(expression));
         } catch (IOException e) {
             LOG.info("Error reading Advisory");
             return ResponseEntity.internalServerError().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
@@ -328,7 +328,7 @@ public class AdvisoryController {
             return  ResponseEntity.ok(response);
         } catch (IOException ex) {
             LOG.error("Error loading templates", ex);
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.ok(Collections.emptyList());
         }
     }
 
