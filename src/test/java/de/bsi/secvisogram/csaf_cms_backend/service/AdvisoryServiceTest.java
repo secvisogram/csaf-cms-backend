@@ -98,7 +98,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    public void getAdvisoryIdsTest_empty() throws IOException {
+    public void getAdvisoryIdsTest_empty() throws IOException, CsafException {
         List<AdvisoryInformationResponse> ids = this.advisoryService.getAdvisoryInformations(null);
         assertEquals(0, ids.size());
     }

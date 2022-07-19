@@ -60,7 +60,7 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
-    public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException {
+    public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
         Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.adivoryReadFields();
         Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression);

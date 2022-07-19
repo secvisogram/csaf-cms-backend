@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasItems;
 
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,7 +34,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_documentTitle() throws IOException {
+    public void getAdvisoryInformationsTest_documentTitle() throws IOException, CsafException {
 
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJsonTitle("title1"));
         this.advisoryService.addAdvisory(csafJsonTitle("title2"));
@@ -47,7 +48,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_documentTrackingGeneratorVersion() throws IOException {
+    public void getAdvisoryInformationsTest_documentTrackingGeneratorVersion() throws IOException, CsafException {
 
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJsonTrackingGenratorVersion("1.2.3"));
         this.advisoryService.addAdvisory(csafJsonTrackingGenratorVersion("3.4.5"));
@@ -60,7 +61,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_documentTrackingReisionHistorysummary() throws IOException {
+    public void getAdvisoryInformationsTest_documentTrackingReisionHistorysummary() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafJsonRevisionHistorySummary("SummaryOne"));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJsonRevisionHistorySummary("SummaryTwo"));
@@ -74,7 +75,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_csafAcknowledgmentsNames() throws IOException {
+    public void getAdvisoryInformationsTest_csafAcknowledgmentsNames() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafAcknowledgmentsNames("John"));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafAcknowledgmentsNames("Jack"));
@@ -87,7 +88,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException {
+    public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafVulnerabilitiesCve("CVE-2021-44228"));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafVulnerabilitiesCve("CVE-2021-44999"));
@@ -100,7 +101,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_productTreeFullProductNames() throws IOException {
+    public void getAdvisoryInformationsTest_productTreeFullProductNames() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafProductTreeFullProductNamesProductId("ProductOne"));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafProductTreeFullProductNamesProductId("ProductTwo"));
@@ -113,7 +114,7 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_csafProductTreeBranchesCategory() throws IOException {
+    public void getAdvisoryInformationsTest_csafProductTreeBranchesCategory() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafProductTreeBranchesCategory("CategoryOne"));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafProductTreeBranchesCategory("CategoryTwo"));

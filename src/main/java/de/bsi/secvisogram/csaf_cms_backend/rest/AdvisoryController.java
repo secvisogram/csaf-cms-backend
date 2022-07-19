@@ -92,6 +92,8 @@ public class AdvisoryController {
         } catch (IOException e) {
             LOG.info("Error reading Advisory");
             return ResponseEntity.internalServerError().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
