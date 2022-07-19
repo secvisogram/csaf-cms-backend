@@ -700,7 +700,8 @@ Increase the version of a CSAF document. This can only be done in workflow state
 
 ===== Return Type
 
-<<EntityUpdateResponse>>
+
+<<String>>
 
 
 ===== Content Type
@@ -717,7 +718,7 @@ Increase the version of a CSAF document. This can only be done in workflow state
 
 | 200
 | OK
-|  <<EntityUpdateResponse>>
+|  <<String>>
 
 |===
 
@@ -1661,13 +1662,13 @@ Change the workflow state of the advisory with the given id to Published.
 | 
 
 | proposedTime
-| Proposed Time at which the publication should take place. 
+| Proposed Time at which the publication should take place as ISO-8601 UTC string. 
 | -
 | null
 | 
 
 | documentTrackingStatus
-| The new Document Tracking Status of the CSAF Document. Only interim and final are allowed. 
+| The new Document Tracking Status of the CSAF Document. Only Interim and Final are allowed. 
 | X
 | null
 | 
@@ -1865,7 +1866,7 @@ Change the workflow state of the advisory with the given id to Request for Publi
 | 
 
 | proposedTime
-| Proposed Time at which the publication should take place. 
+| Proposed Time at which the publication should take place as ISO-8601 UTC string. 
 | -
 | null
 | 
