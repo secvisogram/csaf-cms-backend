@@ -17,6 +17,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
+import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
@@ -124,7 +126,6 @@ public class AdvisoryControllerTest {
 
     }
 
-
     @Test
     void readCsafDocumentTest_notExisting() throws Exception {
 
@@ -138,6 +139,17 @@ public class AdvisoryControllerTest {
 
     }
 
+    @Test
+    void readCsafDocumentTest_unauthorized() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(AccessDeniedException.class);
+
+        this.mockMvc.perform(get(advisoryRoute + advisoryId))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
+    }
     @Test
     void readCsafDocumentTest() throws Exception {
 
@@ -204,6 +216,18 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void changeCsafDocumentTest_unauthorized() throws Exception {
+
+        doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(advisoryId, revision, fullAdvisoryJsonString);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+                        .content(fullAdvisoryJsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
     @Test
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
@@ -375,23 +399,108 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void changeWorkflowStateTest() {
-        // to be filled
-        // include tests for 422 response code when trying to perform invalid change
-        // allowed are:
-        // Draft -> Review
-        // Approved -> Published
-        // Review -> Draft, Approved
+    void changeWorkflowStateDraftTest() throws Exception {
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft,
+                null, null)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Draft").with(csrf())
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changeWorkflowStateReviewTest() throws Exception {
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Review,
+                null, null)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Review").with(csrf())
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changeWorkflowStateApprovedTest() throws Exception {
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision,
+                WorkflowState.Approved, null, null)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Approved").with(csrf())
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changeWorkflowStateRfPublicationTest() throws Exception {
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication,
+                "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/RfPublication").with(csrf())
+                        .param("revision", revision)
+                        .param("proposedTime", "2022-07-15T05:50:21Z"))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changeWorkflowStatePublishedTest() throws Exception {
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published,
+                "2022-07-15T05:50:21Z", null)).thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+                        .param("revision", revision)
+                        .param("proposedTime", "2022-07-15T05:50:21Z")
+                        .param("documentTrackingStatus", "Interim"))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changeWorkflowStatePublishedTest_unauthorized() throws Exception {
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
+                .thenThrow(new CsafException("access denied", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED));
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+                        .param("revision", revision)
+                        .param("proposedTime", "2022-07-15T05:50:21Z")
+                        .param("documentTrackingStatus", "Interim"))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createNewCsafDocumentVersionTest() throws Exception {
+
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
+                .thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void createNewCsafDocumentVersionTest_unauthorized() throws Exception {
+
+        when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
+                .thenThrow(new CsafException("access denied", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED));
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void exportAdvisoryTest() {
-        // to be filled
-    }
-
-
-    @Test
-    void createNewCsafDocumentVersionTest() {
         // to be filled
     }
 
@@ -433,10 +542,7 @@ public class AdvisoryControllerTest {
     @Test
     void listCommentsTest_unauthorized() throws Exception {
 
-        String owner = "Musterfrau";
-
         when(advisoryService.getComments(advisoryId)).thenThrow(AccessDeniedException.class);
-
 
         this.mockMvc.perform(get(commentRoute))
                 .andDo(print())
@@ -578,7 +684,6 @@ public class AdvisoryControllerTest {
     @Test
     void changeCommentTest_unauthorized() throws Exception {
 
-        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateComment(advisoryId, commentId, revision, commentText)).thenThrow(AccessDeniedException.class);
 
         this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())

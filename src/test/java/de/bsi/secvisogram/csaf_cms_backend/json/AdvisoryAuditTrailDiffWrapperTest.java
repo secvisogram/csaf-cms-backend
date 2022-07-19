@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 public class AdvisoryAuditTrailDiffWrapperTest {
 
     @Test
-    public void createNewFromCsafTest() throws IOException {
+    public void createNewFromCsafTest() throws IOException, CsafException {
 
         var oldWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonCategoryTitleId("Category1", "OldTitle", "Id1"), "John");
         var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonCategoryTitleId("Category1", "NewTitle", "Id2"), "John");
@@ -28,7 +29,7 @@ public class AdvisoryAuditTrailDiffWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createNewFromCsafTest_emptyAdvisory() throws IOException {
+    public void createNewFromCsafTest_emptyAdvisory() throws IOException, CsafException {
 
         var oldWrapper = AdvisoryWrapper.createInitialEmptyAdvisoryForUser("John");
         var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonCategoryTitleId("Category1", "NewTitle", "ID01"), "John");

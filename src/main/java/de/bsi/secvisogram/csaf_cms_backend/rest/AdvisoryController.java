@@ -128,6 +128,8 @@ public class AdvisoryController {
         } catch (DatabaseException e) {
             LOG.info("Error reading Advisory");
             return ResponseEntity.internalServerError().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
@@ -169,6 +171,8 @@ public class AdvisoryController {
             return ResponseEntity.badRequest().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
@@ -180,27 +184,19 @@ public class AdvisoryController {
      * @return response with the new optimistic locking revision
      */
     @PatchMapping("/{advisoryId}")
-    @Operation(
-            summary = "Change advisory.",
+    @Operation(summary = "Change advisory.", tags = {"Advisory"},
             description = "Change a CSAF document in the system. On saving a document its content (version) may change " +
-                          " Thus, after changing a document, it must be reloaded on the client side.",
-            tags = {"Advisory"}
-    )
+                          " Thus, after changing a document, it must be reloaded on the client side.")
     public ResponseEntity<EntityUpdateResponse> changeCsafDocument(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
+            String advisoryId,
             @RequestParam
-            @Parameter(
-                    description = "The optimistic locking revision."
-            ) String revision,
+            @Parameter(description = "The optimistic locking revision.")
+            String revision,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including node IDs.",
-                    required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    description = "An advisory in CSAF JSON format including node IDs.", required = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(
                                     title = "Common Security Advisory Framework schema extended with node IDs.",
                                     description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
@@ -223,7 +219,12 @@ public class AdvisoryController {
             return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
+
     }
 
     /**
@@ -239,18 +240,29 @@ public class AdvisoryController {
             description = "Increase the version of a CSAF document. This can only be done in workflow state Published",
             tags = {"Advisory"}
     )
-    public EntityUpdateResponse createNewCsafDocumentVersion(
+    public ResponseEntity<String> createNewCsafDocumentVersion(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
             String advisoryId,
-            @RequestParam @Parameter(description = "The optimistic locking revision.")
+            @RequestParam
+            @Parameter(description = "The optimistic locking revision.")
             String revision
     ) {
 
-        // only for debugging, remove when implemented
-        LOG.info("createNewCsafDocumentVersion {} {}", sanitize(advisoryId), sanitize(revision));
+        LOG.debug("createNewCsafDocumentVersion");
 
-        return new EntityUpdateResponse("2-efaa5db9409b2d4300535c70aaf6a66b");
+        try {
+            String newRevision = advisoryService.createNewCsafDocumentVersion(advisoryId, revision);
+            return ResponseEntity.ok().build();
+        } catch (IOException idNfEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (DatabaseException dbEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        }
     }
 
 
@@ -377,14 +389,11 @@ public class AdvisoryController {
     )
     public String exportAdvisory(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to export."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to export.")
+            String advisoryId,
             @RequestParam(required = false)
-            @Parameter(
-                    description = "The format in which the document shall be exported."
-            ) ExportFormat format
+            @Parameter(description = "The format in which the document shall be exported.")
+            ExportFormat format
     ) {
 
         // only for debugging, remove when implemented
@@ -408,23 +417,32 @@ public class AdvisoryController {
     )
     public ResponseEntity<String> setWorkflowStateToDraft(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change the workflow state of."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
+            String advisoryId,
             @RequestParam
-            @Parameter(
-                    description = "The optimistic locking revision."
-            ) String revision
+            @Parameter(description = "The optimistic locking revision.")
+            String revision
     ) throws IOException {
 
-        LOG.info("setWorkflowStateToDraft {} {}", sanitize(advisoryId), sanitize(revision));
+        LOG.debug("setWorkflowStateToDraft");
         checkValidUuid(advisoryId);
+        return changeWorkflowState(advisoryId, revision, WorkflowState.Draft);
+    }
+
+    private ResponseEntity<String> changeWorkflowState(String advisoryId, String revision, WorkflowState state) throws IOException {
+
+        return this.changeWorkflowState(advisoryId, revision, state, null, null);
+    }
+
+    private ResponseEntity<String> changeWorkflowState(String advisoryId, String revision, WorkflowState state,
+                               String proposedTime, DocumentTrackingStatus documentTrackingStatus) throws IOException {
         try {
-            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft);
+            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, state, proposedTime, documentTrackingStatus);
             return ResponseEntity.ok().build();
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
@@ -443,24 +461,16 @@ public class AdvisoryController {
     )
     public ResponseEntity<String> setWorkflowStateToReview(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change the workflow state of."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
+            String advisoryId,
             @RequestParam
-            @Parameter(
-                    description = "The optimistic locking revision."
-            ) String revision
+            @Parameter(description = "The optimistic locking revision.")
+            String revision
     ) throws IOException {
 
         // only for debugging, remove when implemented
-        LOG.info("setWorkflowStateToReview {} {}", sanitize(advisoryId), sanitize(revision));
-        try {
-            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Review);
-            return ResponseEntity.ok().build();
-        } catch (DatabaseException dbEx) {
-            return ResponseEntity.badRequest().build();
-        }
+        LOG.debug("setWorkflowStateToReview");
+        return changeWorkflowState(advisoryId, revision, WorkflowState.Review);
     }
 
     /**
@@ -478,25 +488,15 @@ public class AdvisoryController {
     )
     public ResponseEntity<String> setWorkflowStateToApproved(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change the workflow state of."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
+            String advisoryId,
             @RequestParam
-            @Parameter(
-                    description = "The optimistic locking revision."
-            ) String revision
+            @Parameter(description = "The optimistic locking revision.")
+            String revision
     ) throws IOException {
 
-        // only for debugging, remove when implemented
-        LOG.info("setWorkflowStateToApprove {} {}", sanitize(advisoryId), sanitize(revision));
-        checkValidUuid(advisoryId);
-        try {
-            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Approved);
-            return ResponseEntity.ok().build();
-        } catch (DatabaseException dbEx) {
-            return ResponseEntity.badRequest().build();
-        }
+        LOG.debug("setWorkflowStateToApproved");
+        return changeWorkflowState(advisoryId, revision, WorkflowState.Approved);
     }
 
     /**
@@ -515,26 +515,16 @@ public class AdvisoryController {
     )
     public ResponseEntity<String> setWorkflowStateToRfPublication(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change the workflow state of."
-            ) String advisoryId,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
+            String advisoryId,
             @RequestParam @Parameter(description = "The optimistic locking revision.") String revision,
             @RequestParam(required = false)
-            @Parameter(
-                    description = "Proposed Time at which the publication should take place.")
-                    String proposedTime
+            @Parameter(description = "Proposed Time at which the publication should take place as ISO-8601 UTC string.")
+            String proposedTime
     ) throws IOException {
 
-        // only for debugging, remove when implemented
-        LOG.info("setWorkflowStateToPublish {} {} {}", sanitize(advisoryId), sanitize(revision), sanitize(proposedTime));
-        checkValidUuid(advisoryId);
-        try {
-            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication);
-            return ResponseEntity.ok().build();
-        } catch (DatabaseException dbEx) {
-            return ResponseEntity.badRequest().build();
-        }
+        LOG.debug("setWorkflowStateToRfPublication");
+        return changeWorkflowState(advisoryId, revision, WorkflowState.RfPublication, proposedTime, null);
     }
 
     /**
@@ -546,38 +536,26 @@ public class AdvisoryController {
      * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
      * @return new optimistic locking revision
      */
-    @Operation(
-            summary = "Change workflow state of an advisory to Published.",
-            description = "Change the workflow state of the advisory with the given id to Published.",
-            tags = {"Advisory"}
-    )
+    @Operation(summary = "Change workflow state of an advisory to Published.", tags = {"Advisory"},
+            description = "Change the workflow state of the advisory with the given id to Published.")
     @PatchMapping("/{advisoryId}/workflowstate/Published")
     public ResponseEntity<String> setWorkflowStateToPublished(
             @PathVariable
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    description = "The ID of the advisory to change the workflow state of."
-            ) String advisoryId,
-            @RequestParam @Parameter(description = "Optimistic locking revision.") String revision,
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
+            String advisoryId,
+            @RequestParam @Parameter(description = "Optimistic locking revision.")
+            String revision,
             @RequestParam(required = false)
-            @Parameter(description = "Proposed Time at which the publication should take place.") String proposedTime,
+            @Parameter(description = "Proposed Time at which the publication should take place as ISO-8601 UTC string.")
+            String proposedTime,
             @RequestParam
-            @Parameter(
-                    description = "The new Document Tracking Status of the CSAF Document." +
-                                  " Only interim and final are allowed."
-            ) DocumentTrackingStatus documentTrackingStatus
+            @Parameter(description = "The new Document Tracking Status of the CSAF Document." +
+                                  " Only Interim and Final are allowed.")
+            DocumentTrackingStatus documentTrackingStatus
     ) throws IOException {
 
-        // only for debugging, remove when implemented
-        LOG.info("setWorkflowStateToPublish {} {} {} {}",
-                sanitize(advisoryId), sanitize(revision), sanitize(proposedTime), sanitize(documentTrackingStatus));
-        checkValidUuid(advisoryId);
-        try {
-            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published);
-            return ResponseEntity.ok().build();
-        } catch (DatabaseException dbEx) {
-            return ResponseEntity.badRequest().build();
-        }
+        LOG.debug("setWorkflowStateToPublish");
+        return changeWorkflowState(advisoryId, revision, WorkflowState.Published, proposedTime, documentTrackingStatus);
     }
 
     /**
