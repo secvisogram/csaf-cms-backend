@@ -27,4 +27,15 @@ public class CsafDocumentJsonCreator {
                    }
                 }""".formatted(documentTitle);
     }
+
+    public static String csafJsonCategoryTitle(String documentCategory, String documentTitle) {
+
+        return """
+                { "document": {
+                      "category": "%s",
+                      "title":"%s"
+                   }
+                }""".formatted(documentCategory, documentTitle);
+    }
+
 }

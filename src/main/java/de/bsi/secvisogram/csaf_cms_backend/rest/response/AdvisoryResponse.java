@@ -13,8 +13,8 @@ public class AdvisoryResponse extends AdvisoryInformationResponse {
     private String revision;
     private JsonNode csaf;
 
-    public AdvisoryResponse(String advisoryId, WorkflowState status, JsonNode csafJsonWithComments) {
-        super(advisoryId, status);
+    public AdvisoryResponse(String advisoryId, WorkflowState workflowState, JsonNode csafJsonWithComments) {
+        super(advisoryId, workflowState);
         this.csaf = csafJsonWithComments;
     }
 

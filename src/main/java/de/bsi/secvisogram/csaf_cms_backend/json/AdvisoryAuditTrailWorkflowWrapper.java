@@ -3,6 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField;
+import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 
 /**
@@ -25,7 +26,8 @@ public class AdvisoryAuditTrailWorkflowWrapper extends AdvisoryAuditTrailWrapper
                 .setNewWorkflowState(newWorkflowState)
                 .setOldWorkflowState(oldWorkflowState);
         wrapper.setType(ObjectType.AuditTrailWorkflow)
-                .setCreatedAtToNow();
+                .setCreatedAtToNow()
+                .setChangeType(ChangeType.Update);
         return wrapper;
     }
 
