@@ -347,7 +347,7 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(get(advisoryRoute + "/templates"))
                 .andDo(print())
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk());
     }
 
     @Test
