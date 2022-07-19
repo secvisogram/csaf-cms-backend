@@ -105,4 +105,65 @@ public class CsafDocumentJsonCreator {
                 }""".formatted(name);
     }
 
+    public static String csafVulnerabilitiesCve(String cve) {
+
+        return """
+                {
+                  "document": {
+                      "category": "Category1",
+                      "title": "title1"
+                  },
+                  "vulnerabilities": [
+                      {
+                        "cve": "%s"
+                      }
+                  ]
+                }""".formatted(cve);
+    }
+
+    public static String csafProductTreeFullProductNamesProductId(String productId) {
+
+        return """
+                {
+                  "document": {
+                      "category": "Category1",
+                      "title": "title1"
+                  },
+                  "product_tree": {
+                       "full_product_names": [
+                         {
+                           "product_id": "%s",
+                           "name": "Exxcellent CSAF",
+                           "product_identification_helper": {
+                             "cpe": "cpe"
+                           }
+                         }
+                       ]
+                  }
+                }""".formatted(productId);
+    }
+
+    public static String csafProductTreeBranchesCategory(String category) {
+
+        return """
+                {
+                  "document": {
+                      "category": "Category1",
+                      "title": "title1"
+                  },
+                  "product_tree": {
+                      "branches": [
+                         {
+                           "category": "%s",
+                           "name": "Exxcellent",
+                           "product": {
+                             "product_id": "CSAFPID-0002",
+                             "name": "Exxcellent"
+                           }
+                         }
+                     ]
+                  }
+                }""".formatted(category);
+    }
+
 }

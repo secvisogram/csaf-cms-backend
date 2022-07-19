@@ -36,6 +36,9 @@ public class AdvisorySearchUtil {
                 String[] selectDocReferences = {"csaf", "document", "references"};
                 String[] selectDocTrackingRev = {"csaf", "document", "tracking", "revision_history"};
                 String[] selectDocTrackingAliases = {"csaf", "document", "tracking", "aliases"};
+                String[] selectVulnerabilities = {"csaf", "vulnerabilities"};
+                String[] selectProductTreeFullProductNames = {"csaf", "product_tree", "full_product_names"};
+                String[] selectProductTreeBranches = {"csaf", "product_tree", "branches"};
 
                 AndExpression wholeExpr = new AndExpression(typeExpr, searchExpression);
                 selector = expr2CouchDBFilter(wholeExpr,
@@ -45,7 +48,10 @@ public class AdvisorySearchUtil {
                         selectDocNotes,
                         selectDocReferences,
                         selectDocTrackingRev,
-                        selectDocTrackingAliases);
+                        selectDocTrackingAliases,
+                        selectVulnerabilities,
+                        selectProductTreeFullProductNames,
+                        selectProductTreeBranches);
             } else {
                 selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
             }

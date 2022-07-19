@@ -85,6 +85,44 @@ public class AdvisorySearchUtilTest {
         assertThat(ids, hasItems(idRev2.getId()));
     }
 
+    @Test
+    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException {
+
+        this.advisoryService.addAdvisory(csafVulnerabilitiesCve("CVE-2021-44228"));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafVulnerabilitiesCve("CVE-2021-44999"));
+        List<AdvisoryInformationResponse> infos =
+                this.advisoryService.getAdvisoryInformations(createExprVulnerabilitiesCve("CVE-2021-44999"));
+        List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
+        assertThat(ids.size(), equalTo(1));
+        assertThat(ids, hasItems(idRev2.getId()));
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_productTreeFullProductNames() throws IOException {
+
+        this.advisoryService.addAdvisory(csafProductTreeFullProductNamesProductId("ProductOne"));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafProductTreeFullProductNamesProductId("ProductTwo"));
+        List<AdvisoryInformationResponse> infos =
+                this.advisoryService.getAdvisoryInformations(createProductTreeProductId("ProductTwo"));
+        List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
+        assertThat(ids.size(), equalTo(1));
+        assertThat(ids, hasItems(idRev2.getId()));
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_csafProductTreeBranchesCategory() throws IOException {
+
+        this.advisoryService.addAdvisory(csafProductTreeBranchesCategory("CategoryOne"));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafProductTreeBranchesCategory("CategoryTwo"));
+        List<AdvisoryInformationResponse> infos =
+                this.advisoryService.getAdvisoryInformations(createProductTreeBranchesCategory("CategoryTwo"));
+        List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
+        assertThat(ids.size(), equalTo(1));
+        assertThat(ids, hasItems(idRev2.getId()));
+    }
 
 
 
@@ -107,6 +145,21 @@ public class AdvisorySearchUtilTest {
     private String createExprAcknowledgmentsNames(String value) {
 
         return createExpr(value, "csaf", "document", "acknowledgments", "names");
+    }
+
+    private String createExprVulnerabilitiesCve(String value) {
+
+        return createExpr(value, "csaf", "vulnerabilities", "cve");
+    }
+
+    private String createProductTreeProductId(String value) {
+
+        return createExpr(value, "csaf", "product_tree", "full_product_names", "product_id");
+    }
+
+    private String createProductTreeBranchesCategory(String value) {
+
+        return createExpr(value, "csaf", "product_tree", "branches", "category");
     }
 
     private String createExpr(String value, String ... selector) {

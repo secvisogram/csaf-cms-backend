@@ -71,9 +71,17 @@ public class AdvisoryController {
     public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
             @RequestParam(required = false)
             @Parameter(in = ParameterIn.QUERY, name = "expression",
-                    description = "The filter expression in JSON format.",
+                    description = """
+                            The filter expression in JSON format. Example to find documents with title equal 'title1': { "type" : "Operator",
+                              "selector" : [ "csaf", "document", "title" ],
+                              "operatorType" : "Equal",
+                              "value" : "title1",
+                              "valueType" : "Text"
+                            }.
+                             Possible operatorType's: 'Equal', 'NotEqual', 'Greater', 'GreaterOrEqual', 'Less', 'LessOrEqual', 'ContainsIgnoreCase'. 
+                             Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attributes in 'csaf/document""",
                     schema = @Schema(type = "string", format = "json",
-                            description = "An optional expression to filter documents by.")
+                            description = "An optional expression in JSON to filter documents by.")
             )
             String expression
     ) {
