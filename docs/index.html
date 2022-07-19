@@ -889,7 +889,14 @@ font-style: italic;
     <div class="field-items">
       <div class="param">expression (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format. default: null format: json</div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The filter expression in JSON format. Example to find documents with title equal 'title1': { &quot;type&quot; : &quot;Operator&quot;,
+&quot;selector&quot; : [ &quot;csaf&quot;, &quot;document&quot;, &quot;title&quot; ],
+&quot;operatorType&quot; : &quot;Equal&quot;,
+&quot;value&quot; : &quot;title1&quot;,
+&quot;valueType&quot; : &quot;Text&quot;
+}.
+Possible operatorType's: 'Equal', 'NotEqual', 'Greater', 'GreaterOrEqual', 'Less', 'LessOrEqual', 'ContainsIgnoreCase'.
+Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attributes in 'csaf/document default: null format: json</div>
     </div>  <!-- field-items -->
 
 

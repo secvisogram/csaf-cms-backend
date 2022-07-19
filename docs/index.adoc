@@ -1204,7 +1204,7 @@ All CSAF documents for which the logged in user is authorized are returned. This
 |Name| Description| Required| Default| Pattern
 
 | expression
-| The filter expression in JSON format. 
+| The filter expression in JSON format. Example to find documents with title equal &#39;title1&#39;: { \&quot;type\&quot; : \&quot;Operator\&quot;,   \&quot;selector\&quot; : [ \&quot;csaf\&quot;, \&quot;document\&quot;, \&quot;title\&quot; ],   \&quot;operatorType\&quot; : \&quot;Equal\&quot;,   \&quot;value\&quot; : \&quot;title1\&quot;,   \&quot;valueType\&quot; : \&quot;Text\&quot; }.  Possible operatorType&#39;s: &#39;Equal&#39;, &#39;NotEqual&#39;, &#39;Greater&#39;, &#39;GreaterOrEqual&#39;, &#39;Less&#39;, &#39;LessOrEqual&#39;, &#39;ContainsIgnoreCase&#39;.  Possible valueType&#39;s: &#39;Text&#39;, &#39;Decimal&#39;, &#39;Boolean&#39;. You can search for all attributes in &#39;csaf/document 
 | -
 | null
 | 
