@@ -15,8 +15,6 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil;
-import de.bsi.secvisogram.csaf_cms_backend.service.Versioning;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,7 +103,7 @@ public class AdvisoryWrapper {
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
-        AdvisoryWorkflowUtil.checkCurrentReleaseDateIsSet(wrapper);
+        wrapper.checkCurrentReleaseDateIsSet();
 
         return wrapper;
     }
@@ -459,6 +457,21 @@ public class AdvisoryWrapper {
 
         ObjectNode patched = (ObjectNode) applyJsonPatchToNode(patch, this.getAdvisoryNode());
         return new AdvisoryWrapper(patched);
+    }
+
+
+    /**
+     * The current_release_date must always be filled.
+     * When saving, the system always checks whether the current_release_date is in the past. In this case the date is set to the current date. In all other cases (date in the future) this remains.
+     * @throws CsafException thrown when  date is invalid
+     */
+    public void checkCurrentReleaseDateIsSet() throws CsafException {
+
+        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+        if (this.getDocumentTrackingCurrentReleaseDate() == null
+                || this.getDocumentTrackingCurrentReleaseDate().compareTo(now) < 0) {
+            this.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        }
     }
 
 

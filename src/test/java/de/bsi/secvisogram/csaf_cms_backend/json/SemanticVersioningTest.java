@@ -1,9 +1,10 @@
-package de.bsi.secvisogram.csaf_cms_backend.service;
+package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
+import de.bsi.secvisogram.csaf_cms_backend.service.PatchType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 
 
@@ -23,6 +24,7 @@ public class SemanticVersioningTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void getNextVersionTest() {
 
         assertThat(SemanticVersioning.getDefault().getNextVersion(PatchType.PATCH, "0.0.1", 0), is("0.0.2"));

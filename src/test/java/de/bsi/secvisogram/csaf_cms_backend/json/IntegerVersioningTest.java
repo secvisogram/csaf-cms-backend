@@ -1,9 +1,9 @@
-package de.bsi.secvisogram.csaf_cms_backend.service;
+package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
+import de.bsi.secvisogram.csaf_cms_backend.service.PatchType;
 import org.junit.jupiter.api.Test;
 
 public class IntegerVersioningTest {
@@ -23,8 +23,8 @@ public class IntegerVersioningTest {
     @Test
     public void getNextVersion() {
 
-        assertThat(IntegerVersioning.getDefault().getNextVersion("0"), is("0"));
-        assertThat(IntegerVersioning.getDefault().getNextVersion("1"), is("1"));
+        assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "0", 0), is("0"));
+        assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "1", 0), is("1"));
     }
     @Test
     public void getNextApprovedVersionTest() {

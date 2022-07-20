@@ -1,12 +1,13 @@
-package de.bsi.secvisogram.csaf_cms_backend.service;
+package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import com.vdurmont.semver4j.Semver;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
+import de.bsi.secvisogram.csaf_cms_backend.service.PatchType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Implements semantic versioning
  */
+@SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "Class has no internal state")
 public class SemanticVersioning implements Versioning {
 
     private static final String INITIAL_VERSION = "0.0.1";
@@ -28,19 +29,7 @@ public class SemanticVersioning implements Versioning {
         return INITIAL_VERSION;
     }
 
-    /**
-     * Get next version for the workflow change to approve
-     * @param advisoryNode The advisory to update the version
-     * @return The new version
-     */
-    @Override
-    public String getNextApprovedVersion(AdvisoryWrapper advisoryNode) {
-
-        String currentVersionString = advisoryNode.getDocumentTrackingVersion();
-        return getNextApprovedVersion(currentVersionString);
-    }
-
-    String getNextApprovedVersion(String currentVersionString) {
+    public String getNextApprovedVersion(String currentVersionString) {
         Semver oldVersion = new Semver(currentVersionString);
         Semver newVersion = oldVersion;
         if (oldVersion.getMajor() < 1) {
@@ -51,30 +40,15 @@ public class SemanticVersioning implements Versioning {
         return newVersion.withSuffix(newSuffix).toString();
     }
 
-    /**
-     * Remove teh version suffix from the advisory version
-     * @param advisoryNode The advisory to remove the suffix
-     * @return Teh new version
-     */
+
     @Override
-    public String removeVersionSuffix(AdvisoryWrapper advisoryNode) {
-
-        String currentVersionString = advisoryNode.getDocumentTrackingVersion();
-        return removeVersionSuffix(currentVersionString);
-    }
-
-    String removeVersionSuffix(String currentVersionString) {
+    public String removeVersionSuffix(String currentVersionString) {
 
         Semver oldVersion = new Semver(currentVersionString);
         return oldVersion.withClearedSuffixAndBuild().toString();
     }
 
     @Override
-    public String getNewDocumentVersion(AdvisoryWrapper advisoryNode) {
-
-        return this.getNewDocumentVersion(advisoryNode.getDocumentTrackingVersion());
-    }
-
     public String getNewDocumentVersion(String currentVersionString) {
 
         Semver oldVersion = new Semver(currentVersionString);
@@ -82,13 +56,7 @@ public class SemanticVersioning implements Versioning {
     }
 
     @Override
-    public String getNextVersion(AdvisoryWrapper oldAdvisoryNode, PatchType changeType, int lastMajor) {
-
-        String currentVersionString = oldAdvisoryNode.getDocumentTrackingVersion();
-        return getNextVersion(changeType, currentVersionString, lastMajor);
-    }
-
-    String getNextVersion(PatchType changeType, String currentVersionString, int lastMajor) {
+    public String getNextVersion(PatchType changeType, String currentVersionString, int lastMajor) {
 
         Semver oldVersion = new Semver(currentVersionString);
         Semver result;
@@ -118,6 +86,7 @@ public class SemanticVersioning implements Versioning {
         return result.toString();
     }
 
+    @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "Suffix index is fix")
     private String increaseSuffixMinorVersion(Semver currentVersion) {
 
         String newSuffix = "1.0";
@@ -129,6 +98,7 @@ public class SemanticVersioning implements Versioning {
         return newSuffix;
     }
 
+    @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "Suffix index is fix")
     private String increaseSuffixMajorVersion(Semver currentVersion) {
 
         String newSuffix = "1.0";

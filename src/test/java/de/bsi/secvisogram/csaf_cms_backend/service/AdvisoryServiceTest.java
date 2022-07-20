@@ -253,7 +253,7 @@ public class AdvisoryServiceTest {
         advisoryService.updateAdvisory(idRev.getId(), revision, csafDocumentJson("Category4", "Title4"));
         // an advisory and 4 audit trail are created
         assertEquals(5, advisoryService.getDocumentCount());
-        AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
+        advisoryService.getAdvisory(idRev.getId());
 
         List<JsonNode> auditTrails = readAllAuditTrailDocumentsFromDb();
 

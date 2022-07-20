@@ -476,19 +476,5 @@ public class AdvisoryWorkflowUtil {
         }
     }
 
-    /**
-     * The current_release_date must always be filled.
-     * When saving, the system always checks whether the current_release_date is in the past. In this case the date is set to the current date. In all other cases (date in the future) this remains.
-     * @param advisoryNode the noe to check
-     * @throws CsafException thrown when  date is invalid
-     */
-    public static void checkCurrentReleaseDateIsSet(AdvisoryWrapper advisoryNode) throws CsafException {
-
-        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        if (advisoryNode.getDocumentTrackingCurrentReleaseDate() == null
-                || advisoryNode.getDocumentTrackingCurrentReleaseDate().compareTo(now) < 0) {
-            advisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-        }
-    }
 
 }
