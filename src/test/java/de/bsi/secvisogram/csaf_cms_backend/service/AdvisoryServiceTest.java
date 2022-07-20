@@ -5,6 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,6 +19,7 @@ import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
@@ -26,6 +28,9 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,15 +61,6 @@ public class AdvisoryServiceTest {
                             "category": "CSAF_BASE"
                         }
                     }""";
-
-    private static final String updatedCsafJson = """
-            {
-                "document": {
-                    "category": "CSAF_INFORMATIONAL_ADVISORY",
-                    "title": "Test Advisory"
-                }
-            }
-            """;
 
     private static final String advisoryTemplateString = """
             {
@@ -227,14 +223,23 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void updateAdvisoryTest() throws IOException, DatabaseException, CsafException {
 
-        var updateJsafJson = csafDocumentJson("CSAF_INFORMATIONAL_ADVISORY", "Test Advisory");
+        final String testCsafJson = """
+                    {
+                        "document": {
+                            "category": "CSAF_BASE"
+                        }
+                    }""";
 
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updateJsafJson);
+        String releaseDate = (DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS)));
+        var updateCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.1");
+        var updatedJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.2");
+
+        IdAndRevision idRev = advisoryService.addAdvisory(testCsafJson);
+        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updateCsafJson);
         // an advisory and 2 audit trails are created
         assertEquals(3, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(updatedCsafJson.replaceAll("\\s+", ""),
+        assertEquals(updatedJson.replaceAll("\\s+", ""),
                 updatedAdvisory.getCsaf().toString().replaceAll("\\s+", ""));
     }
 
@@ -249,8 +254,6 @@ public class AdvisoryServiceTest {
         // an advisory and 4 audit trail are created
         assertEquals(5, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(csafDocumentJson("Category4", "Title4").replaceAll("\\s+", ""),
-                updatedAdvisory.getCsaf().toString().replaceAll("\\s+", ""));
 
         List<JsonNode> auditTrails = readAllAuditTrailDocumentsFromDb();
 
@@ -259,7 +262,7 @@ public class AdvisoryServiceTest {
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(0)), equalTo(ChangeType.Create.name()));
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(1)), equalTo(ChangeType.Update.name()));
         // recreate Advisory from diffs
-        AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(AdvisoryWrapper.emptyCsafDocument, "");
+        AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(AdvisoryWrapper.emptyCsafDocument, "", Semantic.name());
         JsonNode patch0 = auditTrails.get(0).get(DIFF.getDbName());
         AdvisoryWrapper node1 = rootWrapper.applyJsonPatch(patch0);
         assertThat(node1.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title1"));

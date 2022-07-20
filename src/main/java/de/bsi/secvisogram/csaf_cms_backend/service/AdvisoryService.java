@@ -33,6 +33,7 @@ import javax.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -45,6 +46,9 @@ public class AdvisoryService {
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryService.class);
     @Autowired
     private CouchDbService couchDbService;
+
+    @Value("${csaf.document.versioning}")
+    private String versioningStrategy;
 
     /**
      * get number of documents
@@ -123,7 +127,8 @@ public class AdvisoryService {
 
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
-        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, credentials.getName());
+        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, credentials.getName(),
+                this.versioningStrategy);
         AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
                 .setAdvisoryId(advisoryId.toString())
                 .setChangeType(ChangeType.Create)
@@ -247,11 +252,19 @@ public class AdvisoryService {
                 throw new DatabaseException("Invalid advisory ID!");
             }
             AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            if (oldAdvisoryNode.getType() != ObjectType.Advisory) {
+                throw new CsafException("Object for id is not of type Advisory",
+                        CsafExceptionKey.InvalidObjectType, HttpStatus.BAD_REQUEST);
+            }
             Authentication credentials = getAuthentication();
             if (canChangeAdvisory(oldAdvisoryNode, credentials)) {
 
                 AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
                 newAdvisoryNode.setRevision(revision);
+                PatchType changeType = AdvisoryWorkflowUtil.getChangeType(oldAdvisoryNode, newAdvisoryNode);
+                String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(oldAdvisoryNode, changeType, oldAdvisoryNode.getLastMajorVersion());
+                newAdvisoryNode.setDocumentTrackingVersion(nextVersion);
+                checkCurrentReleaseDateIsSet(newAdvisoryNode);
                 String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
 
                 AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
@@ -303,10 +316,20 @@ public class AdvisoryService {
                 existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(proposedTime);
             }
 
+            if (newWorkflowState == WorkflowState.Approved) {
+                String nextVersion = existingAdvisoryNode.getVersioningStrategy().getNextApprovedVersion(existingAdvisoryNode);
+                existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
+            }
+
             if (newWorkflowState == WorkflowState.Published) {
-                existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
-                        ? proposedTime
-                        : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+
+                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy().removeVersionSuffix(existingAdvisoryNode);
+                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
+                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
+                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
+                            ? proposedTime
+                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+                }
             }
 
             existingAdvisoryNode.setRevision(revision);
@@ -334,6 +357,7 @@ public class AdvisoryService {
             existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);
             existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
             existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+            existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy().getNewDocumentVersion(existingAdvisoryNode));
             existingAdvisoryNode.setRevision(revision);
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())

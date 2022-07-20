@@ -25,6 +25,8 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
+import org.apache.commons.text.similarity.LevenshteinDetailedDistance;
+import org.apache.commons.text.similarity.LevenshteinResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -420,6 +422,73 @@ public class AdvisoryWorkflowUtil {
         List<JsonNode> docNodes = new ArrayList<>();
         couchDbDocs.forEach(docNodes::add);
         return docNodes;
+    }
+
+    public static PatchType getChangeType(AdvisoryWrapper oldAdvisoryNode, AdvisoryWrapper newAdvisory) {
+
+        PatchType result = PatchType.PATCH;
+
+        JsonNode oldCsaf = oldAdvisoryNode.getCsaf();
+        JsonNode diffPatch = AdvisoryWrapper.calculateJsonDiff(oldCsaf, newAdvisory.getCsaf());
+        String vulnerabRegEx = "/vulnerabilities/\\d+";
+        String vulnerabFirstAffectedRegEx = "/vulnerabilities/\\d+/product_status/first_affected/\\d+";
+        String vulnerabKnownAffectedRegEx = "/vulnerabilities/\\d+/product_status/known_affected/\\d+";
+        String vulnerabLastAffectedRegEx = "/vulnerabilities/\\d+/product_status/last_affected/\\d+";
+
+        for (JsonNode jsonNode : diffPatch) {
+
+            String operation = jsonNode.get("op").asText();
+            String path = jsonNode.get("path").asText();
+            if (path.startsWith("/product_tree")) {
+                result = PatchType.MAJOR;
+                break;
+            }
+            if ("add".equals(operation) || "remove".equals(operation)) {
+                if (path.matches(vulnerabRegEx) || path.matches(vulnerabFirstAffectedRegEx)
+                    || path.matches(vulnerabKnownAffectedRegEx) || path.matches(vulnerabLastAffectedRegEx)) {
+                    result = PatchType.MAJOR;
+                    break;
+                }
+                result = PatchType.MINOR;
+            }
+            if ("replace".equals(operation)) {
+                String value = jsonNode.get("value").asText();
+                String oldValue = oldCsaf.at(path).asText();
+                if (!isSpellingMistake(oldValue, value)) {
+                    result = PatchType.MINOR;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static boolean isSpellingMistake(String oldString, String newString) {
+
+        LevenshteinResults distance = LevenshteinDetailedDistance.getDefaultInstance().apply(oldString, newString);
+
+        if (newString.length() < 6) {
+            return distance.getDistance() <= 2;
+        } else if (newString.length() < 20) {
+            return distance.getDistance() <= 4;
+        } else {
+            return distance.getDistance() <= 8;
+        }
+    }
+
+    /**
+     * The current_release_date must always be filled.
+     * When saving, the system always checks whether the current_release_date is in the past. In this case the date is set to the current date. In all other cases (date in the future) this remains.
+     * @param advisoryNode the noe to check
+     * @throws CsafException thrown when  date is invalid
+     */
+    public static void checkCurrentReleaseDateIsSet(AdvisoryWrapper advisoryNode) throws CsafException {
+
+        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+        if (advisoryNode.getDocumentTrackingCurrentReleaseDate() == null
+                || advisoryNode.getDocumentTrackingCurrentReleaseDate().compareTo(now) < 0) {
+            advisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        }
     }
 
 }

@@ -5,5 +5,7 @@ public enum CsafExceptionKey {
     AdvisoryNotFound,
     NoPermissionForAdvisory,
     InvalidDateTimeFormat,
-    InvalidFilterExpression;
+    InvalidFilterExpression,
+
+    InvalidObjectType;
 }
