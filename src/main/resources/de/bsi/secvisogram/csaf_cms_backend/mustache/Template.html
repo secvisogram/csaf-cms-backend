@@ -8,7 +8,7 @@
   <style>
     .logo-container {
       width: 100%;
-      text-align: right;
+      text-align: left;
       margin-bottom: 20mm;
     }
 
@@ -20,15 +20,17 @@
 </head>
 
 <body>
+  {{#document.distribution.tlp.label}}
+  <p style="text-align: center">
+    TLP:{{document.distribution.tlp.label}}
+  </p>
+  {{/document.distribution.tlp.label}}
+
   {{#logo}}
   <div class="logo-container">
     <img class="logo" src="data:{{logo.mediaType}};base64, {{logo.data}}" alt="logo"/>
   </div>
   {{/logo}}
-
-  {{#document.distribution.tlp.label}}
-  <p>TLP: {{document.distribution.tlp.label}}</p>
-  {{/document.distribution.tlp.label}}
 
   <h1>{{#document.tracking.id}}{{document.tracking.id}}: {{/document.tracking.id}}{{document.title}}</h1>
 

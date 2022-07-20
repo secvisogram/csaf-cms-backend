@@ -67,6 +67,7 @@ public class PandocService {
         // prepare the command to call pandoc with
         final List<String> command = new ArrayList<>(args.length + 1);
         command.add("pandoc");
+        command.add("--pdf-engine=weasyprint");
         command.addAll(Arrays.asList(args));
 
         // call pandoc cli (timeout after 1 minute!)
