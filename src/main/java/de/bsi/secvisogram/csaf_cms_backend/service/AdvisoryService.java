@@ -49,6 +49,9 @@ public class AdvisoryService {
     @Autowired
     private PandocService pandocService;
 
+    @Autowired
+    private WeasyprintService weasyprintService;
+
     /**
      * get number of documents
      *
@@ -245,9 +248,9 @@ public class AdvisoryService {
                 pandocService.convert(htmlFile, markdownFile);
                 Files.delete(htmlFile);
                 return markdownFile;
-            } else if (ExportFormat.PDF.equals(format) && pandocService.isReady()) {
+            } else if (ExportFormat.PDF.equals(format) && weasyprintService.isReady()) {
                 final Path pdfFile = Files.createTempFile(advisoryId + "--", ".pdf");
-                pandocService.convert(htmlFile, pdfFile);
+                weasyprintService.convert(htmlFile, pdfFile);
                 Files.delete(htmlFile);
                 return pdfFile;
             }
