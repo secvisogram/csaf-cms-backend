@@ -25,7 +25,9 @@ here.
   and paste it in `CSAF_COOKIE_SECRET`.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - restart compose
-- (required for exports) install [pandoc](https://pandoc.org/installing.html) and LaTeX (preferably [MiKTeX](https://miktex.org/)) and make sure both are in your PATH 
+- (required for exports) install [pandoc](https://pandoc.org/installing.html)
+  as well as [weasyprint](https://weasyprint.org/) and make sure both are in 
+  your PATH
 
 You should now be able to start the spring boot application, navigate to 
 `localhost:4180/api/2.0/about`, log in with one of the users and get a 
