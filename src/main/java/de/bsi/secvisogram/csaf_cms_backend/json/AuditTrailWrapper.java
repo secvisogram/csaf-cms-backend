@@ -5,6 +5,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Superclass for all audit trail entries
@@ -37,21 +38,6 @@ public abstract class AuditTrailWrapper {
         return this;
     }
 
-    public String getAdvisoryId() {
-
-        return this.auditTrailNode.get(AuditTrailField.ADVISORY_ID.getDbName()).asText();
-    }
-
-    public String getDocVersion() {
-
-        return this.auditTrailNode.get(AuditTrailField.DOC_VERSION.getDbName()).asText();
-    }
-
-    public String getOldDocVersion() {
-
-        return this.auditTrailNode.get(AuditTrailField.OLD_DOC_VERSION.getDbName()).asText();
-    }
-
     public String getUser() {
 
         return this.auditTrailNode.get(AuditTrailField.USER.getDbName()).asText();
@@ -67,24 +53,6 @@ public abstract class AuditTrailWrapper {
         return ChangeType.valueOf(this.auditTrailNode.get(AuditTrailField.CHANGE_TYPE.getDbName()).asText());
     }
 
-    public AuditTrailWrapper setAdvisoryId(String newValue) {
-
-        this.auditTrailNode.put(AuditTrailField.ADVISORY_ID.getDbName(), newValue);
-        return this;
-    }
-
-    public AuditTrailWrapper setDocVersion(String newValue) {
-
-        this.auditTrailNode.put(AuditTrailField.DOC_VERSION.getDbName(), newValue);
-        return this;
-    }
-
-    public AuditTrailWrapper setOldDocVersion(String newValue) {
-
-        this.auditTrailNode.put(AuditTrailField.OLD_DOC_VERSION.getDbName(), newValue);
-        return this;
-    }
-
     public AuditTrailWrapper setUser(String newValue) {
 
         this.auditTrailNode.put(AuditTrailField.USER.getDbName(), newValue);
@@ -93,7 +61,7 @@ public abstract class AuditTrailWrapper {
 
     public AuditTrailWrapper setCreatedAtToNow() {
 
-        this.auditTrailNode.put(AuditTrailField.CREATED_AT.getDbName(), Instant.now().toString());
+        this.auditTrailNode.put(AuditTrailField.CREATED_AT.getDbName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
         return this;
     }
 

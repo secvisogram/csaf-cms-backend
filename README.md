@@ -16,10 +16,11 @@ here.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup` 
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and 
   stops CouchDB from spamming our logs
-- Open `http://localhost:9000/auth/` and log in with the admin user.
+- Open `http://localhost:9000/` and log in with the admin user.
+  - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
   - On the left side, navigate to "Clients" and select the Secvisogram client.
   - Select the **Credentials** tab and copy the Secret. This is our 
-    `CSAF_CLIENT_SECRET` environment variable.
+      `CSAF_CLIENT_SECRET` environment variable.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret) 
   and paste it in `CSAF_COOKIE_SECRET`.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
@@ -28,7 +29,8 @@ here.
 
 You should now be able to start the spring boot application, navigate to 
 `localhost:4180/api/2.0/about`, log in with one of the users and get a 
-response from the server.
+response from the server. 
+The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
 
 
 ## Commands
@@ -49,6 +51,8 @@ with main class: de.exxcellent.bsi.SecvisogramApplication
 
 ### check application running
 
+The port is defined in .env - CSAF_CMS_BACKEND_PORT, default 8081. 
+
 http://localhost:8081/api/2.0/about
 
 Swagger UI
@@ -58,6 +62,16 @@ http://localhost:8081/swagger-ui/index.html
 OpenAPI specification
 
 http://localhost:8081/v3/api-docs/
+
+### access couchDB
+
+The port is defined in .env - CSAF_CMS_BACKEND_PORT, default 5984.
+
+[http://localhost:5984/_utils/#login](http://localhost:5984/_utils/#login)
+
+CouchDb Info (port is defined in .env):
+
+[http://localhost:5984/](http://localhost:5984/)
 
 ## How to use
 

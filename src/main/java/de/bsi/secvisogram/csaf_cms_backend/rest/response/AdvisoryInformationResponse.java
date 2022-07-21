@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Arrays;
@@ -22,34 +23,38 @@ public class AdvisoryInformationResponse {
     private boolean deletable;
     private List<WorkflowState> allowedStateChanges;
 
+    private String currentReleaseDate;
+
     public AdvisoryInformationResponse() {
 
         this.changeable = false;
         this.deletable = false;
+        this.allowedStateChanges = Collections.emptyList();
 
     }
 
-    public AdvisoryInformationResponse(String advisoryId, WorkflowState status) {
-        this(advisoryId, status, "");
+    public AdvisoryInformationResponse(String advisoryId) {
+
+        this.advisoryId = advisoryId;
+        this.changeable = false;
+        this.deletable = false;
+        this.allowedStateChanges = Collections.emptyList();
     }
 
-    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId) {
-        this(advisoryId, workflowState, documentTrackingId, "Title of: " + documentTrackingId, "unknown");
+    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState) {
+        this.advisoryId = advisoryId;
+        this.workflowState = workflowState;
+        this.changeable = false;
+        this.deletable = false;
+        this.allowedStateChanges = Collections.emptyList();
     }
 
     public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId, String title, String owner) {
         this.advisoryId = advisoryId;
         this.workflowState = workflowState;
         this.documentTrackingId = documentTrackingId;
-        this.changeable = true;
-        this.deletable = true;
-        if (WorkflowState.Draft == workflowState) {
-            this.allowedStateChanges = List.of(WorkflowState.Review);
-        } else if (WorkflowState.Approved == workflowState) {
-            this.allowedStateChanges = List.of(WorkflowState.Published);
-        } else if (WorkflowState.Review == workflowState) {
-            this.allowedStateChanges = Arrays.asList(WorkflowState.Draft, WorkflowState.Approved);
-        }
+        this.changeable = false;
+        this.deletable = false;
         this.title = title;
         this.owner = owner;
     }
@@ -68,8 +73,9 @@ public class AdvisoryInformationResponse {
         return workflowState;
     }
 
-    public void setWorkflowState(WorkflowState workflowState) {
+    public AdvisoryInformationResponse setWorkflowState(WorkflowState workflowState) {
         this.workflowState = workflowState;
+        return this;
     }
 
     public void setWorkflowState(String workflowStateString) {
@@ -115,8 +121,9 @@ public class AdvisoryInformationResponse {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public AdvisoryInformationResponse setOwner(String owner) {
         this.owner = owner;
+        return this;
     }
 
     @Schema(description = "Indicates if the currently logged in user can change this advisory.", example = "true")
@@ -129,6 +136,16 @@ public class AdvisoryInformationResponse {
         return deletable;
     }
 
+    public AdvisoryInformationResponse setChangeable(boolean changeable) {
+        this.changeable = changeable;
+        return this;
+    }
+
+    public AdvisoryInformationResponse setDeletable(boolean deletable) {
+        this.deletable = deletable;
+        return this;
+    }
+
     @Schema(
             description = "A list of allowed state changes of the logged in user.",
             example = "[\"Approved\", \"Published\"]"
@@ -137,4 +154,17 @@ public class AdvisoryInformationResponse {
         return Collections.unmodifiableList(allowedStateChanges);
     }
 
+    /**
+     * The value of the advisory at "document/tracking/current_release_date"
+     * @return the date as iso string
+     */
+    @JsonIgnore
+    public String getCurrentReleaseDate() {
+        return currentReleaseDate;
+    }
+
+    public AdvisoryInformationResponse setCurrentReleaseDate(String currentReleaseDate) {
+        this.currentReleaseDate = currentReleaseDate;
+        return this;
+    }
 }

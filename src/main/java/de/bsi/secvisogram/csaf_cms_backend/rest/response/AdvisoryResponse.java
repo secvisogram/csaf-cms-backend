@@ -13,14 +13,14 @@ public class AdvisoryResponse extends AdvisoryInformationResponse {
     private String revision;
     private JsonNode csaf;
 
-    public AdvisoryResponse(String advisoryId, WorkflowState status, JsonNode csafJsonWithComments) {
-        super(advisoryId, status);
+    public AdvisoryResponse(String advisoryId, WorkflowState workflowState, JsonNode csafJsonWithComments) {
+        super(advisoryId, workflowState);
         this.csaf = csafJsonWithComments;
     }
 
     @Schema(
             description = "The current CSAF document enhanced with comment IDs.",
-            example = "{document: { $comment: [23454], category: \"generic_csaf\",..."
+            example = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
     )
     public JsonNode getCsaf() {
         return this.csaf;
