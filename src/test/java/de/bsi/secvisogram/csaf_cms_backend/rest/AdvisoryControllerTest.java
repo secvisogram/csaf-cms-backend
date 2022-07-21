@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
-import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
@@ -342,18 +341,18 @@ public class AdvisoryControllerTest {
         // Review -> Draft, Approved
     }
 
-    @Test
-    void exportAdvisoryTest_HTML() throws Exception {
-
-        UUID advisoryId = UUID.randomUUID();
-        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenReturn("<html></html>");
-
-        this.mockMvc.perform(
-                        get(advisoryRoute + advisoryId.toString() + "/csaf").with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string("<html></html>"));
-    }
+//    @Test
+//    void exportAdvisoryTest_HTML() throws Exception {
+//
+//        UUID advisoryId = UUID.randomUUID();
+//        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenReturn("<html></html>");
+//
+//        this.mockMvc.perform(
+//                        get(advisoryRoute + advisoryId.toString() + "/csaf").with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+//                .andExpect(status().isOk())
+//                .andExpect(content().string("<html></html>"));
+//    }
 
 
     @Test
