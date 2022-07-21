@@ -22,6 +22,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -49,6 +50,9 @@ public class AdvisoryService {
 
     @Value("${csaf.document.versioning}")
     private String versioningStrategy;
+
+    @Value("${csaf.validation.baseurl}")
+    private String validationBaseUrl;
 
     /**
      * get number of documents
@@ -332,6 +336,10 @@ public class AdvisoryService {
                             ? proposedTime
                             : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
                 }
+                if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
+                    throw new CsafException("Advisory is no valid CSAF document",
+                            CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+                }
             }
 
             existingAdvisoryNode.setRevision(revision);
@@ -371,8 +379,14 @@ public class AdvisoryService {
                     .setAdvisoryId(advisoryId)
                     .setUser(credentials.getName());
             this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+            this.deleteAllCommentsFromDbForAdvisory(existingAdvisoryNode.getAdvisoryId());
 
-            return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+            String newRevision =  this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+
+            AdvisoryWrapper advisoryVersion = AdvisoryWrapper.createVersionFrom(existingAdvisoryNode);
+            this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersion.advisoryAsString());
+
+            return newRevision;
         } else {
             throw new CsafException("User has not the permission to create a new Version in this state",
                     CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
