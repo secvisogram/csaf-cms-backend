@@ -13,7 +13,6 @@ import java.util.List;
 @Schema(name = "AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
-
     private String advisoryId;
     private WorkflowState workflowState;
     private String documentTrackingId;
@@ -21,6 +20,8 @@ public class AdvisoryInformationResponse {
     private String owner;
     private boolean changeable;
     private boolean deletable;
+
+    private boolean canCreateVersion;
     private List<WorkflowState> allowedStateChanges;
 
     private String currentReleaseDate;
@@ -29,6 +30,7 @@ public class AdvisoryInformationResponse {
 
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.allowedStateChanges = Collections.emptyList();
 
     }
@@ -38,6 +40,7 @@ public class AdvisoryInformationResponse {
         this.advisoryId = advisoryId;
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.allowedStateChanges = Collections.emptyList();
     }
 
@@ -46,6 +49,7 @@ public class AdvisoryInformationResponse {
         this.workflowState = workflowState;
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.allowedStateChanges = Collections.emptyList();
     }
 
@@ -55,6 +59,7 @@ public class AdvisoryInformationResponse {
         this.documentTrackingId = documentTrackingId;
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.title = title;
         this.owner = owner;
     }
@@ -143,6 +148,16 @@ public class AdvisoryInformationResponse {
 
     public AdvisoryInformationResponse setDeletable(boolean deletable) {
         this.deletable = deletable;
+        return this;
+    }
+
+    @Schema(description = "Indicates if the logged in user can create a new csaf document version of this advisory.", example = "false")
+    public boolean isCanCreateVersion() {
+        return canCreateVersion;
+    }
+
+    public AdvisoryInformationResponse setCanCreateVersion(boolean canCreateVersion) {
+        this.canCreateVersion = canCreateVersion;
         return this;
     }
 
