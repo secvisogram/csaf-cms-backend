@@ -62,7 +62,7 @@ public class AdvisoryControllerTest {
 
     private static final ObjectMapper jacksonMapper = new ObjectMapper();
 
-    private static final String advisoryRoute = "/api/2.0/advisories/";
+    private static final String advisoryRoute = "/api/v1/advisories/";
 
     private static final String csafJsonString = """
             {

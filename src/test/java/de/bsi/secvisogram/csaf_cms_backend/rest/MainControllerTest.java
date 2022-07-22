@@ -28,7 +28,7 @@ public class MainControllerTest {
 
     @Test
     void aboutTest() throws Exception {
-        this.mockMvc.perform(get("/api/2.0/about"))
+        this.mockMvc.perform(get("/api/v1/about"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("BSI Secvisogram Backend")));
