@@ -10,8 +10,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpressio
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -107,10 +106,17 @@ public class AdvisoryServiceTest {
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJson);
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations(null);
         List<String> expectedIDs = List.of(idRev1.getId(), idRev2.getId());
+        List<String> expectedRevisions = List.of(idRev1.getRevision(), idRev2.getRevision());
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
-        Assertions.assertTrue(ids.size() == expectedIDs.size()
-                              && ids.containsAll(expectedIDs)
-                              && expectedIDs.containsAll(ids));
+        List<String> revisions = infos.stream().map(AdvisoryInformationResponse::getRevision).toList();
+
+        assertEquals(ids.size(), expectedIDs.size());
+        assertTrue(ids.containsAll(expectedIDs));
+        assertTrue(expectedIDs.containsAll(ids));
+
+        assertEquals(revisions.size(), expectedRevisions.size());
+        assertTrue(ids.containsAll(expectedRevisions));
+        assertTrue(expectedRevisions.containsAll(ids));
     }
 
     @Test
@@ -351,7 +357,7 @@ public class AdvisoryServiceTest {
 
         List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
         List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
-        Assertions.assertTrue(ids.size() == expectedIDs.size()
+        assertTrue(ids.size() == expectedIDs.size()
                 && ids.containsAll(expectedIDs)
                 && expectedIDs.containsAll(ids));
 

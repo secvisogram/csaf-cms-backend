@@ -13,6 +13,7 @@ import java.util.List;
 @Schema(name = "AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
+    protected String revision;
     private String advisoryId;
     private WorkflowState workflowState;
     private String documentTrackingId;
@@ -181,5 +182,17 @@ public class AdvisoryInformationResponse {
     public AdvisoryInformationResponse setCurrentReleaseDate(String currentReleaseDate) {
         this.currentReleaseDate = currentReleaseDate;
         return this;
+    }
+
+    @Schema(
+            description = "The document revision for optimistic concurrency.",
+            example = "2-efaa5db9409b2d4300535c70aaf6a66b"
+    )
+    public String getRevision() {
+        return revision;
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
     }
 }
