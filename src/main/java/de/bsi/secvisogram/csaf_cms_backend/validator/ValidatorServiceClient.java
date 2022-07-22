@@ -10,8 +10,6 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.RemoveIdHelper;
-import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import org.slf4j.Logger;
@@ -31,15 +29,6 @@ public class ValidatorServiceClient {
     private static final ValidationRequestTest csafTest = new ValidationRequestTest("test", "csaf_2_0");
     private static final ValidationRequestTest optionalTest = new ValidationRequestTest("preset", "optional");
     private static final ValidationRequestTest[] allValidationTests = {csafTest, optionalTest};
-
-
-    static final String csaf = """
-        {
-            "document": {
-                "category": "CSAF_BASE"
-            }
-        }
-        """;
 
     public static boolean isAdvisoryValid(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
 
@@ -121,11 +110,4 @@ public class ValidatorServiceClient {
         return writer.writeValueAsString(request);
     }
 
-    public static void main(String[] args) throws IOException, CsafException {
-
-        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(csaf, "testuser",
-                VersioningType.Semantic.name());
-        new ValidatorServiceClient().executeRequest("http://localhost:3000/api/v1", newAdvisoryNode);
-
-    }
 }
