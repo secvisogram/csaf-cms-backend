@@ -115,8 +115,8 @@ public class AdvisoryServiceTest {
         assertTrue(expectedIDs.containsAll(ids));
 
         assertEquals(revisions.size(), expectedRevisions.size());
-        assertTrue(ids.containsAll(expectedRevisions));
-        assertTrue(expectedRevisions.containsAll(ids));
+        assertTrue(revisions.containsAll(expectedRevisions));
+        assertTrue(expectedRevisions.containsAll(revisions));
     }
 
     @Test
