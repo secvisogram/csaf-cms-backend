@@ -113,7 +113,7 @@ public class AdvisoryWrapper {
      * @return the wrapper
      * @throws IOException exception in handling json string
      */
-    public static AdvisoryWrapper createNewFromCsaf(CreateAdvisoryRequest newCsafJson, String userName, String versioningStrategy) throws IOException, CsafException {
+    public static AdvisoryWrapper createNewFromCsaf(CreateAdvisoryRequest newCsafJson, String userName, String versioningStrategy) throws CsafException {
 
         AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromRequest(newCsafJson));
         Versioning versioning = Versioning.getStrategy(versioningStrategy);

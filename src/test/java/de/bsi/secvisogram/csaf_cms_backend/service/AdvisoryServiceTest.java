@@ -102,6 +102,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
     public void getAdvisoryIdsTest() throws IOException, CsafException {
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJson));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafJson));
@@ -194,6 +195,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
     public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         advisoryService.addAdvisory(csafToRequest(csafJson));

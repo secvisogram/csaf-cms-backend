@@ -185,7 +185,6 @@ public class AdvisoryControllerTest {
 
         when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
         String invalidJson = "invalid JSON";
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(
                         post(advisoryRoute).content(invalidJson)
                                 .contentType(MediaType.APPLICATION_JSON).with(csrf()))
@@ -212,7 +211,6 @@ public class AdvisoryControllerTest {
     @Test
     void createCsafDocumentTest_unauthorized() throws Exception {
 
-        IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
         doThrow(AccessDeniedException.class).when(advisoryService).addAdvisory(any());
 
         this.mockMvc.perform(
