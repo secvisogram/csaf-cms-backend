@@ -10,15 +10,27 @@ public class CreateAdvisoryRequest {
     private String legacyVersion;
     private JsonNode csaf;
 
+
+    @Schema(
+            description = "The text of the summary in the revision history.",
+            example = "This is a summary."
+    )
     public String getSummary() {
         return summary;
     }
 
+    @Schema(
+            description = "The text of the legacy version in the revision history.",
+            example = "This is a legcy notice."
+    )
     public String getLegacyVersion() {
         return legacyVersion;
     }
 
-    public JsonNode getCsaf() {
+    @Schema(
+            description = "The CSAF document in JSON format including additional node IDs.",
+            example = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
+    )    public JsonNode getCsaf() {
         return csaf;
     }
 

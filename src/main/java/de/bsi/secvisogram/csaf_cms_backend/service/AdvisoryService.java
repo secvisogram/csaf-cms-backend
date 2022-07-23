@@ -243,7 +243,7 @@ public class AdvisoryService {
     /**
      * @param advisoryId      the ID of the advisory to update
      * @param revision        the revision for concurrent control
-     * @param changedCsafJson the updated csaf json as string
+     * @param changedCsafJson the updated csaf json
      * @return the new revision of the updated csaf document
      * @throws JsonProcessingException if the given JSON string is not valid
      * @throws DatabaseException       if there was an error updating the advisory in the DB

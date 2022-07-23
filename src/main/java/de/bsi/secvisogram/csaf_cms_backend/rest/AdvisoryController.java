@@ -141,25 +141,9 @@ public class AdvisoryController {
      * @return response with id and revision of the newly created advisory
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Create a new Advisory.", tags = {"Advisory"},
-            description = "Create a new CSAF document with added node IDs in the system.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including node IDs.",
-                    required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with node IDs.",
-                                    description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
-                            ),
-                            examples = {@ExampleObject(
-                                    name = "A CSAF document in JSON format including additional node IDs.",
-                                    value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
-                            )}
-                    )
-            )
-    )
+    @Operation(summary = "Create a new Advisory.", tags = {"Advisory"},
+            description = "Create a new CSAF document with added node IDs in the system. It possible to add an summary " +
+                    "and a legacy version information for the revision history.")
     public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody CreateAdvisoryRequest newCsafJson) {
 
         LOG.debug("createCsafDocument");
@@ -195,19 +179,8 @@ public class AdvisoryController {
             @RequestParam
             @Parameter(description = "The optimistic locking revision.")
             String revision,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "An advisory in CSAF JSON format including node IDs.", required = true,
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(
-                                    title = "Common Security Advisory Framework schema extended with node IDs.",
-                                    description = "See the base schema at http://docs.oasis-open.org/csaf/csaf/v2.0/csd02/schemas/csaf_json_schema.json."
-                            ),
-                            examples = {@ExampleObject(
-                                    name = "A CSAF document in JSON format including node IDs.",
-                                    value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
-                            )}
-                    )
-            ) @RequestBody CreateAdvisoryRequest changedCsafJson
+            @RequestBody
+            CreateAdvisoryRequest changedCsafJson
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
