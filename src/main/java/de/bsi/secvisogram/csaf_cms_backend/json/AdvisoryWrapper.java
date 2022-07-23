@@ -15,6 +15,7 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -74,15 +75,16 @@ public class AdvisoryWrapper {
     private static ObjectNode createAdvisoryNodeFromString(String csafJson) throws IOException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
-        JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
-        if (!csafRootNode.has("document")) {
-            throw new IllegalArgumentException("Csaf contains no document entry");
-        }
+        try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+            JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+            if (!csafRootNode.has("document")) {
+                throw new IllegalArgumentException("Csaf contains no document entry");
+            }
 
-        ObjectNode rootNode = jacksonMapper.createObjectNode();
-        rootNode.set(CSAF.getDbName(), csafRootNode);
-        return rootNode;
+            ObjectNode rootNode = jacksonMapper.createObjectNode();
+            rootNode.set(CSAF.getDbName(), csafRootNode);
+            return rootNode;
+        }
     }
 
     /**
@@ -111,11 +113,10 @@ public class AdvisoryWrapper {
      * @return the wrapper
      * @throws IOException exception in handling json string
      */
-    public static AdvisoryWrapper createNewFromCsaf(String newCsafJson, String userName, String versioningStrategy)
-            throws IOException, CsafException {
+    public static AdvisoryWrapper createNewFromCsaf(CreateAdvisoryRequest newCsafJson, String userName, String versioningStrategy) throws IOException, CsafException {
 
+        AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromRequest(newCsafJson));
         Versioning versioning = Versioning.getStrategy(versioningStrategy);
-        AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromString(newCsafJson));
         wrapper.setCreatedAtToNow()
                 .setOwner(userName)
                 .setWorkflowState(WorkflowState.Draft)
@@ -137,9 +138,9 @@ public class AdvisoryWrapper {
      * @return the new AdvisoryWrapper
      * @throws IOException exception in handling json
      */
-    public static AdvisoryWrapper updateFromExisting(AdvisoryWrapper existing, String changedCsafJson) throws IOException, CsafException {
+    public static AdvisoryWrapper updateFromExisting(AdvisoryWrapper existing, CreateAdvisoryRequest changedCsafJson) throws CsafException {
 
-        ObjectNode rootNode = createAdvisoryNodeFromString(changedCsafJson);
+        ObjectNode rootNode = createAdvisoryNodeFromRequest(changedCsafJson);
         AdvisoryWrapper wrapper =  new AdvisoryWrapper(rootNode)
                 .setAdvisoryId(existing.getAdvisoryId())
                 .setOwner(existing.getOwner())

@@ -1,10 +1,12 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -24,7 +26,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(CsafDocumentJsonCreator.csafToRequest(csafJson), "Mustermann", Semantic.name());
 
         assertThat(advisory.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(advisory.getWorkflowStateString(), equalTo("Draft"));
@@ -91,7 +93,7 @@ public class AdvisoryWrapperTest {
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
         var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
-        AdvisoryWrapper updatedWrapper = AdvisoryWrapper.updateFromExisting(advisory, updateCsafJson);
+        AdvisoryWrapper updatedWrapper = AdvisoryWrapper.updateFromExisting(advisory, csafToRequest(updateCsafJson));
         assertThat(updatedWrapper.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(updatedWrapper.getOwner(), equalTo("Musterfrau"));
         assertThat(updatedWrapper.getRevision(), is(nullValue()));
@@ -109,7 +111,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(CsafDocumentJsonCreator.csafToRequest(csafJson), "Mustermann", Semantic.name());
         advisory.setDocumentTrackingVersion("0.0.1");
         assertThat(advisory.getDocumentTrackingVersion(), equalTo("0.0.1"));
     }
@@ -138,7 +140,7 @@ public class AdvisoryWrapperTest {
                   }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(CsafDocumentJsonCreator.csafToRequest(csafJson), "Mustermann", Semantic.name());
         advisory.setDocumentTrackingVersion("0.0.1");
         assertThat(advisory.getDocumentTrackingVersion(), equalTo("0.0.1"));
     }
@@ -152,7 +154,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(CsafDocumentJsonCreator.csafToRequest(csafJson), "Mustermann", Semantic.name());
         advisory.setDocumentTrackingStatus(DocumentTrackingStatus.Interim);
         assertThat(advisory.getDocumentTrackingStatus(), equalTo("interim"));
     }
@@ -166,7 +168,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(CsafDocumentJsonCreator.csafToRequest(csafJson), "Mustermann", Semantic.name());
         advisory.setDocumentTrackingCurrentReleaseDate("2019-09-07T15:50Z");
         assertThat(advisory.getDocumentTrackingCurrentReleaseDate(), equalTo("2019-09-07T15:50Z"));
     }

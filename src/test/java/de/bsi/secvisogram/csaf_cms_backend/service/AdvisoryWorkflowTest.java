@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUTHOR;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonCategoryTitle;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -51,7 +52,7 @@ public class AdvisoryWorkflowTest {
     public void addAdvisoryTest() throws IOException, DatabaseException, CsafException {
 
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
 
         String dateNowMinutes =  DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
@@ -62,10 +63,10 @@ public class AdvisoryWorkflowTest {
 
     @Test
     @WithMockUser(username = "reviewer1", authorities = { CsafRoles.ROLE_REVIEWER})
-    public void addAdvisoryTest_InvalidRole() throws IOException, DatabaseException {
+    public void addAdvisoryTest_InvalidRole() {
 
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
-        Assertions.assertThrows(AccessDeniedException.class, () -> advisoryService.addAdvisory(csafJson));
+        Assertions.assertThrows(AccessDeniedException.class, () -> advisoryService.addAdvisory(csafToRequest(csafJson)));
      }
 
     @Test
@@ -74,7 +75,7 @@ public class AdvisoryWorkflowTest {
 
         final String userName = "editor1";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
-        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafJson, createAuthentication(userName, AUTHOR.getRoleName()));
+        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafToRequest(csafJson), createAuthentication(userName, AUTHOR.getRoleName()));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertThat(advisory.isChangeable(), is(true));
         assertThat(advisory.isDeletable(), is(true));
@@ -86,7 +87,7 @@ public class AdvisoryWorkflowTest {
 
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
-        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafJson, createAuthentication(advisoryUser, AUTHOR.getRoleName()));
+        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafToRequest(csafJson), createAuthentication(advisoryUser, AUTHOR.getRoleName()));
         assertThrows(CsafException.class, () -> advisoryService.getAdvisory(idRev.getId()));
     }
 
@@ -96,7 +97,7 @@ public class AdvisoryWorkflowTest {
 
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
-        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafJson, createAuthentication(advisoryUser, AUTHOR.getRoleName()));
+        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafToRequest(csafJson), createAuthentication(advisoryUser, AUTHOR.getRoleName()));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
 
         assertThat(advisory.isChangeable(), is(true));

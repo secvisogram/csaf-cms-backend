@@ -20,6 +20,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
@@ -119,7 +120,7 @@ public class AdvisoryService {
      * @throws JsonProcessingException if the given JSON string is not valid
      */
     @RolesAllowed({ CsafRoles.ROLE_AUTHOR})
-    public IdAndRevision addAdvisory(String newCsafJson) throws IOException, CsafException {
+    public IdAndRevision addAdvisory(CreateAdvisoryRequest newCsafJson) throws IOException, CsafException {
 
         LOG.debug("addAdvisory");
         Authentication credentials = getAuthentication();
@@ -127,7 +128,7 @@ public class AdvisoryService {
         return addAdvisoryForCredentials(newCsafJson, credentials);
     }
 
-    IdAndRevision addAdvisoryForCredentials(String newCsafJson, Authentication credentials) throws IOException, CsafException {
+    IdAndRevision addAdvisoryForCredentials(CreateAdvisoryRequest newCsafJson, Authentication credentials) throws IOException, CsafException {
 
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
@@ -247,7 +248,7 @@ public class AdvisoryService {
      * @throws JsonProcessingException if the given JSON string is not valid
      * @throws DatabaseException       if there was an error updating the advisory in the DB
      */
-    public String updateAdvisory(String advisoryId, String revision, String changedCsafJson) throws IOException, DatabaseException, CsafException {
+    public String updateAdvisory(String advisoryId, String revision, CreateAdvisoryRequest changedCsafJson) throws IOException, DatabaseException, CsafException {
 
         LOG.debug("updateAdvisory");
         try (InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId)) {

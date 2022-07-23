@@ -11,6 +11,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
@@ -159,7 +160,7 @@ public class AdvisoryController {
                     )
             )
     )
-    public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody String newCsafJson) {
+    public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody CreateAdvisoryRequest newCsafJson) {
 
         LOG.debug("createCsafDocument");
         try {
@@ -206,7 +207,7 @@ public class AdvisoryController {
                                     value = "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}"
                             )}
                     )
-            ) @RequestBody String changedCsafJson
+            ) @RequestBody CreateAdvisoryRequest changedCsafJson
     ) throws IOException {
 
         LOG.info("changeCsafDocument");
