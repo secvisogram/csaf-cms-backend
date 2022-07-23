@@ -12,7 +12,7 @@ public enum AdvisorySearchField implements DbField {
 
     DOCUMENT_TRACKING_CURRENT_RELEASE_DATE("csaf", "document", "tracking", "current_release_date"),
 
-    DOCUMENT_TRACKING_CURRENT_INITIAL_DATE("csaf", "document", "tracking", "initial_release_date");
+    DOCUMENT_TRACKING_INITIAL_RELEASE_DATE("csaf", "document", "tracking", "initial_release_date");
 
 
     private final String dbName;

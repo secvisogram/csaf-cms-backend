@@ -315,7 +315,7 @@ public class AdvisoryWrapper {
 
     public String getDocumentTrackingInitialReleaseDate() {
 
-        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_INITIAL_DATE);
+        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_INITIAL_RELEASE_DATE);
         return (versionNode.isMissingNode()) ? null : versionNode.asText();
     }
 
