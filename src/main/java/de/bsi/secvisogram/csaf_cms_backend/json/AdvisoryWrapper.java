@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
+import com.vdurmont.semver4j.Semver;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
@@ -98,7 +99,7 @@ public class AdvisoryWrapper {
         wrapper.setCreatedAtToNow()
                 .setOwner(userName)
                 .setWorkflowState(WorkflowState.Draft)
-                .setLastMajorVersion(0)
+                .setLastVersion("0.0.0")
                 .setVersioningType(versioning.getVersioningType())
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
@@ -124,7 +125,7 @@ public class AdvisoryWrapper {
                 .setOwner(existing.getOwner())
                 .setWorkflowState(existing.getWorkflowState())
                 .setVersioningType(existing.getVersioningType())
-                .setLastMajorVersion(existing.getLastMajorVersion())
+                .setLastVersion(existing.getLastVersion())
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(existing.getDocumentTrackingVersion())
                 .setDocumentTrackingStatus(existing.getDocumentTrackingStatus());
@@ -188,12 +189,18 @@ public class AdvisoryWrapper {
 
     public int getLastMajorVersion() {
 
-        return this.advisoryNode.get(AdvisoryField.LAST_MAJOR_VERSION.getDbName()).asInt();
+        String lastVersion = this.advisoryNode.get(AdvisoryField.LAST_VERSION.getDbName()).asText();
+        return new Semver(lastVersion).getMajor();
     }
 
-    public AdvisoryWrapper setLastMajorVersion(int version) {
+    public String getLastVersion() {
 
-        this.advisoryNode.put(AdvisoryField.LAST_MAJOR_VERSION.getDbName(), version);
+        return this.advisoryNode.get(AdvisoryField.LAST_VERSION.getDbName()).asText();
+    }
+
+    public AdvisoryWrapper setLastVersion(String version) {
+
+        this.advisoryNode.put(AdvisoryField.LAST_VERSION.getDbName(), version);
         return this;
     }
 

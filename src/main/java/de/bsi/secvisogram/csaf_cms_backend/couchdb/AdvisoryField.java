@@ -6,7 +6,7 @@ public enum AdvisoryField implements DbField {
     OWNER("owner"),
     CSAF("csaf"),
     VERSIONING_TYPE("versioningType"),
-    LAST_MAJOR_VERSION("lastMajorVersion");
+    LAST_VERSION("lastMajorVersion");
 
     private final String dbName;
     private final String[] fieldPath;

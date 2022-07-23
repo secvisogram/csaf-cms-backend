@@ -7,7 +7,7 @@ public interface Versioning {
     public static Versioning getStrategy(String versioningStrategy) {
 
         VersioningType type = VersioningType.valueOf(versioningStrategy);
-        if (type == null || type == VersioningType.Semantic) {
+        if (type == VersioningType.Semantic) {
             return SemanticVersioning.getDefault();
         } else {
             return IntegerVersioning.getDefault();
@@ -20,18 +20,25 @@ public interface Versioning {
     /**
      * Get next version for the workflow change to approve
      * @param currentVersionString The advisory to update the version
-     * @return The new version
+     * @return the new version
      */
     String getNextApprovedVersion(String currentVersionString);
 
     /**
      * Remove the version suffix from the advisory version
      * @param currentVersionString The advisory version to remove the suffix
-     * @return Teh new version
+     * @return the new version
      */
     String removeVersionSuffix(String currentVersionString);
 
-    String getNextVersion(PatchType changeType, String currentVersionString, int lastMajor);
+    /**
+     * Get a new version when saving a advisory
+     * @param changeType the type of change
+     * @param currentVersionString
+     * @param lastReleaseVersion
+     * @return the new version
+     */
+    String getNextVersion(PatchType changeType, String currentVersionString, String lastReleaseVersion);
 
     public String getNewDocumentVersion(String currentVersionString);
 }

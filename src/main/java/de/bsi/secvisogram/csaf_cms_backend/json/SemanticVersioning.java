@@ -23,7 +23,6 @@ public class SemanticVersioning implements Versioning {
         return VersioningType.Semantic;
     }
 
-
     @Override
     public String getInitialVersion() {
         return INITIAL_VERSION;
@@ -56,29 +55,32 @@ public class SemanticVersioning implements Versioning {
     }
 
     @Override
-    public String getNextVersion(PatchType changeType, String currentVersionString, int lastMajor) {
+    public String getNextVersion(PatchType changeType, String currentVersionString, String lastVersionString) {
 
+        Semver lastVersion = new Semver(lastVersionString);
         Semver oldVersion = new Semver(currentVersionString);
         Semver result;
         if (oldVersion.getMajor() == 0) {
+            //prerelease
             if (changeType == PatchType.MAJOR) {
                 result = oldVersion.nextMinor();
             } else {
                 result = oldVersion.nextPatch();
             }
-        } else if (oldVersion.getMajor() == 1 && oldVersion.getMajor() == 0 && oldVersion.getPatch() == 0) {
+        } else if (oldVersion.getMajor() == 1 && oldVersion.getMinor() == 0 && oldVersion.getPatch() == 0) {
+            // prerelease approved
             String newSuffix = increaseSuffixMinorVersion(oldVersion);
             result = oldVersion.withSuffix(newSuffix);
         } else {
             String newSuffix = increaseSuffixMinorVersion(oldVersion);
             Semver nextVersion = oldVersion;
-            if (changeType == PatchType.MAJOR && (oldVersion.getMajor() == lastMajor)) {
+            if (changeType == PatchType.MAJOR && (oldVersion.getMajor().equals(lastVersion.getMajor()))) {
                 nextVersion = oldVersion.nextMajor();
-            } else if (changeType == PatchType.MINOR && oldVersion.getMajor() == lastMajor &&
-                    oldVersion.getMinor() == 0) {
+            } else if (changeType == PatchType.MINOR && oldVersion.getMajor().equals(lastVersion.getMajor()) &&
+                    oldVersion.getMinor().equals(lastVersion.getMinor())) {
                 nextVersion = oldVersion.nextMinor();
-            } else if (changeType == PatchType.PATCH && oldVersion.getMajor() == lastMajor &&
-                    oldVersion.getMinor() == 0 && oldVersion.getPatch() == 0) {
+            } else if (changeType == PatchType.PATCH && oldVersion.getMajor().equals(lastVersion.getMajor()) &&
+                    oldVersion.getMinor().equals(lastVersion.getMinor()) && oldVersion.getPatch().equals(lastVersion.getPatch())) {
                 nextVersion = oldVersion.nextPatch();
             }
             result = nextVersion.withSuffix(newSuffix);

@@ -262,7 +262,7 @@ public class AdvisoryService {
                 AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
                 newAdvisoryNode.setRevision(revision);
                 PatchType changeType = AdvisoryWorkflowUtil.getChangeType(oldAdvisoryNode, newAdvisoryNode);
-                String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(changeType, oldAdvisoryNode.getDocumentTrackingVersion(), oldAdvisoryNode.getLastMajorVersion());
+                String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(changeType, oldAdvisoryNode.getDocumentTrackingVersion(), oldAdvisoryNode.getLastVersion());
                 newAdvisoryNode.setDocumentTrackingVersion(nextVersion);
                 newAdvisoryNode.checkCurrentReleaseDateIsSet();
                 String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
@@ -356,12 +356,14 @@ public class AdvisoryService {
 
         if (canCreateNewVersion(existingAdvisoryNode)) {
 
+            // Set existing version to Draft
             existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);
             existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
             existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
             existingAdvisoryNode.setRevision(revision);
+            existingAdvisoryNode.setLastVersion(existingAdvisoryNode.getDocumentTrackingVersion());
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())
                     .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())

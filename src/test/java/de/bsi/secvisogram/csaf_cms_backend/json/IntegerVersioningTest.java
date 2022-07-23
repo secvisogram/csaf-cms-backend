@@ -23,9 +23,10 @@ public class IntegerVersioningTest {
     @Test
     public void getNextVersion() {
 
-        assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "0", 0), is("0"));
-        assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "1", 0), is("1"));
+        assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "0", "0"), is("0"));
+        assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "1", "0"), is("1"));
     }
+
     @Test
     public void getNextApprovedVersionTest() {
         assertThat(IntegerVersioning.getDefault().getNextApprovedVersion("0"), is("1"));

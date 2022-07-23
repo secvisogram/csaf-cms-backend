@@ -27,12 +27,11 @@ public class IntegerVersioning implements Versioning {
         return "0";
     }
 
-   @Override
+    @Override
     public String getNextApprovedVersion(String  oldVersion) {
 
         return ("0").equals(oldVersion) ? "1" : oldVersion;
     }
-
 
     @Override
     public String removeVersionSuffix(String  oldVersion) {
@@ -41,7 +40,7 @@ public class IntegerVersioning implements Versioning {
     }
 
     @Override
-    public String getNextVersion(PatchType changeType, String currentVersionString, int lastMajor) {
+    public String getNextVersion(PatchType changeType, String currentVersionString, String lastMajor) {
         return currentVersionString;
     }
 
