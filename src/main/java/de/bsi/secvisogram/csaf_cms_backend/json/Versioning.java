@@ -6,7 +6,12 @@ public interface Versioning {
 
     public static Versioning getStrategy(String versioningStrategy) {
 
-        VersioningType type = VersioningType.valueOf(versioningStrategy);
+        VersioningType type;
+        try {
+            type = (versioningStrategy != null) ? VersioningType.valueOf(versioningStrategy) : VersioningType.Semantic;
+        } catch (IllegalArgumentException ex) {
+            type = VersioningType.Semantic;
+        }
         if (type == VersioningType.Semantic) {
             return SemanticVersioning.getDefault();
         } else {
@@ -34,8 +39,8 @@ public interface Versioning {
     /**
      * Get a new version when saving a advisory
      * @param changeType the type of change
-     * @param currentVersionString
-     * @param lastReleaseVersion
+     * @param currentVersionString the version of the current advisory
+     * @param lastReleaseVersion the version of the last published advisory version
      * @return the new version
      */
     String getNextVersion(PatchType changeType, String currentVersionString, String lastReleaseVersion);
