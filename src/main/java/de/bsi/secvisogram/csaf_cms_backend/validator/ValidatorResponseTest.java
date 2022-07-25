@@ -12,15 +12,15 @@ public class ValidatorResponseTest {
     private String name;
 
     public ValidatorResponseEntry[] getErrors() {
-        return errors;
+        return errors.clone();
     }
 
     public ValidatorResponseEntry[] getInfos() {
-        return infos;
+        return infos.clone();
     }
 
     public ValidatorResponseEntry[] getWarnings() {
-        return warnings;
+        return warnings.clone();
     }
 
     public boolean isValid() {
@@ -29,5 +29,30 @@ public class ValidatorResponseTest {
 
     public String getName() {
         return name;
+    }
+
+    public ValidatorResponseTest setErrors(ValidatorResponseEntry[] errors) {
+        this.errors = errors.clone();
+        return this;
+    }
+
+    public ValidatorResponseTest setInfos(ValidatorResponseEntry[] infos) {
+        this.infos = infos.clone();
+        return this;
+    }
+
+    public ValidatorResponseTest setWarnings(ValidatorResponseEntry[] warnings) {
+        this.warnings = warnings.clone();
+        return this;
+    }
+
+    public ValidatorResponseTest setValid(boolean valid) {
+        isValid = valid;
+        return this;
+    }
+
+    public ValidatorResponseTest setName(String name) {
+        this.name = name;
+        return this;
     }
 }

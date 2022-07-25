@@ -15,4 +15,16 @@ public class ValidatorResponseEntry {
     public String getMessage() {
         return message;
     }
+
+    public ValidatorResponseEntry setInstancePath(String instancePath) {
+
+        this.instancePath = instancePath;
+        return this;
+    }
+
+    public ValidatorResponseEntry setMessage(String message) {
+
+        this.message = message;
+        return this;
+    }
 }

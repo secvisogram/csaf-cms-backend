@@ -14,6 +14,16 @@ public class ValidatorResponse {
     }
 
     public ValidatorResponseTest[] getTests() {
-        return tests;
+        return tests.clone();
+    }
+
+    public ValidatorResponse setValid(boolean valid) {
+        isValid = valid;
+        return this;
+    }
+
+    public ValidatorResponse setTests(ValidatorResponseTest[] tests) {
+        this.tests = tests.clone();
+        return this;
     }
 }
