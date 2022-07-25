@@ -354,7 +354,7 @@ public class AdvisoryService {
         }
         AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
 
-        if (canCreateNewVersion(existingAdvisoryNode)) {
+        if (canCreateNewVersion(existingAdvisoryNode, credentials)) {
 
             // Set existing version to Draft
             existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);

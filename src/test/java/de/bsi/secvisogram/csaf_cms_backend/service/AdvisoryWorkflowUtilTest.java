@@ -276,21 +276,31 @@ public class AdvisoryWorkflowUtilTest {
     }
 
     @Test
-    public void canCreateNewVersion_draftAuthorOwn()  {
+    public void canCreateNewVersionTest()  {
 
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canCreateNewVersion(advisory), is(false));
+        final boolean own = true;
+        final boolean notOwn = false;
+
+        canCreateNewVersion(REGISTERED, own, Draft, false);
+        canCreateNewVersion(AUTHOR, own, Draft, false);
+        canCreateNewVersion(AUTHOR, notOwn, Draft, false);
+        canCreateNewVersion(AUTHOR, notOwn, Approved, false);
+        canCreateNewVersion(AUTHOR, own, Published, true);
+        canCreateNewVersion(AUTHOR, notOwn, Published, false);
+        canCreateNewVersion(EDITOR, notOwn, Draft, false);
+        canCreateNewVersion(EDITOR, notOwn, Approved, false);
+        canCreateNewVersion(EDITOR, own, Published, true);
+        canCreateNewVersion(EDITOR, notOwn, Published, true);
+        canCreateNewVersion(MANAGER, notOwn, Approved, false);
+        canCreateNewVersion(MANAGER, notOwn, Published, true);
     }
 
-    @Test
-    public void canCreateNewVersion_PublishedAuthorOwn()  {
+
+    private void canCreateNewVersion(Role role, boolean own, WorkflowState advisoryState, boolean canDelete) {
 
         var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Published).setOwner(userName);
-        createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canCreateNewVersion(advisory), is(true));
+        Authentication credentials = createCredentials(role, userName, own);
+        assertThat(AdvisoryWorkflowUtil.canCreateNewVersion(userName, advisoryState, credentials), is(canDelete));
     }
 
 
