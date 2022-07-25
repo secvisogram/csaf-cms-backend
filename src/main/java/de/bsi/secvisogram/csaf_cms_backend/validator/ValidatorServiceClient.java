@@ -42,7 +42,7 @@ public class ValidatorServiceClient {
      * @return true - advisory is valid
      * @throws CsafException error in accessing the server
      */
-    public boolean isValid(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
+    boolean isValid(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
 
         ValidatorResponse response = executeRequest(baseUrl, advisory);
         return isValid(response);
@@ -64,7 +64,7 @@ public class ValidatorServiceClient {
      * @return the validation response
      * @throws CsafException error in accessing the server
      */
-    public ValidatorResponse executeRequest(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
+    ValidatorResponse executeRequest(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
 
         WebClient client = WebClient.create(baseUrl);
         WebClient.UriSpec<WebClient.RequestBodySpec> uriSpec = client.post();
@@ -85,11 +85,11 @@ public class ValidatorServiceClient {
         } catch (WebClientResponseException | WebClientRequestException ex) {
             LOG.error("Error in access to validation server", ex);
             throw new CsafException("Error in call to validation server",
-                    CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.INTERNAL_SERVER_ERROR);
+                    CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
         } catch (JsonProcessingException ex) {
             LOG.error("Error creating request to validation server", ex);
             throw new CsafException("Error creating request to validation server",
-                    CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.INTERNAL_SERVER_ERROR);
+                    CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 

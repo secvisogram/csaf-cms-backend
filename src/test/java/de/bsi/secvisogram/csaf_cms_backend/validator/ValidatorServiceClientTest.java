@@ -9,6 +9,7 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
 import java.io.IOException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -36,6 +37,7 @@ public class ValidatorServiceClientTest {
     WebClient.ResponseSpec responseSpec;
 
     @Test
+    @Disabled("Mock Validation ValidatorServiceClient")
     public void validatorTest() throws IOException, CsafException {
 
         final String csaf = """
