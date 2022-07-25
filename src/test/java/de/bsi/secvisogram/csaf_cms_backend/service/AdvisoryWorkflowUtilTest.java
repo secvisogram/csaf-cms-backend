@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonTitle;
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,6 +10,7 @@ import static org.hamcrest.Matchers.is;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
@@ -30,7 +32,7 @@ public class AdvisoryWorkflowUtilTest {
     public void canDeleteAdvisoryTest_registeredDraftOwn() throws IOException, CsafException {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         Authentication credentials = createAuthentication(userName, REGISTERED);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
     }
@@ -39,7 +41,7 @@ public class AdvisoryWorkflowUtilTest {
     public void canDeleteAdvisoryTest_authorDraftOwn() throws IOException, CsafException {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         Authentication credentials = createAuthentication(userName, AUTHOR);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(true));
     }
@@ -49,7 +51,7 @@ public class AdvisoryWorkflowUtilTest {
 
         var userName = "John";
         var otherName = "Jack";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         Authentication credentials = createAuthentication(otherName, AUTHOR);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
     }
@@ -58,7 +60,7 @@ public class AdvisoryWorkflowUtilTest {
     public void canDeleteAdvisoryTest_authorNotDraftOwn() throws IOException, CsafException {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         wrapper.setWorkflowState(WorkflowState.Approved);
         Authentication credentials = createAuthentication(userName, AUTHOR);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
@@ -69,7 +71,7 @@ public class AdvisoryWorkflowUtilTest {
 
         var userName = "John";
         var otherName = "Jack";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         Authentication credentials = createAuthentication(otherName, EDITOR);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(true));
     }
@@ -78,7 +80,7 @@ public class AdvisoryWorkflowUtilTest {
     public void canDeleteAdvisoryTest_editorNotDraftOwn() throws IOException, CsafException {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         wrapper.setWorkflowState(WorkflowState.Approved);
         Authentication credentials = createAuthentication(userName, EDITOR);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
@@ -89,7 +91,7 @@ public class AdvisoryWorkflowUtilTest {
 
         var userName = "John";
         var otherName = "Jack";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName);
+        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
         wrapper.setWorkflowState(WorkflowState.Approved);
         Authentication credentials = createAuthentication(otherName, MANAGER);
         assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(true));
@@ -540,6 +542,161 @@ public class AdvisoryWorkflowUtilTest {
         assertThat(AdvisoryWorkflowUtil.canChangeWorkflow(advisory, to, credentials), is(canChange));
     }
 
+    @Test
+    public void getChangeTypeTest_changeDocTitle() throws IOException, CsafException {
+
+        String releaseDate = (DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS)));
+        String oldCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDate("Title1", releaseDate);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDate("Title2", releaseDate);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.PATCH));
+    }
+
+    @Test
+    public void getChangeTypeTest_addVulnerabilityCve() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "cve": "cve1"
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "cve": "cve1"
+                   },
+                   { "cve": "cve2"
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityCve() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "cve": "cve1"
+                   },
+                   { "cve": "cve2"
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "cve": "cve1"
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_addVulnerabilityProductStatusFirstAffected1() throws IOException, CsafException {
+
+        String oldVul = """
+                 [
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "first_affected": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_addVulnerabilityProductStatusFirstAffected() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "known_affected": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "known_affected": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_changeProductTree() throws IOException, CsafException {
+
+        String oldTree = """
+                 {
+                   "full_product_names": [
+                     {
+                       "product_id": "%s",
+                       "name": "Exxcellent CSAF",
+                       "product_identification_helper": {
+                          "cpe": "cpe"
+                       }
+                     }
+                   ]
+                 }
+                """;
+
+        String newTree = """
+                  {
+                   "full_product_names": [
+                     {
+                       "product_id": "%s",
+                       "name": "Exxcellent CHANGED",
+                       "product_identification_helper": {
+                          "cpe": "cpe"
+                       }
+                     }
+                   ]
+                 }
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithProductTree(oldTree);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithProductTree(newTree);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+    }
 
     /**
      * Create authentication
