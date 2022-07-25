@@ -436,9 +436,9 @@ public class AdvisoryWorkflowUtilTest {
 
         String releaseDate = (DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS)));
         String oldCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDate("Title1", releaseDate);
-        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDate("Title2", releaseDate);
-        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.PATCH));
     }
@@ -462,9 +462,9 @@ public class AdvisoryWorkflowUtilTest {
 
 
         String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
-        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
-        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
     }
@@ -488,9 +488,9 @@ public class AdvisoryWorkflowUtilTest {
 
 
         String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
-        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
-        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
     }
 
@@ -512,9 +512,9 @@ public class AdvisoryWorkflowUtilTest {
 
 
         String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
-        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
-        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
     }
@@ -540,9 +540,9 @@ public class AdvisoryWorkflowUtilTest {
 
 
         String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
-        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
-        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
     }
@@ -580,9 +580,9 @@ public class AdvisoryWorkflowUtilTest {
 
 
         String oldCsafJson = CsafDocumentJsonCreator.docWithProductTree(oldTree);
-        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(oldCsafJson, "user1", Semantic.name());
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.docWithProductTree(newTree);
-        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, newCsafJson);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
     }

@@ -241,13 +241,11 @@ public class AdvisoryServiceTest {
                     }""";
 
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafToRequest(updateJsafJson));
         String releaseDate = (DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS)));
         var updateCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.1");
         var updatedJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.2");
 
-        IdAndRevision idRev = advisoryService.addAdvisory(testCsafJson);
-        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updateCsafJson);
+        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafToRequest(updatedJson));
         // an advisory and 2 audit trails are created
         assertEquals(3, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
