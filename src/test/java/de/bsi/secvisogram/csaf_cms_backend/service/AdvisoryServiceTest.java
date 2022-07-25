@@ -242,7 +242,6 @@ public class AdvisoryServiceTest {
 
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         String releaseDate = (DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS)));
-        var updateCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.1");
         var updatedJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.2");
 
         advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafToRequest(updatedJson));
