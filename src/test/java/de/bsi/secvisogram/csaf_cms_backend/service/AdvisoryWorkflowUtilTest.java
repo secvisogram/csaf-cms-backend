@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonTitle;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
 import static java.util.Collections.singletonList;
@@ -14,6 +13,7 @@ import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
