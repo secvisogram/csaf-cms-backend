@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -23,7 +24,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
 
         assertThat(advisory.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(advisory.getWorkflowStateString(), equalTo("Draft"));
@@ -63,7 +64,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void updateFromExistingTest() throws IOException {
+    public void updateFromExistingTest() throws IOException, CsafException {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -71,6 +72,8 @@ public class AdvisoryWrapperTest {
                 {   "owner": "Musterfrau",
                     "type": "Advisory",
                     "workflowState": "Draft",
+                    "versioningType": "Semantic",
+                    "lastMajorVersion": 0,
                     "csaf": { "document": {
                                 "category": "CSAF_BASE"
                               }
@@ -106,7 +109,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
         advisory.setDocumentTrackingVersion("0.0.1");
         assertThat(advisory.getDocumentTrackingVersion(), equalTo("0.0.1"));
     }
@@ -135,7 +138,7 @@ public class AdvisoryWrapperTest {
                   }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
         advisory.setDocumentTrackingVersion("0.0.1");
         assertThat(advisory.getDocumentTrackingVersion(), equalTo("0.0.1"));
     }
@@ -149,7 +152,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
         advisory.setDocumentTrackingStatus(DocumentTrackingStatus.Interim);
         assertThat(advisory.getDocumentTrackingStatus(), equalTo("interim"));
     }
@@ -163,7 +166,7 @@ public class AdvisoryWrapperTest {
                       "category": "CSAF_BASE"    }
                 }""";
 
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann");
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafJson, "Mustermann", Semantic.name());
         advisory.setDocumentTrackingCurrentReleaseDate("2019-09-07T15:50Z");
         assertThat(advisory.getDocumentTrackingCurrentReleaseDate(), equalTo("2019-09-07T15:50Z"));
     }
