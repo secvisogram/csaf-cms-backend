@@ -238,7 +238,7 @@ public class AdvisoryWorkflowUtil {
 
         if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.RfPublication) {
             canBeChanged = hasRole(AUTHOR, credentials) && isOwnAdvisory(userToCheck, credentials)
-                    ||  hasRole(PUBLISHER, credentials);
+                    ||  hasRole(EDITOR, credentials) || hasRole(PUBLISHER, credentials);
         }
 
         if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.Draft) {
