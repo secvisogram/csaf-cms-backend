@@ -4,7 +4,9 @@ public enum AdvisoryField implements DbField {
 
     WORKFLOW_STATE("workflowState"),
     OWNER("owner"),
-    CSAF("csaf");
+    CSAF("csaf"),
+    VERSIONING_TYPE("versioningType"),
+    LAST_VERSION("lastMajorVersion");
 
     private final String dbName;
     private final String[] fieldPath;
