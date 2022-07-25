@@ -1,7 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
