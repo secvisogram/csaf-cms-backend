@@ -51,6 +51,26 @@ public class AdvisoryWrapper {
         return new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
     }
 
+    /**
+     * Create a copy of the advisory and convert it to a AdvisoryVersion
+     *
+     * @param advisoryToClone the stream
+     * @return the wrapper
+     * @throws IOException error in processing the input stream
+     */
+    public static AdvisoryWrapper createVersionFrom(AdvisoryWrapper advisoryToClone) throws IOException {
+
+        final ObjectMapper objMapper = new ObjectMapper();
+        String jsonStr = objMapper.writeValueAsString(advisoryToClone.advisoryNode);
+
+        AdvisoryWrapper newAdvisory = new AdvisoryWrapper(objMapper.readValue(jsonStr, ObjectNode.class))
+                .setType(ObjectType.AdvisoryVersion)
+                .setAdvisoryReference(advisoryToClone.getAdvisoryId());
+        RemoveIdHelper.removeCommentIds(newAdvisory.getCsaf());
+        return newAdvisory;
+    }
+
+
     private static ObjectNode createAdvisoryNodeFromString(String csafJson) throws IOException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
@@ -172,6 +192,17 @@ public class AdvisoryWrapper {
     private AdvisoryWrapper setType(ObjectType newValue) {
 
         this.advisoryNode.put(CouchDbField.TYPE_FIELD.getDbName(), newValue.name());
+        return this;
+    }
+
+    /**
+     * set reference form AdvisoryVersion to source advisory
+     * @param advisoryId the id of the referenced advisory
+     * @return this
+     */
+    private AdvisoryWrapper setAdvisoryReference(String advisoryId) {
+
+        this.advisoryNode.put(AdvisoryField.ADVISORY_REFERENCE.getDbName(), advisoryId);
         return this;
     }
 
