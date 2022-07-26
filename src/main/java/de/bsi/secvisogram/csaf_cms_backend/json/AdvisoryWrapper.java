@@ -127,7 +127,6 @@ public class AdvisoryWrapper {
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
         wrapper.checkCurrentReleaseDateIsSet();
-        wrapper.addRevisionHistoryEntry(newCsafJson);
 
         return wrapper;
     }
@@ -408,6 +407,22 @@ public class AdvisoryWrapper {
         }
         return this;
     }
+
+    public void removeAllRevisionHistoryEntries() {
+
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        historyNode.removeAll();
+    }
+
+
+    public void removeAllPrereleaseVersions() {
+
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isPrerelease()) {
+            ArrayNode historyNode = getOrCreateHistoryNode();
+            historyNode.removeAll();
+        }
+    }
+
 
     private ObjectNode getLatestEntryInHistoryAfterPrerelease(ArrayNode historyNode) {
 

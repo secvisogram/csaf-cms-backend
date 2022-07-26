@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -54,6 +55,9 @@ public class AdvisoryService {
 
     @Value("${csaf.validation.baseurl}")
     private String validationBaseUrl;
+
+    @Autowired
+    private CsafConfiguration configuration;
 
     /**
      * get number of documents
@@ -139,6 +143,9 @@ public class AdvisoryService {
                 .setAdvisoryId(advisoryId.toString())
                 .setChangeType(ChangeType.Create)
                 .setUser(credentials.getName());
+
+        newAdvisoryNode.removeAllRevisionHistoryEntries();
+        newAdvisoryNode.addRevisionHistoryEntry(newCsafJson);
 
         String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
@@ -328,7 +335,7 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry("Status changed from Review to Approved", "");
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummaryapprove(), "");
             }
 
             if (newWorkflowState == WorkflowState.Published) {
@@ -340,7 +347,8 @@ public class AdvisoryService {
                 String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
                         .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
-                existingAdvisoryNode.addRevisionHistoryEntry("Initial Publication", "");
+                existingAdvisoryNode.removeAllPrereleaseVersions();
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummarypublication(), "");
                 if (existingAdvisoryNode.getLastMajorVersion() == 0) {
                     existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
                             ? proposedTime
