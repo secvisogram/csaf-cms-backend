@@ -282,7 +282,6 @@ public class AdvisoryWorkflowUtil {
         boolean canCreateNewVersion = false;
         if (oldWorkflowState == WorkflowState.Published) {
 
-            isOwnAdvisory(advisoryOwner, credentials);
             canCreateNewVersion = (hasRole(AUTHOR, credentials) && isOwnAdvisory(advisoryOwner, credentials))
                                 || (hasRole(EDITOR, credentials));
         }
