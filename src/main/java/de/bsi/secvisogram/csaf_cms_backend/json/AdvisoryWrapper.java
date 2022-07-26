@@ -72,6 +72,21 @@ public class AdvisoryWrapper {
         return newAdvisory;
     }
 
+    private static ObjectNode createAdvisoryNodeFromRequest(CreateAdvisoryRequest csafJson) throws CsafException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        //final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
+        JsonNode csafRootNode = csafJson.getCsaf();
+        if (csafRootNode == null || !csafRootNode.has("document")) {
+            throw new CsafException("Csaf contains no document entry", CsafExceptionKey.CsafHasNoDocumentNode,
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        ObjectNode rootNode = jacksonMapper.createObjectNode();
+        rootNode.set(CSAF.getDbName(), csafRootNode);
+        return rootNode;
+    }
+
 
     private static ObjectNode createAdvisoryNodeFromString(String csafJson) throws IOException {
 

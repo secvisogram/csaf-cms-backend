@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItems;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.util.Arrays;
@@ -64,9 +65,11 @@ public class AdvisorySearchUtilTest {
     public void getAdvisoryInformationsTest_documentTrackingRevisionHistorysummary() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafJsonRevisionHistorySummary("SummaryOne")));
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafJsonRevisionHistorySummary("SummaryTwo")));
+        CreateAdvisoryRequest request = csafToRequest(csafJsonRevisionHistorySummary("SummaryTwo"));
+        request.setSummary("SummaryInRequest");
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(request);
         List<AdvisoryInformationResponse> infos =
-                this.advisoryService.getAdvisoryInformations(createExprRevisionHistorySummary("SummaryTwo"));
+                this.advisoryService.getAdvisoryInformations(createExprRevisionHistorySummary("SummaryInRequest"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
         assertThat(ids.size(), equalTo(1));
         assertThat(ids, hasItems(idRev2.getId()));

@@ -69,10 +69,17 @@ public class CsafDocumentJsonCreator {
                       "tracking": {
                           "current_release_date": "%s",
                           "version":"%s",
-                          "status":"draft"
+                          "status": "draft",
+                          "revision_history":[
+                            { "summary": null,
+                              "legacy_revision": null,
+                              "number": "%s",
+                              "date": "%s"
+                            }
+                          ]
                       }
                    }
-                }""".formatted(documentTitle, releaseDate, version);
+                }""".formatted(documentTitle, releaseDate, version, version, releaseDate);
 
     }
     public static String csafJsonCategoryTitle(String documentCategory, String documentTitle) {

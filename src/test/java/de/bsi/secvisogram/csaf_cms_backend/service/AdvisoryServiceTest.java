@@ -15,22 +15,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
-import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -240,16 +238,18 @@ public class AdvisoryServiceTest {
                         }
                     }""";
 
-        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        String releaseDate = (DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS)));
-        var updatedJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDateVersion("NewTitle", releaseDate, "0.0.2");
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(testCsafJson));
+        var readedAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readedAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readedAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
 
-        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafToRequest(updatedJson));
         // an advisory and 2 audit trails are created
         assertEquals(3, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(updatedJson.replaceAll("\\s+", ""),
-                updatedAdvisory.getCsaf().toString().replaceAll("\\s+", ""));
+        assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asText());
+        assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText());
     }
 
     @Test

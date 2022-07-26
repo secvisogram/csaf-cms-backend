@@ -89,7 +89,7 @@ public class AdvisoryService {
             response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
             response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
             response.setAllowedStateChanges(getAllowedStates(response, credentials));
-            response.setCanCreateVersion(canCreateNewVersion(response));
+            response.setCanCreateVersion(canCreateNewVersion(response, credentials));
         }
         return allResponses
                 .stream()
@@ -176,7 +176,7 @@ public class AdvisoryService {
                 response.setOwner(advisory.getOwner());
                 response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
                 response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
-                response.setCanCreateVersion(canCreateNewVersion(response));
+                response.setCanCreateVersion(canCreateNewVersion(response, credentials));
                 response.setAllowedStateChanges(getAllowedStates(response, credentials));
                 response.setRevision(advisory.getRevision());
                 return response;

@@ -22,4 +22,19 @@ public class CsafConfiguration {
     public String getSummarydraft() {
         return summarydraft;
     }
+
+    public CsafConfiguration setSummarypublication(String summarypublication) {
+        this.summarypublication = summarypublication;
+        return this;
+    }
+
+    public CsafConfiguration setSummaryapprove(String summaryapprove) {
+        this.summaryapprove = summaryapprove;
+        return this;
+    }
+
+    public CsafConfiguration setSummarydraft(String summarydraft) {
+        this.summarydraft = summarydraft;
+        return this;
+    }
 }

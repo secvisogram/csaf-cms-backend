@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
 import static java.util.Collections.singletonList;

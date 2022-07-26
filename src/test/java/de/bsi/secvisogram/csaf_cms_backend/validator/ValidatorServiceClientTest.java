@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.validator;
 
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -59,7 +60,7 @@ public class ValidatorServiceClientTest {
                 .thenReturn(Mono.just(jsonStr));
 
 
-        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(csaf, "testuser",
+        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csaf), "testuser",
                 VersioningType.Semantic.name());
 
         new ValidatorServiceClient().executeRequest("http://test.de/api/v1", newAdvisoryNode);
