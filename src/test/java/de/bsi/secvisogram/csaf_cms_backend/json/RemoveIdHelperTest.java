@@ -18,7 +18,7 @@ public class RemoveIdHelperTest {
           }
         """;
 
-    public static final String casfWithIds = """
+    public static final String csafWithIds = """
          {
          "document": {
             "nodeId": "1",
@@ -366,7 +366,7 @@ public class RemoveIdHelperTest {
                     "workflowState": "Draft",
                     "csaf": %s,
                     "_rev": "reavison",
-                    "_id": "id124214"}""".formatted(casfWithIds);
+                    "_id": "id124214"}""".formatted(csafWithIds);
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
         var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);

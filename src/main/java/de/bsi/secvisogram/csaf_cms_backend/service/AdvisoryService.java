@@ -328,6 +328,10 @@ public class AdvisoryService {
 
             if (newWorkflowState == WorkflowState.Published) {
 
+                if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
+                    throw new CsafException("Advisory is no valid CSAF document",
+                            CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+                }
                 String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
                         .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
@@ -335,10 +339,6 @@ public class AdvisoryService {
                     existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
                             ? proposedTime
                             : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-                }
-                if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
-                    throw new CsafException("Advisory is no valid CSAF document",
-                            CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
                 }
             }
 
@@ -364,6 +364,8 @@ public class AdvisoryService {
 
         if (canCreateNewVersion(existingAdvisoryNode)) {
 
+            // make copy of current state
+            AdvisoryWrapper advisoryVersion = AdvisoryWrapper.createVersionFrom(existingAdvisoryNode);
             // Set existing version to Draft
             existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);
             existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
@@ -383,7 +385,6 @@ public class AdvisoryService {
 
             String newRevision =  this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
 
-            AdvisoryWrapper advisoryVersion = AdvisoryWrapper.createVersionFrom(existingAdvisoryNode);
             this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersion.advisoryAsString());
 
             return newRevision;
