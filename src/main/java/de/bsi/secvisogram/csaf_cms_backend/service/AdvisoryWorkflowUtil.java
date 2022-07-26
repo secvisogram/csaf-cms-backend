@@ -238,7 +238,7 @@ public class AdvisoryWorkflowUtil {
 
         if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.RfPublication) {
             canBeChanged = hasRole(AUTHOR, credentials) && isOwnAdvisory(userToCheck, credentials)
-                    ||  hasRole(PUBLISHER, credentials);
+                    ||  hasRole(EDITOR, credentials) || hasRole(PUBLISHER, credentials);
         }
 
         if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.Draft) {
@@ -257,9 +257,9 @@ public class AdvisoryWorkflowUtil {
      * @param advisory the advisory to check
      * @return true - info can be deleted
      */
-    public static boolean canCreateNewVersion(AdvisoryWrapper advisory) {
+    public static boolean canCreateNewVersion(AdvisoryWrapper advisory, Authentication credentials) {
 
-        return canCreateNewVersion(advisory.getWorkflowState());
+        return canCreateNewVersion(advisory.getOwner(), advisory.getWorkflowState(), credentials);
     }
 
     /**
@@ -267,9 +267,9 @@ public class AdvisoryWorkflowUtil {
      * @param advisory the advisory to check
      * @return true - info can be deleted
      */
-    public static boolean canCreateNewVersion(AdvisoryInformationResponse advisory) {
+    public static boolean canCreateNewVersion(AdvisoryInformationResponse advisory, Authentication credentials) {
 
-        return canCreateNewVersion(advisory.getWorkflowState());
+        return canCreateNewVersion(advisory.getOwner(), advisory.getWorkflowState(), credentials);
     }
 
     /**
@@ -277,11 +277,13 @@ public class AdvisoryWorkflowUtil {
      * @param oldWorkflowState the advisory workflow state
      * @return true - info can be deleted
      */
-    static boolean canCreateNewVersion(WorkflowState oldWorkflowState) {
+    static boolean canCreateNewVersion(String advisoryOwner, WorkflowState oldWorkflowState, Authentication credentials) {
 
         boolean canCreateNewVersion = false;
         if (oldWorkflowState == WorkflowState.Published) {
-            canCreateNewVersion = true;
+
+            canCreateNewVersion = (hasRole(AUTHOR, credentials) && isOwnAdvisory(advisoryOwner, credentials))
+                                || (hasRole(EDITOR, credentials));
         }
         return canCreateNewVersion;
     }
