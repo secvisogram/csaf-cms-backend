@@ -10,6 +10,13 @@ public class CreateAdvisoryRequest {
     private String legacyVersion;
     private JsonNode csaf;
 
+    public CreateAdvisoryRequest() {
+    }
+
+    public CreateAdvisoryRequest(String summary, String legacyVersion) {
+        this.summary = summary;
+        this.legacyVersion = legacyVersion;
+    }
 
     @Schema(
             description = "The text of the summary in the revision history.",

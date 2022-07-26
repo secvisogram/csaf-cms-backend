@@ -6,6 +6,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
@@ -34,9 +35,9 @@ import org.springframework.http.HttpStatus;
 public class AdvisoryWrapper {
 
     public static final String emptyCsafDocument = """
-                { "document": {
-                   }
-                }""";
+            { "document": {
+               }
+            }""";
 
 
     /**
@@ -98,8 +99,8 @@ public class AdvisoryWrapper {
 
         AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromString(emptyCsafDocument));
         wrapper.setOwner(userName)
-               .setWorkflowState(WorkflowState.Draft)
-               .setType(ObjectType.Advisory);
+                .setWorkflowState(WorkflowState.Draft)
+                .setType(ObjectType.Advisory);
         return wrapper;
     }
 
@@ -107,11 +108,11 @@ public class AdvisoryWrapper {
      * Convert an CSAF document to an initial AdvisoryWrapper for a given user.
      * The wrapper has no id and revision.
      *
-     * @param newCsafJson the csaf string
-     * @param userName    the user
+     * @param newCsafJson        the csaf string
+     * @param userName           the user
      * @param versioningStrategy the configured versioning strategy
      * @return the wrapper
-     * @throws IOException exception in handling json string
+     * @throws CsafException exception in handling json string
      */
     public static AdvisoryWrapper createNewFromCsaf(CreateAdvisoryRequest newCsafJson, String userName, String versioningStrategy) throws CsafException {
 
@@ -126,6 +127,7 @@ public class AdvisoryWrapper {
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
         wrapper.checkCurrentReleaseDateIsSet();
+        wrapper.addRevisionHistoryEntry(newCsafJson);
 
         return wrapper;
     }
@@ -136,12 +138,12 @@ public class AdvisoryWrapper {
      * @param existing        the base AdvisoryWrapper
      * @param changedCsafJson the new CSAF document
      * @return the new AdvisoryWrapper
-     * @throws IOException exception in handling json
+     * @throws CsafException exception in handling json
      */
     public static AdvisoryWrapper updateFromExisting(AdvisoryWrapper existing, CreateAdvisoryRequest changedCsafJson) throws CsafException {
 
         ObjectNode rootNode = createAdvisoryNodeFromRequest(changedCsafJson);
-        AdvisoryWrapper wrapper =  new AdvisoryWrapper(rootNode)
+        AdvisoryWrapper wrapper = new AdvisoryWrapper(rootNode)
                 .setAdvisoryId(existing.getAdvisoryId())
                 .setOwner(existing.getOwner())
                 .setWorkflowState(existing.getWorkflowState())
@@ -285,12 +287,6 @@ public class AdvisoryWrapper {
         return this.advisoryNode.get(AdvisoryField.CSAF.getDbName());
     }
 
-    private AdvisoryWrapper setCsaf(JsonNode node) {
-
-        this.advisoryNode.putIfAbsent(CSAF.getDbName(), node);
-        return this;
-    }
-
     public AdvisoryWrapper setCreatedAtToNow() {
 
         this.advisoryNode.put(AuditTrailField.CREATED_AT.getDbName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
@@ -355,18 +351,13 @@ public class AdvisoryWrapper {
     /**
      * Set tracking field in the document tracking node.
      * Create nodes when they not exist.
+     *
      * @param newVersion the new version
      * @return this
      */
     public AdvisoryWrapper setDocumentTrackingVersion(String newVersion) {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
-        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
-        if (trackingNode == null) {
-            trackingNode = jacksonMapper.createObjectNode();
-            versionNode.set("tracking", trackingNode);
-        }
+        ObjectNode trackingNode = getOrCreateTrackingNode();
         trackingNode.put("version", newVersion);
         return this;
     }
@@ -374,6 +365,7 @@ public class AdvisoryWrapper {
     /**
      * Set status field in the document tracking node.
      * Create nodes when they not exist.
+     *
      * @param newState the new state
      * @return this
      */
@@ -384,20 +376,65 @@ public class AdvisoryWrapper {
 
     private AdvisoryWrapper setDocumentTrackingStatus(String newState) {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
-        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
-        if (trackingNode == null) {
-            trackingNode = jacksonMapper.createObjectNode();
-            versionNode.set("tracking", trackingNode);
-        }
+        ObjectNode trackingNode = getOrCreateTrackingNode();
         trackingNode.put("status", newState);
         return this;
+    }
+
+    public AdvisoryWrapper addRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson) {
+
+        return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
+    }
+    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
+
+
+        ArrayNode historyNode = getOrCreateHistoryNode();
+
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isPrerelease()) {
+            ObjectNode entry = historyNode.addObject();
+            entry.put("summary", summary);
+            entry.put("legacy_revision", legacyVersion);
+            entry.put("number", this.getDocumentTrackingVersion());
+            entry.put("date", this.getDocumentTrackingCurrentReleaseDate());
+        } else {
+            ObjectNode latestEntry = getLatestEntryInHistoryAfterPrerelease(historyNode);
+            if (latestEntry == null) {
+                latestEntry = historyNode.addObject();
+            }
+            latestEntry.put("summary", summary);
+            latestEntry.put("legacy_revision", legacyVersion);
+            latestEntry.put("number", this.getDocumentTrackingVersion());
+            latestEntry.put("date", this.getDocumentTrackingCurrentReleaseDate());
+        }
+        return this;
+    }
+
+    private ObjectNode getLatestEntryInHistoryAfterPrerelease(ArrayNode historyNode) {
+
+        if (historyNode.size() > 0) {
+
+            ObjectNode node = (ObjectNode) historyNode.get(historyNode.size() - 1);
+            if (getLastVersion().equals(node.get("number").asText())) {
+                return null;
+            } else {
+               return node;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public boolean isPrerelease() {
+
+        Semver version = new Semver(this.getDocumentTrackingVersion());
+        return (version.getMajor() < 1)
+                || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
     }
 
     /**
      * Set current_release_date in document tracking node.
      * Create nodes when they not exist.
+     *
      * @param newDate the new date as ISO-8601 string
      * @return this
      */
@@ -410,6 +447,26 @@ public class AdvisoryWrapper {
                     CsafExceptionKey.InvalidDateTimeFormat, HttpStatus.BAD_REQUEST);
         }
 
+        ObjectNode trackingNode = getOrCreateTrackingNode();
+        trackingNode.put("current_release_date", newDate);
+        return this;
+    }
+
+    private ArrayNode getOrCreateHistoryNode() {
+
+        final String revHistory = "revision_history";
+        ObjectNode trackingNode = getOrCreateTrackingNode();
+        ArrayNode historyNode = (ArrayNode) trackingNode.get(revHistory);
+        if (historyNode == null) {
+            final ObjectMapper jacksonMapper = new ObjectMapper();
+            historyNode = jacksonMapper.createArrayNode();
+            trackingNode.set(revHistory, historyNode);
+        }
+        return historyNode;
+    }
+
+    private ObjectNode getOrCreateTrackingNode() {
+
         final ObjectMapper jacksonMapper = new ObjectMapper();
         ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
         ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
@@ -417,8 +474,7 @@ public class AdvisoryWrapper {
             trackingNode = jacksonMapper.createObjectNode();
             versionNode.set("tracking", trackingNode);
         }
-        trackingNode.put("current_release_date", newDate);
-        return this;
+        return trackingNode;
     }
 
     /**
@@ -438,18 +494,10 @@ public class AdvisoryWrapper {
                     CsafExceptionKey.InvalidDateTimeFormat, HttpStatus.BAD_REQUEST);
         }
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
-        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
-        if (trackingNode == null) {
-            trackingNode = jacksonMapper.createObjectNode();
-            versionNode.set("tracking", trackingNode);
-        }
+        ObjectNode trackingNode = getOrCreateTrackingNode();
         trackingNode.put("initial_release_date", newDate);
         return this;
     }
-
-
 
     public String advisoryAsString() {
 

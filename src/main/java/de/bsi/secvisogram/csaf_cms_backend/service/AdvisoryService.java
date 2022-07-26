@@ -272,6 +272,7 @@ public class AdvisoryService {
                 String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(changeType, oldAdvisoryNode.getDocumentTrackingVersion(), oldAdvisoryNode.getLastVersion());
                 newAdvisoryNode.setDocumentTrackingVersion(nextVersion);
                 newAdvisoryNode.checkCurrentReleaseDateIsSet();
+                newAdvisoryNode.addRevisionHistoryEntry(changedCsafJson);
                 String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
 
                 AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
@@ -327,6 +328,7 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
+                existingAdvisoryNode.addRevisionHistoryEntry("Status changed from Review to Approved", "");
             }
 
             if (newWorkflowState == WorkflowState.Published) {
@@ -338,6 +340,7 @@ public class AdvisoryService {
                 String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
                         .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
+                existingAdvisoryNode.addRevisionHistoryEntry("Initial Publication", "");
                 if (existingAdvisoryNode.getLastMajorVersion() == 0) {
                     existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
                             ? proposedTime
@@ -375,6 +378,7 @@ public class AdvisoryService {
             existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
+            existingAdvisoryNode.addRevisionHistoryEntry("", "");
             existingAdvisoryNode.setRevision(revision);
             existingAdvisoryNode.setLastVersion(existingAdvisoryNode.getDocumentTrackingVersion());
 
