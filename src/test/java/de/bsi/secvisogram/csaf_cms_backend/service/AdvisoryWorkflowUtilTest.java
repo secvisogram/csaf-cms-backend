@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonTitle;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
 import static java.util.Collections.singletonList;
@@ -29,226 +28,75 @@ public class AdvisoryWorkflowUtilTest {
     private static final String EMPTY_PASSWD = "";
 
     @Test
-    public void canDeleteAdvisoryTest_registeredDraftOwn() throws IOException, CsafException {
+    public void canDeleteAdvisoryTest() {
+
+        final boolean own = true;
+        final boolean notOwn = false;
+        canDeleteAdvisory(REGISTERED, own, Draft, false);
+        canDeleteAdvisory(AUTHOR, own, Draft, true);
+        canDeleteAdvisory(AUTHOR, notOwn, Draft, false);
+        canDeleteAdvisory(AUTHOR, notOwn, Approved, false);
+        canDeleteAdvisory(EDITOR, notOwn, Draft, true);
+        canDeleteAdvisory(EDITOR, notOwn, Approved, false);
+        canDeleteAdvisory(MANAGER, notOwn, Approved, true);
+    }
+
+    private void canDeleteAdvisory(Role role, boolean own, WorkflowState advisoryState, boolean canDelete) {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        Authentication credentials = createAuthentication(userName, REGISTERED);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
+        Authentication credentials = createCredentials(role, userName, own);
+        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(userName, advisoryState, credentials), is(canDelete));
     }
 
     @Test
-    public void canDeleteAdvisoryTest_authorDraftOwn() throws IOException, CsafException {
+    public void canChangeAdvisoryTest() {
+
+        final boolean own = true;
+        final boolean notOwn = false;
+        canChangeAdvisory(REGISTERED, own, Draft, false);
+        canChangeAdvisory(AUTHOR, own, Draft, true);
+        canChangeAdvisory(AUTHOR, notOwn, Draft, false);
+        canChangeAdvisory(AUTHOR, notOwn, Approved, false);
+        canChangeAdvisory(EDITOR, notOwn, Draft, true);
+        canChangeAdvisory(EDITOR, notOwn, Approved, false);
+        canChangeAdvisory(MANAGER, notOwn, Approved, false);
+    }
+
+    private void canChangeAdvisory(Role role, boolean own, WorkflowState advisoryState, boolean canChange) {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        Authentication credentials = createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(true));
+        Authentication credentials = createCredentials(role, userName, own);
+        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(userName, advisoryState, credentials), is(canChange));
     }
 
     @Test
-    public void canDeleteAdvisoryTest_authorDraftNotOwn() throws IOException, CsafException {
+    public void canViewAdvisoryTest() {
 
-        var userName = "John";
-        var otherName = "Jack";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        Authentication credentials = createAuthentication(otherName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
+        final boolean own = true;
+        final boolean notOwn = false;
+        String dateInPast = DateTimeFormatter.ISO_INSTANT.format(Instant.now().minus(1, ChronoUnit.HOURS));
+        String dateInFuture = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS));
+
+
+        canViewAdvisory(REGISTERED, own, Draft, null, false);
+        canViewAdvisory(REGISTERED, own, Published, dateInPast, true);
+        canViewAdvisory(REGISTERED, own, Published, dateInFuture, false);
+        canViewAdvisory(AUTHOR, own, Draft, null, true);
+        canViewAdvisory(AUTHOR, notOwn, Draft, null, false);
+        canViewAdvisory(AUTHOR, notOwn, Approved, null, false);
+        canViewAdvisory(AUTHOR, own, Approved, null, true);
+        canViewAdvisory(AUTHOR, own, RfPublication, null, true);
+        canViewAdvisory(EDITOR, notOwn, Draft, null, true);
+        canViewAdvisory(EDITOR, notOwn, Approved, null, true);
+        canViewAdvisory(EDITOR, notOwn, RfPublication, null, true);
+        canViewAdvisory(MANAGER, notOwn, Approved, null, true);
     }
 
-    @Test
-    public void canDeleteAdvisoryTest_authorNotDraftOwn() throws IOException, CsafException {
+    private void canViewAdvisory(Role role, boolean own, WorkflowState advisoryState, String releaseDate, boolean canView) {
 
         var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        wrapper.setWorkflowState(WorkflowState.Approved);
-        Authentication credentials = createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
-    }
-
-    @Test
-    public void canDeleteAdvisoryTest_editorDraftNotOwn() throws IOException, CsafException {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        Authentication credentials = createAuthentication(otherName, EDITOR);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(true));
-    }
-
-    @Test
-    public void canDeleteAdvisoryTest_editorNotDraftOwn() throws IOException, CsafException {
-
-        var userName = "John";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        wrapper.setWorkflowState(WorkflowState.Approved);
-        Authentication credentials = createAuthentication(userName, EDITOR);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(false));
-    }
-
-    @Test
-    public void canDeleteAdvisoryTest_managerNotDraftNotOwn() throws IOException, CsafException {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var wrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonTitle("The Title"), userName, Semantic.name());
-        wrapper.setWorkflowState(WorkflowState.Approved);
-        Authentication credentials = createAuthentication(otherName, MANAGER);
-        assertThat(AdvisoryWorkflowUtil.canDeleteAdvisory(wrapper, credentials), is(true));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_registeredDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(userName, REGISTERED);
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_authorDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_authorDraftNotOwn() {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(otherName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_authorNotDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
-        Authentication credentials = createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_editorDraftNotOwn() {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(otherName, EDITOR);
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_editorNotDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
-        var credentials = createAuthentication(userName, EDITOR);
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canChangeAdvisoryTest_managerNotDraftNotOwn() {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
-        var credentials = createAuthentication(otherName, EDITOR.getRoleName(), MANAGER.getRoleName());
-        assertThat(AdvisoryWorkflowUtil.canChangeAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_registeredDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(userName, REGISTERED);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_registeredPublishedTimeInPast() {
-
-        String nowMinus1h = DateTimeFormatter.ISO_INSTANT.format(Instant.now().minus(1, ChronoUnit.HOURS));
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Published).setOwner(userName)
-                .setCurrentReleaseDate(nowMinus1h);
-        Authentication credentials = createAuthentication(userName, REGISTERED);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_registeredPublishedTimeInFuture() {
-
-        String nowPlus1h = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.HOURS));
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Published).setOwner(userName)
-                .setCurrentReleaseDate(nowPlus1h);
-        Authentication credentials = createAuthentication(userName, REGISTERED);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_authorDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_authorDraftNotOwn() {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(otherName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(false));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_authorNotDraftOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
-        Authentication credentials = createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_editorDraftNotOwn() {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        Authentication credentials = createAuthentication(otherName, EDITOR);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_editorApprovedOwn() {
-
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
-        var credentials = createAuthentication(userName, EDITOR);
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
-    }
-
-    @Test
-    public void canViewAdvisoryTest_managerApprovedNotOwn() {
-
-        var userName = "John";
-        var otherName = "Jack";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(WorkflowState.Approved).setOwner(userName);
-        var credentials = createAuthentication(otherName, EDITOR.getRoleName(), PUBLISHER.getRoleName(), MANAGER.getRoleName());
-        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(advisory, credentials), is(true));
+        Authentication credentials = createCredentials(role, userName, own);
+        assertThat(AdvisoryWorkflowUtil.canViewAdvisory(userName, advisoryState, credentials, releaseDate), is(canView));
     }
 
     @Test
@@ -428,21 +276,31 @@ public class AdvisoryWorkflowUtilTest {
     }
 
     @Test
-    public void canCreateNewVersion_draftAuthorOwn()  {
+    public void canCreateNewVersionTest()  {
 
-        var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Draft).setOwner(userName);
-        createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canCreateNewVersion(advisory), is(false));
+        final boolean own = true;
+        final boolean notOwn = false;
+
+        canCreateNewVersion(REGISTERED, own, Draft, false);
+        canCreateNewVersion(AUTHOR, own, Draft, false);
+        canCreateNewVersion(AUTHOR, notOwn, Draft, false);
+        canCreateNewVersion(AUTHOR, notOwn, Approved, false);
+        canCreateNewVersion(AUTHOR, own, Published, true);
+        canCreateNewVersion(AUTHOR, notOwn, Published, false);
+        canCreateNewVersion(EDITOR, notOwn, Draft, false);
+        canCreateNewVersion(EDITOR, notOwn, Approved, false);
+        canCreateNewVersion(EDITOR, own, Published, true);
+        canCreateNewVersion(EDITOR, notOwn, Published, true);
+        canCreateNewVersion(MANAGER, notOwn, Approved, false);
+        canCreateNewVersion(MANAGER, notOwn, Published, true);
     }
 
-    @Test
-    public void canCreateNewVersion_PublishedAuthorOwn()  {
+
+    private void canCreateNewVersion(Role role, boolean own, WorkflowState advisoryState, boolean canDelete) {
 
         var userName = "John";
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(Published).setOwner(userName);
-        createAuthentication(userName, AUTHOR);
-        assertThat(AdvisoryWorkflowUtil.canCreateNewVersion(advisory), is(true));
+        Authentication credentials = createCredentials(role, userName, own);
+        assertThat(AdvisoryWorkflowUtil.canCreateNewVersion(userName, advisoryState, credentials), is(canDelete));
     }
 
 
@@ -450,11 +308,11 @@ public class AdvisoryWorkflowUtilTest {
     public void canChangeWorkflows() {
 
         final boolean own = true;
-        final boolean notOown = false;
+        final boolean notOwn = false;
 
         canChangeWorkflow(Draft, Draft, AUTHOR, own, false);
         canChangeWorkflow(Draft, Review, AUTHOR, own, true);
-        canChangeWorkflow(Draft, Review, AUTHOR, notOown, false);
+        canChangeWorkflow(Draft, Review, AUTHOR, notOwn, false);
         canChangeWorkflow(Draft, Approved, AUTHOR, own, false);
         canChangeWorkflow(Draft, RfPublication, AUTHOR, own, false);
         canChangeWorkflow(Draft, Published, AUTHOR, own, false);
@@ -465,6 +323,7 @@ public class AdvisoryWorkflowUtilTest {
         canChangeWorkflow(Approved, Draft, AUTHOR, own, false);
         canChangeWorkflow(Approved, Review, AUTHOR, own, false);
         canChangeWorkflow(Approved, RfPublication, AUTHOR, own, true);
+        canChangeWorkflow(Approved, RfPublication, AUTHOR, notOwn, false);
         canChangeWorkflow(Approved, Published, AUTHOR, own, false);
         canChangeWorkflow(RfPublication, Draft, AUTHOR, own, false);
         canChangeWorkflow(RfPublication, Review, AUTHOR, own, false);
@@ -475,9 +334,34 @@ public class AdvisoryWorkflowUtilTest {
         canChangeWorkflow(Published, Approved, AUTHOR, own, false);
         canChangeWorkflow(Published, RfPublication, AUTHOR, own, false);
 
+        canChangeWorkflow(Draft, Draft, EDITOR, own, false);
+        canChangeWorkflow(Draft, Review, EDITOR, own, true);
+        canChangeWorkflow(Draft, Review, EDITOR, notOwn, true);
+        canChangeWorkflow(Draft, Approved, EDITOR, own, false);
+        canChangeWorkflow(Draft, RfPublication, EDITOR, own, false);
+        canChangeWorkflow(Draft, Published, EDITOR, own, false);
+        canChangeWorkflow(Review, Draft, EDITOR, own, false);
+        canChangeWorkflow(Review, Approved, EDITOR, own, false);
+        canChangeWorkflow(Review, RfPublication, EDITOR, own, false);
+        canChangeWorkflow(Review, Published, EDITOR, own, false);
+        canChangeWorkflow(Approved, Draft, EDITOR, own, false);
+        canChangeWorkflow(Approved, Review, EDITOR, own, false);
+        canChangeWorkflow(Approved, RfPublication, EDITOR, own, true);
+        canChangeWorkflow(Approved, RfPublication, EDITOR, notOwn, true);
+        canChangeWorkflow(Approved, Published, EDITOR, own, false);
+        canChangeWorkflow(RfPublication, Draft, EDITOR, own, false);
+        canChangeWorkflow(RfPublication, Review, EDITOR, own, false);
+        canChangeWorkflow(RfPublication, Approved, EDITOR, own, false);
+        canChangeWorkflow(RfPublication, Published, EDITOR, own, false);
+        canChangeWorkflow(Published, Draft, EDITOR, own, false);
+        canChangeWorkflow(Published, Review, EDITOR, own, false);
+        canChangeWorkflow(Published, Approved, EDITOR, own, false);
+        canChangeWorkflow(Published, RfPublication, EDITOR, own, false);
+
+
         canChangeWorkflow(Draft, Draft, REVIEWER, own, false);
         canChangeWorkflow(Draft, Review, REVIEWER, own, false);
-        canChangeWorkflow(Draft, Review, REVIEWER, notOown, false);
+        canChangeWorkflow(Draft, Review, REVIEWER, notOwn, false);
         canChangeWorkflow(Draft, Approved, REVIEWER, own, false);
         canChangeWorkflow(Draft, RfPublication, REVIEWER, own, false);
         canChangeWorkflow(Draft, Published, REVIEWER, own, false);
@@ -500,7 +384,7 @@ public class AdvisoryWorkflowUtilTest {
 
         canChangeWorkflow(Draft, Draft, PUBLISHER, own, false);
         canChangeWorkflow(Draft, Review, PUBLISHER, own, true);
-        canChangeWorkflow(Draft, Review, PUBLISHER, notOown, true);
+        canChangeWorkflow(Draft, Review, PUBLISHER, notOwn, true);
         canChangeWorkflow(Draft, Approved, PUBLISHER, own, false);
         canChangeWorkflow(Draft, RfPublication, PUBLISHER, own, false);
         canChangeWorkflow(Draft, Published, PUBLISHER, own, false);
@@ -527,6 +411,13 @@ public class AdvisoryWorkflowUtilTest {
      private void canChangeWorkflow(WorkflowState from, WorkflowState to, Role role, boolean own, boolean canChange)  {
 
         var userName = "John";
+        var advisory = new AdvisoryInformationResponse().setWorkflowState(from).setOwner(userName);
+        var credentials = createCredentials(role, userName, own);
+        assertThat(AdvisoryWorkflowUtil.canChangeWorkflow(advisory, to, credentials), is(canChange));
+    }
+
+    private Authentication createCredentials(Role role, String userName, boolean own) {
+
         var otherName = "Jack";
         String[] allRoles = {role.getRoleName()};
         if (role == EDITOR) {
@@ -537,9 +428,7 @@ public class AdvisoryWorkflowUtilTest {
             allRoles = new String[]{AUTHOR.getRoleName(), EDITOR.getRoleName(), PUBLISHER.getRoleName(), MANAGER.getRoleName()};
         }
 
-        var advisory = new AdvisoryInformationResponse().setWorkflowState(from).setOwner(userName);
-        var credentials = (own) ? createAuthentication(userName, allRoles) : createAuthentication(otherName, allRoles);
-        assertThat(AdvisoryWorkflowUtil.canChangeWorkflow(advisory, to, credentials), is(canChange));
+        return (own) ? createAuthentication(userName, allRoles) : createAuthentication(otherName, allRoles);
     }
 
     @Test
