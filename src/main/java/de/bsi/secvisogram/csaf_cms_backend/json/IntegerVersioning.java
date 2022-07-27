@@ -34,6 +34,11 @@ public class IntegerVersioning implements Versioning {
     }
 
     @Override
+    public String getNextDraftVersion(String currentVersionString) {
+        return currentVersionString;
+    }
+
+    @Override
     public String removeVersionSuffix(String  oldVersion) {
 
         return oldVersion;

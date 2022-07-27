@@ -1,11 +1,13 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
+import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
+import static java.util.Collections.emptyList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -75,26 +77,42 @@ public class AdvisoryService {
      */
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
-        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
-        Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression);
-        List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
-
-        List<AdvisoryInformationResponse> allResponses =  docList.stream()
-                .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
-                .toList();
-
         Authentication credentials = getAuthentication();
+        List<AdvisoryInformationResponse> allAdvisories = readAllAdvisories(expression, ObjectType.Advisory);
         // set calculated fields in response
-        for (AdvisoryInformationResponse response : allResponses) {
-            response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
-            response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
+        for (AdvisoryInformationResponse response : allAdvisories) {
+            response.setDeletable(canDeleteAdvisory(response, credentials));
+            response.setChangeable(canChangeAdvisory(response, credentials));
             response.setAllowedStateChanges(getAllowedStates(response, credentials));
             response.setCanCreateVersion(canCreateNewVersion(response, credentials));
         }
-        return allResponses
-                .stream()
-                .filter(response -> canViewAdvisory(response, credentials))
-                .collect(Collectors.toList());
+        List<AdvisoryInformationResponse> allResponses
+                = new ArrayList<>(allAdvisories
+                    .stream()
+                    .filter(response -> canViewAdvisory(response, credentials))
+                    .toList());
+
+        if (hasRole(AUDITOR, credentials)) {
+            List<AdvisoryInformationResponse> allAdvisoryVersions = readAllAdvisories(expression, ObjectType.AdvisoryVersion);
+            for (AdvisoryInformationResponse response : allAdvisoryVersions) {
+                response.setDeletable(false);
+                response.setChangeable(false);
+                response.setAllowedStateChanges(emptyList());
+                response.setCanCreateVersion(false);
+            }
+            allResponses.addAll(allAdvisoryVersions);
+        }
+        return allResponses;
+    }
+
+    private List<AdvisoryInformationResponse> readAllAdvisories(String expression, ObjectType objectType) throws CsafException, IOException {
+
+        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
+        Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression, objectType);
+        List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
+        return docList.stream()
+                .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
+                .toList();
     }
 
     private List<WorkflowState> getAllowedStates(AdvisoryInformationResponse response, Authentication credentials) {
@@ -103,7 +121,6 @@ public class AdvisoryService {
                 .filter(state -> AdvisoryWorkflowUtil.canChangeWorkflow(response, state, credentials))
                 .collect(Collectors.toList());
     }
-
 
     /**
      * read from {@link CouchDbService#findDocumentsAsStream(Map, Collection)} and convert it to a list of JsonNode
@@ -168,16 +185,18 @@ public class AdvisoryService {
             if (canViewAdvisory(advisory, getAuthentication())) {
 
                 Authentication credentials = getAuthentication();
+                boolean isVersion = advisory.getType() == ObjectType.AdvisoryVersion;
 
                 AdvisoryResponse response = new AdvisoryResponse(advisoryId, advisory.getWorkflowState(), advisory.getCsaf());
                 response.setTitle(advisory.getDocumentTitle());
                 response.setCurrentReleaseDate(advisory.getDocumentTrackingCurrentReleaseDate());
                 response.setDocumentTrackingId(advisory.getDocumentTrackingId());
                 response.setOwner(advisory.getOwner());
-                response.setDeletable(AdvisoryWorkflowUtil.canDeleteAdvisory(response, credentials));
-                response.setChangeable(AdvisoryWorkflowUtil.canChangeAdvisory(response, credentials));
-                response.setCanCreateVersion(canCreateNewVersion(response, credentials));
-                response.setAllowedStateChanges(getAllowedStates(response, credentials));
+                response.setDeletable(!isVersion && canDeleteAdvisory(response, credentials));
+                response.setChangeable(!isVersion && canChangeAdvisory(response, credentials));
+                response.setCanCreateVersion(!isVersion && canCreateNewVersion(response, credentials));
+                List<WorkflowState> allowedStateChanges = (!isVersion) ? getAllowedStates(response, credentials) : emptyList();
+                response.setAllowedStateChanges(allowedStateChanges);
                 response.setRevision(advisory.getRevision());
                 return response;
             } else {
@@ -337,6 +356,14 @@ public class AdvisoryService {
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
                 existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummaryapprove(), "");
             }
+
+            if (newWorkflowState == WorkflowState.Draft) {
+                String nextVersion = existingAdvisoryNode.getVersioningStrategy()
+                        .getNextDraftVersion(existingAdvisoryNode.getDocumentTrackingVersion());
+                existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummaryapprove(), "");
+            }
+
 
             if (newWorkflowState == WorkflowState.Published) {
 
