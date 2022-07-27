@@ -122,18 +122,32 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
 ##### Role: Author
 
 - inherits the rights of the "Registered" role
-- may list, view and edit and delete own (by the user) CSAF documents in `Draft`
-  status
-- may create comments, view and reply to comments on CSAF documents that he/she
-  is allowed to view and edit
+- may list and view own (created by the user) CSAF documents in every workflow state
+- may edit and delete own (created by the user) CSAF documents in
+  workflow state `Draft`
+- may create comments, view and reply to comments on own (created by the user)
+  CSAF documents  in the workflow
+  states `Draft`, `Review` and `Approved`
 - may create new CSAF documents
 - may change the status of own CSAF documents from `Draft` to `Review`
+- may change the workflow state of own CSAF documents from `Approved` to `RfPublication
+- may change the workflow state of own CSAF documents from `Published` to
+  `Draft` by creating a new version of the CSAF document
 - may view the status of own CSAF documents
 
 ##### Role: Editor
 
 - inherits the rights of the "Author" role
-- may list, view, edit and delete all Advisories in `Draft` status
+- may list and view all CSAF documents in every workflow state
+- may edit and delete all CSAF documents in workflow state `Draft`
+- may create comments, view and reply to comments on all CSAF
+  documents in the workflow
+  states `Draft`, `Review` and `Approved`
+- may change the workflow state of all CSAF documents from `Approved` to
+  `RfPublication`
+- may change the workflow state of all CSAF documents from `Published` to
+  `Draft` by creating
+  a new version of the CSAF document
 - may change the status of all CSAF documents from `Draft` to `Review`
 - may view the status of all CSAF documents
 
@@ -141,9 +155,8 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
 
 - inherits the rights of the "Editor" role
 - may list and view all CSAF documents in `Approved` status
-- may change the status of all CSAF documents from `Approved` to `Published`
-  (this change of status may also happen time-based, i.e. by setting a
-  publishing date)
+- may change the workflow state of all CSAF documents from `RfPublication` to `Published`
+- may change the workflow state of all CSAF documents from `Approved` to `Draft`
 
 ##### Role: Reviewer
 
@@ -612,9 +625,138 @@ available as a template. An API will list all available templates to the user.
 
 ### Advisory Workflow
 
-#### Workflow before first release
+#### Versioning
 
-![workflow](workflowBeforeRelease.drawio.svg)
+##### Semantic versioning
+
+![workflow](workflowSemanticVersioning.drawio.svg)
+
+[CSAF semantic version](https://docs.oasis-open.org/csaf/csaf/v2.0/cs01/csaf-v2.0-cs01.html#31112-version-type---semantic-versioning)
+`X` is the major version, `Y` is the minor version, and `Z` is the patch version.
+Major version zero (`0.y.z`) is for initial development before the `initial_release_date`.
+Version `1.0.0` defines the initial public release
+
+A pre-release version is denoted by appending a hyphen and a number.
+A pre-release version indicates that the version is unstable and might not
+satisfy the intended compatibility requirements as denoted by its associated
+normal version.
+
+As it stands, we would have three different logics how version numbers are
+assigned for intermediate states, i.e. stored documents between two "approvals":
+
+1. initial version < 1 : each saved state gets a new version number,
+   depending on the type of change made → the last version before 1.0.0-1 could
+   be 0.832.12.
+
+2. after the transition from approved → draft: here the "draft counter" is
+    incremented by 1 and remains the same during the whole processing cycle until
+    the next approval
+
+    In this case, the changes that are then made in the "draft" state should be
+    traceable via a change index of the draft counter
+
+    1.0.0-1.0 becomes 1.0.0-1.1 with the first change in the draft state and
+    increases with each further saved change up to 1.0.0-1.X
+
+3. after the transition from published → draft, i.e. for a new version > 1.0.0:
+   Memory checks what type of change was made and increments major, minor,
+   or patch by 1 accordingly, however a higher level change resets the lower
+   level change back to 0 and each level can be incremented by 1 at most
+    → 1.0.0 can become only: 2.0.0, 1.1.0, 1.0.1
+
+    Here we will add the "draft counter" immediately when creating the new "draft"
+    version (-1) and thereafter increment the draft index with each save
+    (analog 2) )
+
+for versions > 1.0.0
+Here we will add the "draft counter" immediately when creating the new "draft"
+version (-1) and thereafter increment the draft index with each save (analog 2) )
+
+Regardless of the number of changes that theoretically led to the increase of
+the version number on each level.
+We would thus generate the potential new version number resulting from each
+change each time we save.
+
+##### Integer versioning
+
+![workflow](workflowIntegerVersioning.drawio.svg)
+
+With integer versioning, the version number is always incremented only when a
+new "draft" version is initially created (Predicted new version = target version).
+Exception: Version 0, until the first time "published".
+
+##### Konfiguration
+
+There should be a configuration that defines which type of versioning should be
+taken for new documents.
+For existing documents the ype of versioning can NOT change during lifetime,
+i.e. once Semantic Versioning,
+always Semantic Versioning (or analog for Integer Versioning).
+
+##### current_release_date
+
+When saving, it is always checked whether the current_release_date is in the
+past. In this case the date is set
+to the current date. In all other cases (date in the future) this remains.
+This does not affect the "preassignment" of the current_release_date when
+the "RfPublication" status is set.
+
+##### revision_history
+
+The 'tracking/revision_history' should be maintained in the backend
+
+- Semantic Versioning
+
+  - Pre 1.0.0
+        When saving (both new creation and "normal" saving) a summary and legacy
+        version can be specified in a  modal window.
+        The backend creates a new revision history element for each change,
+        current date, the summary and the legacy version of the user.
+        For status transitions that also result in a change of the version
+        number (e.g. Review → Approved, Approved → Draft), the backend also
+        inserts a
+        new element. A generic text is
+        inserted as summary. e.g..: "Status changed from Review to Approved".
+        When the status changes to Published, all old Revision History elements
+        are deleted. A new element is created
+        with the default summary "Initial Publication". The text must be configurable.
+  - Post 1.0.0
+        A new revision history element is created at createNewVersion.
+        This is always updated until the next publish and the Current Release
+        Date is set as date. The summary can be customized by the user when
+        saving in the modal window. The user can also set a
+        "Legacy Version of the Revision" in the modal window.
+        In the Wizzard, the list of Revision History Items can no longer be
+        edited. The fields are grayed out and the user gets a hint that he can
+        only edit it when saving.
+        To be able to edit a typo in the summary, we allow editing the summary
+        of the last revision history item in the interface. This changes the
+        document and saving is possible. In the modal window the summary of the
+        last element is copied into the summary field. So here you can edit
+        again. The same principle applies to the Legacy Version field.
+        This means that old revision history elements are only editable via
+        the JSON editor.
+
+- Integer Versioning
+
+    Initially a revision history element is created. If an element with the
+    current version number already exists, none is created. New elements are
+    only created if the version number increases.
+    Behavior analogous to Semantic Versioning.
+
+We are in the Published status:
+
+    When switching to Draft workflow status, a new Revision History Item is created.
+
+When a new document is created on the server, any existing revision history
+items are deleted, a new version number (matching the versioning scheme
+configured on the server) is assigned, and an initial revision history item is created.
+
+#### Backend States
+
+![state maschine](workflow-states.drawio.svg)
+
+#### Advisory workflow states
 
 - First, an initial advisory is created with workflow state set to `Draft`
 - This advisory could be changed several times in state `Draft`. Depending on the
@@ -622,7 +764,7 @@ available as a template. An API will list all available templates to the user.
   release.
 - When all changes are done, the workflow state is set to `Review`
 - After the review was successful the workflow state is set to `Approved` and the
-  version is set to `1.0.0-1`
+  version is set to `1.0.0-1.0`
 - This pre-release could be used to distribute the advisory to partners.
   (restricted use)
 - The advisory could be set to the workflow state `Draft` to add feedback to
@@ -631,24 +773,6 @@ available as a template. An API will list all available templates to the user.
   ("Request for Publication")
 - In the end, the workflow state is set to `Published` and the version is set
   to `1.0.0`
-
-#### Versioning
-
-The backend is using Semantic versioning in the form `X.Y.Z`.
-see:
-[CSAF semantic version](https://docs.oasis-open.org/csaf/csaf/v2.0/cs01/csaf-v2.0-cs01.html#31112-version-type---semantic-versioning)
-`X` is the major version, `Y` is the minor version, and `Z` is the patch version.
-Major version zero (`0.y.z`) is for initial development before the `initial_release_date`.
-Version `1.0.0` defines the initial public release
-
-A pre-release version is denoted by appending a hyphen and a number
-A pre-release version indicates that the version is unstable and might not
-satisfy the intended compatibility requirements as denoted by its associated
-normal version.
-
-#### Backend States
-
-![state maschine](workflow-states.drawio.svg)
 
 ##### Possible actions in every state
 
