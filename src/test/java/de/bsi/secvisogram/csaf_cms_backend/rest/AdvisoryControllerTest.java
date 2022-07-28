@@ -130,11 +130,34 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void listCsafDocumentsTest_csafException() throws Exception {
+
+        CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
+        when(advisoryService.getAdvisoryInformations(null))
+                .thenThrow(csafExcp);
+
+        this.mockMvc.perform(get(advisoryRoute))
+                .andDo(print())
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+    }
+
+    @Test
+    void listCsafDocumentsTest_ioException() throws Exception {
+
+        when(advisoryService.getAdvisoryInformations(null))
+                .thenThrow(new IOException());
+
+        this.mockMvc.perform(get(advisoryRoute))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
+    }
+
+
+    @Test
     void readCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
         when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(IdNotFoundException.class);
-
 
         this.mockMvc.perform(get(advisoryRoute + advisoryId))
                 .andDo(print())
@@ -145,14 +168,35 @@ public class AdvisoryControllerTest {
     @Test
     void readCsafDocumentTest_unauthorized() throws Exception {
 
-        UUID advisoryId = UUID.randomUUID();
-        when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(AccessDeniedException.class);
-
-        this.mockMvc.perform(get(advisoryRoute + advisoryId))
+        when(advisoryService.getAdvisory(any())).thenThrow(AccessDeniedException.class);
+        this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
 
     }
+
+    @Test
+    void readCsafDocumentTest_databaseException() throws Exception {
+
+        when(advisoryService.getAdvisory(any())).thenThrow(DatabaseException.class);
+
+        this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void readCsafDocumentTest_csafException() throws Exception {
+
+        CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
+        when(advisoryService.getAdvisory(any())).thenThrow(csafExcp);
+
+        this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
+                .andDo(print())
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+
+    }
+
     @Test
     void readCsafDocumentTest() throws Exception {
 
@@ -209,15 +253,28 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void createCsafDocumentTest_unauthorized() throws Exception {
+    void createCsafDocumentTest_csafException() throws Exception {
 
-        doThrow(AccessDeniedException.class).when(advisoryService).addAdvisory(any());
+        CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
+        when(advisoryService.addAdvisory(any())).thenThrow(csafExcp);
+
+        this.mockMvc.perform(
+                        post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+    }
+
+    @Test
+    void createCsafDocumentTest_accessDeniedException() throws Exception {
+
+        when(advisoryService.addAdvisory(any())).thenThrow(AccessDeniedException.class);
 
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
+
 
     @Test
     void changeCsafDocumentTest_notExisting() throws Exception {
@@ -246,6 +303,36 @@ public class AdvisoryControllerTest {
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void changeCsafDocumentTest_databaseException() throws Exception {
+
+        doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
+
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changeCsafDocumentTest_csafExcpetion() throws Exception {
+
+        CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
+        when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
+
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+    }
+
     @Test
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
