@@ -27,7 +27,7 @@ here.
 - restart compose
 
 You should now be able to start the spring boot application, navigate to 
-`localhost:4180/api/2.0/about`, log in with one of the users and get a 
+`localhost:4180/api/v1/about`, log in with one of the users and get a 
 response from the server. 
 The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
 
@@ -52,7 +52,7 @@ with main class: de.exxcellent.bsi.SecvisogramApplication
 
 The port is defined in .env - CSAF_CMS_BACKEND_PORT, default 8081. 
 
-http://localhost:8081/api/2.0/about
+http://localhost:8081/api/v1/about
 
 Swagger UI
 

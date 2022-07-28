@@ -381,6 +381,7 @@ public class AdvisoryWorkflowUtil {
                 AdvisorySearchField.DOCUMENT_TITLE, AdvisoryInformationResponse::setTitle,
                 AdvisorySearchField.DOCUMENT_TRACKING_ID, AdvisoryInformationResponse::setDocumentTrackingId,
                 CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId,
+                CouchDbField.REVISION_FIELD, AdvisoryInformationResponse::setRevision,
                 AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE, AdvisoryInformationResponse::setCurrentReleaseDate
         );
     }

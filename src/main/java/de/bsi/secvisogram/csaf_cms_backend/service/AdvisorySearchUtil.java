@@ -35,7 +35,7 @@ public class AdvisorySearchUtil {
     private static final String[] selectProductTreeBranches = {"csaf", "product_tree", "branches"};
 
 
-    public static Map<String, Object> buildAdvisoryExpression(String expression) throws CsafException {
+    public static Map<String, Object> buildAdvisoryExpression(String expression, ObjectType objectType) throws CsafException {
 
         try {
             final Map<String, Object> selector;
@@ -56,7 +56,7 @@ public class AdvisorySearchUtil {
                         selectProductTreeFullProductNames,
                         selectProductTreeBranches);
             } else {
-                selector = expr2CouchDBFilter(equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()));
+                selector = expr2CouchDBFilter(equal(objectType.name(), TYPE_FIELD.getDbName()));
             }
 
             return selector;
