@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -11,8 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -62,7 +65,7 @@ public class AdvisoryControllerTest {
 
     private static final ObjectMapper jacksonMapper = new ObjectMapper();
 
-    private static final String advisoryRoute = "/api/2.0/advisories/";
+    private static final String advisoryRoute = "/api/v1/advisories/";
 
     private static final String csafJsonString = """
             {
@@ -165,14 +168,26 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void createCsafDocumentTest_invalidCsaf() throws Exception {
+
+        when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
+        String invalidCsaf = "{}";
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        this.mockMvc.perform(
+                        post(advisoryRoute).content(writer.writeValueAsString(csafToRequest(invalidCsaf)))
+                                .contentType(MediaType.APPLICATION_JSON).with(csrf()))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void createCsafDocumentTest_invalidJson() throws Exception {
 
-        String invalidJson = "not a valid JSON string";
-
-        when(advisoryService.addAdvisory(invalidJson)).thenThrow(JsonProcessingException.class);
-
+        when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
+        String invalidJson = "invalid JSON";
         this.mockMvc.perform(
-                        post(advisoryRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
+                        post(advisoryRoute).content(invalidJson)
+                                .contentType(MediaType.APPLICATION_JSON).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -181,10 +196,13 @@ public class AdvisoryControllerTest {
     void createCsafDocumentTest() throws Exception {
 
         IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
-        when(advisoryService.addAdvisory(csafJsonString)).thenReturn(idRev);
+        when(advisoryService.addAdvisory(any())).thenReturn(idRev);
 
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(
-                        post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
+                        post(advisoryRoute).with(csrf())
+                                .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(String.format("{\"id\": \"%s\", \"revision\": \"%s\"}", advisoryId, revision)));
@@ -193,9 +211,7 @@ public class AdvisoryControllerTest {
     @Test
     void createCsafDocumentTest_unauthorized() throws Exception {
 
-        IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
-        when(advisoryService.addAdvisory(csafJsonString)).thenReturn(idRev);
-        doThrow(AccessDeniedException.class).when(advisoryService).addAdvisory(csafJsonString);
+        doThrow(AccessDeniedException.class).when(advisoryService).addAdvisory(any());
 
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
@@ -206,10 +222,11 @@ public class AdvisoryControllerTest {
     @Test
     void changeCsafDocumentTest_notExisting() throws Exception {
 
-        doThrow(IdNotFoundException.class).when(advisoryService).updateAdvisory(advisoryId, revision, fullAdvisoryJsonString);
+        doThrow(IdNotFoundException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
-                        .content(fullAdvisoryJsonString)
+                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
                 .andDo(print())
@@ -219,10 +236,11 @@ public class AdvisoryControllerTest {
     @Test
     void changeCsafDocumentTest_unauthorized() throws Exception {
 
-        doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(advisoryId, revision, fullAdvisoryJsonString);
+        doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
-                        .content(fullAdvisoryJsonString)
+                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
                 .andDo(print())
@@ -232,7 +250,7 @@ public class AdvisoryControllerTest {
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
-        doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(advisoryId, invalidRevision, fullAdvisoryJsonString);
+        doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(advisoryId, invalidRevision, csafToRequest(fullAdvisoryJsonString));
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(fullAdvisoryJsonString)
@@ -260,10 +278,11 @@ public class AdvisoryControllerTest {
     void changeCsafDocumentTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
-        when(advisoryService.updateAdvisory(advisoryId, revision, fullAdvisoryJsonString)).thenReturn(newRevision);
+        when(advisoryService.updateAdvisory(eq(advisoryId), eq(revision), any())).thenReturn(newRevision);
 
+        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
-                        .content(fullAdvisoryJsonString)
+                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
                 .andDo(print())

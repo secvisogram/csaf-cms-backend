@@ -1,6 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonCategoryTitleId;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -15,8 +17,8 @@ public class AdvisoryAuditTrailDiffWrapperTest {
     @Test
     public void createNewFromCsafTest() throws IOException, CsafException {
 
-        var oldWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonCategoryTitleId("Category1", "OldTitle", "Id1"), "John");
-        var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonCategoryTitleId("Category1", "NewTitle", "Id2"), "John");
+        var oldWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonCategoryTitleId("Category1", "OldTitle", "Id1")), "John", Semantic.name());
+        var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonCategoryTitleId("Category1", "NewTitle", "Id2")), "John", Semantic.name());
 
         AdvisoryAuditTrailDiffWrapper wrapper = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
         assertThat(wrapper.getDiffPatch().at("/0/op").asText(), equalTo("replace"));
@@ -32,7 +34,7 @@ public class AdvisoryAuditTrailDiffWrapperTest {
     public void createNewFromCsafTest_emptyAdvisory() throws IOException, CsafException {
 
         var oldWrapper = AdvisoryWrapper.createInitialEmptyAdvisoryForUser("John");
-        var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafJsonCategoryTitleId("Category1", "NewTitle", "ID01"), "John");
+        var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonCategoryTitleId("Category1", "NewTitle", "ID01")), "John", Semantic.name());
 
         AdvisoryAuditTrailDiffWrapper wrapper = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
         assertThat(wrapper.getDiffPatch().at("/0/op").asText(), equalTo("add"));

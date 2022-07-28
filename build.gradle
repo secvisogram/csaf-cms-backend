@@ -26,11 +26,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 	implementation 'com.ibm.cloud:cloudant:0.1.2'
 	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.0'
 
 	implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.8'
+	implementation 'org.apache.commons:commons-text:1.9'
+	implementation 'com.vdurmont:semver4j:3.1.0'
+
 
 	implementation 'org.graalvm.js:js:22.1.0.1'
 	implementation 'org.graalvm.js:js-scriptengine:22.1.0.1'
@@ -51,6 +56,7 @@ dependencies {
 
 	testImplementation 'org.testcontainers:testcontainers:1.17.1'
 	testImplementation 'org.testcontainers:junit-jupiter:1.17.1'
+	testImplementation 'org.mockito:mockito-inline:4.6.1'
 
 	spotbugsSlf4j 'org.slf4j:slf4j-simple:1.7.36'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'

@@ -1,9 +1,28 @@
 package de.bsi.secvisogram.csaf_cms_backend.fixture;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Utility class to create CSAF document json's
  */
 public class CsafDocumentJsonCreator {
+
+    public static CreateAdvisoryRequest csafToRequest(String csafJson) throws IOException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        var request = new CreateAdvisoryRequest();
+        try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+            JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+            request.setCsaf(csafRootNode);
+        }
+        return request;
+    }
 
     public static String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
 
@@ -28,6 +47,41 @@ public class CsafDocumentJsonCreator {
                 }""".formatted(documentTitle);
     }
 
+    public static String csafJsonTitleReleaseDate(String documentTitle, String releaseDate) {
+
+        return """
+                { "document": {
+                      "category": "Category1",
+                      "title": "%s",
+                      "tracking": {
+                          "current_release_date": "%s"
+                      }
+                   }
+                }""".formatted(documentTitle, releaseDate);
+    }
+
+    public static String csafJsonTitleReleaseDateVersion(String documentTitle, String releaseDate, String version) {
+
+        return """
+                { "document": {
+                      "category": "Category1",
+                      "title": "%s",
+                      "tracking": {
+                          "current_release_date": "%s",
+                          "version":"%s",
+                          "status": "draft",
+                          "revision_history":[
+                            { "summary": null,
+                              "legacy_revision": null,
+                              "number": "%s",
+                              "date": "%s"
+                            }
+                          ]
+                      }
+                   }
+                }""".formatted(documentTitle, releaseDate, version, version, releaseDate);
+
+    }
     public static String csafJsonCategoryTitle(String documentCategory, String documentTitle) {
 
         return """
@@ -42,7 +96,7 @@ public class CsafDocumentJsonCreator {
     public static String csafJsonTrackingGenratorVersion(String version) {
 
         return """
-                { 
+                {
                   "document": {
                       "category": "Category1",
                       "title": "title1",
@@ -54,7 +108,7 @@ public class CsafDocumentJsonCreator {
                                   "name": "Secvisogram",
                                   "version": "%s"
                             }
-                          }  
+                          }
                       }
                   }
                 }""".formatted(version);
@@ -63,7 +117,7 @@ public class CsafDocumentJsonCreator {
     public static String csafJsonRevisionHistorySummary(String summary) {
 
         return """
-                { 
+                {
                   "document": {
                       "category": "Category1",
                       "title": "title1",
@@ -84,7 +138,7 @@ public class CsafDocumentJsonCreator {
     public static String csafAcknowledgmentsNames(String name) {
 
         return """
-                { 
+                {
                   "document": {
                       "category": "Category1",
                       "title": "title1",
@@ -100,7 +154,7 @@ public class CsafDocumentJsonCreator {
                               "https:/heise.de"
                             ]
                           }
-                       ]  
+                       ]
                   }
                 }""".formatted(name);
     }
@@ -120,6 +174,31 @@ public class CsafDocumentJsonCreator {
                   ]
                 }""".formatted(cve);
     }
+
+    public static String docWithVulnerabilities(String vulnerabilities) {
+
+        return """
+                {
+                  "document": {
+                      "category": "Category1",
+                      "title": "title1"
+                  },
+                  "vulnerabilities": %s
+                }""".formatted(vulnerabilities);
+    }
+
+    public static String docWithProductTree(String productTree) {
+
+        return """
+                {
+                  "document": {
+                      "category": "Category1",
+                      "title": "title1"
+                  },
+                  "product_tree": %s
+                }""".formatted(productTree);
+    }
+
 
     public static String csafProductTreeFullProductNamesProductId(String productId) {
 

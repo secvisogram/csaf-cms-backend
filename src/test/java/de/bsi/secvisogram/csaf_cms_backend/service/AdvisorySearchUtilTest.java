@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItems;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,8 +37,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTitle() throws IOException, CsafException {
 
-        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJsonTitle("title1"));
-        this.advisoryService.addAdvisory(csafJsonTitle("title2"));
+        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
+        this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title2")));
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations(createExprDocumentTitle("title1"));
         List<String> expectedIDs = List.of(idRev1.getId());
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
@@ -50,8 +51,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTrackingGeneratorVersion() throws IOException, CsafException {
 
-        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJsonTrackingGenratorVersion("1.2.3"));
-        this.advisoryService.addAdvisory(csafJsonTrackingGenratorVersion("3.4.5"));
+        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGenratorVersion("1.2.3")));
+        this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGenratorVersion("3.4.5")));
         List<AdvisoryInformationResponse> infos =
                 this.advisoryService.getAdvisoryInformations(createExprTrackingGeneratorVersion("1.2.3"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
@@ -61,12 +62,14 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_documentTrackingReisionHistorysummary() throws IOException, CsafException {
+    public void getAdvisoryInformationsTest_documentTrackingRevisionHistorysummary() throws IOException, CsafException {
 
-        this.advisoryService.addAdvisory(csafJsonRevisionHistorySummary("SummaryOne"));
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJsonRevisionHistorySummary("SummaryTwo"));
+        this.advisoryService.addAdvisory(csafToRequest(csafJsonRevisionHistorySummary("SummaryOne")));
+        CreateAdvisoryRequest request = csafToRequest(csafJsonRevisionHistorySummary("SummaryTwo"));
+        request.setSummary("SummaryInRequest");
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(request);
         List<AdvisoryInformationResponse> infos =
-                this.advisoryService.getAdvisoryInformations(createExprRevisionHistorySummary("SummaryTwo"));
+                this.advisoryService.getAdvisoryInformations(createExprRevisionHistorySummary("SummaryInRequest"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
         assertThat(ids.size(), equalTo(1));
         assertThat(ids, hasItems(idRev2.getId()));
@@ -77,8 +80,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_csafAcknowledgmentsNames() throws IOException, CsafException {
 
-        this.advisoryService.addAdvisory(csafAcknowledgmentsNames("John"));
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafAcknowledgmentsNames("Jack"));
+        this.advisoryService.addAdvisory(csafToRequest(csafAcknowledgmentsNames("John")));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafAcknowledgmentsNames("Jack")));
         List<AdvisoryInformationResponse> infos =
                 this.advisoryService.getAdvisoryInformations(createExprAcknowledgmentsNames("Jack"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
@@ -90,8 +93,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException, CsafException {
 
-        this.advisoryService.addAdvisory(csafVulnerabilitiesCve("CVE-2021-44228"));
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafVulnerabilitiesCve("CVE-2021-44999"));
+        this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44228")));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44999")));
         List<AdvisoryInformationResponse> infos =
                 this.advisoryService.getAdvisoryInformations(createExprVulnerabilitiesCve("CVE-2021-44999"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
@@ -103,8 +106,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_productTreeFullProductNames() throws IOException, CsafException {
 
-        this.advisoryService.addAdvisory(csafProductTreeFullProductNamesProductId("ProductOne"));
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafProductTreeFullProductNamesProductId("ProductTwo"));
+        this.advisoryService.addAdvisory(csafToRequest(csafProductTreeFullProductNamesProductId("ProductOne")));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafProductTreeFullProductNamesProductId("ProductTwo")));
         List<AdvisoryInformationResponse> infos =
                 this.advisoryService.getAdvisoryInformations(createProductTreeProductId("ProductTwo"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
@@ -116,8 +119,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_csafProductTreeBranchesCategory() throws IOException, CsafException {
 
-        this.advisoryService.addAdvisory(csafProductTreeBranchesCategory("CategoryOne"));
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafProductTreeBranchesCategory("CategoryTwo"));
+        this.advisoryService.addAdvisory(csafToRequest(csafProductTreeBranchesCategory("CategoryOne")));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafProductTreeBranchesCategory("CategoryTwo")));
         List<AdvisoryInformationResponse> infos =
                 this.advisoryService.getAdvisoryInformations(createProductTreeBranchesCategory("CategoryTwo"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();

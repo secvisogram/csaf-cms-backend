@@ -5,15 +5,17 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
@@ -22,12 +24,14 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,15 +61,6 @@ public class AdvisoryServiceTest {
                         }
                     }""";
 
-    private static final String updatedCsafJson = """
-            {
-                "document": {
-                    "category": "CSAF_INFORMATIONAL_ADVISORY",
-                    "title": "Test Advisory"
-                }
-            }
-            """;
-
     private static final String advisoryTemplateString = """
             {
                 "owner": "John Doe",
@@ -92,28 +87,37 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryCount() throws IOException, CsafException {
-        this.advisoryService.addAdvisory(csafJson);
+        this.advisoryService.addAdvisory(csafToRequest(csafJson));
         // creates advisory and 1 audit trail
         assertEquals(2, this.advisoryService.getDocumentCount());
     }
 
     @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryIdsTest_empty() throws IOException, CsafException {
         List<AdvisoryInformationResponse> ids = this.advisoryService.getAdvisoryInformations(null);
         assertEquals(0, ids.size());
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
     public void getAdvisoryIdsTest() throws IOException, CsafException {
-        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafJson);
-        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJson));
+        IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafJson));
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations(null);
         List<String> expectedIDs = List.of(idRev1.getId(), idRev2.getId());
+        List<String> expectedRevisions = List.of(idRev1.getRevision(), idRev2.getRevision());
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
-        Assertions.assertTrue(ids.size() == expectedIDs.size()
-                              && ids.containsAll(expectedIDs)
-                              && expectedIDs.containsAll(ids));
+        List<String> revisions = infos.stream().map(AdvisoryInformationResponse::getRevision).toList();
+
+        assertEquals(ids.size(), expectedIDs.size());
+        assertTrue(ids.containsAll(expectedIDs));
+        assertTrue(expectedIDs.containsAll(ids));
+
+        assertEquals(revisions.size(), expectedRevisions.size());
+        assertTrue(revisions.containsAll(expectedRevisions));
+        assertTrue(expectedRevisions.containsAll(revisions));
     }
 
     @Test
@@ -121,7 +125,7 @@ public class AdvisoryServiceTest {
     public void addAdvisoryTest_invalidJson() {
         String invalidJson = "no json string";
 
-        assertThrows(JsonProcessingException.class, () -> this.advisoryService.addAdvisory(invalidJson));
+        assertThrows(JsonProcessingException.class, () -> this.advisoryService.addAdvisory(csafToRequest(invalidJson)));
     }
 
     @Test
@@ -129,13 +133,13 @@ public class AdvisoryServiceTest {
     public void addAdvisoryTest_invalidAdvisory() {
         String invalidAdvisory = "{\"no\": \"CSAF document\"}";
 
-        assertThrows(IllegalArgumentException.class, () -> this.advisoryService.addAdvisory(invalidAdvisory));
+        assertThrows(CsafException.class, () -> this.advisoryService.addAdvisory(csafToRequest(invalidAdvisory)));
     }
 
     @Test
     @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
     public void addAdvisoryTest() throws IOException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         Assertions.assertNotNull(idRev);
     }
 
@@ -148,7 +152,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(idRev.getId(), advisory.getAdvisoryId());
     }
@@ -163,7 +167,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest_badRevision() throws IOException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         // creates advisory and 1 audit trail
         assertEquals(2, advisoryService.getDocumentCount());
         String revision = "bad revision";
@@ -173,7 +177,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         assertEquals(2, advisoryService.getDocumentCount(), "there should be one advisory and one audit trail");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
         assertEquals(0, advisoryService.getDocumentCount(), "the advisory and audit trail should be deleted");
@@ -182,7 +186,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest_NoPermission() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
         // author could only delete advisory in workflow state draft
         assertThrows(AccessDeniedException.class, () -> this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision()));
@@ -190,9 +194,10 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
     public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        advisoryService.addAdvisory(csafToRequest(csafJson));
         assertEquals(4, advisoryService.getDocumentCount(), "there should be two advisories with an audit trail each");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
         assertEquals(2, advisoryService.getDocumentCount(), "one advisory and one audit trail should be deleted");
@@ -201,7 +206,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest_withComments() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("This is a comment", UUID.randomUUID().toString());
         advisoryService.addComment(idRev.getId(), comment);
         assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
@@ -212,7 +217,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest_withCommentsAndAnswers() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("This is a comment", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
@@ -227,30 +232,38 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void updateAdvisoryTest() throws IOException, DatabaseException, CsafException {
 
-        var updateJsafJson = csafDocumentJson("CSAF_INFORMATIONAL_ADVISORY", "Test Advisory");
+        final String testCsafJson = """
+                    {
+                        "document": {
+                            "category": "CSAF_BASE"
+                        }
+                    }""";
 
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
-        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), updateJsafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(testCsafJson));
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
+
         // an advisory and 2 audit trails are created
         assertEquals(3, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(updatedCsafJson.replaceAll("\\s+", ""),
-                updatedAdvisory.getCsaf().toString().replaceAll("\\s+", ""));
+        assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asText());
+        assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText());
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void updateAdvisoryTest_auditTrail() throws IOException, DatabaseException, CsafException {
 
-        var idRev = advisoryService.addAdvisory(csafDocumentJson("Category1", "Title1"));
-        var revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafDocumentJson("Category2", "Title2"));
-        revision = advisoryService.updateAdvisory(idRev.getId(), revision, csafDocumentJson("Category3", "Title3"));
-        advisoryService.updateAdvisory(idRev.getId(), revision, csafDocumentJson("Category4", "Title4"));
+        var idRev = advisoryService.addAdvisory(csafToRequest(csafDocumentJson("Category1", "Title1")));
+        var revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafToRequest(csafDocumentJson("Category2", "Title2")));
+        revision = advisoryService.updateAdvisory(idRev.getId(), revision, csafToRequest(csafDocumentJson("Category3", "Title3")));
+        advisoryService.updateAdvisory(idRev.getId(), revision, csafToRequest(csafDocumentJson("Category4", "Title4")));
         // an advisory and 4 audit trail are created
         assertEquals(5, advisoryService.getDocumentCount());
-        AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(csafDocumentJson("Category4", "Title4").replaceAll("\\s+", ""),
-                updatedAdvisory.getCsaf().toString().replaceAll("\\s+", ""));
+        advisoryService.getAdvisory(idRev.getId());
 
         List<JsonNode> auditTrails = readAllAuditTrailDocumentsFromDb();
 
@@ -259,7 +272,7 @@ public class AdvisoryServiceTest {
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(0)), equalTo(ChangeType.Create.name()));
         assertThat(CHANGE_TYPE.stringVal(auditTrails.get(1)), equalTo(ChangeType.Update.name()));
         // recreate Advisory from diffs
-        AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(AdvisoryWrapper.emptyCsafDocument, "");
+        AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(AdvisoryWrapper.emptyCsafDocument), "", Semantic.name());
         JsonNode patch0 = auditTrails.get(0).get(DIFF.getDbName());
         AdvisoryWrapper node1 = rootWrapper.applyJsonPatch(patch0);
         assertThat(node1.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title1"));
@@ -282,13 +295,13 @@ public class AdvisoryServiceTest {
     @Test
     public void updateAdvisoryTest_badData() {
         UUID noAdvisoryId = UUID.randomUUID();
-        assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(), "redundant", advisoryJsonString));
+        assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(), "redundant", csafToRequest(advisoryJsonString)));
     }
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
     public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
         // an advisory and 2 audit trails are created
         assertEquals(3, advisoryService.getDocumentCount());
@@ -298,8 +311,9 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @Disabled("Mock Validation ValidatorServiceClient")
     public void createNewCsafDocumentVersionTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
         revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
         revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
@@ -326,7 +340,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getCommentsTest_empty() throws IOException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         List<CommentInformationResponse> comments = advisoryService.getComments(idRevAdvisory.getId());
         Assertions.assertEquals(0, comments.size());
     }
@@ -335,7 +349,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     void getCommentsTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         CreateCommentRequest anotherComment = new CreateCommentRequest("another comment text", UUID.randomUUID().toString());
 
@@ -346,7 +360,7 @@ public class AdvisoryServiceTest {
 
         List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
         List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
-        Assertions.assertTrue(ids.size() == expectedIDs.size()
+        assertTrue(ids.size() == expectedIDs.size()
                 && ids.containsAll(expectedIDs)
                 && expectedIDs.containsAll(ids));
 
@@ -356,7 +370,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void addCommentTest_oneComment() throws DatabaseException, IOException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         String commentText = "This is a comment";
 
         CreateCommentRequest comment = new CreateCommentRequest(commentText, UUID.randomUUID().toString());
@@ -375,7 +389,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void addCommentTest_leafNode() throws DatabaseException, IOException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         String commentText = "This is a leaf node comment";
 
         CreateCommentRequest comment = new CreateCommentRequest(commentText, UUID.randomUUID().toString(), "category");
@@ -394,7 +408,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void addCommentTest_twoComments() throws DatabaseException, IOException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
 
         CreateCommentRequest commentOne = new CreateCommentRequest("This is a comment for a field", UUID.randomUUID().toString());
         advisoryService.addComment(idRevAdvisory.getId(), commentOne);
@@ -418,7 +432,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteComment_badRevision() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
 
         CreateCommentRequest comment = new CreateCommentRequest("a comment", UUID.randomUUID().toString());
 
@@ -432,7 +446,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteComment() throws IOException, DatabaseException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
 
         CreateCommentRequest comment = new CreateCommentRequest("a comment", UUID.randomUUID().toString());
 
@@ -452,7 +466,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteCommentWithAnswer() throws IOException, DatabaseException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("a comment", UUID.randomUUID().toString());
 
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
@@ -472,7 +486,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     void updateCommentTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
 
 
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
@@ -496,7 +510,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAnswersTest_empty() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevAdvisory.getId(), idRevComment.getId());
@@ -506,7 +520,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void getAnswersTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
@@ -522,7 +536,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void addAnswerTest_oneAnswer() throws IOException, DatabaseException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
@@ -542,7 +556,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void addAnswerTest_twoAnswersSameComment() throws IOException, DatabaseException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
@@ -565,7 +579,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAnswer_badRevision() throws IOException, DatabaseException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
@@ -578,7 +592,7 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     public void deleteAnswer() throws IOException, DatabaseException, CsafException {
 
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
@@ -595,7 +609,7 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     void updateAnswerTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafJson);
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
