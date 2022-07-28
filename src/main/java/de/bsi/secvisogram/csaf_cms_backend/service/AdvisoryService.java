@@ -354,14 +354,14 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummaryapprove(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getApprove(), "");
             }
 
             if (newWorkflowState == WorkflowState.Draft) {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextDraftVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummaryapprove(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getDraft(), "");
             }
 
 
@@ -375,7 +375,7 @@ public class AdvisoryService {
                         .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
                 existingAdvisoryNode.removeAllPrereleaseVersions();
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummarypublication(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
                 if (existingAdvisoryNode.getLastMajorVersion() == 0) {
                     existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
                             ? proposedTime

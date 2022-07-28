@@ -7,34 +7,14 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "csaf")
 public class CsafConfiguration {
 
-    private String summarypublication;
-    private String summaryapprove;
-    private String summarydraft;
+    private CsafSummaryConfiguration summary;
 
-    public String getSummarypublication() {
-        return summarypublication;
+    public CsafSummaryConfiguration getSummary() {
+        return summary;
     }
 
-    public String getSummaryapprove() {
-        return summaryapprove;
-    }
-
-    public String getSummarydraft() {
-        return summarydraft;
-    }
-
-    public CsafConfiguration setSummarypublication(String summarypublication) {
-        this.summarypublication = summarypublication;
-        return this;
-    }
-
-    public CsafConfiguration setSummaryapprove(String summaryapprove) {
-        this.summaryapprove = summaryapprove;
-        return this;
-    }
-
-    public CsafConfiguration setSummarydraft(String summarydraft) {
-        this.summarydraft = summarydraft;
+    public CsafConfiguration setSummary(CsafSummaryConfiguration summary) {
+        this.summary = summary;
         return this;
     }
 }

@@ -75,7 +75,6 @@ public class AdvisoryWrapper {
     private static ObjectNode createAdvisoryNodeFromRequest(CreateAdvisoryRequest csafJson) throws CsafException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        //final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
         JsonNode csafRootNode = csafJson.getCsaf();
         if (csafRootNode == null || !csafRootNode.has("document")) {
             throw new CsafException("Csaf contains no document entry", CsafExceptionKey.CsafHasNoDocumentNode,
@@ -401,9 +400,7 @@ public class AdvisoryWrapper {
     }
     public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
 
-
         ArrayNode historyNode = getOrCreateHistoryNode();
-
         if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isPrerelease()) {
             ObjectNode entry = historyNode.addObject();
             entry.put("summary", summary);
