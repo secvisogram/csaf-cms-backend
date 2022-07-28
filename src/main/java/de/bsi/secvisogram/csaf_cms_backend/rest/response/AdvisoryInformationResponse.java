@@ -13,7 +13,7 @@ import java.util.List;
 @Schema(name = "AdvisoryDocumentInformation")
 public class AdvisoryInformationResponse {
 
-
+    protected String revision;
     private String advisoryId;
     private WorkflowState workflowState;
     private String documentTrackingId;
@@ -21,6 +21,8 @@ public class AdvisoryInformationResponse {
     private String owner;
     private boolean changeable;
     private boolean deletable;
+
+    private boolean canCreateVersion;
     private List<WorkflowState> allowedStateChanges;
 
     private String currentReleaseDate;
@@ -29,6 +31,7 @@ public class AdvisoryInformationResponse {
 
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.allowedStateChanges = Collections.emptyList();
 
     }
@@ -38,6 +41,7 @@ public class AdvisoryInformationResponse {
         this.advisoryId = advisoryId;
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.allowedStateChanges = Collections.emptyList();
     }
 
@@ -46,6 +50,7 @@ public class AdvisoryInformationResponse {
         this.workflowState = workflowState;
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.allowedStateChanges = Collections.emptyList();
     }
 
@@ -55,6 +60,7 @@ public class AdvisoryInformationResponse {
         this.documentTrackingId = documentTrackingId;
         this.changeable = false;
         this.deletable = false;
+        this.canCreateVersion = false;
         this.title = title;
         this.owner = owner;
     }
@@ -146,6 +152,16 @@ public class AdvisoryInformationResponse {
         return this;
     }
 
+    @Schema(description = "Indicates if the logged in user can create a new csaf document version of this advisory.", example = "false")
+    public boolean isCanCreateVersion() {
+        return canCreateVersion;
+    }
+
+    public AdvisoryInformationResponse setCanCreateVersion(boolean canCreateVersion) {
+        this.canCreateVersion = canCreateVersion;
+        return this;
+    }
+
     @Schema(
             description = "A list of allowed state changes of the logged in user.",
             example = "[\"Approved\", \"Published\"]"
@@ -166,5 +182,17 @@ public class AdvisoryInformationResponse {
     public AdvisoryInformationResponse setCurrentReleaseDate(String currentReleaseDate) {
         this.currentReleaseDate = currentReleaseDate;
         return this;
+    }
+
+    @Schema(
+            description = "The document revision for optimistic concurrency.",
+            example = "2-efaa5db9409b2d4300535c70aaf6a66b"
+    )
+    public String getRevision() {
+        return revision;
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
     }
 }

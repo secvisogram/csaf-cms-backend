@@ -57,13 +57,28 @@ public class SemanticVersioningTest {
         assertThat(SemanticVersioning.getDefault().getNextVersion(PatchType.MINOR, "2.0.0-1.1", "2.0.0"), is("2.1.0-1.2"));
     }
     @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void getNextApprovedVersionTest() {
         assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("0.0.1"), is("1.0.0-1.0"));
         assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("0.1.0"), is("1.0.0-1.0"));
-        assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.1"), is("1.0.1-1.0"));
 
-        assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.1-1.0"), is("1.0.1-2.0"));
+        assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.0-1.3"), is("1.0.0-2.0"));
+        assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.0-2.4"), is("1.0.0-3.0"));
+
+        assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.1-1.3"), is("1.0.1-2.0"));
+        assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.1-2.1"), is("1.0.1-3.0"));
         assertThat(SemanticVersioning.getDefault().getNextApprovedVersion("1.0.1-2.11"), is("1.0.1-3.0"));
+    }
+
+    @Test
+    public void getNextDraftVersionTest() {
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.0-1.0"), is("1.0.0-1.1"));
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.0-2.0"), is("1.0.0-2.1"));
+
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-1.3"), is("1.0.1-2.0"));
+
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-1.5"), is("1.0.1-2.0"));
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-2.11"), is("1.0.1-3.0"));
     }
 
     @Test

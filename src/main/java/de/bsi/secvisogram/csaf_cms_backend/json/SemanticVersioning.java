@@ -39,6 +39,25 @@ public class SemanticVersioning implements Versioning {
         return newVersion.withSuffix(newSuffix).toString();
     }
 
+    @Override
+    public String getNextDraftVersion(String currentVersionString) {
+
+        Semver oldVersion = new Semver(currentVersionString);
+        if (isPrerelease(oldVersion)) {
+            String newSuffix = increaseSuffixMinorVersion(oldVersion);
+            return oldVersion.withSuffix(newSuffix).toString();
+        } else {
+            String newSuffix = increaseSuffixMajorVersion(oldVersion);
+            return oldVersion.withSuffix(newSuffix).toString();
+        }
+    }
+
+    public boolean isPrerelease(Semver version) {
+
+        return (version.getMajor() < 1)
+                || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
+    }
+
 
     @Override
     public String removeVersionSuffix(String currentVersionString) {
