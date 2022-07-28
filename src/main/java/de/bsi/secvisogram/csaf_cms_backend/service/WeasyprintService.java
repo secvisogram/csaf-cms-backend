@@ -2,21 +2,10 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
+import org.springframework.stereotype.Service;
 
 /**
  * Service for converting HTML into PDFs using the <a href="https://weasyprint.org/">weasyprint</a> cli tool.

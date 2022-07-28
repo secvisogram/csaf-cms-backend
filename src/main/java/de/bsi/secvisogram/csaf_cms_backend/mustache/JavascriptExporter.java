@@ -2,14 +2,6 @@ package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.codec.binary.Base64;
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Source;
-import org.graalvm.polyglot.Value;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,6 +9,13 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import javax.annotation.Nonnull;
+import org.apache.commons.codec.binary.Base64;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 
 /**
  * Create Html String from a mustache template file and Json Input File

@@ -23,6 +23,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +42,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import javax.annotation.Nullable;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -403,7 +402,7 @@ public class AdvisoryController {
             return MediaType.TEXT_MARKDOWN;
         } else if (ExportFormat.HTML.equals(format)) {
             return MediaType.TEXT_HTML;
-        } else if (ExportFormat.JSON.equals(format) || format == null){
+        } else if (ExportFormat.JSON.equals(format) || format == null) {
             return MediaType.APPLICATION_JSON;
         }
         throw new IllegalArgumentException("Unknown export format: " + format);
