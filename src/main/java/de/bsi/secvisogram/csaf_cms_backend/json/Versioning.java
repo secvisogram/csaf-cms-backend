@@ -30,6 +30,13 @@ public interface Versioning {
     String getNextApprovedVersion(String currentVersionString);
 
     /**
+     * Get next version for the workflow change to draft
+     * @param currentVersionString The advisory to update the version
+     * @return the new version
+     */
+    String getNextDraftVersion(String currentVersionString);
+
+    /**
      * Remove the version suffix from the advisory version
      * @param currentVersionString The advisory version to remove the suffix
      * @return the new version
