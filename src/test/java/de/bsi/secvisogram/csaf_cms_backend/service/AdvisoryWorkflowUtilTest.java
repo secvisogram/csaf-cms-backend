@@ -4,6 +4,9 @@ import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.isSpellingMistake;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -14,6 +17,7 @@ import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -441,7 +445,7 @@ public class AdvisoryWorkflowUtilTest {
         String newCsafJson = CsafDocumentJsonCreator.csafJsonTitleReleaseDate("Title2", releaseDate);
         AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
-        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.PATCH));
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.PATCH));
     }
 
     @Test
@@ -467,7 +471,7 @@ public class AdvisoryWorkflowUtilTest {
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
         AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
-        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
     }
 
     @Test
@@ -492,7 +496,7 @@ public class AdvisoryWorkflowUtilTest {
         AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
         AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
-        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
     }
 
     @Test
@@ -517,7 +521,7 @@ public class AdvisoryWorkflowUtilTest {
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
         AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
-        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
     }
 
     @Test
@@ -545,7 +549,7 @@ public class AdvisoryWorkflowUtilTest {
         String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
         AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
-        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
     }
 
     @Test
@@ -585,7 +589,22 @@ public class AdvisoryWorkflowUtilTest {
         String newCsafJson = CsafDocumentJsonCreator.docWithProductTree(newTree);
         AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
 
-        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory), is(PatchType.MAJOR));
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void isSpellingMistakeTest() {
+
+        assertThat(isSpellingMistake("Test", "Tets", 4), is(TRUE));
+        assertThat(isSpellingMistake("Test", "Test1", 4), is(TRUE));
+        assertThat(isSpellingMistake("Test", "Tstings", 4), is(FALSE));
+        assertThat(isSpellingMistake("Test longer Words", "Tets lnget Words", 4), is(TRUE));
+        assertThat(isSpellingMistake("Test longer Words", "Tets lnget Wrds", 4), is(FALSE));
+
+        assertThat(isSpellingMistake("Test", "Tets", 2), is(TRUE));
+        assertThat(isSpellingMistake("Test", "Test1", 2), is(TRUE));
+
     }
 
     /**
