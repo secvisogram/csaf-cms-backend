@@ -890,7 +890,7 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 ===== Return Type
 
 
-<<String>>
+<<File>>
 
 
 ===== Content Type
@@ -910,7 +910,7 @@ Export advisory csaf in different formats, possible formats are: PDF, Markdown, 
 
 | 200
 | OK
-|  <<String>>
+|  <<File>>
 
 |===
 
