@@ -315,7 +315,7 @@ track differences between JSON documents.
 
 ### REST API Calls
 
-TODO: Link to REST API Documentation
+REST API: https://secvisogram.github.io/csaf-cms-backend/
 
 On saving a document its version may change. Thus after changing a document,
 it must be reloaded on the client side.
@@ -641,32 +641,34 @@ A pre-release version indicates that the version is unstable and might not
 satisfy the intended compatibility requirements as denoted by its associated
 normal version.
 
-As it stands, we would have three different logics how version numbers are
+As it stands, we would have three different logics, how version numbers are
 assigned for intermediate states, i.e. stored documents between two "approvals":
 
-1. initial version < 1 : each saved state gets a new version number,
-   depending on the type of change made → the last version before 1.0.0-1 could
+1. initial version < 1: 
+   - each saved state gets a new version number,
+   - depending on the type of change made → the last version before 1.0.0-1 could
    be 0.832.12.
 
-2. after the transition from approved → draft: here the "draft counter" is
-    incremented by 1 and remains the same during the whole processing cycle until
-    the next approval
+2  after the transition from approved → draft:
+   - here the "draft counter" is
+     incremented by 1 and remains the same during the whole processing cycle until
+     the next approval
+   - In this case, the changes that are then made in the "draft" state should be
+     traceable via a change index of the draft counter
 
-    In this case, the changes that are then made in the "draft" state should be
-    traceable via a change index of the draft counter
+   - 1.0.0-1.0 becomes 1.0.0-1.1 with the first change in the draft state and
+     increases with each further saved change up to 1.0.0-1.X
 
-    1.0.0-1.0 becomes 1.0.0-1.1 with the first change in the draft state and
-    increases with each further saved change up to 1.0.0-1.X
+4. after the transition from published → draft, i.e. for a new version > 1.0.0:
+   - It is checks what type of change was made compared to thet las published version and
+     increments major, minor, or patch by 1 accordingly, however a higher level 
+     change resets the lower
+     level change back to 0 and each level can be incremented by 1 at most
+     → 1.0.0 can become only: 2.0.0, 1.1.0, 1.0.1
 
-3. after the transition from published → draft, i.e. for a new version > 1.0.0:
-   Memory checks what type of change was made and increments major, minor,
-   or patch by 1 accordingly, however a higher level change resets the lower
-   level change back to 0 and each level can be incremented by 1 at most
-    → 1.0.0 can become only: 2.0.0, 1.1.0, 1.0.1
-
-    Here we will add the "draft counter" immediately when creating the new "draft"
-    version (-1) and thereafter increment the draft index with each save
-    (analog 2) )
+   - Here we will add the "draft counter" immediately when creating the new "draft"
+     version (-1) and thereafter increment the draft index with each save
+     (analog 2) )
 
 for versions > 1.0.0
 Here we will add the "draft counter" immediately when creating the new "draft"
@@ -708,34 +710,35 @@ The 'tracking/revision_history' should be maintained in the backend
 - Semantic Versioning
 
   - Pre 1.0.0
-        When saving (both new creation and "normal" saving) a summary and legacy
-        version can be specified in a  modal window.
-        The backend creates a new revision history element for each change,
-        current date, the summary and the legacy version of the user.
-        For status transitions that also result in a change of the version
-        number (e.g. Review → Approved, Approved → Draft), the backend also
-        inserts a
-        new element. A generic text is
-        inserted as summary. e.g..: "Status changed from Review to Approved".
-        When the status changes to Published, all old Revision History elements
-        are deleted. A new element is created
-        with the default summary "Initial Publication". The text must be configurable.
+    - When saving (both new creation and "normal" saving) a summary and legacy
+      version can be specified in a  modal window.
+    - The backend creates a new revision history element for each change with the 
+        `current date`, the `summary` and the `legacy version` of the user.
+    - For status transitions, that also result in a change of the version
+      number (e.g. Review → Approved, Approved → Draft), the backend also
+      inserts a new element. A generic text is inserted as summary. e.g..:
+      "Status changed from Review to Approved".
+    - When the status changes to Published, all old Revision History elements
+      are deleted. A new element is created
+      with the default summary "Initial Publication". The text must be configurable.
   - Post 1.0.0
-        A new revision history element is created at createNewVersion.
-        This is always updated until the next publish and the Current Release
-        Date is set as date. The summary can be customized by the user when
-        saving in the modal window. The user can also set a
-        "Legacy Version of the Revision" in the modal window.
-        In the Wizzard, the list of Revision History Items can no longer be
-        edited. The fields are grayed out and the user gets a hint that he can
-        only edit it when saving.
-        To be able to edit a typo in the summary, we allow editing the summary
-        of the last revision history item in the interface. This changes the
-        document and saving is possible. In the modal window the summary of the
-        last element is copied into the summary field. So here you can edit
-        again. The same principle applies to the Legacy Version field.
-        This means that old revision history elements are only editable via
-        the JSON editor.
+    - A new revision history element is created at createNewVersion.
+    - This is always updated until the next publish and the Current Release
+      Date is set as date. 
+    - The summary can be customized by the user when
+      saving in the modal window. The user can also set a
+      "Legacy Version of the Revision" in the modal window.
+    - In the Wizzard, the list of Revision History Items can no longer be
+      edited. The fields are grayed out and the user gets a hint that he can
+      only edit it when saving.
+      To be able to edit a typo in the summary, we allow editing the summary
+      of the last revision history item in the interface. This changes the
+      document and saving is possible. In the modal window the summary of the
+      last element is copied into the summary field. So here you can edit
+      again. The same principle applies to the Legacy Version field.
+      This means that old revision history elements are only editable via
+      the JSON editor.
+
 
 - Integer Versioning
 
@@ -745,8 +748,7 @@ The 'tracking/revision_history' should be maintained in the backend
     Behavior analogous to Semantic Versioning.
 
 We are in the Published status:
-
-    When switching to Draft workflow status, a new Revision History Item is created.
+When switching to Draft workflow status, a new Revision History Item is created.
 
 When a new document is created on the server, any existing revision history
 items are deleted, a new version number (matching the versioning scheme
@@ -756,7 +758,7 @@ configured on the server) is assigned, and an initial revision history item is c
 
 ![state maschine](workflow-states.drawio.svg)
 
-#### Advisory workflow states
+#### Advisory workflow description
 
 - First, an initial advisory is created with workflow state set to `Draft`
 - This advisory could be changed several times in state `Draft`. Depending on the
