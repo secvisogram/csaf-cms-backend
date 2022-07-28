@@ -319,7 +319,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
-    void changeCsafDocumentTest_csafExcpetion() throws Exception {
+    void changeCsafDocumentTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
