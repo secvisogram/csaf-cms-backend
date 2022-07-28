@@ -401,8 +401,6 @@ public class AdvisoryController {
             @Parameter(description = "The format in which the document shall be exported.")
             ExportFormat format
     ) {
-        // only for debugging, remove when implemented
-        LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
         checkValidUuid(advisoryId);
         try {
             // export to local temporary file
