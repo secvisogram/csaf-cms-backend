@@ -315,7 +315,7 @@ track differences between JSON documents.
 
 ### REST API Calls
 
-REST API: https://secvisogram.github.io/csaf-cms-backend/
+REST API: <https://secvisogram.github.io/csaf-cms-backend/>
 
 On saving a document its version may change. Thus after changing a document,
 it must be reloaded on the client side.
@@ -644,12 +644,12 @@ normal version.
 As it stands, we would have three different logics, how version numbers are
 assigned for intermediate states, i.e. stored documents between two "approvals":
 
-1. initial version < 1: 
+1. initial version < 1:
    - each saved state gets a new version number,
    - depending on the type of change made → the last version before 1.0.0-1 could
    be 0.832.12.
 
-2  after the transition from approved → draft:
+2. after the transition from approved → draft:
    - here the "draft counter" is
      incremented by 1 and remains the same during the whole processing cycle until
      the next approval
@@ -659,11 +659,11 @@ assigned for intermediate states, i.e. stored documents between two "approvals":
    - 1.0.0-1.0 becomes 1.0.0-1.1 with the first change in the draft state and
      increases with each further saved change up to 1.0.0-1.X
 
-4. after the transition from published → draft, i.e. for a new version > 1.0.0:
-   - It is checks what type of change was made compared to thet las published version and
-     increments major, minor, or patch by 1 accordingly, however a higher level 
-     change resets the lower
-     level change back to 0 and each level can be incremented by 1 at most
+3. after the transition from published → draft, i.e. for a new version > 1.0.0:
+   - It is checks what type of change was made compared to thet las published
+     version and increments major, minor, or patch by 1 accordingly, however a
+     higher level change resets the lower level change back to 0 and each level
+     can be incremented by 1 at most
      → 1.0.0 can become only: 2.0.0, 1.1.0, 1.0.1
 
    - Here we will add the "draft counter" immediately when creating the new "draft"
@@ -712,7 +712,7 @@ The 'tracking/revision_history' should be maintained in the backend
   - Pre 1.0.0
     - When saving (both new creation and "normal" saving) a summary and legacy
       version can be specified in a  modal window.
-    - The backend creates a new revision history element for each change with the 
+    - The backend creates a new revision history element for each change with the
         `current date`, the `summary` and the `legacy version` of the user.
     - For status transitions, that also result in a change of the version
       number (e.g. Review → Approved, Approved → Draft), the backend also
@@ -724,7 +724,7 @@ The 'tracking/revision_history' should be maintained in the backend
   - Post 1.0.0
     - A new revision history element is created at createNewVersion.
     - This is always updated until the next publish and the Current Release
-      Date is set as date. 
+      Date is set as date.
     - The summary can be customized by the user when
       saving in the modal window. The user can also set a
       "Legacy Version of the Revision" in the modal window.
@@ -738,7 +738,6 @@ The 'tracking/revision_history' should be maintained in the backend
       again. The same principle applies to the Legacy Version field.
       This means that old revision history elements are only editable via
       the JSON editor.
-
 
 - Integer Versioning
 
