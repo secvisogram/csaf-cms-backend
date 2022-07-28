@@ -353,26 +353,25 @@ public class AdvisoryService {
             final String csafDocument = csaf.toString();
 
             // if format is JSON - write it to temporary file and return the path
-            final String filePrefix = advisoryId + "--";
-            if (ExportFormat.JSON.equals(format) || format == null) {
-                final Path jsonFile = Files.createTempFile(filePrefix, ".json");
+            if (format == ExportFormat.JSON || format == null) {
+                final Path jsonFile = Files.createTempFile("advisory__", ".json");
                 Files.writeString(jsonFile, csafDocument);
                 return jsonFile;
             } else {
                 // other formats have to start with an HTML export first
                 final String htmlExport = javascriptExporter.createHtml(csafDocument);
-                final Path htmlFile = Files.createTempFile(advisoryId + "--", ".html");
+                final Path htmlFile = Files.createTempFile("advisory__", ".html");
                 Files.writeString(htmlFile, htmlExport);
-                if (ExportFormat.HTML.equals(format)) {
+                if (format == ExportFormat.HTML) {
                     // we already have an HTML file - done!
                     return htmlFile;
-                } else if (ExportFormat.Markdown.equals(format) && pandocService.isReady()) {
-                    final Path markdownFile = Files.createTempFile(advisoryId + "--", ".md");
+                } else if (format == ExportFormat.Markdown && pandocService.isReady()) {
+                    final Path markdownFile = Files.createTempFile("advisory__", ".md");
                     pandocService.convert(htmlFile, markdownFile);
                     Files.delete(htmlFile);
                     return markdownFile;
-                } else if (ExportFormat.PDF.equals(format) && weasyprintService.isReady()) {
-                    final Path pdfFile = Files.createTempFile(advisoryId + "--", ".pdf");
+                } else if (format == ExportFormat.PDF && weasyprintService.isReady()) {
+                    final Path pdfFile = Files.createTempFile("advisory__", ".pdf");
                     weasyprintService.convert(htmlFile, pdfFile);
                     Files.delete(htmlFile);
                     return pdfFile;

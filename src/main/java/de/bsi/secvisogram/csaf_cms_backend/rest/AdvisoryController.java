@@ -23,7 +23,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -381,7 +380,7 @@ public class AdvisoryController {
             final Path filePath = advisoryService.exportAdvisory(advisoryId, format);
 
             // return the export file through a stream (should be okay even with big files)
-            final InputStream inputStream = new FileInputStream(filePath.toFile());
+            final InputStream inputStream = Files.newInputStream(filePath);
             final InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
             return ResponseEntity.ok()
                     .contentLength(Files.size(filePath))
@@ -396,13 +395,13 @@ public class AdvisoryController {
     }
 
     private static MediaType determineExportResponseContentType(@Nullable final ExportFormat format) {
-        if (ExportFormat.PDF.equals(format)) {
+        if (format == ExportFormat.PDF) {
             return MediaType.APPLICATION_PDF;
-        } else if (ExportFormat.Markdown.equals(format)) {
+        } else if (format == ExportFormat.Markdown) {
             return MediaType.TEXT_MARKDOWN;
-        } else if (ExportFormat.HTML.equals(format)) {
+        } else if (format == ExportFormat.HTML) {
             return MediaType.TEXT_HTML;
-        } else if (ExportFormat.JSON.equals(format) || format == null) {
+        } else if (format == ExportFormat.JSON || format == null) {
             return MediaType.APPLICATION_JSON;
         }
         throw new IllegalArgumentException("Unknown export format: " + format);

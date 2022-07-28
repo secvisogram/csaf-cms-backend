@@ -73,26 +73,30 @@ public class JavascriptExporter {
     }
 
     private String createLogoJson() throws IOException {
-        if (this.companyLogoPath != null) {
-            final Path logoPath = Path.of(this.companyLogoPath);
-            final MediaType logoMediaType = determineMediaTypeOfLogo(logoPath);
-            final byte[] encoded = Base64.encodeBase64(Files.readAllBytes(logoPath));
-            final String data = new String(encoded, StandardCharsets.US_ASCII);
-            final ObjectNode node = new ObjectMapper().createObjectNode();
-            node.put("mediaType", logoMediaType.toString());
-            node.put("data", data);
-            return node.toString();
+        if (this.companyLogoPath == null) {
+            return null;
         }
-        return null;
+        final Path logoPath = Path.of(this.companyLogoPath);
+        final MediaType logoMediaType = determineMediaTypeOfLogo(logoPath);
+        final byte[] encoded = Base64.encodeBase64(Files.readAllBytes(logoPath));
+        final String data = new String(encoded, StandardCharsets.US_ASCII);
+        final ObjectNode node = new ObjectMapper().createObjectNode();
+        node.put("mediaType", logoMediaType.toString());
+        node.put("data", data);
+        return node.toString();
     }
 
     private static MediaType determineMediaTypeOfLogo(@Nonnull final Path path) {
-        final String fileName = path.getFileName().toString().toLowerCase();
-        if (fileName.endsWith(".png")) {
-            return MediaType.IMAGE_PNG;
-        } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
-            return MediaType.IMAGE_JPEG;
+        final Path filename = path.getFileName();
+        if (filename != null) {
+            final String fileName = filename.toString().toLowerCase();
+            if (fileName.endsWith(".png")) {
+                return MediaType.IMAGE_PNG;
+            } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+                return MediaType.IMAGE_JPEG;
+            }
+            throw new IllegalArgumentException("Unknown company logo format: " + fileName);
         }
-        throw new IllegalArgumentException("Unknown company logo format: " + fileName);
+        throw new IllegalArgumentException("Got empty path");
     }
 }

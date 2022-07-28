@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
+import com.oracle.truffle.js.runtime.SuppressFBWarnings;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import java.io.IOException;
@@ -19,7 +20,7 @@ import org.springframework.http.HttpStatus;
  * Abstract base class for cli tools.
  */
 public abstract class AbstractCliToolService {
-    private static final Logger LOG = LoggerFactory.getLogger(PandocService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractCliToolService.class);
     private Integer processTimeoutSeconds = 60;
     private final String baseCommand;
 
@@ -57,6 +58,7 @@ public abstract class AbstractCliToolService {
      * @throws IOException on any error with the call of the cli tool
      * @throws CsafException for other errors (see details in the exception for information of what happened)
      */
+    @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "We have to call a process here")
     public boolean call(final String... args)
         throws IOException, CsafException {
         // prepare the command to call the cli tool with
