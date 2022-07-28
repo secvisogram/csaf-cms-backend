@@ -24,12 +24,17 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +62,6 @@ public class AdvisoryController {
 
     @Autowired
     private DocumentTemplateService templateService;
-
 
     /**
      * Read all advisories, optionally filtered by a search expression
@@ -361,7 +365,7 @@ public class AdvisoryController {
             description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.",
             tags = {"Advisory"}
     )
-    public String exportAdvisory(
+    public ResponseEntity<InputStreamResource> exportAdvisory(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to export.")
             String advisoryId,
@@ -369,11 +373,38 @@ public class AdvisoryController {
             @Parameter(description = "The format in which the document shall be exported.")
             ExportFormat format
     ) {
-
-        // only for debugging, remove when implemented
-        LOG.info("exportAdvisory to format: {} {}", sanitize(format), sanitize(advisoryId));
+        LOG.debug("exportAdvisory");
         checkValidUuid(advisoryId);
-        return "";
+        try {
+            // export to local temporary file
+            final Path filePath = advisoryService.exportAdvisory(advisoryId, format);
+
+            // return the export file through a stream (should be okay even with big files)
+            final InputStream inputStream = Files.newInputStream(filePath);
+            final InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+            return ResponseEntity.ok()
+                    .contentLength(Files.size(filePath))
+                    .contentType(determineExportResponseContentType(format))
+                    .body(inputStreamResource);
+        } catch (IOException e) {
+            LOG.error("Error happened when creating the export: ", e);
+            return ResponseEntity.internalServerError().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        }
+    }
+
+    private static MediaType determineExportResponseContentType(@Nullable final ExportFormat format) {
+        if (format == ExportFormat.PDF) {
+            return MediaType.APPLICATION_PDF;
+        } else if (format == ExportFormat.Markdown) {
+            return MediaType.TEXT_MARKDOWN;
+        } else if (format == ExportFormat.HTML) {
+            return MediaType.TEXT_HTML;
+        } else if (format == ExportFormat.JSON || format == null) {
+            return MediaType.APPLICATION_JSON;
+        }
+        throw new IllegalArgumentException("Unknown export format: " + format);
     }
 
     /**
