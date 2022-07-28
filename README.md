@@ -28,6 +28,7 @@ here.
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in 
   your PATH
+- (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
 
 You should now be able to start the spring boot application, navigate to 
 `localhost:4180/api/2.0/about`, log in with one of the users and get a 
