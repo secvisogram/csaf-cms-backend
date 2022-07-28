@@ -25,8 +25,8 @@ here.
   and paste it in `CSAF_COOKIE_SECRET`.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - restart compose
-- (required for exports) install [pandoc](https://pandoc.org/installing.html)
-  as well as [weasyprint](https://weasyprint.org/) and make sure both are in 
+- (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
+  as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in 
   your PATH
 
 You should now be able to start the spring boot application, navigate to 
