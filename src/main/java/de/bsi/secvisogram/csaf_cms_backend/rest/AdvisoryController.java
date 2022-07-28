@@ -415,15 +415,11 @@ public class AdvisoryController {
                     .contentLength(Files.size(filePath))
                     .contentType(determineExportResponseContentType(format))
                     .body(inputStreamResource);
-        } catch (IdNotFoundException idNfEx) {
-            LOG.info("Advisory with given ID not found");
-            return ResponseEntity.notFound().build();
-        } catch (DatabaseException | IllegalArgumentException e) {
-            LOG.error("Got bad request: ", e);
-            return ResponseEntity.badRequest().build();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             LOG.error("Error happened when creating the export: ", e);
             return ResponseEntity.internalServerError().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 

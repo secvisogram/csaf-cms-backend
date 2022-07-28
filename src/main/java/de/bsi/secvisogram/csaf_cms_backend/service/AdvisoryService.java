@@ -288,51 +288,53 @@ public class AdvisoryService {
      * temporary file and the path to the file will be returned.
      *
      * @param advisoryId the id of the advisory that should be exported
-     * @param format the format in which the export should be written (default JSON on null)
+     * @param format     the format in which the export should be written (default JSON on null)
      * @return the path to the temporary file that contains the export
-     * @throws DatabaseException if the advisory with the given id does not exist
-     * @throws IOException on any error regarding writing/reading from disk
+     * @throws DatabaseException    if the advisory with the given id does not exist
+     * @throws IOException          on any error regarding writing/reading from disk
      * @throws InterruptedException if the export did take too long and thus timed out
      */
     public Path exportAdvisory(
             @Nonnull final String advisoryId,
             @Nullable final ExportFormat format)
-            throws DatabaseException, IOException, InterruptedException {
+            throws IOException, CsafException {
         // read the advisory form the database
-        final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
-        if (existingAdvisoryStream == null) {
-            throw new DatabaseException("Invalid advisory ID!");
-        }
-        final AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-        final String csafDocument = advisoryNode.getCsaf().toString();
+        try {
+            final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
+            final AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            final String csafDocument = advisoryNode.getCsaf().toString();
 
-        // if format is JSON - write it to temporary file and return the path
-        final String filePrefix = advisoryId + "--";
-        if (ExportFormat.JSON.equals(format) || format == null) {
-            final Path jsonFile = Files.createTempFile(filePrefix, ".json");
-            Files.writeString(jsonFile, csafDocument);
-            return jsonFile;
-        } else {
-            // other formats have to start with an HTML export first
-            final String htmlExport = javascriptExporter.createHtml(csafDocument);
-            final Path htmlFile = Files.createTempFile(advisoryId + "--", ".html");
-            Files.writeString(htmlFile, htmlExport);
-            if (ExportFormat.HTML.equals(format)) {
-                // we already have an HTML file - done!
-                return htmlFile;
-            } else if (ExportFormat.Markdown.equals(format) && pandocService.isReady()) {
-                final Path markdownFile = Files.createTempFile(advisoryId + "--", ".md");
-                pandocService.convert(htmlFile, markdownFile);
-                Files.delete(htmlFile);
-                return markdownFile;
-            } else if (ExportFormat.PDF.equals(format) && weasyprintService.isReady()) {
-                final Path pdfFile = Files.createTempFile(advisoryId + "--", ".pdf");
-                weasyprintService.convert(htmlFile, pdfFile);
-                Files.delete(htmlFile);
-                return pdfFile;
+            // if format is JSON - write it to temporary file and return the path
+            final String filePrefix = advisoryId + "--";
+            if (ExportFormat.JSON.equals(format) || format == null) {
+                final Path jsonFile = Files.createTempFile(filePrefix, ".json");
+                Files.writeString(jsonFile, csafDocument);
+                return jsonFile;
+            } else {
+                // other formats have to start with an HTML export first
+                final String htmlExport = javascriptExporter.createHtml(csafDocument);
+                final Path htmlFile = Files.createTempFile(advisoryId + "--", ".html");
+                Files.writeString(htmlFile, htmlExport);
+                if (ExportFormat.HTML.equals(format)) {
+                    // we already have an HTML file - done!
+                    return htmlFile;
+                } else if (ExportFormat.Markdown.equals(format) && pandocService.isReady()) {
+                    final Path markdownFile = Files.createTempFile(advisoryId + "--", ".md");
+                    pandocService.convert(htmlFile, markdownFile);
+                    Files.delete(htmlFile);
+                    return markdownFile;
+                } else if (ExportFormat.PDF.equals(format) && weasyprintService.isReady()) {
+                    final Path pdfFile = Files.createTempFile(advisoryId + "--", ".pdf");
+                    weasyprintService.convert(htmlFile, pdfFile);
+                    Files.delete(htmlFile);
+                    return pdfFile;
+                }
+                throw new CsafException("Unknown export format: " + format, CsafExceptionKey.UnknownExportFormat, HttpStatus.BAD_REQUEST);
             }
+        } catch (IdNotFoundException e) {
+            throw new CsafException("Can not find advisory with ID " + advisoryId,
+                    CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
         }
-        throw new IllegalArgumentException("Unknown export format: " + format);
     }
 
     /**
@@ -422,13 +424,13 @@ public class AdvisoryService {
     /**
      * Adds a comment to the advisory
      *
-     * @param advisoryId  the ID of the advisory to add the comment to
-     * @param comment     the comment to add as JSON string, requires a commentText
+     * @param advisoryId the ID of the advisory to add the comment to
+     * @param comment    the comment to add as JSON string, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
-     * @throws CsafException   when a known csaf exception occurs
+     * @throws CsafException     when a known csaf exception occurs
      */
-    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER })
+    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
     public IdAndRevision addComment(String advisoryId, CreateCommentRequest comment) throws DatabaseException, CsafException {
 
         LOG.debug("addComment");
@@ -459,7 +461,7 @@ public class AdvisoryService {
      * @return the requested comment
      * @throws IdNotFoundException if there is no comment with given ID
      */
-    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR })
+    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public CommentResponse getComment(String commentId) throws DatabaseException, CsafException {
 
 
@@ -496,7 +498,7 @@ public class AdvisoryService {
      * @return a list of information on all comments for the requested advisory
      * @throws IOException when there are errors in JSON handling
      */
-    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR })
+    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public List<CommentInformationResponse> getComments(String advisoryId) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -504,12 +506,12 @@ public class AdvisoryService {
         if (AdvisoryWorkflowUtil.canViewComment(advisoryInfo, credentials)) {
 
             List<DbField> fields = Arrays.asList(
-                CouchDbField.ID_FIELD,
-                CouchDbField.REVISION_FIELD,
-                CommentField.ADVISORY_ID,
-                CommentField.CSAF_NODE_ID,
-                CommentField.OWNER,
-                CommentField.ANSWER_TO
+                    CouchDbField.ID_FIELD,
+                    CouchDbField.REVISION_FIELD,
+                    CommentField.ADVISORY_ID,
+                    CommentField.CSAF_NODE_ID,
+                    CommentField.OWNER,
+                    CommentField.ANSWER_TO
             );
 
             AndExpression searchExpr = new AndExpression(
@@ -519,7 +521,7 @@ public class AdvisoryService {
             Map<String, Object> selector = expr2CouchDBFilter(searchExpr);
             List<JsonNode> commentInfosJson = this.findDocuments(selector, fields);
 
-          return commentInfosJson.stream().map(CommentWrapper::convertToCommentInfo).toList();
+            return commentInfosJson.stream().map(CommentWrapper::convertToCommentInfo).toList();
         } else {
             throw new AccessDeniedException("User has not the permission to add a comment to the advisory");
         }
@@ -547,7 +549,7 @@ public class AdvisoryService {
      * @param newText   the updated text of the comment
      * @return the new revision of the updated comment
      */
-    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER })
+    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
     public String updateComment(String advisoryId, String commentId, String revision, String newText) throws IOException, DatabaseException {
 
         Authentication credentials = getAuthentication();
@@ -579,12 +581,12 @@ public class AdvisoryService {
      * Adds an answer to a comment
      *
      * @param commentId   the ID of the comment to add the answer to
-     * @param commentText  the answer to add, requires a commentText
+     * @param commentText the answer to add, requires a commentText
      * @return a tuple of ID and revision of the added comment
      * @throws DatabaseException when there are database errors
-     * @throws CsafException       when there are errors in reading advisory
+     * @throws CsafException     when there are errors in reading advisory
      */
-    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER })
+    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
     public IdAndRevision addAnswer(String advisoryId, String commentId, String commentText) throws DatabaseException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -616,7 +618,7 @@ public class AdvisoryService {
      * @return a list of information on all answers for the requested comment
      * @throws IOException when there are errors in JSON handling
      */
-    @RolesAllowed({ CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR })
+    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public List<AnswerInformationResponse> getAnswers(String advisoryId, String commentId) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -653,6 +655,7 @@ public class AdvisoryService {
 
     /**
      * Get the credentials for the authenticated in user.
+     *
      * @return the credentials
      */
     private Authentication getAuthentication() {
