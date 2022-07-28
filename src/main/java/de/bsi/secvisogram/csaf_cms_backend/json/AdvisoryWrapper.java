@@ -398,10 +398,11 @@ public class AdvisoryWrapper {
 
         return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
     }
+
     public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isPrerelease()) {
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isInitialPublicReleaseOrEarlier()) {
             ObjectNode entry = historyNode.addObject();
             entry.put("summary", summary);
             entry.put("legacy_revision", legacyVersion);
@@ -426,15 +427,13 @@ public class AdvisoryWrapper {
         historyNode.removeAll();
     }
 
-
     public void removeAllPrereleaseVersions() {
 
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isPrerelease()) {
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isInitialPublicReleaseOrEarlier()) {
             ArrayNode historyNode = getOrCreateHistoryNode();
             historyNode.removeAll();
         }
     }
-
 
     private ObjectNode getLatestEntryInHistoryAfterPrerelease(ArrayNode historyNode) {
 
@@ -451,7 +450,7 @@ public class AdvisoryWrapper {
         }
     }
 
-    public boolean isPrerelease() {
+    public boolean isInitialPublicReleaseOrEarlier() {
 
         Semver version = new Semver(this.getDocumentTrackingVersion());
         return (version.getMajor() < 1)
