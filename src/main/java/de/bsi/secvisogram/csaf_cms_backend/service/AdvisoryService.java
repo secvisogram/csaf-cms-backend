@@ -349,7 +349,9 @@ public class AdvisoryService {
         try {
             final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
             final AdvisoryWrapper advisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-            final String csafDocument = advisoryNode.getCsaf().toString();
+            final JsonNode csaf = advisoryNode.getCsaf();
+            RemoveIdHelper.removeCommentIds(csaf);
+            final String csafDocument = csaf.toString();
 
             // if format is JSON - write it to temporary file and return the path
             final String filePrefix = advisoryId + "--";
