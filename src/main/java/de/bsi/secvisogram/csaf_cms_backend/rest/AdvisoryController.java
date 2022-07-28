@@ -375,6 +375,7 @@ public class AdvisoryController {
             @Parameter(description = "The format in which the document shall be exported.")
             ExportFormat format
     ) {
+        LOG.debug("exportAdvisory");
         checkValidUuid(advisoryId);
         try {
             // export to local temporary file
