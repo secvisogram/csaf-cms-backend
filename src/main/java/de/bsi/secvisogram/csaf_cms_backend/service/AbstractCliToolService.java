@@ -2,12 +2,6 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 /**
  * Abstract base class for cli tools.
@@ -47,7 +46,7 @@ public abstract class AbstractCliToolService {
      * @throws IOException if the cli tool can not be successfully called
      * @throws CsafException for other errors (see details in the exception for information of what happened)
      */
-    abstract public boolean isReady()
+    public abstract boolean isReady()
         throws IOException, CsafException;
 
     /**
