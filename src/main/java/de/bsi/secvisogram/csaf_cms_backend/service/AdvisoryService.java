@@ -486,16 +486,16 @@ public class AdvisoryService {
         if (canCreateNewVersion(existingAdvisoryNode, credentials)) {
 
             // make copy of current state
-            AdvisoryWrapper advisoryVersion = AdvisoryWrapper.createVersionFrom(existingAdvisoryNode);
+            AdvisoryWrapper advisoryVersionBackup = AdvisoryWrapper.createVersionFrom(existingAdvisoryNode);
             // Set existing version to Draft
+            existingAdvisoryNode.setLastVersion(existingAdvisoryNode.getDocumentTrackingVersion());
             existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);
             existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
             existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
-            existingAdvisoryNode.addRevisionHistoryEntry("", "");
+            existingAdvisoryNode.addEntryForNewCreatedVersion("", "");
             existingAdvisoryNode.setRevision(revision);
-            existingAdvisoryNode.setLastVersion(existingAdvisoryNode.getDocumentTrackingVersion());
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())
                     .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
@@ -507,7 +507,7 @@ public class AdvisoryService {
 
             String newRevision =  this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
 
-            this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersion.advisoryAsString());
+            this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersionBackup.advisoryAsString());
 
             return newRevision;
         } else {

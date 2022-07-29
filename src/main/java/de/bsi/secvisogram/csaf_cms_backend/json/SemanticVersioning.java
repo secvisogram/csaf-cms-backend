@@ -70,7 +70,7 @@ public class SemanticVersioning implements Versioning {
     public String getNewDocumentVersion(String currentVersionString) {
 
         Semver oldVersion = new Semver(currentVersionString);
-        return oldVersion.nextPatch().toString();
+        return oldVersion.nextPatch().withSuffix("1.0").toString();
     }
 
     @Override
