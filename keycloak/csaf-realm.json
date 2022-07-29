@@ -51,6 +51,19 @@
           "attributes": {},
           "clientRole": true,
           "composite": false,
+          "name": "registered"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "secvisogram": [
+                "registered"
+              ]
+            }
+          },
           "name": "author"
         },
         {
@@ -82,7 +95,14 @@
         {
           "attributes": {},
           "clientRole": true,
-          "composite": false,
+          "composite": true,
+          "composites": {
+            "client": {
+              "secvisogram": [
+                "registered"
+              ]
+            }
+          },
           "name": "reviewer"
         },
         {
@@ -96,6 +116,30 @@
     }
   },
   "users": [
+    {
+      "username": "registered",
+      "enabled": true,
+      "firstName": "",
+      "lastName": "registered",
+      "emailVerified" : true,
+      "email" : "registered@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "registered"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "registered" ],
+        "validator": []
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
     {
       "username": "author",
       "enabled": true,
@@ -207,6 +251,54 @@
       ],
       "clientRoles": {
         "secvisogram": [ "auditor" ],
+        "validator": []
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "all",
+      "enabled": true,
+      "firstName": "",
+      "lastName": "all",
+      "emailVerified" : true,
+      "email" : "all@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "all"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "registered", "author", "editor", "publisher", "reviewer", "auditor" ],
+        "validator": []
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "none",
+      "enabled": true,
+      "firstName": "",
+      "lastName": "none",
+      "emailVerified" : true,
+      "email" : "none@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "none"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [],
         "validator": []
       },
       "groups": [],
