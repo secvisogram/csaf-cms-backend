@@ -58,7 +58,8 @@ public class CommentWrapperTest {
 
         String advisoryId = UUID.randomUUID().toString();
         String csafNodeId = UUID.randomUUID().toString();
-        CreateCommentRequest comment = new CreateCommentRequest(commentText,  csafNodeId, "publisher");
+        CreateCommentRequest comment = new CreateCommentRequest()
+                .setCommentText(commentText).setCsafNodeId(csafNodeId).setFieldName("publisher");
 
         CommentWrapper wrapper = CommentWrapper.createNew(advisoryId, comment);
 
@@ -71,7 +72,7 @@ public class CommentWrapperTest {
     }
 
     @Test
-    public void createNewAnswerFromJsonTest() throws IOException {
+    public void createNewAnswerFromJsonTest() {
 
         String advisoryId = UUID.randomUUID().toString();
         String commentId = UUID.randomUUID().toString();

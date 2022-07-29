@@ -394,7 +394,7 @@ public class AdvisoryController {
         }
     }
 
-    private static MediaType determineExportResponseContentType(@Nullable final ExportFormat format) {
+    static MediaType determineExportResponseContentType(@Nullable final ExportFormat format) {
         if (format == ExportFormat.PDF) {
             return MediaType.APPLICATION_PDF;
         } else if (format == ExportFormat.Markdown) {

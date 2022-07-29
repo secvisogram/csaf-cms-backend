@@ -22,11 +22,6 @@ public class AndExpression implements Expression {
         Collections.addAll(this.expressions, expressions);
     }
 
-    public AndExpression(List<Expression> expressions) {
-        this.expressions = new ArrayList<>();
-        this.expressions.addAll(expressions);
-    }
-
     /**
      * Get all expression the of this and expresion
      */

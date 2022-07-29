@@ -17,6 +17,7 @@ public class CsafDocumentJsonCreator {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
         var request = new CreateAdvisoryRequest();
+        request.setSummary("Test Summary");
         try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
             JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
             request.setCsaf(csafRootNode);
