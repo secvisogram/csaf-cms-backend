@@ -404,19 +404,24 @@ public class AdvisoryWrapper {
         ArrayNode historyNode = getOrCreateHistoryNode();
         if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isInitialPublicReleaseOrEarlier()) {
             ObjectNode entry = historyNode.addObject();
-            entry.put("summary", summary);
-            entry.put("legacy_revision", legacyVersion);
+            String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+            entry.put("date", now);
+            if (legacyVersion != null && !legacyVersion.isBlank()) {
+                entry.put("legacy_revision", legacyVersion);
+            }
             entry.put("number", this.getDocumentTrackingVersion());
-            entry.put("date", this.getDocumentTrackingCurrentReleaseDate());
+            entry.put("summary", summary);
         } else {
             ObjectNode latestEntry = getLatestEntryInHistoryAfterPrerelease(historyNode);
             if (latestEntry == null) {
                 latestEntry = historyNode.addObject();
             }
-            latestEntry.put("summary", summary);
-            latestEntry.put("legacy_revision", legacyVersion);
-            latestEntry.put("number", this.getDocumentTrackingVersion());
             latestEntry.put("date", this.getDocumentTrackingCurrentReleaseDate());
+            if (legacyVersion != null && !legacyVersion.isBlank()) {
+                latestEntry.put("legacy_revision", legacyVersion);
+            }
+            latestEntry.put("number", this.getDocumentTrackingVersion());
+            latestEntry.put("summary", summary);
         }
         return this;
     }

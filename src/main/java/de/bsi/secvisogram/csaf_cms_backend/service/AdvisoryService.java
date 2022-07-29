@@ -436,21 +436,22 @@ public class AdvisoryService {
 
 
             if (newWorkflowState == WorkflowState.Published) {
+                // has to be set before validation
+                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
+                        .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
+                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
+                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
+                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
+                            ? proposedTime
+                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+                }
 
                 if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
                     throw new CsafException("Advisory is no valid CSAF document",
                             CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
                 }
-                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
-                        .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
-                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
                 existingAdvisoryNode.removeAllPrereleaseVersions();
                 existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
-                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
-                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
-                            ? proposedTime
-                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-                }
             }
 
             existingAdvisoryNode.setRevision(revision);
