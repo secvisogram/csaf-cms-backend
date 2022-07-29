@@ -42,7 +42,7 @@ public class ValidatorServiceClientTest {
     @Mock
     WebClient.ResponseSpec responseSpec;
 
-    private final static String TEST_CSAF = """
+    private static final String TEST_CSAF = """
             {
                 "document": {
                     "category": "CSAF_BASE"
