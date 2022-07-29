@@ -28,7 +28,7 @@ public class ValidatorServiceClient {
     private static final String VALIDATE_ENDPOINT = "/validate";
     private static final ValidationRequestTest csafTest = new ValidationRequestTest("test", "csaf_2_0");
     private static final ValidationRequestTest optionalTest = new ValidationRequestTest("preset", "optional");
-    private static final ValidationRequestTest[] allValidationTests = {csafTest, optionalTest};
+    private static final ValidationRequestTest[] allValidationTests = {csafTest};
 
     public static boolean isAdvisoryValid(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
 
@@ -72,16 +72,19 @@ public class ValidatorServiceClient {
 
         try {
             WebClient.RequestHeadersSpec<?> headersSpec = bodySpec.bodyValue(advisoryToRequest(advisory));
-            ResponseEntity<ValidatorResponse> responseSpec = headersSpec.header(
+            ResponseEntity<String> responseSpec = headersSpec.header(
                             HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .accept(MediaType.APPLICATION_JSON)
                     .acceptCharset(StandardCharsets.UTF_8)
                     .ifNoneMatch("*")
                     .ifModifiedSince(ZonedDateTime.now())
                     .retrieve()
-                    .toEntity(ValidatorResponse.class)
+                    .toEntity(String.class)
                     .block();
-            return responseSpec != null ? responseSpec.getBody() : null;
+
+            String resultText = responseSpec.getBody();
+            final ObjectMapper jacksonMapper = new ObjectMapper();
+            return jacksonMapper.readValue(resultText, ValidatorResponse.class);
         } catch (WebClientResponseException | WebClientRequestException ex) {
             LOG.error("Error in access to validation server", ex);
             throw new CsafException("Error in call to validation server",

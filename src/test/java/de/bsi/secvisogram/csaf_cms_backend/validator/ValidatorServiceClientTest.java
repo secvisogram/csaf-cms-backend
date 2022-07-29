@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
@@ -36,6 +37,20 @@ public class ValidatorServiceClientTest {
 
     @Mock
     WebClient.ResponseSpec responseSpec;
+
+    @Test
+    void validatorRequestJsonTest() throws JsonProcessingException {
+
+
+        var resultText = """
+            { "isValid":true,
+              "tests":[ 
+                {"errors":[],"infos":[],"warnings":[],"isValid":true,"name":"csaf_2_0"}]}
+            """;
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        jacksonMapper.readValue(resultText, ValidatorResponse.class);
+
+    }
 
     @Test
     @Disabled("Mock Validation ValidatorServiceClient")

@@ -446,9 +446,11 @@ public class AdvisoryService {
 
             if (newWorkflowState == WorkflowState.Published) {
                 // has to be set before validation
+                existingAdvisoryNode.removeAllPrereleaseVersions();
                 String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
                         .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
+                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
                 if (existingAdvisoryNode.getLastMajorVersion() == 0) {
                     existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
                             ? proposedTime
@@ -459,8 +461,6 @@ public class AdvisoryService {
                     throw new CsafException("Advisory is no valid CSAF document",
                             CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
                 }
-                existingAdvisoryNode.removeAllPrereleaseVersions();
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
             }
 
             existingAdvisoryNode.setRevision(revision);
