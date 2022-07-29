@@ -14,6 +14,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Test;
 
 public class AdvisoryWrapperTest {
@@ -184,24 +186,25 @@ public class AdvisoryWrapperTest {
         advisory.setDocumentTrackingVersion("0.1.1");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary1", "LegacyVersion1"));
 
+        String dateNowMinutes =  DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("0.1.1"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary1"));
         assertThat(getRevisionAt(advisory, 0, "legacy_revision"), equalTo("LegacyVersion1"));
-        assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 0, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("0.1.2");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"));
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("0.1.2"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary2"));
         assertThat(getRevisionAt(advisory, 1, "legacy_revision"), equalTo("LegacyVersion2"));
-        assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 1, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("1.0.0");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"));
         assertThat(getRevisionAt(advisory, 2, "number"), equalTo("1.0.0"));
         assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary3"));
         assertThat(getRevisionAt(advisory, 2, "legacy_revision"), equalTo("LegacyVersion3"));
-        assertThat(getRevisionAt(advisory, 2, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 2, "date"), startsWith(dateNowMinutes));
 
         advisory.setLastVersion("1.0.0");
         advisory.setDocumentTrackingVersion("1.0.1");
