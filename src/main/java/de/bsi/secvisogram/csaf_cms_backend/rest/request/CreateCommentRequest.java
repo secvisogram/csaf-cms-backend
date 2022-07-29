@@ -11,6 +11,9 @@ public class CreateCommentRequest {
     private String csafNodeId;
     private String fieldName;
 
+    public CreateCommentRequest() {
+    }
+
     public CreateCommentRequest(String commentText, String csafNodeId) {
         this.commentText = commentText;
         this.csafNodeId = csafNodeId;
@@ -33,8 +36,9 @@ public class CreateCommentRequest {
         return commentText;
     }
 
-    public void setCommentText(String commentText) {
+    public CreateCommentRequest setCommentText(String commentText) {
         this.commentText = commentText;
+        return this;
     }
 
     @Schema(
@@ -45,8 +49,9 @@ public class CreateCommentRequest {
         return csafNodeId;
     }
 
-    public void setCsafNodeId(String csafNodeId) {
+    public CreateCommentRequest setCsafNodeId(String csafNodeId) {
         this.csafNodeId = csafNodeId;
+        return this;
     }
 
     /**
@@ -66,8 +71,9 @@ public class CreateCommentRequest {
         return fieldName;
     }
 
-    public void setFieldName(String fieldName) {
+    public CreateCommentRequest setFieldName(String fieldName) {
         this.fieldName = fieldName;
+        return this;
     }
 
     /**

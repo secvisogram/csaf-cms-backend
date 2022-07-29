@@ -10,5 +10,6 @@ public enum CsafExceptionKey {
     ExportTimeout,
     InvalidObjectType,
     AdvisoryValidationError,
-    ErrorAccessingValidationServer
+    ErrorAccessingValidationServer,
+    SummaryInHistoryEmpty
 }

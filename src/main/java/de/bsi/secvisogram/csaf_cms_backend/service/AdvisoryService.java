@@ -4,10 +4,13 @@ import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
 import static java.util.Collections.emptyList;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -167,6 +170,10 @@ public class AdvisoryService {
 
     IdAndRevision addAdvisoryForCredentials(CreateAdvisoryRequest newCsafJson, Authentication credentials) throws IOException, CsafException {
 
+        if (newCsafJson.getSummary() == null || newCsafJson.getSummary().isBlank()) {
+            throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, UNAUTHORIZED);
+        }
+
         UUID advisoryId = UUID.randomUUID();
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, credentials.getName(),
@@ -216,7 +223,7 @@ public class AdvisoryService {
                 return response;
             } else {
                 throw new CsafException("The user has no permission to view this advisory",
-                        CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+                        NoPermissionForAdvisory, UNAUTHORIZED);
             }
         } catch (IOException e) {
             throw new DatabaseException(e);
@@ -301,15 +308,18 @@ public class AdvisoryService {
             }
             AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
             if (oldAdvisoryNode.getType() != ObjectType.Advisory) {
-                throw new CsafException("Object for id is not of type Advisory",
-                        CsafExceptionKey.InvalidObjectType, HttpStatus.BAD_REQUEST);
+                throw new CsafException("Object for id is not of type Advisory", InvalidObjectType, BAD_REQUEST);
             }
             Authentication credentials = getAuthentication();
             if (canChangeAdvisory(oldAdvisoryNode, credentials)) {
 
+                if (changedCsafJson.getSummary() == null || changedCsafJson.getSummary().isBlank()) {
+                    throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, UNAUTHORIZED);
+                }
+
                 AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
                 newAdvisoryNode.setRevision(revision);
-                PatchType changeType = AdvisoryWorkflowUtil.getChangeType(oldAdvisoryNode, newAdvisoryNode);
+                PatchType changeType = AdvisoryWorkflowUtil.getChangeType(oldAdvisoryNode, newAdvisoryNode, configuration.getVersioning().getLevenshtein());
                 String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(changeType, oldAdvisoryNode.getDocumentTrackingVersion(), oldAdvisoryNode.getLastVersion());
                 newAdvisoryNode.setDocumentTrackingVersion(nextVersion);
                 newAdvisoryNode.checkCurrentReleaseDateIsSet();
@@ -323,8 +333,7 @@ public class AdvisoryService {
                 this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
                 return result;
             } else {
-                throw new CsafException("User has no permission to edit the advisory",
-                        CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+                throw new CsafException("User has no permission to edit the advisory", NoPermissionForAdvisory, UNAUTHORIZED);
             }
         }
     }
@@ -376,7 +385,7 @@ public class AdvisoryService {
                     Files.delete(htmlFile);
                     return pdfFile;
                 }
-                throw new CsafException("Unknown export format: " + format, CsafExceptionKey.UnknownExportFormat, HttpStatus.BAD_REQUEST);
+                throw new CsafException("Unknown export format: " + format, CsafExceptionKey.UnknownExportFormat, BAD_REQUEST);
             }
         } catch (IdNotFoundException e) {
             throw new CsafException("Can not find advisory with ID " + advisoryId,
@@ -436,28 +445,29 @@ public class AdvisoryService {
 
 
             if (newWorkflowState == WorkflowState.Published) {
+                // has to be set before validation
+                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
+                        .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
+                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
+                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
+                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
+                            ? proposedTime
+                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+                }
 
                 if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
                     throw new CsafException("Advisory is no valid CSAF document",
                             CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
                 }
-                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
-                        .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
-                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
                 existingAdvisoryNode.removeAllPrereleaseVersions();
                 existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
-                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
-                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null
-                            ? proposedTime
-                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-                }
             }
 
             existingAdvisoryNode.setRevision(revision);
             return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
         } else {
             throw new CsafException("User has not the permission to view change the workflow state of the advisory",
-                    CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+                    NoPermissionForAdvisory, UNAUTHORIZED);
 
         }
     }
@@ -502,7 +512,7 @@ public class AdvisoryService {
             return newRevision;
         } else {
             throw new CsafException("User has not the permission to create a new Version in this state",
-                    CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+                    NoPermissionForAdvisory, UNAUTHORIZED);
 
         }
     }
@@ -569,7 +579,7 @@ public class AdvisoryService {
                 );
             } else {
                 throw new CsafException("User has not the permission to view comment from the advisory",
-                        CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED);
+                        NoPermissionForAdvisory, UNAUTHORIZED);
             }
 
         } catch (IOException e) {
