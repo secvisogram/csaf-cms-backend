@@ -11,6 +11,7 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,8 @@ public class ValidatorServiceClientTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void successTest() throws IOException, CsafException {
         final ValidatorResponse response = new ValidatorResponse()
                 .setTests(new ValidatorResponseTest[0]);
@@ -95,6 +98,8 @@ public class ValidatorServiceClientTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void malformedResponseTest() throws IOException, CsafException {
         final String jsonStr = "Not even valid json at all!";
 
@@ -126,6 +131,8 @@ public class ValidatorServiceClientTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void unreachableServiceTest() throws IOException, CsafException {
         try (final MockedStatic<WebClient> staticWebClient = Mockito.mockStatic(WebClient.class)) {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
