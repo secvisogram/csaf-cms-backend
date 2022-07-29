@@ -82,7 +82,7 @@ public class ValidatorServiceClient {
                     .toEntity(String.class)
                     .block();
 
-            String resultText = responseSpec.getBody();
+            String resultText = (responseSpec != null) ? responseSpec.getBody() : "";
             final ObjectMapper jacksonMapper = new ObjectMapper();
             return jacksonMapper.readValue(resultText, ValidatorResponse.class);
         } catch (WebClientResponseException | WebClientRequestException ex) {
