@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -71,18 +70,16 @@ public class ValidatorServiceClient {
         WebClient.RequestBodySpec bodySpec = uriSpec.uri(VALIDATE_ENDPOINT);
 
         try {
-            WebClient.RequestHeadersSpec<?> headersSpec = bodySpec.bodyValue(advisoryToRequest(advisory));
-            ResponseEntity<String> responseSpec = headersSpec.header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            final WebClient.RequestHeadersSpec<?> headersSpec = bodySpec.bodyValue(advisoryToRequest(advisory));
+            final String resultText = headersSpec.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .accept(MediaType.APPLICATION_JSON)
                     .acceptCharset(StandardCharsets.UTF_8)
                     .ifNoneMatch("*")
                     .ifModifiedSince(ZonedDateTime.now())
                     .retrieve()
-                    .toEntity(String.class)
+                    .bodyToMono(String.class)
                     .block();
 
-            String resultText = (responseSpec != null) ? responseSpec.getBody() : "";
             final ObjectMapper jacksonMapper = new ObjectMapper();
             return jacksonMapper.readValue(resultText, ValidatorResponse.class);
         } catch (WebClientResponseException | WebClientRequestException ex) {
