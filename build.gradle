@@ -92,6 +92,13 @@ jacocoTestReport {
 		csv.required = true
 		html.outputLocation = layout.buildDirectory.dir('reports/jacocoHtml')
 	}
+
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: 'de/bsi/secvisogram/csaf_cms_backend/SecvisogramApplication.class')
+		}))
+	}
+
 }
 
 

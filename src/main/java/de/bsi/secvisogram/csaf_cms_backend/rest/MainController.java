@@ -19,14 +19,6 @@ public class MainController {
     public String about(@RequestHeader Map<String, String> headers) {
         LOG.info("about");
 
-        final String group = headers.get("x-forwarded-groups");
-        final String user = headers.get("x-forwarded-preferred-username");
-        LOG.info(AdvisoryController.sanitize(group));
-        LOG.info(AdvisoryController.sanitize(user));
-        headers.forEach((key, value) -> {
-            LOG.info(AdvisoryController.sanitize(String.format("Header '%s' = %s", key, value)));
-        });
-
         return "BSI Secvisogram Backend";
     }
 

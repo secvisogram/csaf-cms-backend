@@ -427,7 +427,7 @@ public class AdvisoryWorkflowUtil {
         return docNodes;
     }
 
-    public static PatchType getChangeType(AdvisoryWrapper oldAdvisoryNode, AdvisoryWrapper newAdvisory) {
+    public static PatchType getChangeType(AdvisoryWrapper oldAdvisoryNode, AdvisoryWrapper newAdvisory, int maxLevenshteinDistance) {
 
         PatchType result = PatchType.PATCH;
 
@@ -457,7 +457,7 @@ public class AdvisoryWorkflowUtil {
             if ("replace".equals(operation)) {
                 String value = jsonNode.get("value").asText();
                 String oldValue = oldCsaf.at(path).asText();
-                if (!isSpellingMistake(oldValue, value)) {
+                if (!isSpellingMistake(oldValue, value, maxLevenshteinDistance)) {
                     result = PatchType.MINOR;
                 }
             }
@@ -466,17 +466,18 @@ public class AdvisoryWorkflowUtil {
         return result;
     }
 
-    public static boolean isSpellingMistake(String oldString, String newString) {
+    /**
+     * Check whether the difference between the both strings is only a spelling mistake
+     * @param oldString 1. string to compare
+     * @param newString 2. string two compare
+     * @param maxLevenshteinDistance the maximum distance up to which the two texts are still considered as spelling errors
+     * @return true - its only a spelling error
+     */
+    public static boolean isSpellingMistake(String oldString, String newString, int maxLevenshteinDistance) {
 
         LevenshteinResults distance = LevenshteinDetailedDistance.getDefaultInstance().apply(oldString, newString);
 
-        if (newString.length() < 6) {
-            return distance.getDistance() <= 2;
-        } else if (newString.length() < 20) {
-            return distance.getDistance() <= 4;
-        } else {
-            return distance.getDistance() <= 8;
-        }
+        return distance.getDistance() <= maxLevenshteinDistance;
     }
 
 
