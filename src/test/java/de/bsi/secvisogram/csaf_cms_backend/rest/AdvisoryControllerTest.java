@@ -1,6 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController.determineExportResponseContentType;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -21,6 +24,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
@@ -32,7 +36,11 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationRespo
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -630,18 +638,34 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-//    @Test
-//    void exportAdvisoryTest_HTML() throws Exception {
-//
-//        UUID advisoryId = UUID.randomUUID();
-//        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenReturn("<html></html>");
-//
-//        this.mockMvc.perform(
-//                        get(advisoryRoute + advisoryId.toString() + "/csaf").with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().string("<html></html>"));
-//    }
+    @Test
+    void exportAdvisoryTest_HTML() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        Path tempPath = Files.createTempFile("", ".tmp");
+        try (BufferedWriter writer = Files.newBufferedWriter(tempPath, StandardCharsets.UTF_8)) {
+            writer.write("<html></html>");
+        }
+        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenReturn(tempPath);
+
+        this.mockMvc.perform(
+                        get(advisoryRoute + advisoryId + "/csaf")
+                                .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
+                                .param("format", ExportFormat.HTML.name()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("<html></html>"));
+    }
+
+    @Test
+    void determineExportResponseContentTypeTest() {
+
+        assertThat(determineExportResponseContentType(ExportFormat.HTML), equalTo(MediaType.TEXT_HTML));
+        assertThat(determineExportResponseContentType(ExportFormat.JSON), equalTo(MediaType.APPLICATION_JSON));
+        assertThat(determineExportResponseContentType(ExportFormat.PDF), equalTo(MediaType.APPLICATION_PDF));
+        assertThat(determineExportResponseContentType(ExportFormat.Markdown), equalTo(MediaType.TEXT_MARKDOWN));
+    }
+
 
     @Test
     void createNewCsafDocumentVersionTest_accessDeniedException() throws Exception {
@@ -1089,7 +1113,6 @@ public class AdvisoryControllerTest {
                 .andExpect(content().json(expected));
 
     }
-
 
     @Test
     void changeAnswerTest_notExisting() throws Exception {

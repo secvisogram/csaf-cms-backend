@@ -25,12 +25,6 @@ public class CsafException extends Exception {
         this.recommendedHttpState = httpState;
     }
 
-    public CsafException(String message, Throwable cause, CsafExceptionKey exceptionKey, HttpStatus httpState) {
-        super(message, cause);
-        this.exceptionKey = exceptionKey;
-        this.recommendedHttpState = httpState;
-    }
-
     public HttpStatus getRecommendedHttpState() {
         return recommendedHttpState;
     }
