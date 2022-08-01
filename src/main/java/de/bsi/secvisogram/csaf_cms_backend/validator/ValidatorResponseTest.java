@@ -1,5 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.validator;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+
 /**
  * Test part of the response of to the CSAF validation service
  */
@@ -23,6 +25,7 @@ public class ValidatorResponseTest {
         return warnings.clone();
     }
 
+    @JsonGetter("isValid")
     public boolean isValid() {
         return isValid;
     }

@@ -73,33 +73,55 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    public void updateDocumentTest() throws IOException, DatabaseException {
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
+    public void updateDocumentTest() throws DatabaseException {
 
-        final UUID uuid = UUID.randomUUID();
-        insertTestDocument(uuid);
+        long countBefore = this.couchDbService.getDocumentCount();
 
-        long countBeforeUpdate = this.couchDbService.getDocumentCount();
-        final Document responseBeforeUpdate = this.couchDbService.readDocument(uuid.toString());
-        String trackingIdBeforeUpdate = CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TRACKING_ID, responseBeforeUpdate);
-        Assertions.assertEquals("exxcellent-2021AB123", trackingIdBeforeUpdate);
-        String revision = responseBeforeUpdate.getRev();
+        UUID uuid = UUID.randomUUID();
+        var initialDoc = """
+                {
+                    "testKey": "TestValue"
+                }
+                """;
+        var revision = this.couchDbService.writeDocument(uuid, initialDoc);
+        Assertions.assertNotNull(revision);
+        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+        var updateDoc = """
+                {   "_rev": "%s",
+                    "_id": "%s",
+                    "testKey": "ChangeValue"
+                }
+                """.formatted(revision, uuid.toString());
+        revision = this.couchDbService.updateDocument(updateDoc);
 
-        String newOwner = "Musterfrau";
-        try (InputStream csafJsonStream = CouchDbServiceTest.class.getResourceAsStream("exxcellent-2022CC.json")) {
-            ObjectNode objectNode = toAdvisoryJson(csafJsonStream, newOwner);
-            objectNode.put(CouchDbField.ID_FIELD.getDbName(), uuid.toString());
-            objectNode.put(CouchDbField.REVISION_FIELD.getDbName(), revision);
-            this.couchDbService.updateDocument(objectNode.toPrettyString());
-        }
+        Assertions.assertNotNull(revision);
+        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+    }
 
-        long countAfterUpdate = this.couchDbService.getDocumentCount();
-        final Document responseAfterUpdate = this.couchDbService.readDocument(uuid.toString());
-        Assertions.assertEquals(countBeforeUpdate, countAfterUpdate);
+    @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
+    public void updateDocumentTest_invalidRevision() {
 
-        String trackingIdAfterUpdate = CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TRACKING_ID, responseAfterUpdate);
-        Assertions.assertEquals("exxcellent-2022CC", trackingIdAfterUpdate);
-        Assertions.assertEquals(uuid.toString(), responseAfterUpdate.getId());
+        long countBefore = this.couchDbService.getDocumentCount();
 
+        UUID uuid = UUID.randomUUID();
+        var initialDoc = """
+                {
+                    "testKey": "TestValue"
+                }
+                """;
+        var revision = this.couchDbService.writeDocument(uuid, initialDoc);
+        Assertions.assertNotNull(revision);
+        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
+        var updateDoc = """
+                {   "_rev": "%s",
+                    "_id": "%s",
+                    "testKey": "ChangeValue"
+                }
+                """.formatted("Invalid Revison", uuid.toString());
+        assertThrows(DatabaseException.class,
+                () -> this.couchDbService.updateDocument(updateDoc));
     }
 
     @Test
@@ -195,18 +217,6 @@ public class CouchDbServiceTest {
         Assertions.assertEquals(advisoryId.toString(), docs.get(0).getId());
     }
 
-    @Test
-    public void readDocumentTest() throws IOException, IdNotFoundException {
-
-        final UUID uuid = UUID.randomUUID();
-        insertTestDocument(uuid);
-
-        final Document response = this.couchDbService.readDocument(uuid.toString());
-        Assertions.assertEquals("TestRSc", CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, response));
-        Assertions.assertEquals(uuid.toString(), response.getId());
-    }
-
-
     private String insertTestDocument(UUID documentUuid) throws IOException {
         String owner = "Mustermann";
         String jsonFileName = "exxcellent-2021AB123.json";
@@ -214,17 +224,6 @@ public class CouchDbServiceTest {
             ObjectNode objectNode = toAdvisoryJson(csafJsonStream, owner);
             return this.couchDbService.writeDocument(documentUuid, objectNode.toString());
         }
-    }
-
-    @Test
-    public void getStringFieldValueTest() {
-
-        Document document = new Document.Builder().build();
-        Assertions.assertNull(CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, document));
-        document = new Document.Builder().add("csaf", null).build();
-        Assertions.assertNull(CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, document));
-        document = new Document.Builder().add("csaf", Map.of("document", Map.of("title", "TestTitle"))).build();
-        Assertions.assertEquals(CouchDbService.getStringFieldValue(AdvisorySearchField.DOCUMENT_TITLE, document), "TestTitle");
     }
 
     /**

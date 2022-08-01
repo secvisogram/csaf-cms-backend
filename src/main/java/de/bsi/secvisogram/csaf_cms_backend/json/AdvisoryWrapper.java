@@ -399,6 +399,21 @@ public class AdvisoryWrapper {
         return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
     }
 
+    public AdvisoryWrapper addEntryForNewCreatedVersion(String summary, String legacyVersion) {
+
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        ObjectNode entry = historyNode.addObject();
+        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+        entry.put("date", now);
+        if (legacyVersion != null && !legacyVersion.isBlank()) {
+            entry.put("legacy_revision", legacyVersion);
+        }
+        entry.put("number", this.getDocumentTrackingVersion());
+        entry.put("summary", summary);
+        return this;
+    }
+
+
     public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
