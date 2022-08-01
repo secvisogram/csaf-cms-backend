@@ -1,4 +1,4 @@
-name: Generate API Documentation
+name: Generate Code Coverage Badge
 on:
   push:
     branches:
