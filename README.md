@@ -31,8 +31,9 @@ individual projects for a proper production setup.
 The [secvisogram](https://github.com/secvisogram/secvisogram) frontend is usable
 as a standalone version without this server. You can still use this standalone
 mode if the frontend is not behind the proxy, like in the development setup.
-In this case the login is only required to manage documents on the server 
-or validate against the [validator service](https://github.com/secvisogram/csaf-validator-service).
+In this setup where both standalone and server mode are available, the login is 
+only required to manage documents on the server or validate against the
+[validator service](https://github.com/secvisogram/csaf-validator-service).
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
