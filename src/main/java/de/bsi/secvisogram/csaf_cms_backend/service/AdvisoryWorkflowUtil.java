@@ -171,8 +171,8 @@ public class AdvisoryWorkflowUtil {
             canBeViewed = true;
         }
         if (hasRole(PUBLISHER, credentials)) {
-            canBeViewed = isInState(advisoryState, WorkflowState.Draft, WorkflowState.Approved,
-                    WorkflowState.RfPublication) || isPublished(advisoryState, releaseDate);
+            canBeViewed |= (isInState(advisoryState, WorkflowState.Draft, WorkflowState.Approved,
+                    WorkflowState.RfPublication) || isPublished(advisoryState, releaseDate));
         }
         if (hasRole(REVIEWER, credentials)) {
             canBeViewed |= (!isOwnAdvisory(userToCheck, credentials) && isInState(advisoryState, WorkflowState.Review))

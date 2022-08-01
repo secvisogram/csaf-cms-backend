@@ -12,6 +12,9 @@ import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,28 +26,37 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
  */
-@SpringBootTest
+@SpringBootTest(properties = "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png")
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
@@ -53,6 +65,13 @@ public class AdvisoryServiceTest {
 
     @Autowired
     private AdvisoryService advisoryService;
+
+    @MockBean
+    private PandocService pandocService;
+
+    @MockBean
+    private WeasyprintService weasyprintService;
+
 
     private static final String csafJson = """
             {
@@ -150,6 +169,34 @@ public class AdvisoryServiceTest {
         CreateAdvisoryRequest request = csafToRequest(csafDocumentJson("Category2", "Title2")).setSummary("");
         assertThrows(CsafException.class,
                 () -> advisoryService.addAdvisory(request));
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void exportAdvisoryTest() throws IOException, CsafException {
+
+        when(this.pandocService.isReady()).thenReturn(Boolean.TRUE);
+        when(this.weasyprintService.isReady()).thenReturn(Boolean.TRUE);
+        doNothing().when(this.pandocService).convert(any(), any());
+        doNothing().when(this.weasyprintService).convert(any(), any());
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        Path jsonExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.JSON);
+        Assertions.assertNotNull(jsonExport);
+        Path pdfExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.PDF);
+        Assertions.assertNotNull(pdfExport);
+        Path htmlExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.HTML);
+        Assertions.assertNotNull(htmlExport);
+        Path mdExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.Markdown);
+        Assertions.assertNotNull(mdExport);
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void exportAdvisoryTest_IdNotFound() throws IOException, CsafException {
+
+        advisoryService.addAdvisory(csafToRequest(csafJson));
+        assertThrows(CsafException.class, () -> advisoryService.exportAdvisory("wrong Id", ExportFormat.JSON));
     }
 
     @Test
@@ -319,6 +366,71 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void updateAdvisoryTest_invalidId() throws IOException, DatabaseException, CsafException {
+
+        final String testCsafJson = """
+                {
+                    "document": {
+                        "category": "CSAF_BASE"
+                    }
+                }""";
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(testCsafJson));
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        assertThrows(IdNotFoundException.class,
+                () -> advisoryService.updateAdvisory("InvalidId", idRev.getRevision(), request));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void updateAdvisoryTest_accessDenied() throws IOException, DatabaseException, CsafException {
+
+        final String testCsafJson = """
+                {
+                    "document": {
+                        "category": "CSAF_BASE"
+                    }
+                }""";
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(testCsafJson));
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        assertThrows(CsafException.class,
+                () -> advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void updateAdvisoryTest_invalidType() throws IOException, DatabaseException, CsafException {
+
+        final String testCsafJson = """
+                {
+                    "document": {
+                        "category": "CSAF_BASE"
+                    }
+                }""";
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(testCsafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("CommentText", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRev.getId(), comment);
+
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+
+        assertThrows(CsafException.class,
+                () -> advisoryService.updateAdvisory(idRevComment.getId(), idRevComment.getRevision(), request));
+    }
+
+    @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
     public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
@@ -331,20 +443,46 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
-    @Disabled("Mock Validation ValidatorServiceClient")
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void createNewCsafDocumentVersionTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
-        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
-        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
-        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
-        advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
-        // an advisory and 5 audit trails are created
-        assertEquals(7, advisoryService.getDocumentCount());
-        AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+        }
     }
 
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void createNewCsafDocumentVersionTest_accessDenied() throws IOException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        assertThrows(CsafException.class,
+                () ->  advisoryService.createNewCsafDocumentVersion(idRev.getId(), idRev.getRevision()));
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void createNewCsafDocumentVersionTest_invalidId() throws IOException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        assertThrows(DatabaseException.class,
+                () ->  advisoryService.createNewCsafDocumentVersion("Invalid Id", idRev.getRevision()));
+    }
 
     private String csafDocumentJson(String documentCategory, String documentTitle) {
 
@@ -365,6 +503,18 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(0, comments.size());
     }
 
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void getCommentsTest_accessDenied() throws IOException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("author2", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(AccessDeniedException.class,
+                () -> advisoryService.getComments(idRevAdvisory.getId()));
+    }
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
@@ -401,7 +551,30 @@ public class AdvisoryServiceTest {
 
         CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals(commentText, commentResp.getCommentText());
+        Assertions.assertEquals(idRevComment.getId(), commentResp.getCommentId());
+        Assertions.assertEquals(idRevAdvisory.getId(), commentResp.getAdvisoryId());
+        Assertions.assertEquals(idRevComment.getRevision(), commentResp.getRevision());
+        Assertions.assertEquals(comment.getCsafNodeId(), commentResp.getCsafNodeId());
+        Assertions.assertEquals("author1", commentResp.getCreatedBy());
+        Assertions.assertEquals(null, commentResp.getAnswerToId());
 
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void addCommentTest_accessDenied() throws DatabaseException, IOException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        String commentText = "This is a comment";
+
+        CreateCommentRequest comment = new CreateCommentRequest(commentText, UUID.randomUUID().toString());
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("author2", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(AccessDeniedException.class,
+                () -> advisoryService.addComment(idRevAdvisory.getId(), comment));
     }
 
 
@@ -506,8 +679,8 @@ public class AdvisoryServiceTest {
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
     void updateCommentTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
 
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
 
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
 
@@ -524,6 +697,59 @@ public class AdvisoryServiceTest {
 
         CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("updated comment text", newComment.getCommentText());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    void getCommentTest_accessDenied() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("author2", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(CsafException.class,
+                () -> advisoryService.getComment(idRevComment.getId()));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    void updateCommentTest_invalidId() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        assertThrows(DatabaseException.class,
+                () -> advisoryService.updateComment(idRevAdvisory.getId(), "InvalidId", idRevComment.getRevision(),
+                        "updated comment text"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    void updateCommentTest_accessDenied() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+
+        CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
+        Assertions.assertEquals("comment text", commentResp.getCommentText());
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("author2", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(AccessDeniedException.class,
+                () -> advisoryService.updateComment(idRevAdvisory.getId(), idRevComment.getId(), idRevComment.getRevision(),
+                        "updated comment text"));
 
     }
 
@@ -549,8 +775,22 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(idRevAnswer.getId(), answers.get(0).getAnswerId());
     }
 
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void getAnswersTest_accessDeniedException() throws IOException, DatabaseException, CsafException {
 
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("author2", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(AccessDeniedException.class,
+                () -> advisoryService.getAnswers(idRevAdvisory.getId(), idRevComment.getId()));
+    }
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
@@ -569,7 +809,6 @@ public class AdvisoryServiceTest {
 
         CommentResponse answer = advisoryService.getComment(idRevAnswer.getId());
         Assertions.assertEquals(answerText, answer.getCommentText());
-
     }
 
     @Test
@@ -587,6 +826,21 @@ public class AdvisoryServiceTest {
 
         List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevAdvisory.getId(), idRevComment.getId());
         Assertions.assertEquals(2, answers.size(), "There should be two answers to the comment");
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void addAnswerTest_accessDenied() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("author2", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(AccessDeniedException.class,
+                () -> advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText));
     }
 
     @Test
