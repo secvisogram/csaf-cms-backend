@@ -129,10 +129,13 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
   CSAF documents  in the workflow
   states `Draft`, `Review` and `Approved`
 - may create new CSAF documents
-- may change the status of own CSAF documents from `Draft` to `Review`
-- may change the workflow state of own CSAF documents from `Approved` to `RfPublication
-- may change the workflow state of own CSAF documents from `Published` to
-  `Draft` by creating a new version of the CSAF document
+- may change the status of own (created by the user) CSAF documents 
+  from `Draft` to `Review`
+- may change the workflow state of own (created by the user) 
+  CSAF documents from `Approved` to `RfPublication`
+- may change the workflow state of own (created by the user) 
+  CSAF documents from `Published` to `Draft` by creating a new version of
+  the CSAF document
 - may view the status of own CSAF documents
 
 ##### Role: Editor
@@ -683,42 +686,44 @@ change each time we save.
 
 ![workflow](workflowIntegerVersioning.drawio.svg)
 
+[CSAF Integer Versioning](https://docs.oasis-open.org/csaf/csaf/v2.0/cs01/csaf-v2.0-cs01.html#31111-version-type---integer-versioning)
+
 With integer versioning, the version number is always incremented only when a
 new "draft" version is initially created (Predicted new version = target version).
 Exception: Version 0, until the first time "published".
 
-##### Konfiguration
+##### Configuration
 
 There should be a configuration that defines which type of versioning should be
 taken for new documents.
-For existing documents the ype of versioning can NOT change during lifetime,
-i.e. once semantic sersioning,
-always semantic versioning (or analog for integer versioning).
+For existing documents the type of versioning can NOT change during lifetime.
+That is, once semantic versioning is chosen, it can not be changed afterwards.
 
 ##### current_release_date
 
-When saving, it is always checked whether the current_release_date is in the
+When saving, it is always checked whether the `current_release_date` is in the
 past. In this case the date is set
 to the current date. In all other cases (date in the future) this remains.
-This does not affect the "preassignment" of the current_release_date when
-the "RfPublication" status is set.
+This does not affect the "preassignment" of the `current_release_date` when
+the status is set to `RfPublication`.
 
 ##### revision_history
 
-The 'tracking/revision_history' should be maintained in the backend
+The `tracking/revision_history` should be maintained in the backend
 
 - Semantic Versioning
 
   - Pre 1.0.0
     - When saving (both new creation and "normal" saving) a summary and legacy
-      version can be specified in a  modal window.
-    - The backend creates a new revision history element for each change with the
-        `current date`, the `summary` and the `legacy version` of the user.
+      version can be specified in a modal window.
+    - The backend creates a new revision history element for each change. 
+      In this element the `date` is the current date, and the `summary` 
+      and the `legacy version` are taken from of the modal window.
     - For status transitions, that also result in a change of the version
-      number (e.g. Review → Approved, Approved → Draft), the backend also
-      inserts a new element. A generic text is inserted as summary. e.g..:
+      number (e.g. `Review` → `Approved`, `Approved` → `Draft`), the backend also
+      inserts a new element. A generic text is inserted as summary. e.g.:
       "Status changed from Review to Approved".
-    - When the status changes to Published, all old Revision History elements
+    - When the status changes to `Published`, all old Revision History elements
       are deleted. A new element is created
       with the default summary "Initial Publication". The text must be configurable.
   - Post 1.0.0
@@ -746,8 +751,8 @@ The 'tracking/revision_history' should be maintained in the backend
     only created if the version number increases.
     Behavior analogous to Semantic Versioning.
 
-We are in the Published status:
-When switching to Draft workflow status, a new Revision History Item is created.
+When in the `Published` status:
+When switching to `Draft` workflow status, a new Revision History Item is created.
 
 When a new document is created on the server, any existing revision history
 items are deleted, a new version number (matching the versioning scheme
