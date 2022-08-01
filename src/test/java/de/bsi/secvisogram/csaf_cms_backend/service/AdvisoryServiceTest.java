@@ -45,14 +45,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
  */
-@SpringBootTest
+@SpringBootTest(properties = "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png")
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
@@ -603,8 +607,22 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(idRevAnswer.getId(), answers.get(0).getAnswerId());
     }
 
+    @Test
+    @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
+    public void getAnswersTest_accessDeniedException() throws IOException, DatabaseException, CsafException {
 
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_REGISTERED, auth);
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("auditor", null, Collections.singletonList(registeredAuthority)));
+        assertThrows(AccessDeniedException.class,
+                () -> advisoryService.getAnswers(idRevAdvisory.getId(), idRevComment.getId()));
+    }
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
