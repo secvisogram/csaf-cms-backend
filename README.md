@@ -1,42 +1,80 @@
-# Secvisogram Backend
+# BSI Secvisogram CSAF Backend
 
 ![Coverage](https://raw.githubusercontent.com/secvisogram/csaf-cms-backend/badges/.github/badges/jacoco.svg)
 
+- [About The Project](#about-the-project)
+- [Getting started](#getting-started)
+- [How to use](#how-to-use)
+- [Developing](#developing)
+- [Contributing](#contributing)
+- [Dependencies](#dependencies)
+
+## About The Project
+
+TODO
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
 ##  Getting started
 
-The configuration of the application as well as the compose file is done in 
-a local **.env** file. To start, simply copy the **.env.example** file.
-If you want different passwords, database names or ports you can change them 
-here.
+To run the CSAF CMS server you need the following:
 
-- run `docker-compose up`
-- After Keycloak is up, open a second terminal window and run 
-  `docker-compose up csaf-keycloak-cli` to import a realm with all the users 
+- [Keycloak](https://www.keycloak.org/)
+- A proxy like [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)
+- [CouchDB](https://couchdb.apache.org/)
+
+You can find an example setup for local development in the 'compose.yaml' and 
+an example configuration for Keycloak in 'keycloak/csaf-realm.json'. You 
+can take this as a starting point, but please check the documentation of the
+individual projects for a proper production setup.
+
+The [secvisogram](https://github.com/secvisogram/secvisogram) frontend is usable
+as a standalone version without this server. You can still use this standalone
+mode if the frontend is not behind the proxy, like in the development setup.
+In this case the login is only required to manage documents on the server 
+or validate against the [validator service](https://github.com/secvisogram/csaf-validator-service).
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
+## How to use
+
+Please have a look at the [API documentation](https://secvisogram.github.io/csaf-cms-backend/) on how to use this application.
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
+## Developing
+
+The configuration of the application as well as the compose file is done in
+a local **.env** file. To start, simply copy the **.env.example** file.
+If you want different passwords, database names or ports you can change them
+here. Please note that the following setup is for development purposes only 
+and should not be used in production.
+
+- run `docker compose up`
+- After Keycloak is up, open a second terminal window and run
+  `docker compose up csaf-keycloak-cli` to import a realm with all the users
   and roles already set up.
-- To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup` 
-  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and 
+- To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
+  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and
   stops CouchDB from spamming our logs
 - Open `http://localhost:9000/` and log in with the admin user.
   - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
   - On the left side, navigate to "Clients" and select the Secvisogram client.
-  - Select the **Credentials** tab and copy the Secret. This is our 
-      `CSAF_CLIENT_SECRET` environment variable.
-- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret) 
+  - Select the **Credentials** tab and copy the Secret. This is our
+    `CSAF_CLIENT_SECRET` environment variable.
+- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - restart compose
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
-  as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in 
+  as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
 - (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
 
-You should now be able to start the spring boot application, navigate to 
-`localhost:4180/api/v1/about`, log in with one of the users and get a 
-response from the server. 
+You should now be able to start the spring boot application, navigate to
+`localhost:4180/api/v1/about`, log in with one of the users and get a
+response from the server.
 The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
-
-
-## Commands
 
 ### build and execute tests
 
@@ -54,7 +92,7 @@ with main class: de.exxcellent.bsi.SecvisogramApplication
 
 ### check application running
 
-The port is defined in .env - CSAF_CMS_BACKEND_PORT, default 8081. 
+The port is defined in .env - CSAF_CMS_BACKEND_PORT, default 8081.
 
 http://localhost:8081/api/v1/about
 
@@ -76,14 +114,11 @@ CouchDb Info (port is defined in .env):
 
 [http://localhost:5984/](http://localhost:5984/)
 
-## How to use
-
-...
-
 ## Contributing
 
+You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogram/secvisogram/blob/main/CONTRIBUTING.md)
 
-...
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 ## Dependencies
 
@@ -99,6 +134,8 @@ For further reference, please consider the following sections:
 * [Spring Data Couchbase](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-couchbase)
 * [Spring Web](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-developing-web-applications)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
 #### Guides
 The following guides illustrate how to use some features concretely:
 
@@ -106,15 +143,20 @@ The following guides illustrate how to use some features concretely:
 * [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
 * [Building REST services with Spring](https://spring.io/guides/tutorials/bookmarks/)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
 #### Additional Links
 These additional references should also help you:
 
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 ### Code Quality Rules
 
 [Exxcellent Code Quality Rules](https://www.exxcellent.de/confluence/pages/viewpage.action?pageId=65113099)
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### SpotBugs
 
@@ -122,9 +164,13 @@ These additional references should also help you:
 - [spotbugs-gradle-plugin](https://github.com/spotbugs/spotbugs-gradle-plugin)
 - [find-sec-bugs](https://find-sec-bugs.github.io/)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
 #### Jacoco
 
 - [Jacoco Plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html#sec:jacoco_report_configuration)
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 ### Links
 
@@ -132,6 +178,8 @@ These additional references should also help you:
 [OASIS CSAF](https://oasis-open.github.io/csaf-documentation/)
 
 [BSI CSAF](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Empfehlungen-nach-Angriffszielen/Industrielle-Steuerungs-und-Automatisierungssysteme/CSAF/CSAF_node.html)
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### JSON
 - [CSAF 2.0 JSON Schema](https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json)
@@ -145,23 +193,31 @@ These additional references should also help you:
 - [JSON Patch](http://jsonpatch.com/)
 - [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### Mustache
 
 [Mustache samskivert](https://github.com/samskivert/jmustache)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### PoC for Backend
 
 [PoC Backend](https://github.com/csaf-poc/csaf_backend)
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### Open API/ Swagger
 
 [Open API](https://www.openapis.org/)
 [Swagger Annotations](https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations)
 
+[(back to top)](#bsi-secvisogram-csaf-backend)
+
 #### diagrams.net (formerly known as draw.io)
 
 - [diagrams.net](https://www.diagrams.net/)
 
 - [Intellij Integration](https://plugins.jetbrains.com/plugin/15635-diagrams-net-integration)
+
+[(back to top)](#bsi-secvisogram-csaf-backend)
