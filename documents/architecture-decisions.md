@@ -129,11 +129,11 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
   CSAF documents  in the workflow
   states `Draft`, `Review` and `Approved`
 - may create new CSAF documents
-- may change the status of own (created by the user) CSAF documents 
+- may change the status of own (created by the user) CSAF documents
   from `Draft` to `Review`
-- may change the workflow state of own (created by the user) 
+- may change the workflow state of own (created by the user)
   CSAF documents from `Approved` to `RfPublication`
-- may change the workflow state of own (created by the user) 
+- may change the workflow state of own (created by the user)
   CSAF documents from `Published` to `Draft` by creating a new version of
   the CSAF document
 - may view the status of own CSAF documents
@@ -716,8 +716,8 @@ The `tracking/revision_history` should be maintained in the backend
   - Pre 1.0.0
     - When saving (both new creation and "normal" saving) a summary and legacy
       version can be specified in a modal window.
-    - The backend creates a new revision history element for each change. 
-      In this element the `date` is the current date, and the `summary` 
+    - The backend creates a new revision history element for each change.
+      In this element the `date` is the current date, and the `summary`
       and the `legacy version` are taken from of the modal window.
     - For status transitions, that also result in a change of the version
       number (e.g. `Review` → `Approved`, `Approved` → `Draft`), the backend also
