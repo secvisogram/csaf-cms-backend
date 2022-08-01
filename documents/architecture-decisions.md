@@ -718,7 +718,7 @@ The `tracking/revision_history` should be maintained in the backend
       version can be specified in a modal window.
     - The backend creates a new revision history element for each change.
       In this element the `date` is the current date, and the `summary`
-      and the `legacy version` are taken from of the modal window.
+      and the `legacy_version` are taken from of the modal window.
     - For status transitions, that also result in a change of the version
       number (e.g. `Review` → `Approved`, `Approved` → `Draft`), the backend also
       inserts a new element. A generic text is inserted as summary. e.g.:
