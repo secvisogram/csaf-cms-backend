@@ -3,7 +3,6 @@ package de.bsi.secvisogram.csaf_cms_backend.rest.response;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,17 +53,6 @@ public class AdvisoryInformationResponse {
         this.allowedStateChanges = Collections.emptyList();
     }
 
-    public AdvisoryInformationResponse(String advisoryId, WorkflowState workflowState, String documentTrackingId, String title, String owner) {
-        this.advisoryId = advisoryId;
-        this.workflowState = workflowState;
-        this.documentTrackingId = documentTrackingId;
-        this.changeable = false;
-        this.deletable = false;
-        this.canCreateVersion = false;
-        this.title = title;
-        this.owner = owner;
-    }
-
     @Schema(description = "The unique ID of the advisory.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
     public String getAdvisoryId() {
         return advisoryId;
@@ -87,13 +75,6 @@ public class AdvisoryInformationResponse {
     public void setWorkflowState(String workflowStateString) {
 
         this.workflowState = WorkflowState.valueOf(workflowStateString);
-        if (WorkflowState.Draft == this.workflowState) {
-            this.allowedStateChanges = List.of(WorkflowState.Review);
-        } else if (WorkflowState.Approved == this.workflowState) {
-            this.allowedStateChanges = List.of(WorkflowState.Published);
-        } else if (WorkflowState.Review == this.workflowState) {
-            this.allowedStateChanges = Arrays.asList(WorkflowState.Draft, WorkflowState.Approved);
-        }
     }
 
 

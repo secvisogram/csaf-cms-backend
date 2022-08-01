@@ -86,7 +86,7 @@ public class JavascriptExporter {
         return node.toString();
     }
 
-    private static MediaType determineMediaTypeOfLogo(@Nonnull final Path path) {
+    static MediaType determineMediaTypeOfLogo(@Nonnull final Path path) {
         final Path filename = path.getFileName();
         if (filename != null) {
             final String fileName = filename.toString().toLowerCase();
