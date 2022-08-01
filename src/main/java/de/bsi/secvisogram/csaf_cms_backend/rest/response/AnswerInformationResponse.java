@@ -14,6 +14,9 @@ public class AnswerInformationResponse {
     private boolean changeable;
     private boolean deletable;
 
+    public AnswerInformationResponse() {
+    }
+
     public AnswerInformationResponse(String answerId, String answerTo, String owner) {
         this.answerId = answerId;
         this.answerTo = answerTo;
@@ -27,8 +30,9 @@ public class AnswerInformationResponse {
         return answerId;
     }
 
-    public void setAnswerId(String answerId) {
+    public AnswerInformationResponse setAnswerId(String answerId) {
         this.answerId = answerId;
+        return this;
     }
 
     @Schema(description = "The ID of the comment this is an answer to.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
@@ -36,8 +40,9 @@ public class AnswerInformationResponse {
         return this.answerTo;
     }
 
-    public void setAnswerTo(String answerTo) {
+    public AnswerInformationResponse setAnswerTo(String answerTo) {
         this.answerTo = answerTo;
+        return this;
     }
 
     @Schema(description = "The current owner of the answer.", example = "Mustermann")
@@ -45,8 +50,9 @@ public class AnswerInformationResponse {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public AnswerInformationResponse setOwner(String owner) {
         this.owner = owner;
+        return this;
     }
 
     @Schema(description = "Indicates if the currently logged in user can change this answer.", example = "true")

@@ -722,7 +722,11 @@ public class AdvisoryControllerTest {
 
         String owner = "Musterfrau";
 
-        CommentInformationResponse info = new CommentInformationResponse(commentId, advisoryId, "nodeId123", owner);
+        CommentInformationResponse info = new CommentInformationResponse()
+                .setCommentId(commentId)
+                .setAdvisoryId(advisoryId)
+                .setCsafNodeId("nodeId123")
+                .setOwner(owner);
         when(advisoryService.getComments(advisoryId)).thenReturn(List.of(info));
 
 
@@ -990,7 +994,10 @@ public class AdvisoryControllerTest {
 
         String owner = "Musterfrau";
 
-        AnswerInformationResponse info = new AnswerInformationResponse(answerId, commentId, owner);
+        AnswerInformationResponse info = new AnswerInformationResponse()
+                .setAnswerId(answerId)
+                .setOwner(owner)
+                .setAnswerTo(commentId);
         when(advisoryService.getAnswers(advisoryId, commentId)).thenReturn(List.of(info));
 
 

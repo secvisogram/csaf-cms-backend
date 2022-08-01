@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.validator;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -52,8 +53,7 @@ public class ValidatorServiceClientTest {
             """;
 
     @Test
-    void validatorRequestJsonTest() throws JsonProcessingException {
-
+    void validatorRequestJsonTest_minimalResponse() throws JsonProcessingException {
 
         var resultText = """
                 { "isValid":true,
@@ -61,8 +61,33 @@ public class ValidatorServiceClientTest {
                     {"errors":[],"infos":[],"warnings":[],"isValid":true,"name":"csaf_2_0"}]}
                 """;
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        jacksonMapper.readValue(resultText, ValidatorResponse.class);
+        ValidatorResponse response = jacksonMapper.readValue(resultText, ValidatorResponse.class);
+        assertTrue(response.isValid());
+        assertTrue(response.getTests()[0].isValid());
+        assertEquals("csaf_2_0", response.getTests()[0].getName());
+    }
 
+    @Test
+    void validatorRequestJsonTest() throws JsonProcessingException {
+
+        var resultText = """
+                { "isValid":false,
+                  "tests":[ 
+                    {"errors":[{"instancePath": "document", "message": "Invalid document" }]
+                    ,"infos":[]
+                    ,"warnings":[]
+                    ,"isValid":false
+                    ,"name":"csaf_2_0"}]}
+                """;
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ValidatorResponse response = jacksonMapper.readValue(resultText, ValidatorResponse.class);
+        assertFalse(response.isValid());
+        assertFalse(response.getTests()[0].isValid());
+        assertEquals("csaf_2_0", response.getTests()[0].getName());
+        assertEquals("document", response.getTests()[0].getErrors()[0].getInstancePath());
+        assertEquals("Invalid document", response.getTests()[0].getErrors()[0].getMessage());
+        assertEquals(0, response.getTests()[0].getInfos().length);
+        assertEquals(0, response.getTests()[0].getWarnings().length);
     }
 
     @Test
@@ -126,7 +151,7 @@ public class ValidatorServiceClientTest {
                     CsafException.class,
                     () -> ValidatorServiceClient.isAdvisoryValid("http://test.de/api/v1", newAdvisoryNode)
             );
-            Assertions.assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
+            assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
         }
     }
 
@@ -156,7 +181,7 @@ public class ValidatorServiceClientTest {
                     CsafException.class,
                     () -> ValidatorServiceClient.isAdvisoryValid("http://test.de/api/v1", newAdvisoryNode)
             );
-            Assertions.assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
+            assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
         }
     }
 }

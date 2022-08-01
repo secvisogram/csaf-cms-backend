@@ -39,4 +39,17 @@ public class IntegerVersioningTest {
         assertThat(IntegerVersioning.getDefault().removeVersionSuffix("1"), is("1"));
         assertThat(IntegerVersioning.getDefault().removeVersionSuffix("2"), is("2"));
     }
+
+    @Test
+    public void getNewDocumentVersionTest() {
+        assertThat(IntegerVersioning.getDefault().getNewDocumentVersion("1"), is("2"));
+        assertThat(IntegerVersioning.getDefault().getNewDocumentVersion("2"), is("3"));
+        assertThat(IntegerVersioning.getDefault().getNewDocumentVersion("NoNumber"), is("1"));
+    }
+
+    @Test
+    public void getNextDraftVersionTest() {
+        assertThat(IntegerVersioning.getDefault().getNextDraftVersion("1"), is("1"));
+        assertThat(IntegerVersioning.getDefault().getNextDraftVersion("2"), is("2"));
+    }
 }

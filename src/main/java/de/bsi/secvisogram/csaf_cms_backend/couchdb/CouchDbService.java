@@ -12,8 +12,8 @@ import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
+import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
-import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import java.io.ByteArrayInputStream;
@@ -64,34 +64,6 @@ public class CouchDbService {
     private String getDbUrl() {
         String protocol = this.dbSsl ? "https://" : "http://";
         return protocol + dbHost + ":" + dbPort;
-    }
-
-    /**
-     * Create a new CouchDB database
-     *
-     * @param nameOfNewDb name of the couchdb database to create
-     */
-    public void createDatabase(String nameOfNewDb) {
-
-        Cloudant client = createCloudantClient();
-        PutDatabaseOptions putDbOptions =
-                new PutDatabaseOptions.Builder().db(nameOfNewDb).build();
-
-        // Try to create database if it doesn't exist
-        try {
-            Ok putDatabaseResult = client
-                    .putDatabase(putDbOptions)
-                    .execute()
-                    .getResult();
-
-            if (putDatabaseResult.isOk()) {
-                LOG.info("{}' database created.", nameOfNewDb);
-            }
-        } catch (ServiceResponseException sre) {
-            if (sre.getStatusCode() == 412) {
-                throw new RuntimeException("Cannot create \"" + nameOfNewDb + "\" database, it already exists.", sre);
-            }
-        }
     }
 
     /**
@@ -213,32 +185,8 @@ public class CouchDbService {
             String msg = "Bad request, possibly the given revision is invalid";
             LOG.error(msg);
             throw new DatabaseException(msg, brEx);
-        } catch (NotFoundException nfEx) {
+        } catch (ConflictException | NotFoundException nfEx) {
             String msg = "No element with given ID";
-            LOG.error(msg);
-            throw new IdNotFoundException(msg, nfEx);
-        }
-    }
-
-    /**
-     *
-     * @param uuid id of the document to read
-     * @return the requested document
-     * @throws IdNotFoundException if the requested document was not found
-     */
-    public Document readDocument(final String uuid) throws IdNotFoundException {
-
-        Cloudant client = createCloudantClient();
-        GetDocumentOptions documentOptions =
-                new GetDocumentOptions.Builder()
-                        .db(this.dbName)
-                        .docId(uuid)
-                        .build();
-
-        try {
-            return client.getDocument(documentOptions).execute().getResult();
-        } catch (NotFoundException nfEx) {
-            String msg = String.format("No element with such an ID: %s", uuid);
             LOG.error(msg);
             throw new IdNotFoundException(msg, nfEx);
         }
@@ -274,7 +222,6 @@ public class CouchDbService {
      *
      * @param type   the {@link ObjectType} of objects to retrieve information on
      * @param fields the fields of information to select
-     *
      * @return list of all requested document information
      */
     public List<Document> readAllDocuments(ObjectType type, Collection<DbField> fields) {
@@ -400,10 +347,6 @@ public class CouchDbService {
             String msg = "Bad request, possibly one of the given revisions is invalid";
             LOG.error(msg);
             throw new DatabaseException(msg, brEx);
-        } catch (NotFoundException nfEx) {
-            String msg = "No element with such an ID";
-            LOG.error(msg);
-            throw new IdNotFoundException(msg, nfEx);
         }
     }
 
@@ -447,52 +390,4 @@ public class CouchDbService {
                 .build();
     }
 
-    /**
-     * Get the string value for the given path from the given document
-     *
-     * @param field     the path to the value
-     * @param document the document
-     * @return the value at the path
-     */
-    public static String getStringFieldValue(DbField field, Document document) {
-
-        String result = null;
-        if (field.getFieldPath().length == 1) {
-            Object value = document.get(field.getFieldPath()[0]);
-            if (value instanceof String) {
-                result = (String) value;
-            } else if (value != null) {
-                throw new RuntimeException("Value is not of type String");
-            }
-        } else {
-            Object value = document.get(field.getFieldPath()[0]);
-            Map<Object, Object> object;
-            if (value instanceof Map) {
-                object = (Map<Object, Object>) value;
-            } else if (value == null) {
-                object = null;
-            } else {
-                throw new RuntimeException("Value is not of type Object");
-            }
-            for (int i = 1; i < field.getFieldPath().length - 1 && object != null; i++) {
-                value = object.get(field.getFieldPath()[i]);
-                if (value instanceof Map) {
-                    object = (Map<Object, Object>) value;
-                } else if (value == null) {
-                    object = null;
-                } else {
-                    throw new RuntimeException("Value is not of type Object");
-                }
-            }
-            if (object != null) {
-                value = object.get(field.getFieldPath()[field.getFieldPath().length - 1]);
-                if (value instanceof String) {
-                    result = (String) value;
-                } else if (value != null) {
-                    throw new RuntimeException("Value is not of type String");
-                }
-            }
-        }
-        return result;
-    }
 }

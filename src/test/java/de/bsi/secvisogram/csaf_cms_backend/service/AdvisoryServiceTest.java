@@ -12,6 +12,9 @@ import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,19 +26,24 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -53,6 +61,13 @@ public class AdvisoryServiceTest {
 
     @Autowired
     private AdvisoryService advisoryService;
+
+    @MockBean
+    private PandocService pandocService;
+
+    @MockBean
+    private WeasyprintService weasyprintService;
+
 
     private static final String csafJson = """
             {
@@ -150,6 +165,34 @@ public class AdvisoryServiceTest {
         CreateAdvisoryRequest request = csafToRequest(csafDocumentJson("Category2", "Title2")).setSummary("");
         assertThrows(CsafException.class,
                 () -> advisoryService.addAdvisory(request));
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void exportAdvisoryTest() throws IOException, CsafException {
+
+        when(this.pandocService.isReady()).thenReturn(Boolean.TRUE);
+        when(this.weasyprintService.isReady()).thenReturn(Boolean.TRUE);
+        doNothing().when(this.pandocService).convert(any(), any());
+        doNothing().when(this.weasyprintService).convert(any(), any());
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        Path jsonExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.JSON);
+        Assertions.assertNotNull(jsonExport);
+        Path pdfExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.PDF);
+        Assertions.assertNotNull(pdfExport);
+        Path htmlExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.HTML);
+        Assertions.assertNotNull(htmlExport);
+        Path mdExport = advisoryService.exportAdvisory(idRev.getId(), ExportFormat.Markdown);
+        Assertions.assertNotNull(mdExport);
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void exportAdvisoryTest_IdNotFound() throws IOException, CsafException {
+
+        advisoryService.addAdvisory(csafToRequest(csafJson));
+        assertThrows(CsafException.class, () -> advisoryService.exportAdvisory("wrong Id", ExportFormat.JSON));
     }
 
     @Test
@@ -331,18 +374,23 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
-    @Disabled("Mock Validation ValidatorServiceClient")
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void createNewCsafDocumentVersionTest() throws IOException, DatabaseException, CsafException {
-        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
-        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
-        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
-        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
-        advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
-        // an advisory and 5 audit trails are created
-        assertEquals(7, advisoryService.getDocumentCount());
-        AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+        }
     }
 
 
@@ -401,6 +449,12 @@ public class AdvisoryServiceTest {
 
         CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals(commentText, commentResp.getCommentText());
+        Assertions.assertEquals(idRevComment.getId(), commentResp.getCommentId());
+        Assertions.assertEquals(idRevAdvisory.getId(), commentResp.getAdvisoryId());
+        Assertions.assertEquals(idRevComment.getRevision(), commentResp.getRevision());
+        Assertions.assertEquals(comment.getCsafNodeId(), commentResp.getCsafNodeId());
+        Assertions.assertEquals("author1", commentResp.getCreatedBy());
+        Assertions.assertEquals(null, commentResp.getAnswerToId());
 
     }
 

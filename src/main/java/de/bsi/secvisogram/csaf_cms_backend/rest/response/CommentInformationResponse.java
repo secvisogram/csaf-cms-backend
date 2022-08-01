@@ -18,6 +18,9 @@ public class CommentInformationResponse {
     private boolean changeable;
     private boolean deletable;
 
+    public CommentInformationResponse() {
+    }
+
     public CommentInformationResponse(String commentId, String advisoryId, String csafNodeId, String owner) {
         this.commentId = commentId;
         this.advisoryId = advisoryId;
@@ -32,8 +35,9 @@ public class CommentInformationResponse {
         return commentId;
     }
 
-    public void setCommentId(String commentId) {
+    public CommentInformationResponse setCommentId(String commentId) {
         this.commentId = commentId;
+        return this;
     }
 
     @Schema(description = "The ID of the advisory this is a comment to.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
@@ -41,8 +45,9 @@ public class CommentInformationResponse {
         return this.advisoryId;
     }
 
-    public void setAdvisoryId(String advisoryId) {
+    public CommentInformationResponse setAdvisoryId(String advisoryId) {
         this.advisoryId = advisoryId;
+        return this;
     }
 
     @Schema(description = "The ID of the node this comment refers to.", example = "9690e3a3-614f-44be-8709-3aa8d58b6cb5")
@@ -50,8 +55,9 @@ public class CommentInformationResponse {
         return this.csafNodeId;
     }
 
-    public void setCsafNodeId(String csafNodeId) {
+    public CommentInformationResponse setCsafNodeId(String csafNodeId) {
         this.csafNodeId = csafNodeId;
+        return this;
     }
 
     @Schema(description = "The current owner of the comment.", example = "Mustermann")
@@ -59,8 +65,9 @@ public class CommentInformationResponse {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public CommentInformationResponse setOwner(String owner) {
         this.owner = owner;
+        return this;
     }
 
     @Schema(description = "Indicates if the currently logged in user can change this comment.", example = "true")
