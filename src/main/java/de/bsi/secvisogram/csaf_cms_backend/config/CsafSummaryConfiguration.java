@@ -9,6 +9,8 @@ public class CsafSummaryConfiguration {
     private String approve;
     private String draft;
 
+    private String newVersion;
+
     public String getPublication() {
         return publication;
     }
@@ -33,6 +35,15 @@ public class CsafSummaryConfiguration {
 
     public CsafSummaryConfiguration setDraft(String draft) {
         this.draft = draft;
+        return this;
+    }
+
+    public String getNewVersion() {
+        return newVersion;
+    }
+
+    public CsafSummaryConfiguration setNewVersion(String newVersion) {
+        this.newVersion = newVersion;
         return this;
     }
 }

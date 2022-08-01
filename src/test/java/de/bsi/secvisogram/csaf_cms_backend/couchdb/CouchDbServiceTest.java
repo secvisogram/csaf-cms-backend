@@ -125,31 +125,6 @@ public class CouchDbServiceTest {
     }
 
     @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
-    public void updateDocumentTest_invalidId() {
-
-        long countBefore = this.couchDbService.getDocumentCount();
-
-        UUID uuid = UUID.randomUUID();
-        var initialDoc = """
-                {
-                    "testKey": "TestValue"
-                }
-                """;
-        var revision = this.couchDbService.writeDocument(uuid, initialDoc);
-        Assertions.assertNotNull(revision);
-        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
-        var updateDoc = """
-                {   "_rev": "%s",
-                    "_id": "%s",
-                    "testKey": "ChangeValue"
-                }
-                """.formatted(revision, "#Invalid Id#");
-        assertThrows(IdNotFoundException.class,
-                () -> this.couchDbService.updateDocument(updateDoc));
-    }
-
-    @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
     public void deleteDocumentTest() throws IOException, DatabaseException {
 
@@ -220,25 +195,6 @@ public class CouchDbServiceTest {
                         new IdAndRevision(uuid2.toString(), "Invalid Revision"))));
 
         Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
-    }
-
-    @Test
-    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document should not change")
-    public void bulkDeleteDocumentsTest_invalidId() throws IOException, DatabaseException {
-
-        long countBefore = this.couchDbService.getDocumentCount();
-
-        final UUID uuid1 = UUID.randomUUID();
-        String revision1 = insertTestDocument(uuid1);
-        final UUID uuid2 = UUID.randomUUID();
-        String revision2 = insertTestDocument(uuid2);
-
-        Assertions.assertEquals(countBefore + 2, this.couchDbService.getDocumentCount());
-        this.couchDbService.bulkDeleteDocuments(Arrays.asList(
-                        new IdAndRevision(uuid1.toString(), revision1),
-                        new IdAndRevision("Innvalid Id", revision2)));
-
-        Assertions.assertEquals(countBefore + 1, this.couchDbService.getDocumentCount());
     }
 
     @Test
