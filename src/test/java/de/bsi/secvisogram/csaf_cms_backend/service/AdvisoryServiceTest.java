@@ -172,7 +172,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void exportAdvisoryTest() throws IOException, CsafException {
 
         when(this.pandocService.isReady()).thenReturn(Boolean.TRUE);
@@ -192,7 +192,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void exportAdvisoryTest_IdNotFound() throws IOException, CsafException {
 
         advisoryService.addAdvisory(csafToRequest(csafJson));
