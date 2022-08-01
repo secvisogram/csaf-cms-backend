@@ -143,12 +143,12 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
 - may create comments, view and reply to comments on all CSAF
   documents in the workflow
   states `Draft`, `Review` and `Approved`
+- may change the status of all CSAF documents from `Draft` to `Review`
 - may change the workflow state of all CSAF documents from `Approved` to
   `RfPublication`
 - may change the workflow state of all CSAF documents from `Published` to
   `Draft` by creating
   a new version of the CSAF document
-- may change the status of all CSAF documents from `Draft` to `Review`
 - may view the status of all CSAF documents
 
 ##### Role: Publisher
@@ -641,7 +641,7 @@ A pre-release version indicates that the version is unstable and might not
 satisfy the intended compatibility requirements as denoted by its associated
 normal version.
 
-As it stands, we would have three different logics, how version numbers are
+As it stands, we have three different logics, how version numbers are
 assigned for intermediate states, i.e. stored documents between two "approvals":
 
 1. initial version < 1:
@@ -692,8 +692,8 @@ Exception: Version 0, until the first time "published".
 There should be a configuration that defines which type of versioning should be
 taken for new documents.
 For existing documents the ype of versioning can NOT change during lifetime,
-i.e. once Semantic Versioning,
-always Semantic Versioning (or analog for Integer Versioning).
+i.e. once semantic sersioning,
+always semantic versioning (or analog for integer versioning).
 
 ##### current_release_date
 
