@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest(properties = "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/allTemplates.json")
@@ -24,6 +26,7 @@ class DocumentTemplateServiceTest {
     private DocumentTemplateService templateService;
 
     @Test
+    @WithMockUser(username = "registered", authorities = {CsafRoles.ROLE_REGISTERED})
     void getAllTemplatesTest() throws IOException {
 
         DocumentTemplateDescription[] allTemplates = this.templateService.getAllTemplates();
@@ -37,6 +40,7 @@ class DocumentTemplateServiceTest {
     }
 
     @Test
+    @WithMockUser(username = "registered", authorities = {CsafRoles.ROLE_REGISTERED})
     void getTemplatesForIdTest() throws IOException {
 
         var template1 = this.templateService.getTemplateForId("T1");

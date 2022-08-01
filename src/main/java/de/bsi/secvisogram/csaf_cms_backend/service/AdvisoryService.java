@@ -93,6 +93,7 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
+    @RolesAllowed({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -349,6 +350,7 @@ public class AdvisoryService {
      * @throws IOException          on any error regarding writing/reading from disk
      * @throws InterruptedException if the export did take too long and thus timed out
      */
+    @RolesAllowed({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public Path exportAdvisory(
             @Nonnull final String advisoryId,
             @Nullable final ExportFormat format)
