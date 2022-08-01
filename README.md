@@ -45,10 +45,10 @@ Please have a look at the [API documentation](https://secvisogram.github.io/csaf
 ## Developing
 
 The configuration of the application as well as the compose file is done in
-a local **.env** file. To start, simply copy the **.env.example** file.
+a local **.env** file. To start, simply copy the **.env.example** file to **.env**.
 If you want different passwords, database names or ports you can change them
-here. Please note that the following setup is for development purposes only 
-and should not be used in production.
+in that file. Please note that the following setup is for development purposes
+only and should not be used in production.
 
 - run `docker compose up`
 - After Keycloak is up, open a second terminal window and run
