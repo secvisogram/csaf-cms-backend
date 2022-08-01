@@ -116,7 +116,7 @@ public class AdvisoryWorkflowTest {
     }
 
     @Test
-    @WithMockUser(username = "manager", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR,
+    @WithMockUser(username = "manager", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR,
             CsafRoles.ROLE_MANAGER, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")

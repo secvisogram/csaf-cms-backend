@@ -34,7 +34,7 @@ public class AdvisorySearchUtilTest {
 
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTitle() throws IOException, CsafException {
 
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
@@ -48,7 +48,7 @@ public class AdvisorySearchUtilTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTrackingGeneratorVersion() throws IOException, CsafException {
 
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGenratorVersion("1.2.3")));
@@ -61,7 +61,7 @@ public class AdvisorySearchUtilTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTrackingRevisionHistorysummary() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafJsonRevisionHistorySummary("SummaryOne")));
@@ -77,7 +77,7 @@ public class AdvisorySearchUtilTest {
 
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_csafAcknowledgmentsNames() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafAcknowledgmentsNames("John")));
@@ -90,7 +90,7 @@ public class AdvisorySearchUtilTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44228")));
@@ -103,7 +103,7 @@ public class AdvisorySearchUtilTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_productTreeFullProductNames() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafProductTreeFullProductNamesProductId("ProductOne")));
@@ -116,7 +116,7 @@ public class AdvisorySearchUtilTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = { CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_csafProductTreeBranchesCategory() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafProductTreeBranchesCategory("CategoryOne")));
