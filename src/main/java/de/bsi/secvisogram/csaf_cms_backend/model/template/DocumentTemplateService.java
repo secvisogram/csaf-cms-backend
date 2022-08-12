@@ -62,6 +62,9 @@ public class DocumentTemplateService {
         Optional<String> relativeFileName = getTemplateFileName(templateId);
         if (relativeFileName.isPresent()) {
             Path parentPath = Path.of(templatesFile).getParent();
+            if (parentPath == null) {
+                throw new IOException("Could not find directory containing templates!");
+            }
             Path templatePath = parentPath.resolve(relativeFileName.get());
             final ObjectMapper jacksonMapper = new ObjectMapper();
             return Optional.of(jacksonMapper.readValue(Files.readAllBytes(templatePath), JsonNode.class));
