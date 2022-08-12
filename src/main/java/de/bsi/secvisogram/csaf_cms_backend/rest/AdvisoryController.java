@@ -9,7 +9,6 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
@@ -333,12 +332,8 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("readTemplate {}", sanitize(templateId));
         try {
-            Optional<DocumentTemplateDescription> template = this.templateService.getTemplateForId(templateId);
-            if (template.isPresent()) {
-                return  ResponseEntity.ok(template.get().getFileAsJsonNode());
-            } else {
-                return  ResponseEntity.notFound().build();
-            }
+            Optional<JsonNode> templateJson = this.templateService.getTemplate(templateId);
+            return templateJson.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IOException ex) {
             LOG.error(String.format("Error loading template with id: %s", sanitize(templateId)), ex);
             return ResponseEntity.internalServerError().build();
