@@ -27,12 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .csrf(csrf ->
-                        csrf
-                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                )
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .authorizeRequests().anyRequest().permitAll();
+                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
 
         if (this.isCsrfEnabled) {
             http
