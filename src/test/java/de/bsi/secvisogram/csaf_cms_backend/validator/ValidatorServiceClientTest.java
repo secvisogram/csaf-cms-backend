@@ -58,7 +58,7 @@ public class ValidatorServiceClientTest {
 
         var resultText = """
                 { "isValid":true,
-                  "tests":[ 
+                  "tests":[
                     {"errors":[],"infos":[],"warnings":[],"isValid":true,"name":"csaf_2_0"}]}
                 """;
         final ObjectMapper jacksonMapper = new ObjectMapper();
@@ -73,7 +73,7 @@ public class ValidatorServiceClientTest {
 
         var resultText = """
                 { "isValid":false,
-                  "tests":[ 
+                  "tests":[
                     {"errors":[{"instancePath": "document", "message": "Invalid document" }]
                     ,"infos":[]
                     ,"warnings":[]
