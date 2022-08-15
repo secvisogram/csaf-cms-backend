@@ -9,7 +9,6 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateDescription;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
@@ -83,7 +82,7 @@ public class AdvisoryController {
                               "value" : "title1",
                               "valueType" : "Text"
                             }.
-                             Possible operatorType's: 'Equal', 'NotEqual', 'Greater', 'GreaterOrEqual', 'Less', 'LessOrEqual', 'ContainsIgnoreCase'. 
+                             Possible operatorType's: 'Equal', 'NotEqual', 'Greater', 'GreaterOrEqual', 'Less', 'LessOrEqual', 'ContainsIgnoreCase'.
                              Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attributes in 'csaf/document""",
                     schema = @Schema(type = "string", format = "json",
                             description = "An optional expression in JSON to filter documents by.")
@@ -300,10 +299,10 @@ public class AdvisoryController {
         LOG.info("listAllTemplates");
 
         try {
-            var response =  Arrays.stream(this.templateService.getAllTemplates())
+            var response = Arrays.stream(this.templateService.getAllTemplates())
                     .map(template -> new AdvisoryTemplateInfoResponse(template.getId(), template.getDescription()))
                     .collect(Collectors.toList());
-            return  ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
         } catch (IOException ex) {
             LOG.error("Error loading templates", ex);
             return ResponseEntity.ok(Collections.emptyList());
@@ -319,7 +318,7 @@ public class AdvisoryController {
     @GetMapping("/templates/{templateId}")
     @Operation(
             summary = "Get template content.",
-            description = "Get the content of the templates with the given templateId.",
+            description = "Get the content of the template with the given templateId.",
             tags = {"Advisory"}
     )
     public ResponseEntity<JsonNode> readTemplate(
@@ -333,12 +332,8 @@ public class AdvisoryController {
         // only for debugging, remove when implemented
         LOG.info("readTemplate {}", sanitize(templateId));
         try {
-            Optional<DocumentTemplateDescription> template = this.templateService.getTemplateForId(templateId);
-            if (template.isPresent()) {
-                return  ResponseEntity.ok(template.get().getFileAsJsonNode());
-            } else {
-                return  ResponseEntity.notFound().build();
-            }
+            Optional<JsonNode> templateJson = this.templateService.getTemplate(templateId);
+            return templateJson.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IOException ex) {
             LOG.error(String.format("Error loading template with id: %s", sanitize(templateId)), ex);
             return ResponseEntity.internalServerError().build();

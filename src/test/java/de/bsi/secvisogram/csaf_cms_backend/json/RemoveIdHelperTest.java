@@ -192,10 +192,10 @@ public class RemoveIdHelperTest {
               ]
             }
           ]
-        }      
+        }
        """;
 
-    public static final String casfWithoutIds = """
+    public static final String csafWithoutIds = """
             
          {
          "document": {
@@ -354,7 +354,7 @@ public class RemoveIdHelperTest {
               ]
             }
           ]
-        }        
+        }
        """;
 
     @Test
@@ -365,12 +365,12 @@ public class RemoveIdHelperTest {
                     "type": "Advisory",
                     "workflowState": "Draft",
                     "csaf": %s,
-                    "_rev": "reavison",
+                    "_rev": "revision",
                     "_id": "id124214"}""".formatted(csafWithIds);
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
         var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
         RemoveIdHelper.removeIds(advisory.getCsaf(), "nodeId");
-        assertThat(advisory.getCsaf().toString().replaceAll("\\s+", ""), is(casfWithoutIds.replaceAll("\\s+", "")));
+        assertThat(advisory.getCsaf().toString().replaceAll("\\s+", ""), is(csafWithoutIds.replaceAll("\\s+", "")));
     }
 }

@@ -33,27 +33,25 @@ class DocumentTemplateServiceTest {
         assertThat(allTemplates.length, equalTo(2));
         assertThat(allTemplates[0].getId(), equalTo("T1"));
         assertThat(allTemplates[0].getDescription(), equalTo("Test Template 1"));
-        assertThat(allTemplates[0].getFile(), equalTo("./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/template1.json"));
+        assertThat(allTemplates[0].getFile(), equalTo("template1.json"));
         assertThat(allTemplates[1].getId(), equalTo("T2"));
         assertThat(allTemplates[1].getDescription(), equalTo("Test Template 2"));
-        assertThat(allTemplates[1].getFile(), equalTo("./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/template2.json"));
+        assertThat(allTemplates[1].getFile(), equalTo("template2.json"));
     }
 
     @Test
     @WithMockUser(username = "registered", authorities = {CsafRoles.ROLE_REGISTERED})
     void getTemplatesForIdTest() throws IOException {
 
-        var template1 = this.templateService.getTemplateForId("T1");
-        assertThat(template1.get().getDescription(), equalTo("Test Template 1"));
+        var template1 = this.templateService.getTemplateFileName("T1");
+        assertThat(template1.get(), equalTo("template1.json"));
 
-        JsonNode node1 = template1.get().getFileAsJsonNode();
+        JsonNode node1 = templateService.getTemplate("T1").get();
         assertThat(node1.at("/document/title").asText(), equalTo("Test Template 1"));
 
-        var template2 = this.templateService.getTemplateForId("T2");
-        assertThat(template2.get().getDescription(), equalTo("Test Template 2"));
-        Assertions.assertThrows(NoSuchFileException.class, () -> template2.get().getFileAsJsonNode());
+        Assertions.assertThrows(NoSuchFileException.class, () -> this.templateService.getTemplate("T2"));
 
-        var template3 = this.templateService.getTemplateForId("T3");
+        var template3 = this.templateService.getTemplate("T3");
         assertThat(template3.isPresent(), is(false));
     }
 }
