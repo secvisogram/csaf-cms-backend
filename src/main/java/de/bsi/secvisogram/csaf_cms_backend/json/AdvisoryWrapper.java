@@ -417,7 +417,7 @@ public class AdvisoryWrapper {
     public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isInitialPublicReleaseOrEarlier()) {
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
             ObjectNode entry = historyNode.addObject();
             String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
             entry.put("date", now);
