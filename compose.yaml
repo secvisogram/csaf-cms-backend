@@ -78,6 +78,7 @@ services:
       OAUTH2_PROXY_COOKIE_SECURE: "false"
       OAUTH2_PROXY_COOKIE_HTTPONLY: "true"
       OAUTH2_PROXY_COOKIE_SAMESITE: "lax"
+      OAUTH2_PROXY_COOKIE_REFRESH: "4m"
       OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
 
       # OIDC provider config
