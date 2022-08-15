@@ -118,7 +118,7 @@ public class ValidatorServiceClientTest {
                     VersioningType.Semantic.name()
             );
 
-            ValidatorServiceClient.isAdvisoryValid("http://test.de/api/v1", newAdvisoryNode);
+            ValidatorServiceClient.isAdvisoryValid("http://example.com/api/v1", newAdvisoryNode);
         }
     }
 
@@ -149,7 +149,7 @@ public class ValidatorServiceClientTest {
 
             final CsafException exception = Assertions.assertThrows(
                     CsafException.class,
-                    () -> ValidatorServiceClient.isAdvisoryValid("http://test.de/api/v1", newAdvisoryNode)
+                    () -> ValidatorServiceClient.isAdvisoryValid("http://example.com/api/v1", newAdvisoryNode)
             );
             assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
         }
@@ -179,7 +179,7 @@ public class ValidatorServiceClientTest {
 
             final CsafException exception = Assertions.assertThrows(
                     CsafException.class,
-                    () -> ValidatorServiceClient.isAdvisoryValid("http://test.de/api/v1", newAdvisoryNode)
+                    () -> ValidatorServiceClient.isAdvisoryValid("http://example.com/api/v1", newAdvisoryNode)
             );
             assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
         }
