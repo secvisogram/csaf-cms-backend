@@ -478,13 +478,7 @@ public class AdvisoryControllerTest {
     void readTemplateTest() throws Exception {
 
         final String templateId = "T1";
-        Optional<DocumentTemplateDescription> templateDesc = Optional.of(new DocumentTemplateDescription(templateId, "Template1", "File1") {
-            @Override
-            public JsonNode getFileAsJsonNode() throws IOException {
-                return jacksonMapper.readTree(csafJsonString);
-            }
-        });
-        when(this.templateService.getTemplateForId(templateId)).thenReturn(templateDesc);
+        when(this.templateService.getTemplate(templateId)).thenReturn(Optional.of(jacksonMapper.readTree(csafJsonString)));
 
         this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
                 .andDo(print())
@@ -497,13 +491,7 @@ public class AdvisoryControllerTest {
     void readTemplateTest_internalServerError() throws Exception {
 
         final String templateId = "T1";
-        Optional<DocumentTemplateDescription> templateDesc = Optional.of(new DocumentTemplateDescription(templateId, "Template1", "File1") {
-            @Override
-            public JsonNode getFileAsJsonNode() throws IOException {
-                throw new IOException("Server Error Test");
-            }
-        });
-        when(this.templateService.getTemplateForId(templateId)).thenReturn(templateDesc);
+        when(this.templateService.getTemplate(templateId)).thenThrow(new IOException("Server Error Test"));
 
         this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
                 .andDo(print())
@@ -514,8 +502,7 @@ public class AdvisoryControllerTest {
     void readTemplateTest_NotFound() throws Exception {
 
         final String templateId = "T1";
-        Optional<DocumentTemplateDescription> templateDesc = Optional.empty();
-        when(this.templateService.getTemplateForId(templateId)).thenReturn(templateDesc);
+        when(this.templateService.getTemplateFileName(templateId)).thenReturn(Optional.empty());
 
         this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
                 .andDo(print())
