@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
@@ -152,6 +153,7 @@ public class ValidatorServiceClientTest {
                     () -> ValidatorServiceClient.isAdvisoryValid("http://example.com/api/v1", newAdvisoryNode)
             );
             assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
+            assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, exception.getRecommendedHttpState());
         }
     }
 
@@ -182,6 +184,7 @@ public class ValidatorServiceClientTest {
                     () -> ValidatorServiceClient.isAdvisoryValid("http://example.com/api/v1", newAdvisoryNode)
             );
             assertEquals(CsafExceptionKey.ErrorAccessingValidationServer, exception.getExceptionKey());
+            assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exception.getRecommendedHttpState());
         }
     }
 }

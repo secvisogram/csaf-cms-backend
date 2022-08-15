@@ -89,7 +89,7 @@ public class ValidatorServiceClient {
         } catch (WebClientResponseException | WebClientRequestException ex) {
             LOG.error("Error in access to validation server", ex);
             throw new CsafException("Error in call to validation server",
-                    CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
+                    CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.SERVICE_UNAVAILABLE);
         } catch (JsonProcessingException ex) {
             LOG.error("Error creating request to validation server", ex);
             throw new CsafException("Error creating request to validation server",
