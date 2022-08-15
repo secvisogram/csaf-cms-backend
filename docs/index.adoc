@@ -1348,7 +1348,7 @@ Get template content.
 
 ===== Description
 
-Get the content of the templates with the given templateId.
+Get the content of the template with the given templateId.
 
 
 // markup not found, no include::{specDir}api/v1/advisories/templates/\{templateId\}/GET/spec.adoc[opts=optional]
