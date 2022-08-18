@@ -10,6 +10,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -351,8 +352,9 @@ public class AdvisoryServiceTest {
     @Test
     public void updateAdvisoryTest_badData() {
         UUID noAdvisoryId = UUID.randomUUID();
-        assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(),
+        Exception expectedException = assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(),
                 "redundant", csafToRequest(advisoryJsonString)));
+        assertThat(expectedException.getMessage(), containsString("No element with such an ID"));
     }
 
     @Test
@@ -361,8 +363,9 @@ public class AdvisoryServiceTest {
 
         var idRev = advisoryService.addAdvisory(csafToRequest(csafDocumentJson("Category1", "Title1")));
         CreateAdvisoryRequest request = csafToRequest(csafDocumentJson("Category2", "Title2")).setSummary("");
-        assertThrows(CsafException.class,
+        Exception expectedException = assertThrows(CsafException.class,
                 () -> advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request));
+        assertThat(expectedException.getMessage(), containsString("Summary must not be empty"));
     }
 
     @Test
@@ -381,8 +384,9 @@ public class AdvisoryServiceTest {
         ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
         CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
         request.setSummary("UpdateSummary");
-        assertThrows(IdNotFoundException.class,
+        Exception expectedException = assertThrows(IdNotFoundException.class,
                 () -> advisoryService.updateAdvisory("InvalidId", idRev.getRevision(), request));
+        assertThat(expectedException.getMessage(), containsString("No element with such an ID"));
     }
 
     @Test
@@ -402,8 +406,9 @@ public class AdvisoryServiceTest {
         ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
         CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
         request.setSummary("UpdateSummary");
-        assertThrows(CsafException.class,
+        Exception expectedException = assertThrows(CsafException.class,
                 () -> advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request));
+        assertThat(expectedException.getMessage(), containsString("no permission"));
     }
 
     @Test
@@ -426,8 +431,9 @@ public class AdvisoryServiceTest {
         CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
         request.setSummary("UpdateSummary");
 
-        assertThrows(CsafException.class,
+        Exception expectedException = assertThrows(CsafException.class,
                 () -> advisoryService.updateAdvisory(idRevComment.getId(), idRevComment.getRevision(), request));
+        assertThat(expectedException.getMessage(), containsString("not of type Advisory"));
     }
 
     @Test
