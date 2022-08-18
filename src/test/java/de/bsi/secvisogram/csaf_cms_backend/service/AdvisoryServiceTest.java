@@ -562,13 +562,13 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(idRevComment.getRevision(), commentResp.getRevision());
         Assertions.assertEquals(comment.getCsafNodeId(), commentResp.getCsafNodeId());
         Assertions.assertEquals("author1", commentResp.getCreatedBy());
-        Assertions.assertEquals(null, commentResp.getAnswerToId());
+        Assertions.assertNull(commentResp.getAnswerToId());
 
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = { CsafRoles.ROLE_AUTHOR})
-    public void addCommentTest_accessDenied() throws DatabaseException, IOException, CsafException {
+    public void addCommentTest_accessDenied() throws IOException, CsafException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         String commentText = "This is a comment";
