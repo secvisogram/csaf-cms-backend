@@ -172,7 +172,7 @@ public class AdvisoryService {
     IdAndRevision addAdvisoryForCredentials(CreateAdvisoryRequest newCsafJson, Authentication credentials) throws IOException, CsafException {
 
         if (newCsafJson.getSummary() == null || newCsafJson.getSummary().isBlank()) {
-            throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, UNAUTHORIZED);
+            throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, BAD_REQUEST);
         }
 
         UUID advisoryId = UUID.randomUUID();
@@ -315,7 +315,7 @@ public class AdvisoryService {
             if (canChangeAdvisory(oldAdvisoryNode, credentials)) {
 
                 if (changedCsafJson.getSummary() == null || changedCsafJson.getSummary().isBlank()) {
-                    throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, UNAUTHORIZED);
+                    throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, BAD_REQUEST);
                 }
 
                 AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
