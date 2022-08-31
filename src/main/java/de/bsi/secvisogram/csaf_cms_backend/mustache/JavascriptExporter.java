@@ -14,6 +14,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class JavascriptExporter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JavascriptExporter.class);
 
     @org.springframework.beans.factory.annotation.Value("${csaf.document.templates.companyLogoPath}")
     private String companyLogoPath;
@@ -73,7 +77,8 @@ public class JavascriptExporter {
     }
 
     private String createLogoJson() throws IOException {
-        if (this.companyLogoPath == null) {
+        if (this.companyLogoPath == null || this.companyLogoPath.equals("")) {
+            LOG.info("The company logo path was not set, export result will not contain a logo.");
             return null;
         }
         final Path logoPath = Path.of(this.companyLogoPath);
