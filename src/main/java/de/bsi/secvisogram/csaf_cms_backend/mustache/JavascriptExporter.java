@@ -77,7 +77,7 @@ public class JavascriptExporter {
     }
 
     private String createLogoJson() throws IOException {
-        if (this.companyLogoPath == null || this.companyLogoPath.equals("")) {
+        if (this.companyLogoPath == null || "".equals(this.companyLogoPath)) {
             LOG.info("The company logo path was not set, export result will not contain a logo.");
             return null;
         }
