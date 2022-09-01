@@ -280,6 +280,8 @@ public class AdvisoryController {
             return ResponseEntity.badRequest().build();
         } catch (IOException ioEx) {
             return ResponseEntity.internalServerError().build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
@@ -329,8 +331,7 @@ public class AdvisoryController {
             ) String templateId
     ) {
 
-        // only for debugging, remove when implemented
-        LOG.info("readTemplate {}", sanitize(templateId));
+        LOG.info("readTemplate");
         try {
             Optional<JsonNode> templateJson = this.templateService.getTemplate(templateId);
             return templateJson.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -396,10 +397,11 @@ public class AdvisoryController {
             return MediaType.TEXT_MARKDOWN;
         } else if (format == ExportFormat.HTML) {
             return MediaType.TEXT_HTML;
-        } else if (format == ExportFormat.JSON || format == null) {
+        } else if (format == ExportFormat.JSON) {
+            return MediaType.APPLICATION_JSON;
+        } else {
             return MediaType.APPLICATION_JSON;
         }
-        throw new IllegalArgumentException("Unknown export format: " + format);
     }
 
     /**
@@ -750,6 +752,8 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
@@ -797,6 +801,8 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         }
     }
 
