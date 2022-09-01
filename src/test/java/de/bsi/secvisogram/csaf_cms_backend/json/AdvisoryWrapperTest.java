@@ -5,6 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 public class AdvisoryWrapperTest {
 
@@ -41,7 +43,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest() throws IOException {
+    public void createFromCouchDbTest() throws IOException, CsafException {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -65,6 +67,53 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getRevision(), equalTo(revision));
         assertThat(advisory.getAdvisoryId(), equalTo(id));
         assertThat(advisory.at("/csaf/document/category").asText(), equalTo("CSAF_BASE"));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void createFromCouchDbTest_noType() throws IOException, CsafException {
+
+        var revision = "rev-aa-12";
+        var id = "id-aaa-bbb";
+        var advisoryDbString = """
+                {   "owner": "Musterfrau",
+                    "workflowState": "Draft",
+                    "csaf": { "document": {
+                                "category": "CSAF_BASE"
+                              }
+                            },
+                    "_rev": "%s",
+                    "_id": "%s"}""".formatted(revision, id);
+
+        var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
+
+        CsafException exception = assertThrows(CsafException.class,
+                () -> AdvisoryWrapper.createFromCouchDb(advisoryStream));
+        assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void createFromCouchDbTest_wrongType() {
+
+        var revision = "rev-aa-12";
+        var id = "id-aaa-bbb";
+        var advisoryDbString = """
+                {   "owner": "Musterfrau",
+                    "workflowState": "Draft",
+                    "type": "WRONG",
+                    "csaf": { "document": {
+                                "category": "CSAF_BASE"
+                              }
+                            },
+                    "_rev": "%s",
+                    "_id": "%s"}""".formatted(revision, id);
+
+        var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
+
+        CsafException exception = assertThrows(CsafException.class,
+                () -> AdvisoryWrapper.createFromCouchDb(advisoryStream));
+        assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
     }
 
     @Test

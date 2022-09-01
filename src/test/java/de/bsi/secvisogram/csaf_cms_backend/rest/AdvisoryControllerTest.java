@@ -421,6 +421,20 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void deleteCsafDocumentTest_csafException() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        doThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST))
+                .when(advisoryService).deleteAdvisory(advisoryId.toString(), revision);
+
+        this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
     void deleteCsafDocumentTest() throws Exception {
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
@@ -645,12 +659,42 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void exportAdvisoryTest_IOException() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenThrow(IOException.class);
+
+        this.mockMvc.perform(
+                        get(advisoryRoute + advisoryId + "/csaf")
+                                .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
+                                .param("format", ExportFormat.HTML.name()))
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void exportAdvisoryTest_csafException() throws Exception {
+
+        UUID advisoryId = UUID.randomUUID();
+        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML))
+                .thenThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST));
+
+        this.mockMvc.perform(
+                        get(advisoryRoute + advisoryId + "/csaf")
+                                .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
+                                .param("format", ExportFormat.HTML.name()))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void determineExportResponseContentTypeTest() {
 
         assertThat(determineExportResponseContentType(ExportFormat.HTML), equalTo(MediaType.TEXT_HTML));
         assertThat(determineExportResponseContentType(ExportFormat.JSON), equalTo(MediaType.APPLICATION_JSON));
         assertThat(determineExportResponseContentType(ExportFormat.PDF), equalTo(MediaType.APPLICATION_PDF));
         assertThat(determineExportResponseContentType(ExportFormat.Markdown), equalTo(MediaType.TEXT_MARKDOWN));
+        assertThat(determineExportResponseContentType(null), equalTo(MediaType.APPLICATION_JSON));
     }
 
 
@@ -688,11 +732,6 @@ public class AdvisoryControllerTest {
                         .param("revision", revision))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void exportAdvisoryTest() {
-        // to be filled
     }
 
     @Test
@@ -968,6 +1007,35 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void changeCommentTest_csafException() throws Exception {
+
+        doThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST))
+                .when(advisoryService).updateComment(advisoryId, commentId, revision, commentText);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changeCommentTest_dbException() throws Exception {
+
+        doThrow(DatabaseException.class)
+                .when(advisoryService).updateComment(advisoryId, commentId, revision, commentText);
+
+        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+                        .content(commentText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
     void listAnswersTest_empty() throws Exception {
 
         this.mockMvc.perform(get(answerRoute))
@@ -1145,6 +1213,20 @@ public class AdvisoryControllerTest {
                         .param("revision", revision))
                 .andDo(print())
                 .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void changeAnswerTest_csafException() throws Exception {
+
+        doThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST))
+                .when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
+
+        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+                        .content(answerText)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test

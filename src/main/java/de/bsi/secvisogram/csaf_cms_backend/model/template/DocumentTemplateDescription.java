@@ -1,11 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.model.template;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 /**
  * Description of a  prefilled CSAF documents as templates for a new CSAF documents
  */
@@ -47,16 +41,5 @@ public class DocumentTemplateDescription {
      */
     public String getFile() {
         return file;
-    }
-
-    /**
-     * Read the file and return its content as JsonNode
-     * @return the content of the file
-     * @throws IOException error reading the file
-     */
-    public JsonNode getFileAsJsonNode() throws IOException {
-
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        return jacksonMapper.readValue(Files.readAllBytes(Path.of(this.file)), JsonNode.class);
     }
 }

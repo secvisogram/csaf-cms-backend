@@ -2,6 +2,8 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.InvalidObjectType;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
@@ -31,10 +35,15 @@ public class CommentWrapper {
      * @return the wrapper
      * @throws IOException error in processing the input stream
      */
-    public static CommentWrapper createFromCouchDb(InputStream commentStream) throws IOException {
+    public static CommentWrapper createFromCouchDb(InputStream commentStream) throws IOException, CsafException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        return new CommentWrapper(jacksonMapper.readValue(commentStream, ObjectNode.class));
+        CommentWrapper wrapperFomDb = new CommentWrapper(jacksonMapper.readValue(commentStream, ObjectNode.class));
+        if (wrapperFomDb.getType() != ObjectType.Comment) {
+            throw new CsafException("Object for id is not of type Comment", InvalidObjectType, BAD_REQUEST);
+        }
+
+        return wrapperFomDb;
     }
 
     /**
@@ -125,7 +134,7 @@ public class CommentWrapper {
 
     public String getText() {
 
-        return this.commentNode.get(CommentField.TEXT.getDbName()).asText();
+        return getTextFor(CommentField.TEXT);
     }
 
     public CommentWrapper setText(String newValue) {
@@ -136,7 +145,7 @@ public class CommentWrapper {
 
     public String getCsafNodeId() {
 
-        return commentNode.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentNode.get(CommentField.CSAF_NODE_ID.getDbName()).asText() : null;
+        return getTextFor(CommentField.CSAF_NODE_ID);
     }
 
     public CommentWrapper setCsafNodeId(String newValue) {
@@ -147,7 +156,7 @@ public class CommentWrapper {
 
     public String getFieldName() {
 
-        return commentNode.has(CommentField.FIELD_NAME.getDbName()) ? commentNode.get(CommentField.FIELD_NAME.getDbName()).asText() : null;
+        return getTextFor(CommentField.FIELD_NAME);
     }
 
     public CommentWrapper setFieldName(String newValue) {
@@ -158,7 +167,7 @@ public class CommentWrapper {
 
     public String getOwner() {
 
-        return commentNode.has(CommentField.OWNER.getDbName()) ? commentNode.get(CommentField.OWNER.getDbName()).asText() : null;
+        return getTextFor(CommentField.OWNER);
     }
 
     public CommentWrapper setOwner(String newValue) {
@@ -169,7 +178,7 @@ public class CommentWrapper {
 
     public String getRevision() {
 
-        return commentNode.has(REVISION_FIELD.getDbName()) ? commentNode.get(REVISION_FIELD.getDbName()).asText() : null;
+        return getTextFor(REVISION_FIELD);
     }
 
     public CommentWrapper setRevision(String newValue) {
@@ -180,7 +189,7 @@ public class CommentWrapper {
 
     public String getAdvisoryId() {
 
-        return commentNode.has(CommentField.ADVISORY_ID.getDbName()) ? commentNode.get(CommentField.ADVISORY_ID.getDbName()).asText() : null;
+        return  getTextFor(CommentField.ADVISORY_ID);
     }
 
     public CommentWrapper setAdvisoryId(String newValue) {
@@ -192,7 +201,7 @@ public class CommentWrapper {
 
     public String getAnswerTo() {
 
-        return commentNode.has(CommentField.ANSWER_TO.getDbName()) ? commentNode.get(CommentField.ANSWER_TO.getDbName()).asText() : null;
+        return getTextFor(CommentField.ANSWER_TO);
     }
 
     public CommentWrapper setAnswerTo(String newValue) {
@@ -200,6 +209,22 @@ public class CommentWrapper {
         this.commentNode.put(CommentField.ANSWER_TO.getDbName(), newValue);
         return this;
     }
+
+    ObjectType getType() {
+
+        try {
+            String typeText = getTextFor(CouchDbField.TYPE_FIELD);
+            return (typeText != null) ? ObjectType.valueOf(typeText) : null;
+        } catch (IllegalArgumentException ex) {
+            return null; // unknown type
+        }
+    }
+
+    String getTextFor(DbField dbField) {
+
+        return (this.commentNode.has(dbField.getDbName())) ? this.commentNode.get(dbField.getDbName()).asText() : null;
+    }
+
 
     private CommentWrapper setType(ObjectType newValue) {
 
