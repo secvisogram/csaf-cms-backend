@@ -3,6 +3,8 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.CSAF;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.InvalidObjectType;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,10 +49,15 @@ public class AdvisoryWrapper {
      * @return the wrapper
      * @throws IOException error in processing the input stream
      */
-    public static AdvisoryWrapper createFromCouchDb(InputStream advisoryStream) throws IOException {
+    public static AdvisoryWrapper createFromCouchDb(InputStream advisoryStream) throws IOException, CsafException {
 
         final ObjectMapper jacksonMapper = new ObjectMapper();
-        return new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
+        AdvisoryWrapper advisoryFromDb = new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
+        if (advisoryFromDb.getType() != ObjectType.Advisory) {
+            throw new CsafException("Object for id is not of type Advisory", InvalidObjectType, BAD_REQUEST);
+        }
+
+        return advisoryFromDb;
     }
 
     /**
@@ -186,12 +193,12 @@ public class AdvisoryWrapper {
 
     public String getWorkflowStateString() {
 
-        return this.advisoryNode.get(AdvisoryField.WORKFLOW_STATE.getDbName()).asText();
+        return getTextFor(AdvisoryField.WORKFLOW_STATE);
     }
 
     public String getOwner() {
 
-        return this.advisoryNode.get(AdvisoryField.OWNER.getDbName()).asText();
+        return getTextFor(AdvisoryField.OWNER);
     }
 
     public AdvisoryWrapper setOwner(String newValue) {
@@ -202,7 +209,12 @@ public class AdvisoryWrapper {
 
     public ObjectType getType() {
 
-        return ObjectType.valueOf(this.advisoryNode.get(CouchDbField.TYPE_FIELD.getDbName()).asText());
+        try {
+            String typeText = getTextFor(CouchDbField.TYPE_FIELD);
+            return (typeText != null) ? ObjectType.valueOf(typeText) : null;
+        } catch (IllegalArgumentException ex) {
+            return null; // unknown type
+        }
     }
 
     private AdvisoryWrapper setType(ObjectType newValue) {
@@ -224,7 +236,8 @@ public class AdvisoryWrapper {
 
     public WorkflowState getWorkflowState() {
 
-        return WorkflowState.valueOf(this.advisoryNode.get(AdvisoryField.WORKFLOW_STATE.getDbName()).asText());
+        String stateText = getTextFor(AdvisoryField.WORKFLOW_STATE);
+        return WorkflowState.valueOf(stateText);
     }
 
 
@@ -236,13 +249,13 @@ public class AdvisoryWrapper {
 
     public int getLastMajorVersion() {
 
-        String lastVersion = this.advisoryNode.get(AdvisoryField.LAST_VERSION.getDbName()).asText();
+        String lastVersion = getTextFor(AdvisoryField.LAST_VERSION);
         return new Semver(lastVersion).getMajor();
     }
 
     public String getLastVersion() {
 
-        return this.advisoryNode.get(AdvisoryField.LAST_VERSION.getDbName()).asText();
+        return getTextFor(AdvisoryField.LAST_VERSION);
     }
 
     public AdvisoryWrapper setLastVersion(String version) {
@@ -257,7 +270,7 @@ public class AdvisoryWrapper {
 
     public String getVersioningType() {
 
-        return this.advisoryNode.get(AdvisoryField.VERSIONING_TYPE.getDbName()).asText();
+        return getTextFor(AdvisoryField.VERSIONING_TYPE);
     }
 
     public AdvisoryWrapper setVersioningType(VersioningType versionType) {
@@ -274,7 +287,7 @@ public class AdvisoryWrapper {
 
     public String getRevision() {
 
-        return (advisoryNode.has(REVISION_FIELD.getDbName())) ? advisoryNode.get(REVISION_FIELD.getDbName()).asText() : null;
+        return getTextFor(REVISION_FIELD);
     }
 
     public AdvisoryWrapper setRevision(String newValue) {
@@ -285,13 +298,18 @@ public class AdvisoryWrapper {
 
     public String getAdvisoryId() {
 
-        return (advisoryNode.has(ID_FIELD.getDbName())) ? advisoryNode.get(ID_FIELD.getDbName()).asText() : null;
+        return getTextFor(ID_FIELD);
     }
 
     private AdvisoryWrapper setAdvisoryId(String newValue) {
 
         this.advisoryNode.put(ID_FIELD.getDbName(), newValue);
         return this;
+    }
+
+    String getTextFor(DbField dbField) {
+
+        return (advisoryNode.has(dbField.getDbName())) ? advisoryNode.get(dbField.getDbName()).asText() : null;
     }
 
 

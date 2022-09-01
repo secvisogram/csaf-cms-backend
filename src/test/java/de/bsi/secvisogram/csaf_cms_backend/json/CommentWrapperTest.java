@@ -1,7 +1,12 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
@@ -13,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 @SuppressFBWarnings(value = {"VA_FORMAT_STRING_USES_NEWLINE", "CE_CLASS_ENVY"},
         justification = "False positives on multiline format strings; class envy tolerated for tests")
@@ -87,7 +93,7 @@ public class CommentWrapperTest {
     }
 
     @Test
-    public void createFromCouchDbTest() throws IOException {
+    public void createFromCouchDbTest() throws IOException, CsafException {
 
         String revision = "revision-abcd-1234";
         String commentId = UUID.randomUUID().toString();
@@ -115,6 +121,58 @@ public class CommentWrapperTest {
         Assertions.assertEquals(commentId, comment.getCommentId());
     }
 
+    @Test
+    public void createFromCouchDbTest_NoType() throws IOException, CsafException {
+
+        String revision = "revision-abcd-1234";
+        String commentId = UUID.randomUUID().toString();
+        String advisoryId = UUID.randomUUID().toString();
+        String commentDbString = String.format(
+                """
+                {
+                    "commentText": "%s",
+                    "csafNodeId": "nodeId123",
+                    "advisoryId": "%s",
+                    "owner": "%s",
+                    "_rev": "%s",
+                    "_id": "%s"
+                }
+                """, commentText, advisoryId, owner, revision, commentId);
+
+        InputStream commentStream = new ByteArrayInputStream(commentDbString.getBytes(StandardCharsets.UTF_8));
+
+        CsafException exception = assertThrows(CsafException.class,
+                () -> CommentWrapper.createFromCouchDb(commentStream));
+        assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
+
+    }
+
+    @Test
+    public void createFromCouchDbTest_WrongType() throws IOException, CsafException {
+
+        String revision = "revision-abcd-1234";
+        String commentId = UUID.randomUUID().toString();
+        String advisoryId = UUID.randomUUID().toString();
+        String commentDbString = String.format(
+                """
+                {
+                    "commentText": "%s",
+                    "csafNodeId": "nodeId123",
+                    "advisoryId": "%s",
+                    "owner": "%s",
+                    "type": "Advisory",
+                    "_rev": "%s",
+                    "_id": "%s"
+                }
+                """, commentText, advisoryId, owner, revision, commentId);
+
+        InputStream commentStream = new ByteArrayInputStream(commentDbString.getBytes(StandardCharsets.UTF_8));
+
+        CsafException exception = assertThrows(CsafException.class,
+                () -> CommentWrapper.createFromCouchDb(commentStream));
+        assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
+
+    }
     @Test
     public void convertToCommentInfoTest() {
 

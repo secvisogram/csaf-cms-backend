@@ -3,6 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -358,7 +359,7 @@ public class RemoveIdHelperTest {
        """;
 
     @Test
-    public void removeIds() throws IOException {
+    public void removeIds() throws IOException, CsafException {
 
         var advisoryDbString = """
                 {   "owner": "Musterfrau",

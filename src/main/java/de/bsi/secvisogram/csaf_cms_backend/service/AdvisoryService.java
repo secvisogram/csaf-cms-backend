@@ -4,7 +4,8 @@ import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.NoPermissionForAdvisory;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.SummaryInHistoryEmpty;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
@@ -240,7 +241,7 @@ public class AdvisoryService {
      * @throws NotFoundException   if there is no advisory with given ID
      */
     @RolesAllowed({ CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException {
+    public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException, CsafException {
 
         LOG.debug("deleteAdvisory");
         InputStream advisoryStream = couchDbService.readDocumentAsStream(advisoryId);
@@ -308,9 +309,6 @@ public class AdvisoryService {
                 throw new DatabaseException("Invalid advisory ID!");
             }
             AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-            if (oldAdvisoryNode.getType() != ObjectType.Advisory) {
-                throw new CsafException("Object for id is not of type Advisory", InvalidObjectType, BAD_REQUEST);
-            }
             Authentication credentials = getAuthentication();
             if (canChangeAdvisory(oldAdvisoryNode, credentials)) {
 
@@ -346,7 +344,7 @@ public class AdvisoryService {
      * @param advisoryId the id of the advisory that should be exported
      * @param format     the format in which the export should be written (default JSON on null)
      * @return the path to the temporary file that contains the export
-     * @throws DatabaseException    if the advisory with the given id does not exist
+     * @throws CsafException    if the advisory with the given id does not exist or the export format is unknown
      * @throws IOException          on any error regarding writing/reading from disk
      * @throws InterruptedException if the export did take too long and thus timed out
      */
@@ -648,7 +646,7 @@ public class AdvisoryService {
      * @return the new revision of the updated comment
      */
     @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
-    public String updateComment(String advisoryId, String commentId, String revision, String newText) throws IOException, DatabaseException {
+    public String updateComment(String advisoryId, String commentId, String revision, String newText) throws IOException, DatabaseException, CsafException {
 
         Authentication credentials = getAuthentication();
         InputStream existingCommentStream = this.couchDbService.readDocumentAsStream(commentId);
