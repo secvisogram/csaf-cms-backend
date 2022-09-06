@@ -56,8 +56,8 @@ public class AdvisoryWrapper {
     /**
      * Create a copy of the advisory and convert it to a AdvisoryVersion
      *
-     * @param advisoryToClone the stream
-     * @return the wrapper
+     * @param advisoryToClone the advisory to copy and convert
+     * @return the copied and converted AdvisoryWrapper
      * @throws IOException error in processing the input stream
      */
     public static AdvisoryWrapper createVersionFrom(AdvisoryWrapper advisoryToClone) throws IOException {
@@ -70,6 +70,19 @@ public class AdvisoryWrapper {
                 .setAdvisoryReference(advisoryToClone.getAdvisoryId());
         RemoveIdHelper.removeCommentIds(newAdvisory.getCsaf());
         return newAdvisory;
+    }
+
+    /**
+     * Create a copy of the advisory
+     *
+     * @param advisoryToClone the advisory to copy
+     * @return the copied AdvisoryWrapper
+     * @throws IOException error in processing the input stream
+     */
+    public static AdvisoryWrapper createCopy(AdvisoryWrapper advisoryToClone) throws IOException {
+        final ObjectMapper objMapper = new ObjectMapper();
+        String jsonStr = objMapper.writeValueAsString(advisoryToClone.advisoryNode);
+        return new AdvisoryWrapper(objMapper.readValue(jsonStr, ObjectNode.class));
     }
 
     private static ObjectNode createAdvisoryNodeFromRequest(CreateAdvisoryRequest csafJson) throws CsafException {

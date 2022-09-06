@@ -131,9 +131,10 @@ public class AdvisoryWorkflowTest {
             String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
@@ -214,6 +215,8 @@ public class AdvisoryWorkflowTest {
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("0.0.1"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/2/number").asText(), equalTo("1.0.0-1.0"));
 
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
             // workflow to RfPublication
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
@@ -221,7 +224,6 @@ public class AdvisoryWorkflowTest {
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
 
             // workflow to Published
-            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0"));

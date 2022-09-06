@@ -447,24 +447,20 @@ public class AdvisoryService {
                 existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getDraft(), "");
             }
 
-
             if (newWorkflowState == WorkflowState.Published) {
-                // has to be set before validation
-                existingAdvisoryNode.removeAllPrereleaseVersions();
-                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
-                        .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
-                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
-                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
-                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
+
+                AdvisoryWrapper advisoryCleanedHistory = cleanVersionStringsAndValidate(existingAdvisoryNode);
+                advisoryCleanedHistory.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
+                if (advisoryCleanedHistory.getLastMajorVersion() == 0) {
+                    advisoryCleanedHistory.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
                             ? proposedTime
                             : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
                 }
+                existingAdvisoryNode = advisoryCleanedHistory;
+            }
 
-                if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
-                    throw new CsafException("Advisory is no valid CSAF document",
-                            CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
-                }
+            if (newWorkflowState == WorkflowState.RfPublication) {
+                cleanVersionStringsAndValidate(existingAdvisoryNode);
             }
 
             existingAdvisoryNode.setRevision(revision);
@@ -474,6 +470,22 @@ public class AdvisoryService {
                     NoPermissionForAdvisory, UNAUTHORIZED);
 
         }
+    }
+
+    private AdvisoryWrapper cleanVersionStringsAndValidate(AdvisoryWrapper advisoryToValidate) throws IOException, CsafException {
+
+        AdvisoryWrapper advisoryCleanedHistory = AdvisoryWrapper.createCopy(advisoryToValidate);
+        advisoryCleanedHistory.removeAllPrereleaseVersions();
+        String versionWithoutSuffix = advisoryCleanedHistory.getVersioningStrategy()
+                .removeVersionSuffix(advisoryCleanedHistory.getDocumentTrackingVersion());
+        advisoryCleanedHistory.setDocumentTrackingVersion(versionWithoutSuffix);
+
+        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCleanedHistory)) {
+            throw new CsafException("Advisory is no valid CSAF document",
+                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        return advisoryCleanedHistory;
     }
 
     /**
