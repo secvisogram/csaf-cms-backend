@@ -396,6 +396,8 @@ public class AdvisoryService {
     }
 
     /**
+     * Changes the workflow state of the advisory to the given new WorkflowState
+     *
      * @param advisoryId       the ID of the advisory to update the workflow state of
      * @param revision         the revision for concurrent control
      * @param newWorkflowState the new workflow state to set
@@ -474,6 +476,14 @@ public class AdvisoryService {
         }
     }
 
+    /**
+     * Adds a new version of the document in Draft workflow state
+     *
+     * @param advisoryId the ID of the advisory to create a new version of
+     * @param revision   the revision for concurrent control
+     * @return the revision of the updated CSAF document
+     * @throws DatabaseException if there was an error updating the document in the database
+     */
     public String createNewCsafDocumentVersion(String advisoryId, String revision)
             throws IOException, DatabaseException, CsafException {
 
