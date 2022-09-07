@@ -116,6 +116,17 @@ public class AdvisoryWorkflowTest {
     }
 
     @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_EDITOR})
+    public void workflowTest_unallowedStateChange() throws IOException, CsafException {
+
+        final String advisoryUser = "John";
+        final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
+        IdAndRevision idRev = advisoryService.addAdvisoryForCredentials(csafToRequest(csafJson), createAuthentication(advisoryUser, AUTHOR.getRoleName()));
+
+        assertThrows(CsafException.class, () -> advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Published, null, null));
+    }
+
+    @Test
     @WithMockUser(username = "manager", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR,
             CsafRoles.ROLE_MANAGER, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
