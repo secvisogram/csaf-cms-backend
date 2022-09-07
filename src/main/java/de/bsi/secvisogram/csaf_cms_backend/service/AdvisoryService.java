@@ -468,7 +468,7 @@ public class AdvisoryService {
             existingAdvisoryNode.setRevision(revision);
             return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
         } else {
-            throw new CsafException("User has not the permission to view change the workflow state of the advisory",
+            throw new CsafException("User has not the permission to change the workflow state of the advisory",
                     NoPermissionForAdvisory, UNAUTHORIZED);
 
         }
