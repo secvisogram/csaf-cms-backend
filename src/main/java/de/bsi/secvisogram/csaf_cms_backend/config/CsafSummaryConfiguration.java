@@ -6,10 +6,6 @@ import org.springframework.context.annotation.Configuration;
 public class CsafSummaryConfiguration {
 
     private String publication;
-    private String approve;
-    private String draft;
-
-    private String newVersion;
 
     public String getPublication() {
         return publication;
@@ -17,33 +13,6 @@ public class CsafSummaryConfiguration {
 
     public CsafSummaryConfiguration setPublication(String publication) {
         this.publication = publication;
-        return this;
-    }
-
-    public String getApprove() {
-        return approve;
-    }
-
-    public CsafSummaryConfiguration setApprove(String approve) {
-        this.approve = approve;
-        return this;
-    }
-
-    public String getDraft() {
-        return draft;
-    }
-
-    public CsafSummaryConfiguration setDraft(String draft) {
-        this.draft = draft;
-        return this;
-    }
-
-    public String getNewVersion() {
-        return newVersion;
-    }
-
-    public CsafSummaryConfiguration setNewVersion(String newVersion) {
-        this.newVersion = newVersion;
         return this;
     }
 }

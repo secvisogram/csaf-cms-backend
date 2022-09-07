@@ -417,6 +417,8 @@ public class AdvisoryService {
 
         if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials)) {
 
+            String workflowStateChangeMsg = "Status changed from " + existingAdvisoryNode.getWorkflowStateString() + " to " + newWorkflowState;
+
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
                     .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
                     .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
@@ -437,14 +439,14 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getApprove(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
             }
 
             if (newWorkflowState == WorkflowState.Draft) {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextDraftVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getDraft(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
             }
 
             if (newWorkflowState == WorkflowState.Published) {
@@ -518,7 +520,7 @@ public class AdvisoryService {
             existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
-            existingAdvisoryNode.addEntryForNewCreatedVersion(configuration.getSummary().getNewVersion(), "");
+            existingAdvisoryNode.addEntryForNewCreatedVersion("New Version", "");
             existingAdvisoryNode.setRevision(revision);
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())
