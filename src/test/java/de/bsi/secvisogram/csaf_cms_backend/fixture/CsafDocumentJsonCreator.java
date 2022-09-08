@@ -25,6 +25,50 @@ public class CsafDocumentJsonCreator {
         return request;
     }
 
+    public static String csafMinimalValidDoc() {
+        return """
+                {
+                    "document": {
+                        "category": "CSAF Base",
+                        "csaf_version": "2.0",
+                        "title": "Minimal Valid Doc",
+                        "lang": "en",
+                        "distribution": {
+                            "tlp": {
+                                "label": "GREEN"
+                            }
+                        },
+                        "publisher": {
+                            "category": "other",
+                            "name": "Secvisogram Automated Tester",
+                            "namespace": "https://github.com/secvisogram/secvisogram"
+                        },
+                        "references": [
+                            {
+                                "category": "self",
+                                "summary": "A non-canonical URL",
+                                "url": "https://example.com/security/data/csaf/2021/my-thing-_10.json"
+                            }
+                        ],
+                        "tracking": {
+                            "current_release_date": "2022-09-08T12:33:45.678Z",
+                            "id": "My-Thing-.10",
+                            "initial_release_date": "2022-09-08T12:33:45.678Z",
+                            "revision_history": [
+                                {
+                                    "number": "0.0.1",
+                                    "date": "2022-09-08T12:33:45.678Z",
+                                    "summary": "initial draft"
+                                }
+                            ],
+                            "status": "draft",
+                            "version": "0.0.1"
+                        }
+                    }
+                }
+                """;
+    }
+
     public static String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
 
         return """
