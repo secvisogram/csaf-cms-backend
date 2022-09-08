@@ -189,21 +189,21 @@ public class AdvisoryWrapperTest {
         String dateNowMinutes =  DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("0.1.1"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary1"));
-        assertThat(getRevisionAt(advisory, 0, "legacy_revision"), equalTo("LegacyVersion1"));
+        assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion1"));
         assertThat(getRevisionAt(advisory, 0, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("0.1.2");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"));
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("0.1.2"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary2"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_revision"), equalTo("LegacyVersion2"));
+        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion2"));
         assertThat(getRevisionAt(advisory, 1, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("1.0.0");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"));
         assertThat(getRevisionAt(advisory, 2, "number"), equalTo("1.0.0"));
         assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary3"));
-        assertThat(getRevisionAt(advisory, 2, "legacy_revision"), equalTo("LegacyVersion3"));
+        assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion3"));
         assertThat(getRevisionAt(advisory, 2, "date"), startsWith(dateNowMinutes));
 
         advisory.setLastVersion("1.0.0");
@@ -211,7 +211,7 @@ public class AdvisoryWrapperTest {
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"));
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("1.0.1"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary4"));
-        assertThat(getRevisionAt(advisory, 3, "legacy_revision"), equalTo("LegacyVersion4"));
+        assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion4"));
         assertThat(getRevisionAt(advisory, 3, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
 
@@ -219,14 +219,14 @@ public class AdvisoryWrapperTest {
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"));
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("1.0.2"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary5"));
-        assertThat(getRevisionAt(advisory, 3, "legacy_revision"), equalTo("LegacyVersion5"));
+        assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion5"));
         assertThat(getRevisionAt(advisory, 3, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
         advisory.setDocumentTrackingVersion("2.0.0");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"));
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("2.0.0"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary6"));
-        assertThat(getRevisionAt(advisory, 3, "legacy_revision"), equalTo("LegacyVersion6"));
+        assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion6"));
         assertThat(getRevisionAt(advisory, 3, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
     }
@@ -243,21 +243,21 @@ public class AdvisoryWrapperTest {
 
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("0"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary1"));
-        assertThat(getRevisionAt(advisory, 0, "legacy_revision"), equalTo("LegacyVersion1"));
+        assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion1"));
         assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
         advisory.setDocumentTrackingVersion("1");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"));
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("1"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary2"));
-        assertThat(getRevisionAt(advisory, 0, "legacy_revision"), equalTo("LegacyVersion2"));
+        assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion2"));
         assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
         advisory.setDocumentTrackingVersion("1");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"));
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("1"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary3"));
-        assertThat(getRevisionAt(advisory, 0, "legacy_revision"), equalTo("LegacyVersion3"));
+        assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion3"));
         assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
         advisory.setLastVersion("1");
@@ -265,21 +265,21 @@ public class AdvisoryWrapperTest {
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"));
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("2"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary4"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_revision"), equalTo("LegacyVersion4"));
+        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion4"));
         assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
         advisory.setDocumentTrackingVersion("2");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"));
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("2"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary5"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_revision"), equalTo("LegacyVersion5"));
+        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion5"));
         assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
 
         advisory.setDocumentTrackingVersion("2");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"));
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("2"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary6"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_revision"), equalTo("LegacyVersion6"));
+        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion6"));
         assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
     }

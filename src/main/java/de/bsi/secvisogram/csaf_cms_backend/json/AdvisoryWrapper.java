@@ -419,7 +419,7 @@ public class AdvisoryWrapper {
         String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
         entry.put("date", now);
         if (legacyVersion != null && !legacyVersion.isBlank()) {
-            entry.put("legacy_revision", legacyVersion);
+            entry.put("legacy_version", legacyVersion);
         }
         entry.put("number", this.getDocumentTrackingVersion());
         entry.put("summary", summary);
@@ -435,7 +435,7 @@ public class AdvisoryWrapper {
             String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
             entry.put("date", now);
             if (legacyVersion != null && !legacyVersion.isBlank()) {
-                entry.put("legacy_revision", legacyVersion);
+                entry.put("legacy_version", legacyVersion);
             }
             entry.put("number", this.getDocumentTrackingVersion());
             entry.put("summary", summary);
@@ -446,7 +446,7 @@ public class AdvisoryWrapper {
             }
             latestEntry.put("date", this.getDocumentTrackingCurrentReleaseDate());
             if (legacyVersion != null && !legacyVersion.isBlank()) {
-                latestEntry.put("legacy_revision", legacyVersion);
+                latestEntry.put("legacy_version", legacyVersion);
             }
             latestEntry.put("number", this.getDocumentTrackingVersion());
             latestEntry.put("summary", summary);
