@@ -12,6 +12,9 @@ public class CsafSummaryConfiguration {
     }
 
     public CsafSummaryConfiguration setPublication(String publication) {
+        if (publication.isEmpty()) {
+            throw new IllegalArgumentException("The environment variable CSAF_SUMMARY_PUBLICATION must not be empty!");
+        }
         this.publication = publication;
         return this;
     }
