@@ -444,11 +444,11 @@ public class AdvisoryService {
 
             if (newWorkflowState == WorkflowState.RfPublication) {
                 // In this step we only want to check if the document would be valid if published but not change it yet.
-                createReleaseReadyCopyOfAdvisory(existingAdvisoryNode, proposedTime);
+                createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
 
             if (newWorkflowState == WorkflowState.Published) {
-                existingAdvisoryNode = createReleaseReadyCopyOfAdvisory(existingAdvisoryNode, proposedTime);
+                existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
@@ -463,39 +463,31 @@ public class AdvisoryService {
         } else {
             throw new CsafException("User has not the permission to change the workflow state of the advisory",
                     NoPermissionForAdvisory, UNAUTHORIZED);
-
         }
     }
 
-    private AdvisoryWrapper createReleaseReadyCopyOfAdvisory(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException, IOException {
+    private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException, IOException {
 
         AdvisoryWrapper advisoryCopy = AdvisoryWrapper.createCopy(advisory);
-        AdvisoryWrapper advisoryCopyReadyForPublication = makeDocumentReadyForPublication(advisoryCopy, initialReleaseDate);
+        advisoryCopy.removeAllPrereleaseVersions();
 
-        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopyReadyForPublication)) {
-            throw new CsafException("Advisory is no valid CSAF document",
-                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        String versionWithoutSuffix = advisoryCopy.getVersioningStrategy()
+                .removeVersionSuffix(advisoryCopy.getDocumentTrackingVersion());
+        advisoryCopy.setDocumentTrackingVersion(versionWithoutSuffix);
 
-        return advisoryCopyReadyForPublication;
-    }
-
-    private AdvisoryWrapper makeDocumentReadyForPublication(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException {
-
-        advisory.removeAllPrereleaseVersions();
-
-        String versionWithoutSuffix = advisory.getVersioningStrategy()
-                .removeVersionSuffix(advisory.getDocumentTrackingVersion());
-        advisory.setDocumentTrackingVersion(versionWithoutSuffix);
-
-        advisory.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
-        if (advisory.getLastMajorVersion() == 0) {
-            advisory.setDocumentTrackingInitialReleaseDate(initialReleaseDate != null && !initialReleaseDate.isBlank()
+        advisoryCopy.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
+        if (advisoryCopy.getLastMajorVersion() == 0) {
+            advisoryCopy.setDocumentTrackingInitialReleaseDate(initialReleaseDate != null && !initialReleaseDate.isBlank()
                     ? initialReleaseDate
                     : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
         }
 
-        return advisory;
+        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
+            throw new CsafException("Advisory is no valid CSAF document",
+                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        return advisoryCopy;
     }
 
     /**
