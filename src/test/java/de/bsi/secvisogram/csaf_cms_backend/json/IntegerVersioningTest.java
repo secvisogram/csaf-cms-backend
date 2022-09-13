@@ -21,7 +21,7 @@ public class IntegerVersioningTest {
     }
 
     @Test
-    public void getNextVersion() {
+    public void getNextVersionTest() {
 
         assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "0", "0"), is("0"));
         assertThat(IntegerVersioning.getDefault().getNextVersion(PatchType.PATCH, "1", "0"), is("1"));
@@ -35,7 +35,7 @@ public class IntegerVersioningTest {
     }
 
     @Test
-    public void getRemoveVersionTest() {
+    public void removeVersionSuffixTest() {
         assertThat(IntegerVersioning.getDefault().removeVersionSuffix("1"), is("1"));
         assertThat(IntegerVersioning.getDefault().removeVersionSuffix("2"), is("2"));
     }

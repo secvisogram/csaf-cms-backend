@@ -63,8 +63,8 @@ public class AdvisoryWrapper {
     /**
      * Create a copy of the advisory and convert it to a AdvisoryVersion
      *
-     * @param advisoryToClone the stream
-     * @return the wrapper
+     * @param advisoryToClone the advisory to copy and convert
+     * @return the copied and converted AdvisoryWrapper
      * @throws IOException error in processing the input stream
      */
     public static AdvisoryWrapper createVersionFrom(AdvisoryWrapper advisoryToClone) throws IOException {
@@ -77,6 +77,19 @@ public class AdvisoryWrapper {
                 .setAdvisoryReference(advisoryToClone.getAdvisoryId());
         RemoveIdHelper.removeCommentIds(newAdvisory.getCsaf());
         return newAdvisory;
+    }
+
+    /**
+     * Create a copy of the advisory
+     *
+     * @param advisoryToClone the advisory to copy
+     * @return the copied AdvisoryWrapper
+     * @throws IOException error in processing the input stream
+     */
+    public static AdvisoryWrapper createCopy(AdvisoryWrapper advisoryToClone) throws IOException {
+        final ObjectMapper objMapper = new ObjectMapper();
+        String jsonStr = objMapper.writeValueAsString(advisoryToClone.advisoryNode);
+        return new AdvisoryWrapper(objMapper.readValue(jsonStr, ObjectNode.class));
     }
 
     private static ObjectNode createAdvisoryNodeFromRequest(CreateAdvisoryRequest csafJson) throws CsafException {
@@ -424,7 +437,7 @@ public class AdvisoryWrapper {
         String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
         entry.put("date", now);
         if (legacyVersion != null && !legacyVersion.isBlank()) {
-            entry.put("legacy_revision", legacyVersion);
+            entry.put("legacy_version", legacyVersion);
         }
         entry.put("number", this.getDocumentTrackingVersion());
         entry.put("summary", summary);
@@ -440,7 +453,7 @@ public class AdvisoryWrapper {
             String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
             entry.put("date", now);
             if (legacyVersion != null && !legacyVersion.isBlank()) {
-                entry.put("legacy_revision", legacyVersion);
+                entry.put("legacy_version", legacyVersion);
             }
             entry.put("number", this.getDocumentTrackingVersion());
             entry.put("summary", summary);
@@ -451,7 +464,7 @@ public class AdvisoryWrapper {
             }
             latestEntry.put("date", this.getDocumentTrackingCurrentReleaseDate());
             if (legacyVersion != null && !legacyVersion.isBlank()) {
-                latestEntry.put("legacy_revision", legacyVersion);
+                latestEntry.put("legacy_version", legacyVersion);
             }
             latestEntry.put("number", this.getDocumentTrackingVersion());
             latestEntry.put("summary", summary);
@@ -467,7 +480,7 @@ public class AdvisoryWrapper {
 
     public void removeAllPrereleaseVersions() {
 
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isInitialPublicReleaseOrEarlier()) {
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
             ArrayNode historyNode = getOrCreateHistoryNode();
             historyNode.removeAll();
         }

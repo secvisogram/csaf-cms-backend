@@ -448,6 +448,45 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void changeAdvisoryWorkflowStateTest_RfPublication() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+
+            assertEquals(WorkflowState.RfPublication, advisoryService.getAdvisory(idRev.getId()).getWorkflowState());
+
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void changeAdvisoryWorkflowStateTest_RfPublication_invalidDoc() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.FALSE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String rev1 = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            String rev2 = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), rev1, WorkflowState.Approved, null, null);
+
+            assertThrows(CsafException.class, () -> advisoryService.changeAdvisoryWorkflowState(idRev.getId(), rev2, WorkflowState.RfPublication, null, null));
+
+        }
+    }
+
+    @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
@@ -470,8 +509,6 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void createNewCsafDocumentVersionTest_accessDenied() throws IOException, CsafException {
 
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
@@ -481,8 +518,6 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void createNewCsafDocumentVersionTest_invalidId() throws IOException, CsafException {
 
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
