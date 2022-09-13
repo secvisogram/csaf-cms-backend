@@ -51,8 +51,8 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTrackingGeneratorVersion() throws IOException, CsafException {
 
-        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGenratorVersion("1.2.3")));
-        this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGenratorVersion("3.4.5")));
+        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGeneratorVersion("1.2.3")));
+        this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGeneratorVersion("3.4.5")));
         List<AdvisoryInformationResponse> infos =
                 this.advisoryService.getAdvisoryInformations(createExprTrackingGeneratorVersion("1.2.3"));
         List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();

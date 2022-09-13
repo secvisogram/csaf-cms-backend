@@ -437,6 +437,9 @@ public class AdvisoryWorkflowUtil {
         String vulnerabFirstAffectedRegEx = "/vulnerabilities/\\d+/product_status/first_affected/\\d+";
         String vulnerabKnownAffectedRegEx = "/vulnerabilities/\\d+/product_status/known_affected/\\d+";
         String vulnerabLastAffectedRegEx = "/vulnerabilities/\\d+/product_status/last_affected/\\d+";
+        String vulnerabFirstFixedRegEx = "/vulnerabilities/\\d+/product_status/first_fixed/\\d+";
+        String vulnerabFixedRegEx = "/vulnerabilities/\\d+/product_status/fixed/\\d+";
+        String vulnerabKnownNotAffectedRegEx = "/vulnerabilities/\\d+/product_status/known_not_affected/\\d+";
 
         for (JsonNode jsonNode : diffPatch) {
 
@@ -449,6 +452,14 @@ public class AdvisoryWorkflowUtil {
             if ("add".equals(operation) || "remove".equals(operation)) {
                 if (path.matches(vulnerabRegEx) || path.matches(vulnerabFirstAffectedRegEx)
                     || path.matches(vulnerabKnownAffectedRegEx) || path.matches(vulnerabLastAffectedRegEx)) {
+                    result = PatchType.MAJOR;
+                    break;
+                }
+                result = PatchType.MINOR;
+            }
+            if ("remove".equals(operation)) {
+                if (path.matches(vulnerabFirstFixedRegEx) || path.matches(vulnerabFixedRegEx)
+                    || path.matches(vulnerabKnownNotAffectedRegEx)) {
                     result = PatchType.MAJOR;
                     break;
                 }
