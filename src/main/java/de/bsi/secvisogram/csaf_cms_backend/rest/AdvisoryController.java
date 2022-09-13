@@ -230,7 +230,7 @@ public class AdvisoryController {
 
         try {
             String newRevision = advisoryService.createNewCsafDocumentVersion(advisoryId, revision);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(newRevision);
         } catch (IOException idNfEx) {
             return ResponseEntity.badRequest().build();
         } catch (DatabaseException dbEx) {

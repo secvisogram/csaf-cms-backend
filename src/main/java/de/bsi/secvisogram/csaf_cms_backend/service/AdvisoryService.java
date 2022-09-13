@@ -394,6 +394,8 @@ public class AdvisoryService {
     }
 
     /**
+     * Changes the workflow state of the advisory to the given new WorkflowState
+     *
      * @param advisoryId       the ID of the advisory to update the workflow state of
      * @param revision         the revision for concurrent control
      * @param newWorkflowState the new workflow state to set
@@ -413,12 +415,7 @@ public class AdvisoryService {
 
         if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials)) {
 
-            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
-                    .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                    .setAdvisoryId(advisoryId)
-                    .setUser(credentials.getName());
-            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+            String workflowStateChangeMsg = "Status changed from " + existingAdvisoryNode.getWorkflowStateString() + " to " + newWorkflowState;
 
             existingAdvisoryNode.setWorkflowState(newWorkflowState);
             if (documentTrackingStatus != null) {
@@ -433,45 +430,72 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getApprove(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
             }
 
             if (newWorkflowState == WorkflowState.Draft) {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextDraftVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getDraft(), "");
+                existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
             }
 
+            if (newWorkflowState == WorkflowState.RfPublication) {
+                // In this step we only want to check if the document would be valid if published but not change it yet.
+                createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
+            }
 
             if (newWorkflowState == WorkflowState.Published) {
-                // has to be set before validation
-                existingAdvisoryNode.removeAllPrereleaseVersions();
-                String versionWithoutSuffix = existingAdvisoryNode.getVersioningStrategy()
-                        .removeVersionSuffix(existingAdvisoryNode.getDocumentTrackingVersion());
-                existingAdvisoryNode.setDocumentTrackingVersion(versionWithoutSuffix);
-                existingAdvisoryNode.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
-                if (existingAdvisoryNode.getLastMajorVersion() == 0) {
-                    existingAdvisoryNode.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
-                            ? proposedTime
-                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-                }
-
-                if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, existingAdvisoryNode)) {
-                    throw new CsafException("Advisory is no valid CSAF document",
-                            CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
-                }
+                existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
+
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+                    .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setAdvisoryId(advisoryId)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
             existingAdvisoryNode.setRevision(revision);
             return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
         } else {
-            throw new CsafException("User has not the permission to view change the workflow state of the advisory",
+            throw new CsafException("User has not the permission to change the workflow state of the advisory",
                     NoPermissionForAdvisory, UNAUTHORIZED);
-
         }
     }
 
+    private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException, IOException {
+
+        AdvisoryWrapper advisoryCopy = AdvisoryWrapper.createCopy(advisory);
+        advisoryCopy.removeAllPrereleaseVersions();
+
+        String versionWithoutSuffix = advisoryCopy.getVersioningStrategy()
+                .removeVersionSuffix(advisoryCopy.getDocumentTrackingVersion());
+        advisoryCopy.setDocumentTrackingVersion(versionWithoutSuffix);
+
+        advisoryCopy.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
+        if (advisoryCopy.getLastMajorVersion() == 0) {
+            advisoryCopy.setDocumentTrackingInitialReleaseDate(initialReleaseDate != null && !initialReleaseDate.isBlank()
+                    ? initialReleaseDate
+                    : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        }
+
+        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
+            throw new CsafException("Advisory is no valid CSAF document",
+                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        return advisoryCopy;
+    }
+
+    /**
+     * Adds a new version of the document in Draft workflow state
+     *
+     * @param advisoryId the ID of the advisory to create a new version of
+     * @param revision   the revision for concurrent control
+     * @return the revision of the updated CSAF document
+     * @throws DatabaseException if there was an error updating the document in the database
+     */
     public String createNewCsafDocumentVersion(String advisoryId, String revision)
             throws IOException, DatabaseException, CsafException {
 
@@ -494,7 +518,7 @@ public class AdvisoryService {
             existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
-            existingAdvisoryNode.addEntryForNewCreatedVersion(configuration.getSummary().getNewVersion(), "");
+            existingAdvisoryNode.addEntryForNewCreatedVersion("New Version", "");
             existingAdvisoryNode.setRevision(revision);
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())

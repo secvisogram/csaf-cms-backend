@@ -500,16 +500,19 @@ public class AdvisoryWorkflowUtilTest {
     }
 
     @Test
-    public void getChangeTypeTest_addVulnerabilityProductStatusFirstAffected1() throws IOException, CsafException {
+    public void getChangeTypeTest_addVulnerabilityProductStatusFirstAffected() throws IOException, CsafException {
 
         String oldVul = """
-                 [
+                 [ { "product_status": {
+                      "first_affected": ["CSAFPID-0001"]
+                     }
+                   }
                   ]
                 """;
 
         String newVul = """
                  [ { "product_status": {
-                      "first_affected": ["CSAFPID-0001"]
+                      "first_affected": ["CSAFPID-0001", "CSAFPID-0002"]
                      }
                    }
                   ]
@@ -525,7 +528,7 @@ public class AdvisoryWorkflowUtilTest {
     }
 
     @Test
-    public void getChangeTypeTest_addVulnerabilityProductStatusFirstAffected() throws IOException, CsafException {
+    public void getChangeTypeTest_addVulnerabilityProductStatusKnownAffected() throws IOException, CsafException {
 
         String oldVul = """
                  [ { "product_status": {
@@ -538,6 +541,202 @@ public class AdvisoryWorkflowUtilTest {
         String newVul = """
                  [ { "product_status": {
                       "known_affected": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_addVulnerabilityProductStatusLastAffected() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "last_affected": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "last_affected": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityProductStatusFirstAffected() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "first_affected": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "first_affected": []
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityProductStatusKnownAffected() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "known_affected": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "known_affected": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityProductStatusLastAffected() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "last_affected": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "last_affected": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityProductStatusFirstFixed() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "first_fixed": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul =  """
+                 [ { "product_status": {
+                      "first_fixed": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityProductStatusFixed() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "fixed": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "fixed": ["CSAFPID-0001"]
+                     }
+                   }
+                  ]
+                """;
+
+
+        String oldCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(oldVul);
+        AdvisoryWrapper oldAdvisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(oldCsafJson), "user1", Semantic.name());
+        String newCsafJson = CsafDocumentJsonCreator.docWithVulnerabilities(newVul);
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.updateFromExisting(oldAdvisory, csafToRequest(newCsafJson));
+
+        assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
+    }
+
+    @Test
+    public void getChangeTypeTest_removeVulnerabilityProductStatusKnownNotAffected() throws IOException, CsafException {
+
+        String oldVul = """
+                 [ { "product_status": {
+                      "known_not_affected": ["CSAFPID-0001", "CSAFPID-0002"]
+                     }
+                   }
+                  ]
+                """;
+
+        String newVul = """
+                 [ { "product_status": {
+                      "known_not_affected": ["CSAFPID-0001"]
                      }
                    }
                   ]

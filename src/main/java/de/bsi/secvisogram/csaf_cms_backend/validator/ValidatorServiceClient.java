@@ -27,9 +27,11 @@ public class ValidatorServiceClient {
     private static final Logger LOG = LoggerFactory.getLogger(ValidatorServiceClient.class);
 
     private static final String VALIDATE_ENDPOINT = "/validate";
-    private static final ValidationRequestTest csafTest = new ValidationRequestTest("test", "csaf_2_0");
-    private static final ValidationRequestTest optionalTest = new ValidationRequestTest("preset", "optional");
-    private static final ValidationRequestTest[] allValidationTests = {csafTest};
+    private static final ValidationRequestTest csafSchemaTest = new ValidationRequestTest("test", "csaf_2_0");
+    private static final ValidationRequestTest mandatoryTest = new ValidationRequestTest("preset", "mandatory");
+//    private static final ValidationRequestTest optionalTest = new ValidationRequestTest("preset", "optional");
+//    private static final ValidationRequestTest informativeTest = new ValidationRequestTest("preset", "informative");
+    private static final ValidationRequestTest[] allValidationTests = {csafSchemaTest, mandatoryTest};
 
     public static boolean isAdvisoryValid(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
 
