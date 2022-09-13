@@ -462,7 +462,7 @@ public class AdvisoryWrapper {
 
     public void removeAllPrereleaseVersions() {
 
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic &&  isInitialPublicReleaseOrEarlier()) {
+        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
             ArrayNode historyNode = getOrCreateHistoryNode();
             historyNode.removeAll();
         }

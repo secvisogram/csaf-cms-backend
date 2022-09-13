@@ -419,13 +419,6 @@ public class AdvisoryService {
 
             String workflowStateChangeMsg = "Status changed from " + existingAdvisoryNode.getWorkflowStateString() + " to " + newWorkflowState;
 
-            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
-                    .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                    .setAdvisoryId(advisoryId)
-                    .setUser(credentials.getName());
-            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
-
             existingAdvisoryNode.setWorkflowState(newWorkflowState);
             if (documentTrackingStatus != null) {
                 existingAdvisoryNode.setDocumentTrackingStatus(documentTrackingStatus);
@@ -449,21 +442,21 @@ public class AdvisoryService {
                 existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
             }
 
-            if (newWorkflowState == WorkflowState.Published) {
-
-                AdvisoryWrapper advisoryCleanedHistory = cleanVersionStringsAndValidate(existingAdvisoryNode);
-                advisoryCleanedHistory.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
-                if (advisoryCleanedHistory.getLastMajorVersion() == 0) {
-                    advisoryCleanedHistory.setDocumentTrackingInitialReleaseDate(proposedTime != null && !proposedTime.isBlank()
-                            ? proposedTime
-                            : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-                }
-                existingAdvisoryNode = advisoryCleanedHistory;
-            }
-
             if (newWorkflowState == WorkflowState.RfPublication) {
-                cleanVersionStringsAndValidate(existingAdvisoryNode);
+                // In this step we only want to check if the document would be valid if published but not change it yet.
+                createReleaseReadyCopyOfAdvisory(existingAdvisoryNode, proposedTime);
             }
+
+            if (newWorkflowState == WorkflowState.Published) {
+                existingAdvisoryNode = createReleaseReadyCopyOfAdvisory(existingAdvisoryNode, proposedTime);
+            }
+
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+                    .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
+                    .setAdvisoryId(advisoryId)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
             existingAdvisoryNode.setRevision(revision);
             return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
@@ -474,20 +467,35 @@ public class AdvisoryService {
         }
     }
 
-    private AdvisoryWrapper cleanVersionStringsAndValidate(AdvisoryWrapper advisoryToValidate) throws IOException, CsafException {
+    private AdvisoryWrapper createReleaseReadyCopyOfAdvisory(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException, IOException {
 
-        AdvisoryWrapper advisoryCleanedHistory = AdvisoryWrapper.createCopy(advisoryToValidate);
-        advisoryCleanedHistory.removeAllPrereleaseVersions();
-        String versionWithoutSuffix = advisoryCleanedHistory.getVersioningStrategy()
-                .removeVersionSuffix(advisoryCleanedHistory.getDocumentTrackingVersion());
-        advisoryCleanedHistory.setDocumentTrackingVersion(versionWithoutSuffix);
+        AdvisoryWrapper advisoryCopy = AdvisoryWrapper.createCopy(advisory);
+        AdvisoryWrapper advisoryCopyReadyForPublication = makeDocumentReadyForPublication(advisoryCopy, initialReleaseDate);
 
-        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCleanedHistory)) {
+        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopyReadyForPublication)) {
             throw new CsafException("Advisory is no valid CSAF document",
                     CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
-        return advisoryCleanedHistory;
+        return advisoryCopyReadyForPublication;
+    }
+
+    private AdvisoryWrapper makeDocumentReadyForPublication(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException {
+
+        advisory.removeAllPrereleaseVersions();
+
+        String versionWithoutSuffix = advisory.getVersioningStrategy()
+                .removeVersionSuffix(advisory.getDocumentTrackingVersion());
+        advisory.setDocumentTrackingVersion(versionWithoutSuffix);
+
+        advisory.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
+        if (advisory.getLastMajorVersion() == 0) {
+            advisory.setDocumentTrackingInitialReleaseDate(initialReleaseDate != null && !initialReleaseDate.isBlank()
+                    ? initialReleaseDate
+                    : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        }
+
+        return advisory;
     }
 
     /**
