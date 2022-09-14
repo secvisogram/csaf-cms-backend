@@ -430,9 +430,7 @@ public class AdvisoryWrapper {
         return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
     }
 
-    public AdvisoryWrapper addEntryForNewCreatedVersion(String summary, String legacyVersion) {
-
-        ArrayNode historyNode = getOrCreateHistoryNode();
+    private void addEntry(ArrayNode historyNode, String summary, String legacyVersion) {
         ObjectNode entry = historyNode.addObject();
         String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
         entry.put("date", now);
@@ -441,6 +439,11 @@ public class AdvisoryWrapper {
         }
         entry.put("number", this.getDocumentTrackingVersion());
         entry.put("summary", summary);
+    }
+
+    public AdvisoryWrapper addEntryForNewCreatedVersion(String summary, String legacyVersion) {
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        addEntry(historyNode, summary, legacyVersion);
         return this;
     }
 
@@ -449,14 +452,7 @@ public class AdvisoryWrapper {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
         if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
-            ObjectNode entry = historyNode.addObject();
-            String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-            entry.put("date", now);
-            if (legacyVersion != null && !legacyVersion.isBlank()) {
-                entry.put("legacy_version", legacyVersion);
-            }
-            entry.put("number", this.getDocumentTrackingVersion());
-            entry.put("summary", summary);
+            addEntry(historyNode, summary, legacyVersion);
         } else {
             ObjectNode latestEntry = getLatestEntryInHistoryAfterPrerelease(historyNode);
             if (latestEntry == null) {
