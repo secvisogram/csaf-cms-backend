@@ -5,8 +5,12 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -17,7 +21,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 
 public class AdvisoryWrapperTest {
@@ -337,4 +347,119 @@ public class AdvisoryWrapperTest {
         return advisory.getCsaf().at("/document/tracking/revision_history/" + pos).get(field).asText();
     }
 
+    private void addArtificialHistory(AdvisoryWrapper advisory, List<String> revisions) {
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ArrayNode historyNode = jacksonMapper.createArrayNode();
+
+        revisions.forEach(rev -> {
+            ObjectNode revNode = jacksonMapper.createObjectNode();
+            revNode.put("number", rev);
+            revNode.put("summary", "some summary");
+            historyNode.add(revNode);
+        });
+        ObjectNode trackingNode = (ObjectNode) advisory.at("/csaf/document/tracking");
+        // set version of advisory to last revision history item version
+        trackingNode.put("version", revisions.get(revisions.size() - 1));
+        trackingNode.set("revision_history", historyNode);
+    }
+
+    private List<String> getRevisionHistoryVersions(AdvisoryWrapper advisory) {
+        List<String> versionNumbers = new ArrayList<>();
+        advisory.getCsaf().at("/document/tracking/revision_history").forEach(
+                revHistItem -> versionNumbers.add(revHistItem.at("/number").asText())
+        );
+        return versionNumbers;
+    }
+
+    private void assertRevisionHistoryVersionsMatch(AdvisoryWrapper advisory, List<String> expectedVersions, String message) {
+        List<String> revisionHistoryVersions = getRevisionHistoryVersions(advisory);
+        assertEquals(expectedVersions, revisionHistoryVersions, message);
+    }
+
+    @Test
+    public void removeAllRevisionHistoryEntries_Test() throws IOException, CsafException {
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
+                "Mustermann", VersioningType.Integer.name());
+
+        addArtificialHistory(advisory, List.of("0.0.1", "1.0.0", "1.1.1"));
+
+        assertRevisionHistoryVersionsMatch(advisory, List.of("0.0.1", "1.0.0", "1.1.1"),
+                "there should be three artificial revision history entries");
+
+        advisory.removeAllRevisionHistoryEntries();
+
+        assertRevisionHistoryVersionsMatch(advisory, List.of(), "all revision history entries should have been removed");
+
+    }
+
+    @Test
+    public void removeAllPrereleaseVersions_beforePublication() throws IOException, CsafException {
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
+                "Mustermann", VersioningType.Semantic.name());
+
+        addArtificialHistory(advisory, List.of("0.0.1", "0.0.1-1.0", "0.0.2"));
+
+        assertRevisionHistoryVersionsMatch(advisory, List.of("0.0.1", "0.0.1-1.0", "0.0.2"),
+                "there should be three artificial revision history entries");
+
+        advisory.removeAllPrereleaseVersions();
+
+        assertRevisionHistoryVersionsMatch(advisory, List.of(),
+                "all revision history items should have been removed");
+    }
+
+    @Test
+    public void removeAllPrereleaseVersions_afterPublication() throws IOException, CsafException {
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
+                "Mustermann", VersioningType.Semantic.name());
+
+        addArtificialHistory(advisory, List.of("1.0.0", "1.1.0-1.0", "2.0.0-1.0"));
+
+        assertRevisionHistoryVersionsMatch(advisory, List.of("1.0.0", "1.1.0-1.0", "2.0.0-1.0"),
+                "there should be four artificial revision history entries");
+
+        advisory.removeAllPrereleaseVersions();
+
+        assertRevisionHistoryVersionsMatch(advisory, List.of("1.0.0"),
+                "two prerelease revision history items should have been removed");
+    }
+
+    private static Stream<Arguments> removeAllPrereleaseVersions_IntegerArgs() {
+        return Stream.of(
+                Arguments.of(List.of("0", "1"), WorkflowState.Draft, List.of()),
+                Arguments.of(List.of("0", "1"), WorkflowState.Published, List.of("1")),
+                Arguments.of(List.of("1", "2", "3"), WorkflowState.Draft, List.of("1", "2")),
+                Arguments.of(List.of("1", "2", "3"), WorkflowState.Published, List.of("1", "2", "3"))
+        );
+    }
+
+    @ParameterizedTest()
+    @MethodSource("removeAllPrereleaseVersions_IntegerArgs")
+    public void removeAllPrereleaseVersions_IntegerVersioning(
+            List<String> initialVersionHistory, WorkflowState workflowState, List<String> expectedVersionHistoryAfterRemove) throws IOException, CsafException {
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
+                "Mustermann", VersioningType.Integer.name());
+
+        addArtificialHistory(advisory, initialVersionHistory);
+        advisory.setDocumentTrackingVersion(initialVersionHistory.get(initialVersionHistory.size() - 1));
+        advisory.setWorkflowState(workflowState);
+
+        assertRevisionHistoryVersionsMatch(advisory, initialVersionHistory,
+                "the version history should have been added correctly");
+
+        advisory.removeAllPrereleaseVersions();
+
+        assertRevisionHistoryVersionsMatch(advisory, expectedVersionHistoryAfterRemove,
+                "revision history items should have been removed as expected");
+
+        advisory.removeAllPrereleaseVersions();
+
+        assertRevisionHistoryVersionsMatch(advisory, expectedVersionHistoryAfterRemove,
+                "calling `removeAllPrereleaseVersions` should not alter the result anymore");
+
+
+    }
 }
