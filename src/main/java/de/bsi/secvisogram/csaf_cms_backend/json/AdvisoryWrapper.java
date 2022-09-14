@@ -512,7 +512,7 @@ public class AdvisoryWrapper {
             WorkflowState currentState = this.getWorkflowState();
             historyNode.forEach(historyItem -> {
                 String historyItemVersion = historyItem.get("number").asText();
-                if (! (historyItemVersion.equals("0") ||
+                if (! ("0".equals(historyItemVersion) ||
                        (currentState != WorkflowState.Published && historyItemVersion.equals(currentVersion)))) {
                     newHistoryNode.add(historyItem);
                 }
