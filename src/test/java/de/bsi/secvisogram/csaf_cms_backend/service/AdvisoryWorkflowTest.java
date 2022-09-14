@@ -434,6 +434,10 @@ public class AdvisoryWorkflowTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0"),
                     "publishing the advisory should remove the pre-release part");
 
+            assertEquals("Status changed from Review to Approved",
+                    readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
+                    "The last revision history item's summary should be copied from the preceding state change");
+
         }
     }
 

@@ -466,6 +466,11 @@ public class AdvisoryService {
 
     private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException, IOException {
 
+        String summary = configuration.getSummary().getPublication();
+        if (advisory.versionIsAfterInitialPublication()) {
+            summary = advisory.getLastRevisionHistoryEntrySummary();
+        }
+
         AdvisoryWrapper advisoryCopy = AdvisoryWrapper.createCopy(advisory);
         advisoryCopy.removeAllPrereleaseVersions();
 
@@ -473,7 +478,7 @@ public class AdvisoryService {
                 .removeVersionSuffix(advisoryCopy.getDocumentTrackingVersion());
         advisoryCopy.setDocumentTrackingVersion(versionWithoutSuffix);
 
-        advisoryCopy.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
+        advisoryCopy.addRevisionHistoryEntry(summary, "");
         if (advisoryCopy.getLastMajorVersion() == 0) {
             advisoryCopy.setDocumentTrackingInitialReleaseDate(initialReleaseDate != null && !initialReleaseDate.isBlank()
                     ? initialReleaseDate
