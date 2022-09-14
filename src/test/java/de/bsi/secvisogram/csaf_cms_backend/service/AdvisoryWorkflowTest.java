@@ -168,25 +168,21 @@ public class AdvisoryWorkflowTest {
     @Test
     @WithMockUser(username = "manager", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR,
             CsafRoles.ROLE_MANAGER, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void workflowTest_approveToDraft() throws IOException, DatabaseException, CsafException {
-        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
-            final String csafJson = csafJsonCategoryTitleId("Category1", "Title1", "TrackingOne");
-            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-            var readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
-            CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
-            request.setSummary("UpdateSummary");
-            String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
-            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
+        final String csafJson = csafJsonCategoryTitleId("Category1", "Title1", "TrackingOne");
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
 
-            readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.1"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
-        }
+        readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.1"));
+        assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
     }
 
     @Test
