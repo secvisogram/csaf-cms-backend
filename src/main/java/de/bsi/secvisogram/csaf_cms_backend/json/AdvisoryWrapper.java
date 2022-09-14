@@ -155,7 +155,7 @@ public class AdvisoryWrapper {
         wrapper.setCreatedAtToNow()
                 .setOwner(userName)
                 .setWorkflowState(WorkflowState.Draft)
-                .setLastVersion("0.0.0")
+                .setLastVersion(versioning.getZeroVersion())
                 .setVersioningType(versioning.getVersioningType())
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
@@ -260,10 +260,17 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public int getLastMajorVersion() {
+    private boolean isSemanticVersioning() {
+        return this.getVersioningStrategy().getVersioningType() == VersioningType.Semantic;
+    }
 
+    public int getLastMajorVersion() {
         String lastVersion = getTextFor(AdvisoryField.LAST_VERSION);
-        return new Semver(lastVersion).getMajor();
+        if (isSemanticVersioning()) {
+            return new Semver(lastVersion).getMajor();
+        } else {
+            return Integer.parseInt(lastVersion);
+        }
     }
 
     public String getLastVersion() {
@@ -275,6 +282,15 @@ public class AdvisoryWrapper {
 
         this.advisoryNode.put(AdvisoryField.LAST_VERSION.getDbName(), version);
         return this;
+    }
+
+    public boolean versionIsAfterInitialPublication() {
+        if (isSemanticVersioning()) {
+            Semver semver = new Semver(this.getDocumentTrackingVersion());
+            return semver.isGreaterThan(new Semver("1.0.0"));
+        } else {
+            return Integer.parseInt(this.getDocumentTrackingVersion()) > 1;
+        }
     }
 
     public Versioning getVersioningStrategy() {
@@ -451,7 +467,7 @@ public class AdvisoryWrapper {
     public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
+        if (isSemanticVersioning() && isInitialPublicReleaseOrEarlier()) {
             addEntry(historyNode, summary, legacyVersion);
         } else {
             ObjectNode latestEntry = getLatestEntryInHistoryAfterPrerelease(historyNode);
@@ -468,6 +484,12 @@ public class AdvisoryWrapper {
         return this;
     }
 
+    public String getLastRevisionHistoryEntrySummary() {
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        ObjectNode lastHistoryNode = (ObjectNode) historyNode.get(historyNode.size() - 1);
+        return lastHistoryNode.get("summary").asText();
+    }
+
     public void removeAllRevisionHistoryEntries() {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
@@ -475,11 +497,28 @@ public class AdvisoryWrapper {
     }
 
     public void removeAllPrereleaseVersions() {
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ArrayNode newHistoryNode = jacksonMapper.createArrayNode();
 
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
-            ArrayNode historyNode = getOrCreateHistoryNode();
-            historyNode.removeAll();
+        if (isSemanticVersioning()) {
+            historyNode.forEach(historyItem -> {
+                if (!SemanticVersioning.getDefault().isPrerelease(new Semver(historyItem.get("number").asText()))) {
+                    newHistoryNode.add(historyItem);
+                }
+            });
+        } else {
+            String currentVersion = this.getDocumentTrackingVersion();
+            WorkflowState currentState = this.getWorkflowState();
+            historyNode.forEach(historyItem -> {
+                String historyItemVersion = historyItem.get("number").asText();
+                if (! (historyItemVersion.equals("0") ||
+                       (currentState != WorkflowState.Published && historyItemVersion.equals(currentVersion)))) {
+                    newHistoryNode.add(historyItem);
+                }
+            });
         }
+        getOrCreateTrackingNode().set("revision_history", newHistoryNode);
     }
 
     private ObjectNode getLatestEntryInHistoryAfterPrerelease(ArrayNode historyNode) {
@@ -499,9 +538,14 @@ public class AdvisoryWrapper {
 
     public boolean isInitialPublicReleaseOrEarlier() {
 
-        Semver version = new Semver(this.getDocumentTrackingVersion());
-        return (version.getMajor() < 1)
-                || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
+        if (isSemanticVersioning()) {
+            Semver version = new Semver(this.getDocumentTrackingVersion());
+            return (version.getMajor() < 1)
+                   || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
+        } else {
+            return Integer.parseInt(this.getDocumentTrackingVersion()) < 2;
+        }
+
     }
 
     /**
