@@ -51,7 +51,6 @@ import org.springframework.test.context.ContextConfiguration;
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
-@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryWorkflowTest {
 
     private static final String EMPTY_PASSWD = "";
