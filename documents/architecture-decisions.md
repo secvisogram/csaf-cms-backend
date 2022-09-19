@@ -727,12 +727,15 @@ The `tracking/revision_history` should be maintained in the backend
       are deleted. A new element is created
       with the default summary "Initial Publication". The text must be configurable.
   - Post 1.0.0
-    - A new revision history element is created at createNewVersion.
-    - This is always updated until the next publish and the Current Release
-      Date is set as date.
+    - A new revision history element is created at `createNewVersion`.
+    - The date of this element is set to the current date.
+    - Succeeding edits will update this revision history element until the
+      next publication.
     - The summary can be customized by the user when
       saving in the modal window. The user can also set a
       "Legacy Version of the Revision" in the modal window.
+    - Workflow status changes will not add text to the revision history element's
+      summary.
     - In the Wizzard, the list of Revision History Items can no longer be
       edited. The fields are grayed out and the user gets a hint that he can
       only edit it when saving.
@@ -746,17 +749,16 @@ The `tracking/revision_history` should be maintained in the backend
 
 - Integer Versioning
 
-    Initially a revision history element is created. If an element with the
+  - Initially a revision history element is created. If an element with the
     current version number already exists, none is created. New elements are
     only created if the version number increases.
     Behavior analogous to Semantic Versioning.
-
-When in the `Published` status:
-When switching to `Draft` workflow status, a new Revision History Item is created.
+  - Workflow state changes do not add text to the revision history summary.
 
 When a new document is created on the server, any existing revision history
-items are deleted, a new version number (matching the versioning scheme
-configured on the server) is assigned, and an initial revision history item is created.
+items corresponding to pre-release versions are deleted, a new version number
+(matching the versioning scheme configured on the server) is assigned, and an
+initial revision history item is created.
 
 #### Backend States
 
