@@ -427,4 +427,47 @@ public class AdvisoryWrapperTest {
 
 
     }
+
+    @Test
+    public void getLastHistoryNodeByDateTest() throws IOException, CsafException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ArrayNode historyNode = jacksonMapper.createArrayNode();
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
+                "Mustermann", Semantic.name());
+
+        ObjectNode trackingNode = (ObjectNode) advisory.at("/csaf/document/tracking");
+        trackingNode.set("revision_history", historyNode);
+
+        ObjectNode hist1 = historyNode.addObject();
+        hist1.put("number", "someOldVersion");
+        hist1.put("date", "2022-09-10T13:14:15.167Z");
+        hist1.put("summary", "some summary");
+
+        ObjectNode hist2 = historyNode.addObject();
+        hist2.put("number", "someOldVersion");
+        hist2.put("date", "2022-09-12T11:22:33.444Z");
+        hist2.put("summary", "some summary");
+
+        ObjectNode hist3 = historyNode.addObject();
+        hist3.put("number", "someOldVersion");
+        hist3.put("date", "2022-09-08T01:23:45.678Z");
+        hist3.put("summary", "some summary");
+
+        advisory.setLastRevisionHistoryEntryNumber("newVersion");
+
+        assertEquals("newVersion", hist2.at("/number").asText(),
+                "history element with most recent date should have been edited");
+
+        ObjectNode hist4 = historyNode.addObject();
+        hist4.put("number", "someOldVersion");
+        hist4.put("date", "2022-09-14T01:02:03.004Z");
+        hist4.put("summary", "last summary");
+
+        assertEquals("last summary", advisory.getLastRevisionHistoryEntrySummary(),
+                "summary of history element with most recent date should have been retrieved");
+
+    }
+
 }

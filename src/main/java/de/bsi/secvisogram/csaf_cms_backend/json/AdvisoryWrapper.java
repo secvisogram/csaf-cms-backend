@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -481,31 +482,45 @@ public class AdvisoryWrapper {
     }
 
     public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion, String releaseDate) {
-        ArrayNode historyNode = getOrCreateHistoryNode();
-        ObjectNode entry = (ObjectNode) historyNode.get(historyNode.size() - 1);
+        ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
         if (releaseDate != null && !releaseDate.isBlank()) {
-            entry.put("date", this.getDocumentTrackingCurrentReleaseDate());
+            lastHistoryNode.put("date", this.getDocumentTrackingCurrentReleaseDate());
         }
         if (legacyVersion != null && !legacyVersion.isBlank()) {
-            entry.put("legacy_version", legacyVersion);
+            lastHistoryNode.put("legacy_version", legacyVersion);
         }
-        entry.put("number", this.getDocumentTrackingVersion());
-        entry.put("summary", summary);
+        lastHistoryNode.put("number", this.getDocumentTrackingVersion());
+        lastHistoryNode.put("summary", summary);
         return this;
     }
 
     public String getLastRevisionHistoryEntrySummary() {
-        ArrayNode historyNode = getOrCreateHistoryNode();
-        ObjectNode lastHistoryNode = (ObjectNode) historyNode.get(historyNode.size() - 1);
+        ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
         return lastHistoryNode.get("summary").asText();
     }
 
     public AdvisoryWrapper setLastRevisionHistoryEntryNumber(String newNumber) {
-
-        ArrayNode historyNode = getOrCreateHistoryNode();
-        ObjectNode lastHistoryNode = (ObjectNode) historyNode.get(historyNode.size() - 1);
+        ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
         lastHistoryNode.put("number", newNumber);
         return this;
+    }
+
+    private ObjectNode getLastHistoryNodeByDate() {
+
+        ArrayNode historyNode = getOrCreateHistoryNode();
+
+        ObjectNode[] lastNode = {null};
+        LocalDateTime[] lastDate = {null};
+        historyNode.forEach(jsonNode -> {
+            LocalDateTime nodeDate = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(jsonNode.get("date").asText()));
+            if (lastDate[0] == null || lastDate[0].compareTo(nodeDate) < 0) {
+                lastNode[0] = (ObjectNode) jsonNode;
+                lastDate[0] = nodeDate;
+            }
+        });
+
+        return lastNode[0];
+
     }
 
     public void removeAllRevisionHistoryEntries() {
