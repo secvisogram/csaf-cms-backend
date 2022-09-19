@@ -545,7 +545,7 @@ public class AdvisoryService {
             existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
-            existingAdvisoryNode.addRevisionHistoryEntry("New Version", "", existingAdvisoryNode.getDocumentTrackingVersion());
+            existingAdvisoryNode.addRevisionHistoryEntry("New Version", "", DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setRevision(revision);
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())
