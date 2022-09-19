@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonTitle;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Integer;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -271,22 +272,22 @@ public class AdvisoryWrapperTest {
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("1.0.1"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary4"));
         assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion4"));
-        assertThat(getRevisionAt(advisory, 3, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 3, "date"), startsWith(dateNowMinutes));
 
 
         advisory.setDocumentTrackingVersion("1.0.2");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"));
+        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"));
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("1.0.2"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary5"));
         assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion5"));
-        assertThat(getRevisionAt(advisory, 3, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 3, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("2.0.0");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"));
+        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"));
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("2.0.0"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary6"));
         assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion6"));
-        assertThat(getRevisionAt(advisory, 3, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 3, "date"), startsWith(dateNowMinutes));
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
     }
 
@@ -295,52 +296,58 @@ public class AdvisoryWrapperTest {
     public void addRevisionHistoryEntryTest_integerVersioning() throws IOException, CsafException {
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
-                "Mustermann", VersioningType.Integer.name());
+                "Mustermann", Integer.name());
 
         advisory.setDocumentTrackingVersion("0");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary1", "LegacyVersion1"));
 
+        String dateNowMinutes =  DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("0"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary1"));
         assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion1"));
-        assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 0, "date"), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(1));
 
         advisory.setDocumentTrackingVersion("1");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"));
-        assertThat(getRevisionAt(advisory, 0, "number"), equalTo("1"));
-        assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary2"));
-        assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion2"));
-        assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 1, "number"), equalTo("1"));
+        assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary2"));
+        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion2"));
+        assertThat(getRevisionAt(advisory, 1, "date"), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
 
         advisory.setDocumentTrackingVersion("1");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"));
-        assertThat(getRevisionAt(advisory, 0, "number"), equalTo("1"));
-        assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary3"));
-        assertThat(getRevisionAt(advisory, 0, "legacy_version"), equalTo("LegacyVersion3"));
-        assertThat(getRevisionAt(advisory, 0, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"));
+        assertThat(getRevisionAt(advisory, 1, "number"), equalTo("1"));
+        assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary3"));
+        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion3"));
+        assertThat(getRevisionAt(advisory, 1, "date"), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
 
         advisory.setLastVersion("1");
         advisory.setDocumentTrackingVersion("2");
         advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"));
-        assertThat(getRevisionAt(advisory, 1, "number"), equalTo("2"));
-        assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary4"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion4"));
-        assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        assertThat(getRevisionAt(advisory, 2, "number"), equalTo("2"));
+        assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary4"));
+        assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion4"));
+        assertThat(getRevisionAt(advisory, 2, "date"), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
 
         advisory.setDocumentTrackingVersion("2");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"));
-        assertThat(getRevisionAt(advisory, 1, "number"), equalTo("2"));
-        assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary5"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion5"));
-        assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
+        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"));
+        assertThat(getRevisionAt(advisory, 2, "number"), equalTo("2"));
+        assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary5"));
+        assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion5"));
+        assertThat(getRevisionAt(advisory, 2, "date"), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
 
         advisory.setDocumentTrackingVersion("2");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"));
-        assertThat(getRevisionAt(advisory, 1, "number"), equalTo("2"));
-        assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary6"));
-        assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion6"));
-        assertThat(getRevisionAt(advisory, 1, "date"), equalTo(advisory.getDocumentTrackingCurrentReleaseDate()));
-        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
+        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"));
+        assertThat(getRevisionAt(advisory, 2, "number"), equalTo("2"));
+        assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary6"));
+        assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion6"));
+        assertThat(getRevisionAt(advisory, 2, "date"), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
     }
     private String getRevisionAt(AdvisoryWrapper advisory, int pos, String field) {
 
@@ -376,72 +383,30 @@ public class AdvisoryWrapperTest {
         assertEquals(expectedVersions, revisionHistoryVersions, message);
     }
 
-    @Test
-    public void removeAllRevisionHistoryEntries_Test() throws IOException, CsafException {
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
-                "Mustermann", VersioningType.Integer.name());
-
-        addArtificialHistory(advisory, List.of("0.0.1", "1.0.0", "1.1.1"));
-
-        assertRevisionHistoryVersionsMatch(advisory, List.of("0.0.1", "1.0.0", "1.1.1"),
-                "there should be three artificial revision history entries");
-
-        advisory.removeAllRevisionHistoryEntries();
-
-        assertRevisionHistoryVersionsMatch(advisory, List.of(), "all revision history entries should have been removed");
-
-    }
-
-    @Test
-    public void removeAllPrereleaseVersions_beforePublication() throws IOException, CsafException {
-
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
-                "Mustermann", VersioningType.Semantic.name());
-
-        addArtificialHistory(advisory, List.of("0.0.1", "0.0.1-1.0", "0.0.2"));
-
-        assertRevisionHistoryVersionsMatch(advisory, List.of("0.0.1", "0.0.1-1.0", "0.0.2"),
-                "there should be three artificial revision history entries");
-
-        advisory.removeAllPrereleaseVersions();
-
-        assertRevisionHistoryVersionsMatch(advisory, List.of(),
-                "all revision history items should have been removed");
-    }
-
-    @Test
-    public void removeAllPrereleaseVersions_afterPublication() throws IOException, CsafException {
-
-        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
-                "Mustermann", VersioningType.Semantic.name());
-
-        addArtificialHistory(advisory, List.of("1.0.0", "1.1.0-1.0", "2.0.0-1.0"));
-
-        assertRevisionHistoryVersionsMatch(advisory, List.of("1.0.0", "1.1.0-1.0", "2.0.0-1.0"),
-                "there should be four artificial revision history entries");
-
-        advisory.removeAllPrereleaseVersions();
-
-        assertRevisionHistoryVersionsMatch(advisory, List.of("1.0.0"),
-                "two prerelease revision history items should have been removed");
-    }
-
     private static Stream<Arguments> removeAllPrereleaseVersions_IntegerArgs() {
         return Stream.of(
-                Arguments.of(List.of("0", "1"), WorkflowState.Draft, List.of()),
-                Arguments.of(List.of("0", "1"), WorkflowState.Published, List.of("1")),
-                Arguments.of(List.of("1", "2", "3"), WorkflowState.Draft, List.of("1", "2")),
-                Arguments.of(List.of("1", "2", "3"), WorkflowState.Published, List.of("1", "2", "3"))
+                Arguments.of(Semantic, List.of("0.0.1", "1.0.0", "1.0.1"), WorkflowState.Draft, List.of("1.0.0", "1.0.1")),
+                Arguments.of(Semantic, List.of("0.0.1", "1.0.0", "1.0.1"), WorkflowState.Published, List.of("1.0.0", "1.0.1")),
+                Arguments.of(Semantic, List.of("0.0.1", "0.0.1-1.0", "0.0.2"), WorkflowState.Draft, List.of()),
+                Arguments.of(Semantic, List.of("1.0.0", "1.1.0-1.0", "2.0.0-1.0"), WorkflowState.Draft, List.of("1.0.0")),
+                Arguments.of(Semantic, List.of("1.0.0", "1.1.0-1.0", "2.0.0-1.0"), WorkflowState.Published, List.of("1.0.0")),
+                Arguments.of(Integer, List.of("0", "1"), WorkflowState.Draft, List.of("1")),
+                Arguments.of(Integer, List.of("0", "1"), WorkflowState.Published, List.of("1")),
+                Arguments.of(Integer, List.of("1", "2", "3"), WorkflowState.Draft, List.of("1", "2", "3")),
+                Arguments.of(Integer, List.of("1", "2", "3"), WorkflowState.Published, List.of("1", "2", "3"))
         );
     }
 
     @ParameterizedTest()
     @MethodSource("removeAllPrereleaseVersions_IntegerArgs")
-    public void removeAllPrereleaseVersions_IntegerVersioning(
-            List<String> initialVersionHistory, WorkflowState workflowState, List<String> expectedVersionHistoryAfterRemove) throws IOException, CsafException {
+    public void removeAllPrereleaseVersionsTest(
+            VersioningType versioningType,
+            List<String> initialVersionHistory,
+            WorkflowState workflowState,
+            List<String> expectedVersionHistoryAfterRemove) throws IOException, CsafException {
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
-                "Mustermann", VersioningType.Integer.name());
+                "Mustermann", versioningType.name());
 
         addArtificialHistory(advisory, initialVersionHistory);
         advisory.setDocumentTrackingVersion(initialVersionHistory.get(initialVersionHistory.size() - 1));

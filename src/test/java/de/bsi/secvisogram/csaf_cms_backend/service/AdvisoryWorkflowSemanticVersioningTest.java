@@ -51,7 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
-public class AdvisoryWorkflowTest {
+public class AdvisoryWorkflowSemanticVersioningTest {
 
     private static final String EMPTY_PASSWD = "";
 
@@ -433,9 +433,10 @@ public class AdvisoryWorkflowTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0"),
                     "publishing the advisory should remove the pre-release part");
 
-            assertEquals("Status changed from Review to Approved",
+            assertEquals("removed product_tree",
                     readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
-                    "The last revision history item's summary should be copied from the preceding state change");
+                    "The last revision history item's summary should be copied/kept since the last change. " +
+                    "Workflow state changes should not edit the summary after initial publication");
 
         }
     }

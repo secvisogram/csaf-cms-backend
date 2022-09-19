@@ -260,13 +260,17 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    private boolean isSemanticVersioning() {
+    public boolean usesSemanticVersioning() {
         return this.getVersioningStrategy().getVersioningType() == VersioningType.Semantic;
+    }
+
+    public boolean usesIntegerVersioning() {
+        return this.getVersioningStrategy().getVersioningType() == VersioningType.Integer;
     }
 
     public int getLastMajorVersion() {
         String lastVersion = getTextFor(AdvisoryField.LAST_VERSION);
-        if (isSemanticVersioning()) {
+        if (usesSemanticVersioning()) {
             return new Semver(lastVersion).getMajor();
         } else {
             return Integer.parseInt(lastVersion);
@@ -285,12 +289,16 @@ public class AdvisoryWrapper {
     }
 
     public boolean versionIsAfterInitialPublication() {
-        if (isSemanticVersioning()) {
+        if (usesSemanticVersioning()) {
             Semver semver = new Semver(this.getDocumentTrackingVersion());
             return semver.isGreaterThan(new Semver("1.0.0"));
         } else {
             return Integer.parseInt(this.getDocumentTrackingVersion()) > 1;
         }
+    }
+
+    public boolean versionIsUntilIncludingInitialPublication() {
+        return !versionIsAfterInitialPublication();
     }
 
     public Versioning getVersioningStrategy() {
@@ -446,41 +454,43 @@ public class AdvisoryWrapper {
         return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
     }
 
-    private void addEntry(ArrayNode historyNode, String summary, String legacyVersion) {
-        ObjectNode entry = historyNode.addObject();
+    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
         String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        entry.put("date", now);
+        return addRevisionHistoryEntry(summary, legacyVersion, now);
+    }
+
+    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion, String releaseDate) {
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        ObjectNode entry = historyNode.addObject();
+        entry.put("date", releaseDate);
         if (legacyVersion != null && !legacyVersion.isBlank()) {
             entry.put("legacy_version", legacyVersion);
         }
         entry.put("number", this.getDocumentTrackingVersion());
         entry.put("summary", summary);
-    }
-
-    public AdvisoryWrapper addEntryForNewCreatedVersion(String summary, String legacyVersion) {
-        ArrayNode historyNode = getOrCreateHistoryNode();
-        addEntry(historyNode, summary, legacyVersion);
         return this;
     }
 
+    public AdvisoryWrapper editLastRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson) {
 
-    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
+        return this.editLastRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
+    }
 
+    public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion) {
+        return editLastRevisionHistoryEntry(summary, legacyVersion, null);
+    }
+
+    public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion, String releaseDate) {
         ArrayNode historyNode = getOrCreateHistoryNode();
-        if (isSemanticVersioning() && isInitialPublicReleaseOrEarlier()) {
-            addEntry(historyNode, summary, legacyVersion);
-        } else {
-            ObjectNode latestEntry = getLatestEntryInHistoryAfterPrerelease(historyNode);
-            if (latestEntry == null) {
-                latestEntry = historyNode.addObject();
-            }
-            latestEntry.put("date", this.getDocumentTrackingCurrentReleaseDate());
-            if (legacyVersion != null && !legacyVersion.isBlank()) {
-                latestEntry.put("legacy_version", legacyVersion);
-            }
-            latestEntry.put("number", this.getDocumentTrackingVersion());
-            latestEntry.put("summary", summary);
+        ObjectNode entry = (ObjectNode) historyNode.get(historyNode.size() - 1);
+        if (releaseDate != null && !releaseDate.isBlank()) {
+            entry.put("date", this.getDocumentTrackingCurrentReleaseDate());
         }
+        if (legacyVersion != null && !legacyVersion.isBlank()) {
+            entry.put("legacy_version", legacyVersion);
+        }
+        entry.put("number", this.getDocumentTrackingVersion());
+        entry.put("summary", summary);
         return this;
     }
 
@@ -488,6 +498,14 @@ public class AdvisoryWrapper {
         ArrayNode historyNode = getOrCreateHistoryNode();
         ObjectNode lastHistoryNode = (ObjectNode) historyNode.get(historyNode.size() - 1);
         return lastHistoryNode.get("summary").asText();
+    }
+
+    public AdvisoryWrapper setLastRevisionHistoryEntryNumber(String newNumber) {
+
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        ObjectNode lastHistoryNode = (ObjectNode) historyNode.get(historyNode.size() - 1);
+        lastHistoryNode.put("number", newNumber);
+        return this;
     }
 
     public void removeAllRevisionHistoryEntries() {
@@ -501,51 +519,22 @@ public class AdvisoryWrapper {
         final ObjectMapper jacksonMapper = new ObjectMapper();
         ArrayNode newHistoryNode = jacksonMapper.createArrayNode();
 
-        if (isSemanticVersioning()) {
+        if (usesSemanticVersioning()) {
             historyNode.forEach(historyItem -> {
-                if (!SemanticVersioning.getDefault().isPrerelease(new Semver(historyItem.get("number").asText()))) {
+                Semver historyItemVersion = new Semver(historyItem.get("number").asText());
+                if (!SemanticVersioning.getDefault().isPrerelease(historyItemVersion)) {
                     newHistoryNode.add(historyItem);
                 }
             });
         } else {
-            String currentVersion = this.getDocumentTrackingVersion();
-            WorkflowState currentState = this.getWorkflowState();
             historyNode.forEach(historyItem -> {
                 String historyItemVersion = historyItem.get("number").asText();
-                if (! ("0".equals(historyItemVersion) ||
-                       (currentState != WorkflowState.Published && historyItemVersion.equals(currentVersion)))) {
+                if (! ("0".equals(historyItemVersion))) {
                     newHistoryNode.add(historyItem);
                 }
             });
         }
         getOrCreateTrackingNode().set("revision_history", newHistoryNode);
-    }
-
-    private ObjectNode getLatestEntryInHistoryAfterPrerelease(ArrayNode historyNode) {
-
-        if (historyNode.size() > 0) {
-
-            ObjectNode node = (ObjectNode) historyNode.get(historyNode.size() - 1);
-            if (getLastVersion().equals(node.get("number").asText())) {
-                return null;
-            } else {
-               return node;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public boolean isInitialPublicReleaseOrEarlier() {
-
-        if (isSemanticVersioning()) {
-            Semver version = new Semver(this.getDocumentTrackingVersion());
-            return (version.getMajor() < 1)
-                   || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
-        } else {
-            return Integer.parseInt(this.getDocumentTrackingVersion()) < 2;
-        }
-
     }
 
     /**
