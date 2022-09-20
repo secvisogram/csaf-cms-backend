@@ -449,6 +449,37 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
+    public void changeAdvisoryWorkflowStateTest_auditTrail() throws IOException, DatabaseException, CsafException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+
+        Collection<DbField> auditTrailFields = Arrays.asList(CouchDbField.ID_FIELD, DOC_VERSION, OLD_DOC_VERSION, NEW_WORKFLOW_STATE, OLD_WORKFLOW_STATE);
+
+        Map<String, Object> workflowAuditTrailsSelector = expr2CouchDBFilter(equal(ObjectType.AuditTrailWorkflow.name(), TYPE_FIELD.getDbName()));
+        List<JsonNode> workflowAuditTrails = advisoryService.findDocuments(workflowAuditTrailsSelector, auditTrailFields);
+
+        assertEquals(2, workflowAuditTrails.size(), "There should be one audit trail for each workflow state change");
+
+        Map<String, Object> toReviewSelector = expr2CouchDBFilter(equal(WorkflowState.Review.name(), NEW_WORKFLOW_STATE.getDbName()));
+        JsonNode toReviewWorkflowAuditTrail = advisoryService.findDocuments(toReviewSelector, auditTrailFields).get(0);
+        Map<String, Object> toApprovedSelector = expr2CouchDBFilter(equal(WorkflowState.Approved.name(), NEW_WORKFLOW_STATE.getDbName()));
+        JsonNode toApprovedWorkflowAuditTrail = advisoryService.findDocuments(toApprovedSelector, auditTrailFields).get(0);
+
+        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asText());
+        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asText());
+        assertEquals("Draft", toReviewWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asText());
+        assertEquals("Review", toReviewWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asText());
+
+        assertEquals("0.0.1", toApprovedWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asText());
+        assertEquals("1.0.0-1.0", toApprovedWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asText());
+        assertEquals("Review", toApprovedWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asText());
+        assertEquals("Approved", toApprovedWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asText());
+
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void changeAdvisoryWorkflowStateTest_RfPublication() throws IOException, DatabaseException, CsafException {

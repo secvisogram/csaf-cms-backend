@@ -422,7 +422,10 @@ public class AdvisoryService {
 
         if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials)) {
 
-            String workflowStateChangeMsg = "Status changed from " + existingAdvisoryNode.getWorkflowStateString() + " to " + newWorkflowState;
+            WorkflowState previousWorkflowState = existingAdvisoryNode.getWorkflowState();
+            String previousVersion = existingAdvisoryNode.getDocumentTrackingVersion();
+
+            String workflowStateChangeMsg = "Status changed from " + previousWorkflowState + " to " + newWorkflowState;
 
             existingAdvisoryNode.setWorkflowState(newWorkflowState);
             if (documentTrackingStatus != null) {
@@ -432,7 +435,6 @@ public class AdvisoryService {
             if (newWorkflowState == WorkflowState.Approved) {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
-                String previousVersion = existingAdvisoryNode.getDocumentTrackingVersion();
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
                 if (existingAdvisoryNode.usesSemanticVersioning() && existingAdvisoryNode.versionIsUntilIncludingInitialPublication()) {
                     existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
@@ -464,9 +466,9 @@ public class AdvisoryService {
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
 
-            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, previousWorkflowState)
+                    .setOldDocVersion(previousVersion)
                     .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
                     .setAdvisoryId(advisoryId)
                     .setUser(credentials.getName());
             this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
