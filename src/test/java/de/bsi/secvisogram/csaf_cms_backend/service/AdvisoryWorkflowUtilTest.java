@@ -17,12 +17,15 @@ import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -791,18 +794,26 @@ public class AdvisoryWorkflowUtilTest {
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
     }
 
-    @Test
-    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void isSpellingMistakeTest() {
+    private static Stream<Arguments> spellingMistakeArgs() {
+        return Stream.of(
+                Arguments.of("Test", "Tets", 4, TRUE),
+                Arguments.of("Test", "Test1", 4, TRUE),
+                Arguments.of("Test", "Tstings", 4, FALSE),
+                Arguments.of("Test longer Words", "Tets lnget Words", 4, TRUE),
+                Arguments.of("Test longer Words", "Tets lnget Wrds", 4, FALSE),
+                Arguments.of("Test", "Tets", 2, TRUE),
+                Arguments.of("Test", "Test1", 2, TRUE),
+                Arguments.of("Test", "Test", 0, TRUE),
+                Arguments.of("Test", "Tst", 0, FALSE)
+        );
 
-        assertThat(isSpellingMistake("Test", "Tets", 4), is(TRUE));
-        assertThat(isSpellingMistake("Test", "Test1", 4), is(TRUE));
-        assertThat(isSpellingMistake("Test", "Tstings", 4), is(FALSE));
-        assertThat(isSpellingMistake("Test longer Words", "Tets lnget Words", 4), is(TRUE));
-        assertThat(isSpellingMistake("Test longer Words", "Tets lnget Wrds", 4), is(FALSE));
+    }
 
-        assertThat(isSpellingMistake("Test", "Tets", 2), is(TRUE));
-        assertThat(isSpellingMistake("Test", "Test1", 2), is(TRUE));
+    @ParameterizedTest()
+    @MethodSource("spellingMistakeArgs")
+    public void isSpellingMistakeTest(String oldString, String newString, int maxLevenshteinDistance, Boolean expectedValue) {
+
+        assertThat(isSpellingMistake(oldString, newString, maxLevenshteinDistance), is(expectedValue));
 
     }
 
