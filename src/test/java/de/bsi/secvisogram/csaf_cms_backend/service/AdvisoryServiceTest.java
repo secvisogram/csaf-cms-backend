@@ -57,7 +57,10 @@ import org.springframework.test.context.ContextConfiguration;
 /**
  * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
  */
-@SpringBootTest(properties = "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png")
+@SpringBootTest(properties = {
+        "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png",
+        "csaf.summary.publication=testPublishMessage"
+})
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
@@ -537,6 +540,29 @@ public class AdvisoryServiceTest {
             assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
         }
     }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void configurablePublishSummaryTest() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+
+            assertEquals("testPublishMessage", advisory.getCsaf().at("/document/tracking/revision_history/0/summary").asText());
+
+        }
+    }
+
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
