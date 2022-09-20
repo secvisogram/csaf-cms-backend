@@ -48,13 +48,8 @@ public class SemanticVersioning implements Versioning {
     public String getNextDraftVersion(String currentVersionString) {
 
         Semver oldVersion = new Semver(currentVersionString);
-        if (isInitialPublicReleaseOrEarlier(oldVersion)) {
-            String newSuffix = increaseSuffixMinorVersion(oldVersion);
-            return oldVersion.withSuffix(newSuffix).toString();
-        } else {
-            String newSuffix = increaseSuffixMajorVersion(oldVersion);
-            return oldVersion.withSuffix(newSuffix).toString();
-        }
+        String newSuffix = increaseSuffixMinorVersion(oldVersion);
+        return oldVersion.withSuffix(newSuffix).toString();
     }
 
     public boolean isInitialPublicReleaseOrEarlier(Semver version) {

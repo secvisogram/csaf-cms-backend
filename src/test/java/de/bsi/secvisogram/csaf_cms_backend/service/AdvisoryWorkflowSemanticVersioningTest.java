@@ -422,9 +422,8 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0-5.0"),
-                    "after release stage workflow changes should only update the first part of the pre-release " +
-                    "part of the existing revision history item and there were 4 relevant updates");
+            assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0-3.0"),
+                    "after release stage workflow changes should only update the pre-release part of the existing revision history item");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
