@@ -117,7 +117,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_EDITOR})
-    public void workflowTest_unallowedStateChange() throws IOException, CsafException {
+    public void workflowTest_disallowedStateChange() throws IOException, CsafException {
 
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
@@ -157,7 +157,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
 
             SecurityContextHolder.getContext().setAuthentication(
                     new TestingAuthenticationToken("auditor", null, Collections.singletonList(auditorAuthority)));
-            // the advisory and on backup version of the adivsory
+            // the advisory and on backup version of the advisory
             // only auditor can see all versions
             List<AdvisoryInformationResponse> advisoriesAuditor = advisoryService.getAdvisoryInformations(null);
             assertThat(advisoriesAuditor.size(), is(2));

@@ -479,8 +479,8 @@ public class AdvisoryWorkflowUtil {
 
     /**
      * Check whether the difference between the both strings is only a spelling mistake
-     * @param oldString 1. string to compare
-     * @param newString 2. string two compare
+     * @param oldString 1. first string to compare
+     * @param newString 2. second string to compare
      * @param maxLevenshteinDistance the maximum distance up to which the two texts are still considered as spelling errors
      * @return true - its only a spelling error
      */
