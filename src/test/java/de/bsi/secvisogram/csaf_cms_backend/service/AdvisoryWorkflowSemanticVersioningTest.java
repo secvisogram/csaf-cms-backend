@@ -373,7 +373,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0.0.1", "0.0.2", "0.1.0", "0.1.0-1.0", "1.0.0-1.0", "1.0.0-1.1", "1.0.0-2.0"),
                     "going to Approved should increment pre-release counter");
 
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);  // sollte man hier wieder zurück zu draft gehen können?
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertEquals(7, readAdvisory.getCsaf().at("/document/tracking/revision_history").size(),

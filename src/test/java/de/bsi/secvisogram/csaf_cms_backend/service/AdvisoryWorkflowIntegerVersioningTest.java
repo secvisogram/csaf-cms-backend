@@ -241,7 +241,7 @@ public class AdvisoryWorkflowIntegerVersioningTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0", "1"),
                     "going to Approved should not trigger a version raise");
 
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);  // sollte man hier wieder zurück zu draft gehen können?
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0", "1"),
