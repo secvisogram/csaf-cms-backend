@@ -665,15 +665,16 @@ assigned for intermediate states, i.e. stored documents between two "approvals":
      version and major, minor, or patch version are incremented by 1 accordingly,
      however a higher level change resets the lower level change back to 0 and
      each level can be incremented by 1 at most
-     → 1.0.0 can become only: 2.0.0, 1.1.0 or 1.0.1
+     → 1.0.0 can only become: 2.0.0, 1.1.0 or 1.0.1
 
    - The "draft counter" is added immediately when creating the new "draft"
-     version (-1) and thereafter the draft index is incremented with each save
-     (analogous to 2.) )
+     version (-1.0) and thereafter the draft index is incremented with each
+     save (analogous to 2.)
 
-for versions > 1.0.0
+For versions > 1.0.0
+
 The "draft counter" is added immediately when creating the new "draft"
-version (-1) and thereafter the draft index is incremented with each save
+version (-1.0) and thereafter the draft index is incremented with each save
 (analogous to 2.)
 
 Regardless of the number of changes that theoretically led to the increase of
@@ -756,9 +757,9 @@ The `tracking/revision_history` should be maintained in the backend
   - Workflow state changes do not add text to the revision history summary.
 
 When a new document is created on the server, any existing revision history
-items corresponding to pre-release versions are deleted, a new version number
-(matching the versioning scheme configured on the server) is assigned, and an
-initial revision history item is created.
+items are deleted, a new version number (matching the versioning scheme
+configured on the server) is assigned, and an initial revision history item
+is created.
 
 #### Backend States
 
