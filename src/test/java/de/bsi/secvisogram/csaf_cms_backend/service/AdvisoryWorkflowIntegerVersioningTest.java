@@ -86,15 +86,15 @@ public class AdvisoryWorkflowIntegerVersioningTest {
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(1));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0"),
-                    "change of advisory itself should not add revision history item");
+                    "change of advisory itself should not add revision history element");
             assertEquals("UpdateSummary", readAdvisory.getCsaf().at("/document/tracking/revision_history/0/summary").asText(),
-                    "the revision history item summary should be updated");
+                    "the revision history element summary should be updated");
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0"),
-                    "change of workflow state to review should not add revision history item");
+                    "change of workflow state to review should not add revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
@@ -111,21 +111,21 @@ public class AdvisoryWorkflowIntegerVersioningTest {
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0", "1"),
-                    "change of workflow state to RfPublication should not introduce new revision history item");
+                    "change of workflow state to RfPublication should not introduce new revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1"),
-                    "change of workflow state to Published should remove revision history item with version 0");
+                    "change of workflow state to Published should remove revision history element with version 0");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("2"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2"),
-                    "creating new version should add revision history item with next version");
+                    "creating new version should add revision history element with next version");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
@@ -135,14 +135,14 @@ public class AdvisoryWorkflowIntegerVersioningTest {
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("2"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2"),
-                    "change of advisory itself should not add revision history item");
+                    "change of advisory itself should not add revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("2"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2"),
-                    "change of workflow state to review should not introduce new revision history item");
+                    "change of workflow state to review should not introduce new revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
@@ -156,14 +156,14 @@ public class AdvisoryWorkflowIntegerVersioningTest {
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("2"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2"),
-                    "change of workflow state to RfPublication should not introduce new revision history item");
+                    "change of workflow state to RfPublication should not introduce new revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("2"));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2"),
-                    "change of workflow state to Published should not introduce new revision history item");
+                    "change of workflow state to Published should not introduce new revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow new Version
@@ -172,7 +172,7 @@ public class AdvisoryWorkflowIntegerVersioningTest {
             assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("3"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2", "3"),
-                    "creating new version should add revision history item with next version");
+                    "creating new version should add revision history element with next version");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
         }
@@ -245,14 +245,14 @@ public class AdvisoryWorkflowIntegerVersioningTest {
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0", "1"),
-                    "going to RfPublication should not add revision history item");
+                    "going to RfPublication should not add revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
 
             assertEquals("added empty product_tree",
                     readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
-                    "The last revision history item's summary should be copied from the preceding revision history item");
+                    "The last revision history element's summary should be copied from the preceding revision history element");
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1"),
@@ -306,7 +306,7 @@ public class AdvisoryWorkflowIntegerVersioningTest {
 
             assertEquals("removed product_tree",
                     readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
-                    "The last revision history item's summary should be copied/kept throughout all state changes");
+                    "The last revision history element's summary should be copied/kept throughout all state changes");
 
         }
     }
@@ -319,7 +319,7 @@ public class AdvisoryWorkflowIntegerVersioningTest {
     private List<String> getRevisionHistoryVersions(AdvisoryResponse advisory) {
         List<String> versionNumbers = new ArrayList<>();
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistItem -> versionNumbers.add(revHistItem.at("/number").asText())
+                revHistElem -> versionNumbers.add(revHistElem.at("/number").asText())
             );
         return versionNumbers;
     }

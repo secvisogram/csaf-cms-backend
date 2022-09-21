@@ -449,11 +449,11 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public AdvisoryWrapper addRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson, String timestamp) {
-        return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
+    public AdvisoryWrapper addRevisionHistoryElement(CreateAdvisoryRequest changedCsafJson, String timestamp) {
+        return this.addRevisionHistoryElement(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
     }
 
-    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion, String timestamp) {
+    public AdvisoryWrapper addRevisionHistoryElement(String summary, String legacyVersion, String timestamp) {
         ArrayNode historyNode = getOrCreateHistoryNode();
         ObjectNode entry = historyNode.addObject();
         entry.put("date", timestamp);
@@ -465,12 +465,12 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public AdvisoryWrapper editLastRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson, String timestamp) {
-        return this.editLastRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
+    public AdvisoryWrapper editLastRevisionHistoryElement(CreateAdvisoryRequest changedCsafJson, String timestamp) {
+        return this.editLastRevisionHistoryElement(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
     }
 
-    public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion, String timestamp) {
-        ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
+    public AdvisoryWrapper editLastRevisionHistoryElement(String summary, String legacyVersion, String timestamp) {
+        ObjectNode lastHistoryNode = getLastHistoryElementByDate();
         if (legacyVersion != null && !legacyVersion.isBlank()) {
             lastHistoryNode.put("legacy_version", legacyVersion);
         }
@@ -480,19 +480,19 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public String getLastRevisionHistoryEntrySummary() {
-        ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
+    public String getLastRevisionHistoryElementSummary() {
+        ObjectNode lastHistoryNode = getLastHistoryElementByDate();
         return lastHistoryNode.get("summary").asText();
     }
 
-    public AdvisoryWrapper setLastRevisionHistoryEntryNumberAndDate(String newNumber, String newDate) {
-        ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
+    public AdvisoryWrapper setLastRevisionHistoryElementNumberAndDate(String newNumber, String newDate) {
+        ObjectNode lastHistoryNode = getLastHistoryElementByDate();
         lastHistoryNode.put("number", newNumber);
         lastHistoryNode.put("date", newDate);
         return this;
     }
 
-    private ObjectNode getLastHistoryNodeByDate() {
+    private ObjectNode getLastHistoryElementByDate() {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
 
@@ -510,7 +510,7 @@ public class AdvisoryWrapper {
 
     }
 
-    public void removeAllRevisionHistoryEntries() {
+    public void removeAllRevisionHistoryElements() {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
         historyNode.removeAll();

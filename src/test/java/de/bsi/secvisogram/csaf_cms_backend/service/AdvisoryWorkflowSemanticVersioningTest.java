@@ -345,7 +345,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0.0.1", "0.0.2", "0.1.0"),
                     "in pre-release stage change of product_tree should trigger a minor version raise");
 
-            // going through multiple workflow state changes should add revision history items for
+            // going through multiple workflow state changes should add revision history elements for
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
 
@@ -377,7 +377,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertEquals(7, readAdvisory.getCsaf().at("/document/tracking/revision_history").size(),
-                    "going to RfPublication should not add revision history item");
+                    "going to RfPublication should not add revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
@@ -423,7 +423,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0-3.0"),
-                    "after release stage workflow changes should only update the pre-release part of the existing revision history item");
+                    "after release stage workflow changes should only update the pre-release part of the existing revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
@@ -434,7 +434,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
 
             assertEquals("removed product_tree",
                     readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
-                    "The last revision history item's summary should be copied/kept since the last change. " +
+                    "The last revision history element's summary should be copied/kept since the last change. " +
                     "Workflow state changes should not edit the summary after initial publication");
 
         }
@@ -448,7 +448,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
     private List<String> getRevisionHistoryVersions(AdvisoryResponse advisory) {
         List<String> versionNumbers = new ArrayList<>();
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistItem -> versionNumbers.add(revHistItem.at("/number").asText())
+                revHistElem -> versionNumbers.add(revHistElem.at("/number").asText())
             );
         return versionNumbers;
     }

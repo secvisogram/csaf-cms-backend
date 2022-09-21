@@ -238,7 +238,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void addRevisionHistoryEntryTest_semanticVersioning() throws IOException, CsafException {
+    public void addRevisionHistoryElementTest_semanticVersioning() throws IOException, CsafException {
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
                 "Mustermann", Semantic.name());
@@ -246,7 +246,7 @@ public class AdvisoryWrapperTest {
         String dateNow = getCurrentTimestamp();
         String dateNowMinutes = dateNow.substring(0, 16);
         advisory.setDocumentTrackingVersion("0.1.1");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary1", "LegacyVersion1"), dateNow);
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary1", "LegacyVersion1"), dateNow);
 
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("0.1.1"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary1"));
@@ -254,14 +254,14 @@ public class AdvisoryWrapperTest {
         assertThat(getRevisionAt(advisory, 0, "date"), equalTo(dateNow));
 
         advisory.setDocumentTrackingVersion("0.1.2");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"), getCurrentTimestamp());
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("0.1.2"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary2"));
         assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion2"));
         assertThat(getRevisionAt(advisory, 1, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("1.0.0");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"), getCurrentTimestamp());
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 2, "number"), equalTo("1.0.0"));
         assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary3"));
         assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion3"));
@@ -269,7 +269,7 @@ public class AdvisoryWrapperTest {
 
         advisory.setLastVersion("1.0.0");
         advisory.setDocumentTrackingVersion("1.0.1");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"), getCurrentTimestamp());
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("1.0.1"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary4"));
         assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion4"));
@@ -277,14 +277,14 @@ public class AdvisoryWrapperTest {
 
 
         advisory.setDocumentTrackingVersion("1.0.2");
-        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"), getCurrentTimestamp());
+        advisory.editLastRevisionHistoryElement(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("1.0.2"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary5"));
         assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion5"));
         assertThat(getRevisionAt(advisory, 3, "date"), startsWith(dateNowMinutes));
 
         advisory.setDocumentTrackingVersion("2.0.0");
-        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"), getCurrentTimestamp());
+        advisory.editLastRevisionHistoryElement(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 3, "number"), equalTo("2.0.0"));
         assertThat(getRevisionAt(advisory, 3, "summary"), equalTo("Summary6"));
         assertThat(getRevisionAt(advisory, 3, "legacy_version"), equalTo("LegacyVersion6"));
@@ -294,7 +294,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void addRevisionHistoryEntryTest_integerVersioning() throws IOException, CsafException {
+    public void addRevisionHistoryElementTest_integerVersioning() throws IOException, CsafException {
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
                 "Mustermann", Integer.name());
@@ -302,7 +302,7 @@ public class AdvisoryWrapperTest {
         String dateNow = getCurrentTimestamp();
         String dateNowMinutes = dateNow.substring(0, 16);
         advisory.setDocumentTrackingVersion("0");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary1", "LegacyVersion1"), dateNow);
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary1", "LegacyVersion1"), dateNow);
 
         assertThat(getRevisionAt(advisory, 0, "number"), equalTo("0"));
         assertThat(getRevisionAt(advisory, 0, "summary"), equalTo("Summary1"));
@@ -311,7 +311,7 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(1));
 
         advisory.setDocumentTrackingVersion("1");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"), getCurrentTimestamp());
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary2", "LegacyVersion2"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("1"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary2"));
         assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion2"));
@@ -319,7 +319,7 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
 
         advisory.setDocumentTrackingVersion("1");
-        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"), getCurrentTimestamp());
+        advisory.editLastRevisionHistoryElement(new CreateAdvisoryRequest("Summary3", "LegacyVersion3"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 1, "number"), equalTo("1"));
         assertThat(getRevisionAt(advisory, 1, "summary"), equalTo("Summary3"));
         assertThat(getRevisionAt(advisory, 1, "legacy_version"), equalTo("LegacyVersion3"));
@@ -328,7 +328,7 @@ public class AdvisoryWrapperTest {
 
         advisory.setLastVersion("1");
         advisory.setDocumentTrackingVersion("2");
-        advisory.addRevisionHistoryEntry(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"), getCurrentTimestamp());
+        advisory.addRevisionHistoryElement(new CreateAdvisoryRequest("Summary4", "LegacyVersion4"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 2, "number"), equalTo("2"));
         assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary4"));
         assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion4"));
@@ -336,7 +336,7 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
 
         advisory.setDocumentTrackingVersion("2");
-        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"), getCurrentTimestamp());
+        advisory.editLastRevisionHistoryElement(new CreateAdvisoryRequest("Summary5", "LegacyVersion5"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 2, "number"), equalTo("2"));
         assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary5"));
         assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion5"));
@@ -344,7 +344,7 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
 
         advisory.setDocumentTrackingVersion("2");
-        advisory.editLastRevisionHistoryEntry(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"), getCurrentTimestamp());
+        advisory.editLastRevisionHistoryElement(new CreateAdvisoryRequest("Summary6", "LegacyVersion6"), getCurrentTimestamp());
         assertThat(getRevisionAt(advisory, 2, "number"), equalTo("2"));
         assertThat(getRevisionAt(advisory, 2, "summary"), equalTo("Summary6"));
         assertThat(getRevisionAt(advisory, 2, "legacy_version"), equalTo("LegacyVersion6"));
@@ -372,7 +372,7 @@ public class AdvisoryWrapperTest {
             historyNode.add(revNode);
         });
         ObjectNode trackingNode = (ObjectNode) advisory.at("/csaf/document/tracking");
-        // set version of advisory to last revision history item version
+        // set version of advisory to last revision history element version
         trackingNode.put("version", revisions.get(revisions.size() - 1));
         trackingNode.set("revision_history", historyNode);
     }
@@ -380,7 +380,7 @@ public class AdvisoryWrapperTest {
     private List<String> getRevisionHistoryVersions(AdvisoryWrapper advisory) {
         List<String> versionNumbers = new ArrayList<>();
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistItem -> versionNumbers.add(revHistItem.at("/number").asText())
+                revHistElem -> versionNumbers.add(revHistElem.at("/number").asText())
         );
         return versionNumbers;
     }
@@ -425,7 +425,7 @@ public class AdvisoryWrapperTest {
         advisory.removeAllPrereleaseVersions();
 
         assertRevisionHistoryVersionsMatch(advisory, expectedVersionHistoryAfterRemove,
-                "revision history items should have been removed as expected");
+                "revision history elements should have been removed as expected");
 
         advisory.removeAllPrereleaseVersions();
 
@@ -465,7 +465,7 @@ public class AdvisoryWrapperTest {
         String editVersion = "newVersion";
         String editDate = "2022-09-08T01:23:49.999Z";
 
-        advisory.setLastRevisionHistoryEntryNumberAndDate(editVersion, editDate);
+        advisory.setLastRevisionHistoryElementNumberAndDate(editVersion, editDate);
 
         assertEquals(editVersion, hist2.at("/number").asText(),
                 "history element with most recent date should have been edited");
@@ -477,7 +477,7 @@ public class AdvisoryWrapperTest {
         hist4.put("date", "2022-09-14T01:02:03.004Z");
         hist4.put("summary", "last summary");
 
-        assertEquals("last summary", advisory.getLastRevisionHistoryEntrySummary(),
+        assertEquals("last summary", advisory.getLastRevisionHistoryElementSummary(),
                 "summary of history element with most recent date should have been retrieved");
 
     }
