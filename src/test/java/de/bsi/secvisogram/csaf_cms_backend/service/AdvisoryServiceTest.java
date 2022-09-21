@@ -311,6 +311,13 @@ public class AdvisoryServiceTest {
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asText());
         assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText());
+
+
+        String lastRevisionHistoryElementDate = updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/date").asText();
+        String currentReleaseDate = updatedAdvisory.getCsaf().at("/document/tracking/current_release_date").asText();
+
+        assertEquals(lastRevisionHistoryElementDate, currentReleaseDate, "the last revision history element should conform to the current release date");
+
     }
 
     @Test

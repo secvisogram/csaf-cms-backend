@@ -161,7 +161,6 @@ public class AdvisoryWrapper {
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
-        wrapper.checkCurrentReleaseDateIsSet();
 
         return wrapper;
     }
@@ -450,20 +449,14 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public AdvisoryWrapper addRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson) {
-
-        return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
+    public AdvisoryWrapper addRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson, String timestamp) {
+        return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
     }
 
-    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
-        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        return addRevisionHistoryEntry(summary, legacyVersion, now);
-    }
-
-    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion, String releaseDate) {
+    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion, String timestamp) {
         ArrayNode historyNode = getOrCreateHistoryNode();
         ObjectNode entry = historyNode.addObject();
-        entry.put("date", releaseDate);
+        entry.put("date", timestamp);
         if (legacyVersion != null && !legacyVersion.isBlank()) {
             entry.put("legacy_version", legacyVersion);
         }
@@ -472,25 +465,18 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public AdvisoryWrapper editLastRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson) {
-
-        return this.editLastRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
+    public AdvisoryWrapper editLastRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson, String timestamp) {
+        return this.editLastRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
     }
 
-    public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion) {
-        return editLastRevisionHistoryEntry(summary, legacyVersion, null);
-    }
-
-    public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion, String releaseDate) {
+    public AdvisoryWrapper editLastRevisionHistoryEntry(String summary, String legacyVersion, String timestamp) {
         ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
-        if (releaseDate != null && !releaseDate.isBlank()) {
-            lastHistoryNode.put("date", this.getDocumentTrackingCurrentReleaseDate());
-        }
         if (legacyVersion != null && !legacyVersion.isBlank()) {
             lastHistoryNode.put("legacy_version", legacyVersion);
         }
         lastHistoryNode.put("number", this.getDocumentTrackingVersion());
         lastHistoryNode.put("summary", summary);
+        lastHistoryNode.put("date", timestamp);
         return this;
     }
 
@@ -499,9 +485,10 @@ public class AdvisoryWrapper {
         return lastHistoryNode.get("summary").asText();
     }
 
-    public AdvisoryWrapper setLastRevisionHistoryEntryNumber(String newNumber) {
+    public AdvisoryWrapper setLastRevisionHistoryEntryNumberAndDate(String newNumber, String newDate) {
         ObjectNode lastHistoryNode = getLastHistoryNodeByDate();
         lastHistoryNode.put("number", newNumber);
+        lastHistoryNode.put("date", newDate);
         return this;
     }
 
@@ -665,21 +652,6 @@ public class AdvisoryWrapper {
 
         ObjectNode patched = (ObjectNode) applyJsonPatchToNode(patch, this.getAdvisoryNode());
         return new AdvisoryWrapper(patched);
-    }
-
-
-    /**
-     * The current_release_date must always be filled.
-     * When saving, the system always checks whether the current_release_date is in the past. In this case the date is set to the current date. In all other cases (date in the future) this remains.
-     * @throws CsafException thrown when  date is invalid
-     */
-    public void checkCurrentReleaseDateIsSet() throws CsafException {
-
-        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        if (this.getDocumentTrackingCurrentReleaseDate() == null
-                || this.getDocumentTrackingCurrentReleaseDate().compareTo(now) < 0) {
-            this.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-        }
     }
 
 
