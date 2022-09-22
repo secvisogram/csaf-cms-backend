@@ -5,6 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.isSpellingMistake;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.timestampIsBefore;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
@@ -835,6 +836,26 @@ public class AdvisoryWorkflowUtilTest {
         var authority = new SimpleGrantedAuthority(roles[0]);
         var principal =  new User(userName, EMPTY_PASSWD, singletonList(authority));
         return new TestingAuthenticationToken(principal, null, roles);
+    }
+
+    private static Stream<Arguments> timestampArgs() {
+        return Stream.of(
+                Arguments.of("2022-09-22T01:00:00.000Z", "2022-09-22T02:00:00.000Z", TRUE),
+                Arguments.of("2022-09-22T02:00:00.000Z", "2022-09-22T01:00:00.000Z", FALSE),
+                Arguments.of("2022-09-22T01:00:00.000Z", "2022-09-22T01:00:00.000Z", FALSE),
+                Arguments.of("2022-09-22T01:00:00.000Z", "2022-09-23T01:00:00.000Z", TRUE),
+                Arguments.of("2022-09-23T01:00:00.000Z", "2022-09-22T02:00:00.000Z", FALSE),
+                Arguments.of("2022-09-22T01:02:03.004Z", "2022-09-22T02:03:04.005Z", TRUE),
+                Arguments.of("2022-09-22T01:02:03.004Z", "2022-09-22T02:03:04.005678Z", TRUE),
+                Arguments.of("2022-09-22T01:02:03.004567Z", "2022-09-22T02:03:04.005Z", TRUE)
+        );
+
+    }
+
+    @ParameterizedTest()
+    @MethodSource("timestampArgs")
+    public void timestampIsBeforeTest(String timestamp1, String timestamp2, Boolean expectedResult) {
+        assertThat(timestampIsBefore(timestamp1, timestamp2), is(expectedResult));
     }
 
 }

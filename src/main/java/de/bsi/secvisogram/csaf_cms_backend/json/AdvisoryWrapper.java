@@ -497,10 +497,10 @@ public class AdvisoryWrapper {
         ArrayNode historyNode = getOrCreateHistoryNode();
 
         ObjectNode[] lastNode = {null};
-        LocalDateTime[] lastDate = {null};
+        String[] lastDate = {null};
         historyNode.forEach(jsonNode -> {
-            LocalDateTime nodeDate = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(jsonNode.get("date").asText()));
-            if (lastDate[0] == null || lastDate[0].compareTo(nodeDate) < 0) {
+            String nodeDate = jsonNode.get("date").asText();
+            if (lastDate[0] == null || timestampIsBefore(lastDate[0], nodeDate)) {
                 lastNode[0] = (ObjectNode) jsonNode;
                 lastDate[0] = nodeDate;
             }
@@ -636,6 +636,18 @@ public class AdvisoryWrapper {
     }
 
     /**
+     * This utility method checks if the current_release_date of the advisory is set and if it lies in the past
+     * This is helpful for checking if the current_release_date must be updated or not
+     * @param comparedTo the timestamp to compare the current_release_date to
+     * @return true if the current release date is not set, or it is in the past
+     */
+    public boolean currentReleaseDateIsNotSetOrInPast(String comparedTo) {
+        return (this.getDocumentTrackingCurrentReleaseDate() == null
+                || timestampIsBefore(this.getDocumentTrackingCurrentReleaseDate(), comparedTo));
+    }
+
+
+    /**
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
@@ -682,7 +694,17 @@ public class AdvisoryWrapper {
         return JsonPatch.apply(patch, source);
     }
 
-
-
+    /**
+     * compares two timestamps if the first is chronologically before the second
+     * will be false if the timestamps are exactly the same
+     * @param timestamp1 the first timestamp
+     * @param timestamp2 the second timestamp
+     * @return true if timestamp1 is chronologically before timestamp2, false otherwise
+     */
+    private static boolean timestampIsBefore(String timestamp1, String timestamp2) {
+        LocalDateTime t1 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp1));
+        LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
+        return t1.compareTo(t2) < 0;
+    }
 
 }
