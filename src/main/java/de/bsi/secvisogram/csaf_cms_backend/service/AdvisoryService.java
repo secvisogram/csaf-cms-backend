@@ -496,7 +496,7 @@ public class AdvisoryService {
                 .removeVersionSuffix(advisoryCopy.getDocumentTrackingVersion());
         advisoryCopy.setDocumentTrackingVersion(versionWithoutSuffix);
 
-        String currentReleaseDate = advisoryCopy.getDocumentTrackingInitialReleaseDate();
+        String currentReleaseDate = advisoryCopy.getDocumentTrackingCurrentReleaseDate();
         String timestampNow = getCurrentTimestamp();
         if (releaseDate == null) {
             if (currentReleaseDate != null && timestampIsBefore(timestampNow, currentReleaseDate)) {
