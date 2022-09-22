@@ -155,7 +155,6 @@ public class AdvisoryInformationResponse {
      * The value of the advisory at "document/tracking/current_release_date"
      * @return the date as iso string
      */
-    @JsonIgnore
     public String getCurrentReleaseDate() {
         return currentReleaseDate;
     }
