@@ -5,6 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState.*;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.isSpellingMistake;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.timestampIsBefore;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
@@ -17,12 +18,15 @@ import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -791,18 +795,26 @@ public class AdvisoryWorkflowUtilTest {
         assertThat(AdvisoryWorkflowUtil.getChangeType(oldAdvisory, newAdvisory, 4), is(PatchType.MAJOR));
     }
 
-    @Test
-    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void isSpellingMistakeTest() {
+    private static Stream<Arguments> spellingMistakeArgs() {
+        return Stream.of(
+                Arguments.of("Test", "Tets", 4, TRUE),
+                Arguments.of("Test", "Test1", 4, TRUE),
+                Arguments.of("Test", "Tstings", 4, FALSE),
+                Arguments.of("Test longer Words", "Tets lnget Words", 4, TRUE),
+                Arguments.of("Test longer Words", "Tets lnget Wrds", 4, FALSE),
+                Arguments.of("Test", "Tets", 2, TRUE),
+                Arguments.of("Test", "Test1", 2, TRUE),
+                Arguments.of("Test", "Test", 0, TRUE),
+                Arguments.of("Test", "Tst", 0, FALSE)
+        );
 
-        assertThat(isSpellingMistake("Test", "Tets", 4), is(TRUE));
-        assertThat(isSpellingMistake("Test", "Test1", 4), is(TRUE));
-        assertThat(isSpellingMistake("Test", "Tstings", 4), is(FALSE));
-        assertThat(isSpellingMistake("Test longer Words", "Tets lnget Words", 4), is(TRUE));
-        assertThat(isSpellingMistake("Test longer Words", "Tets lnget Wrds", 4), is(FALSE));
+    }
 
-        assertThat(isSpellingMistake("Test", "Tets", 2), is(TRUE));
-        assertThat(isSpellingMistake("Test", "Test1", 2), is(TRUE));
+    @ParameterizedTest()
+    @MethodSource("spellingMistakeArgs")
+    public void isSpellingMistakeTest(String oldString, String newString, int maxLevenshteinDistance, Boolean expectedValue) {
+
+        assertThat(isSpellingMistake(oldString, newString, maxLevenshteinDistance), is(expectedValue));
 
     }
 
@@ -824,6 +836,26 @@ public class AdvisoryWorkflowUtilTest {
         var authority = new SimpleGrantedAuthority(roles[0]);
         var principal =  new User(userName, EMPTY_PASSWD, singletonList(authority));
         return new TestingAuthenticationToken(principal, null, roles);
+    }
+
+    private static Stream<Arguments> timestampArgs() {
+        return Stream.of(
+                Arguments.of("2022-09-22T01:00:00.000Z", "2022-09-22T02:00:00.000Z", TRUE),
+                Arguments.of("2022-09-22T02:00:00.000Z", "2022-09-22T01:00:00.000Z", FALSE),
+                Arguments.of("2022-09-22T01:00:00.000Z", "2022-09-22T01:00:00.000Z", FALSE),
+                Arguments.of("2022-09-22T01:00:00.000Z", "2022-09-23T01:00:00.000Z", TRUE),
+                Arguments.of("2022-09-23T01:00:00.000Z", "2022-09-22T02:00:00.000Z", FALSE),
+                Arguments.of("2022-09-22T01:02:03.004Z", "2022-09-22T02:03:04.005Z", TRUE),
+                Arguments.of("2022-09-22T01:02:03.004Z", "2022-09-22T02:03:04.005678Z", TRUE),
+                Arguments.of("2022-09-22T01:02:03.004567Z", "2022-09-22T02:03:04.005Z", TRUE)
+        );
+
+    }
+
+    @ParameterizedTest()
+    @MethodSource("timestampArgs")
+    public void timestampIsBeforeTest(String timestamp1, String timestamp2, Boolean expectedResult) {
+        assertThat(timestampIsBefore(timestamp1, timestamp2), is(expectedResult));
     }
 
 }

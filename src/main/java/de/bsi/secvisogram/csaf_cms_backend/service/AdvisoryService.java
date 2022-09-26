@@ -185,8 +185,12 @@ public class AdvisoryService {
                 .setChangeType(ChangeType.Create)
                 .setUser(credentials.getName());
 
-        newAdvisoryNode.removeAllRevisionHistoryEntries();
-        newAdvisoryNode.addRevisionHistoryEntry(newCsafJson);
+        newAdvisoryNode.removeAllRevisionHistoryElements();
+        String timestampNow = getCurrentTimestamp();
+        newAdvisoryNode.addRevisionHistoryElement(newCsafJson, timestampNow);
+        if (newAdvisoryNode.currentReleaseDateIsNotSetOrInPast(timestampNow)) {
+            newAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+        }
 
         String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
@@ -321,8 +325,18 @@ public class AdvisoryService {
                 PatchType changeType = AdvisoryWorkflowUtil.getChangeType(oldAdvisoryNode, newAdvisoryNode, configuration.getVersioning().getLevenshtein());
                 String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(changeType, oldAdvisoryNode.getDocumentTrackingVersion(), oldAdvisoryNode.getLastVersion());
                 newAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                newAdvisoryNode.checkCurrentReleaseDateIsSet();
-                newAdvisoryNode.addRevisionHistoryEntry(changedCsafJson);
+                String timestampNow = getCurrentTimestamp();
+                if (newAdvisoryNode.currentReleaseDateIsNotSetOrInPast(timestampNow)) {
+                    newAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+                }
+                if (oldAdvisoryNode.usesSemanticVersioning()
+                    && newAdvisoryNode.versionIsUntilIncludingInitialPublication()
+                    && !oldAdvisoryNode.getDocumentTrackingVersion().equals(nextVersion)) {
+                    newAdvisoryNode.addRevisionHistoryElement(changedCsafJson, timestampNow);
+                } else {
+                    newAdvisoryNode.editLastRevisionHistoryElement(changedCsafJson, timestampNow);
+                }
+
                 String result = this.couchDbService.updateDocument(newAdvisoryNode.advisoryAsString());
 
                 AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, newAdvisoryNode)
@@ -415,29 +429,47 @@ public class AdvisoryService {
 
         if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials)) {
 
-            String workflowStateChangeMsg = "Status changed from " + existingAdvisoryNode.getWorkflowStateString() + " to " + newWorkflowState;
+            WorkflowState previousWorkflowState = existingAdvisoryNode.getWorkflowState();
+            String previousVersion = existingAdvisoryNode.getDocumentTrackingVersion();
+
+            String workflowStateChangeMsg = "Status changed from " + previousWorkflowState + " to " + newWorkflowState;
 
             existingAdvisoryNode.setWorkflowState(newWorkflowState);
             if (documentTrackingStatus != null) {
                 existingAdvisoryNode.setDocumentTrackingStatus(documentTrackingStatus);
             }
 
-            if (proposedTime != null) {
-                existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(proposedTime);
-            }
-
             if (newWorkflowState == WorkflowState.Approved) {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
+                String timestampNow = getCurrentTimestamp();
+                if (existingAdvisoryNode.currentReleaseDateIsNotSetOrInPast(timestampNow)) {
+                    existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+                }
+                if (existingAdvisoryNode.usesSemanticVersioning() && existingAdvisoryNode.versionIsUntilIncludingInitialPublication()) {
+                    existingAdvisoryNode.addRevisionHistoryElement(workflowStateChangeMsg, "", timestampNow);
+                } else if (existingAdvisoryNode.usesIntegerVersioning() && "0".equals(previousVersion)) {
+                    String lastRevSummary = existingAdvisoryNode.getLastRevisionHistoryElementSummary();
+                    existingAdvisoryNode.addRevisionHistoryElement(lastRevSummary, "", timestampNow);
+                } else {
+                    existingAdvisoryNode.setLastRevisionHistoryElementNumberAndDate(nextVersion, timestampNow);
+                }
             }
 
             if (newWorkflowState == WorkflowState.Draft) {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextDraftVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
-                existingAdvisoryNode.addRevisionHistoryEntry(workflowStateChangeMsg, "");
+                String timestampNow = getCurrentTimestamp();
+                if (existingAdvisoryNode.currentReleaseDateIsNotSetOrInPast(timestampNow)) {
+                    existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+                }
+                if (existingAdvisoryNode.usesSemanticVersioning() && existingAdvisoryNode.versionIsUntilIncludingInitialPublication()) {
+                    existingAdvisoryNode.addRevisionHistoryElement(workflowStateChangeMsg, "", timestampNow);
+                } else {
+                    existingAdvisoryNode.setLastRevisionHistoryElementNumberAndDate(nextVersion, timestampNow);
+                }
             }
 
             if (newWorkflowState == WorkflowState.RfPublication) {
@@ -449,9 +481,9 @@ public class AdvisoryService {
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
 
-            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, existingAdvisoryNode.getWorkflowState())
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, previousWorkflowState)
+                    .setOldDocVersion(previousVersion)
                     .setDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
-                    .setOldDocVersion(existingAdvisoryNode.getDocumentTrackingVersion())
                     .setAdvisoryId(advisoryId)
                     .setUser(credentials.getName());
             this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
@@ -464,20 +496,41 @@ public class AdvisoryService {
         }
     }
 
-    private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory, String initialReleaseDate) throws CsafException, IOException {
+    private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory, String releaseDate) throws CsafException, IOException {
 
         AdvisoryWrapper advisoryCopy = AdvisoryWrapper.createCopy(advisory);
-        advisoryCopy.removeAllPrereleaseVersions();
 
         String versionWithoutSuffix = advisoryCopy.getVersioningStrategy()
                 .removeVersionSuffix(advisoryCopy.getDocumentTrackingVersion());
         advisoryCopy.setDocumentTrackingVersion(versionWithoutSuffix);
 
-        advisoryCopy.addRevisionHistoryEntry(configuration.getSummary().getPublication(), "");
+        String currentReleaseDate = advisoryCopy.getDocumentTrackingCurrentReleaseDate();
+        String timestampNow = getCurrentTimestamp();
+        if (releaseDate == null) {
+            if (currentReleaseDate != null && timestampIsBefore(timestampNow, currentReleaseDate)) {
+                releaseDate = currentReleaseDate;
+            } else {
+                releaseDate = timestampNow;
+            }
+        } else if (currentReleaseDate != null && timestampIsBefore(releaseDate, currentReleaseDate)) {
+            releaseDate = currentReleaseDate;
+        }
+
+        advisoryCopy.setDocumentTrackingCurrentReleaseDate(releaseDate);
+
+        String summary = configuration.getSummary().getPublication();
+        if (advisory.versionIsAfterInitialPublication()) {
+            summary = advisory.getLastRevisionHistoryElementSummary();
+        }
+        advisoryCopy.removeAllPrereleaseVersions();
+        if (advisoryCopy.usesSemanticVersioning()) {
+            advisoryCopy.addRevisionHistoryElement(summary, "", releaseDate);
+        } else {
+            advisoryCopy.editLastRevisionHistoryElement(summary, "", releaseDate);
+        }
+
         if (advisoryCopy.getLastMajorVersion() == 0) {
-            advisoryCopy.setDocumentTrackingInitialReleaseDate(initialReleaseDate != null && !initialReleaseDate.isBlank()
-                    ? initialReleaseDate
-                    : DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+            advisoryCopy.setDocumentTrackingInitialReleaseDate(releaseDate);
         }
 
         if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
@@ -515,10 +568,11 @@ public class AdvisoryService {
             existingAdvisoryNode.setLastVersion(existingAdvisoryNode.getDocumentTrackingVersion());
             existingAdvisoryNode.setWorkflowState(WorkflowState.Draft);
             existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
-            existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
             existingAdvisoryNode.setDocumentTrackingVersion(existingAdvisoryNode.getVersioningStrategy()
                     .getNewDocumentVersion(existingAdvisoryNode.getDocumentTrackingVersion()));
-            existingAdvisoryNode.addEntryForNewCreatedVersion("New Version", "");
+            String timestampNow = getCurrentTimestamp();
+            existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+            existingAdvisoryNode.addRevisionHistoryElement("New Version", "", timestampNow);
             existingAdvisoryNode.setRevision(revision);
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(WorkflowState.Draft, existingAdvisoryNode.getWorkflowState())
@@ -781,4 +835,9 @@ public class AdvisoryService {
     private Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
     }
+
+    private String getCurrentTimestamp() {
+        return DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+    }
+
 }

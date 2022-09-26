@@ -51,8 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
-@SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
-public class AdvisoryWorkflowTest {
+public class AdvisoryWorkflowSemanticVersioningTest {
 
     private static final String EMPTY_PASSWD = "";
 
@@ -118,7 +117,7 @@ public class AdvisoryWorkflowTest {
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_EDITOR})
-    public void workflowTest_unallowedStateChange() throws IOException, CsafException {
+    public void workflowTest_disallowedStateChange() throws IOException, CsafException {
 
         final String advisoryUser = "John";
         final String csafJson = csafJsonCategoryTitle("Category1", "Title1");
@@ -158,7 +157,7 @@ public class AdvisoryWorkflowTest {
 
             SecurityContextHolder.getContext().setAuthentication(
                     new TestingAuthenticationToken("auditor", null, Collections.singletonList(auditorAuthority)));
-            // the advisory and on backup version of the adivsory
+            // the advisory and on backup version of the advisory
             // only auditor can see all versions
             List<AdvisoryInformationResponse> advisoriesAuditor = advisoryService.getAdvisoryInformations(null);
             assertThat(advisoriesAuditor.size(), is(2));
@@ -168,25 +167,21 @@ public class AdvisoryWorkflowTest {
     @Test
     @WithMockUser(username = "manager", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR,
             CsafRoles.ROLE_MANAGER, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void workflowTest_approveToDraft() throws IOException, DatabaseException, CsafException {
-        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
-            final String csafJson = csafJsonCategoryTitleId("Category1", "Title1", "TrackingOne");
-            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-            var readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
-            CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
-            request.setSummary("UpdateSummary");
-            String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
-            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
+        final String csafJson = csafJsonCategoryTitleId("Category1", "Title1", "TrackingOne");
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
+        revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
 
-            readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.1"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
-        }
+        readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.1"));
+        assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
     }
 
     @Test
@@ -350,7 +345,7 @@ public class AdvisoryWorkflowTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0.0.1", "0.0.2", "0.1.0"),
                     "in pre-release stage change of product_tree should trigger a minor version raise");
 
-            // going through multiple workflow state changes should add revision history items for
+            // going through multiple workflow state changes should add revision history elements for
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
 
@@ -378,11 +373,11 @@ public class AdvisoryWorkflowTest {
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("0.0.1", "0.0.2", "0.1.0", "0.1.0-1.0", "1.0.0-1.0", "1.0.0-1.1", "1.0.0-2.0"),
                     "going to Approved should increment pre-release counter");
 
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);  // sollte man hier wieder zurück zu draft gehen können?
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertEquals(7, readAdvisory.getCsaf().at("/document/tracking/revision_history").size(),
-                    "going to RfPublication should not add revision history item");
+                    "going to RfPublication should not add revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
@@ -427,9 +422,8 @@ public class AdvisoryWorkflowTest {
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0-5.0"),
-                    "after release stage workflow changes should only update the first part of the pre-release " +
-                    "part of the existing revision history item and there were 4 relevant updates");
+            assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0-3.0"),
+                    "after release stage workflow changes should only update the pre-release part of the existing revision history element");
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
@@ -437,6 +431,11 @@ public class AdvisoryWorkflowTest {
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
             assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "2.0.0"),
                     "publishing the advisory should remove the pre-release part");
+
+            assertEquals("removed product_tree",
+                    readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
+                    "The last revision history element's summary should be copied/kept since the last change. " +
+                    "Workflow state changes should not edit the summary after initial publication");
 
         }
     }
@@ -449,7 +448,7 @@ public class AdvisoryWorkflowTest {
     private List<String> getRevisionHistoryVersions(AdvisoryResponse advisory) {
         List<String> versionNumbers = new ArrayList<>();
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistItem -> versionNumbers.add(revHistItem.at("/number").asText())
+                revHistElem -> versionNumbers.add(revHistElem.at("/number").asText())
             );
         return versionNumbers;
     }

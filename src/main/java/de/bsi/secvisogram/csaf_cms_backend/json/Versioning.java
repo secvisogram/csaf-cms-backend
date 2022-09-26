@@ -22,6 +22,8 @@ public interface Versioning {
 
     String getInitialVersion();
 
+    String getZeroVersion();
+
     /**
      * Get next version for the workflow change to approve
      * @param currentVersionString The advisory to update the version

@@ -28,6 +28,11 @@ public class SemanticVersioning implements Versioning {
         return INITIAL_VERSION;
     }
 
+    @Override
+    public String getZeroVersion() {
+        return "0.0.0";
+    }
+
     public String getNextApprovedVersion(String currentVersionString) {
         Semver oldVersion = new Semver(currentVersionString);
         Semver newVersion = oldVersion;
@@ -43,19 +48,19 @@ public class SemanticVersioning implements Versioning {
     public String getNextDraftVersion(String currentVersionString) {
 
         Semver oldVersion = new Semver(currentVersionString);
-        if (isPrerelease(oldVersion)) {
-            String newSuffix = increaseSuffixMinorVersion(oldVersion);
-            return oldVersion.withSuffix(newSuffix).toString();
-        } else {
-            String newSuffix = increaseSuffixMajorVersion(oldVersion);
-            return oldVersion.withSuffix(newSuffix).toString();
-        }
+        String newSuffix = increaseSuffixMinorVersion(oldVersion);
+        return oldVersion.withSuffix(newSuffix).toString();
+    }
+
+    public boolean isInitialPublicReleaseOrEarlier(Semver version) {
+
+        return (version.getMajor() < 1)
+                || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
     }
 
     public boolean isPrerelease(Semver version) {
 
-        return (version.getMajor() < 1)
-                || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
+        return (version.getMajor() < 1) || version.getSuffixTokens().length > 0;
     }
 
 

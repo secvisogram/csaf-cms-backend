@@ -22,6 +22,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResp
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -479,8 +480,8 @@ public class AdvisoryWorkflowUtil {
 
     /**
      * Check whether the difference between the both strings is only a spelling mistake
-     * @param oldString 1. string to compare
-     * @param newString 2. string two compare
+     * @param oldString 1. first string to compare
+     * @param newString 2. second string to compare
      * @param maxLevenshteinDistance the maximum distance up to which the two texts are still considered as spelling errors
      * @return true - its only a spelling error
      */
@@ -489,6 +490,19 @@ public class AdvisoryWorkflowUtil {
         LevenshteinResults distance = LevenshteinDetailedDistance.getDefaultInstance().apply(oldString, newString);
 
         return distance.getDistance() <= maxLevenshteinDistance;
+    }
+
+    /**
+     * compares two timestamps if the first is chronologically before the second
+     * will be false if the timestamps are exactly the same
+     * @param timestamp1 the first timestamp
+     * @param timestamp2 the second timestamp
+     * @return true if timestamp1 is chronologically before timestamp2, false otherwise
+     */
+    public static boolean timestampIsBefore(String timestamp1, String timestamp2) {
+        LocalDateTime t1 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp1));
+        LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
+        return t1.compareTo(t2) < 0;
     }
 
 

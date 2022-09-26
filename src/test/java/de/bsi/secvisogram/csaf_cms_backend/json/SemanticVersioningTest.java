@@ -75,10 +75,10 @@ public class SemanticVersioningTest {
         assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.0-1.0"), is("1.0.0-1.1"));
         assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.0-2.0"), is("1.0.0-2.1"));
 
-        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-1.3"), is("1.0.1-2.0"));
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-1.3"), is("1.0.1-1.4"));
 
-        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-1.5"), is("1.0.1-2.0"));
-        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-2.11"), is("1.0.1-3.0"));
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-1.5"), is("1.0.1-1.6"));
+        assertThat(SemanticVersioning.getDefault().getNextDraftVersion("1.0.1-2.11"), is("1.0.1-2.12"));
     }
 
     @Test
