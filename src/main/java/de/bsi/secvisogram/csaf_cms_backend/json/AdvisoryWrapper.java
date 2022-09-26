@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -155,12 +156,11 @@ public class AdvisoryWrapper {
         wrapper.setCreatedAtToNow()
                 .setOwner(userName)
                 .setWorkflowState(WorkflowState.Draft)
-                .setLastVersion("0.0.0")
+                .setLastVersion(versioning.getZeroVersion())
                 .setVersioningType(versioning.getVersioningType())
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
-        wrapper.checkCurrentReleaseDateIsSet();
 
         return wrapper;
     }
@@ -260,10 +260,21 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public int getLastMajorVersion() {
+    public boolean usesSemanticVersioning() {
+        return this.getVersioningStrategy().getVersioningType() == VersioningType.Semantic;
+    }
 
+    public boolean usesIntegerVersioning() {
+        return this.getVersioningStrategy().getVersioningType() == VersioningType.Integer;
+    }
+
+    public int getLastMajorVersion() {
         String lastVersion = getTextFor(AdvisoryField.LAST_VERSION);
-        return new Semver(lastVersion).getMajor();
+        if (usesSemanticVersioning()) {
+            return new Semver(lastVersion).getMajor();
+        } else {
+            return Integer.parseInt(lastVersion);
+        }
     }
 
     public String getLastVersion() {
@@ -275,6 +286,19 @@ public class AdvisoryWrapper {
 
         this.advisoryNode.put(AdvisoryField.LAST_VERSION.getDbName(), version);
         return this;
+    }
+
+    public boolean versionIsAfterInitialPublication() {
+        if (usesSemanticVersioning()) {
+            Semver semver = new Semver(this.getDocumentTrackingVersion());
+            return semver.isGreaterThan(new Semver("1.0.0"));
+        } else {
+            return Integer.parseInt(this.getDocumentTrackingVersion()) > 1;
+        }
+    }
+
+    public boolean versionIsUntilIncludingInitialPublication() {
+        return !versionIsAfterInitialPublication();
     }
 
     public Versioning getVersioningStrategy() {
@@ -425,17 +449,14 @@ public class AdvisoryWrapper {
         return this;
     }
 
-    public AdvisoryWrapper addRevisionHistoryEntry(CreateAdvisoryRequest changedCsafJson) {
-
-        return this.addRevisionHistoryEntry(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion());
+    public AdvisoryWrapper addRevisionHistoryElement(CreateAdvisoryRequest changedCsafJson, String timestamp) {
+        return this.addRevisionHistoryElement(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
     }
 
-    public AdvisoryWrapper addEntryForNewCreatedVersion(String summary, String legacyVersion) {
-
+    public AdvisoryWrapper addRevisionHistoryElement(String summary, String legacyVersion, String timestamp) {
         ArrayNode historyNode = getOrCreateHistoryNode();
         ObjectNode entry = historyNode.addObject();
-        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        entry.put("date", now);
+        entry.put("date", timestamp);
         if (legacyVersion != null && !legacyVersion.isBlank()) {
             entry.put("legacy_version", legacyVersion);
         }
@@ -444,68 +465,78 @@ public class AdvisoryWrapper {
         return this;
     }
 
+    public AdvisoryWrapper editLastRevisionHistoryElement(CreateAdvisoryRequest changedCsafJson, String timestamp) {
+        return this.editLastRevisionHistoryElement(changedCsafJson.getSummary(), changedCsafJson.getLegacyVersion(), timestamp);
+    }
 
-    public AdvisoryWrapper addRevisionHistoryEntry(String summary, String legacyVersion) {
-
-        ArrayNode historyNode = getOrCreateHistoryNode();
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
-            ObjectNode entry = historyNode.addObject();
-            String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-            entry.put("date", now);
-            if (legacyVersion != null && !legacyVersion.isBlank()) {
-                entry.put("legacy_version", legacyVersion);
-            }
-            entry.put("number", this.getDocumentTrackingVersion());
-            entry.put("summary", summary);
-        } else {
-            ObjectNode latestEntry = getLatestEntryInHistoryAfterPrerelease(historyNode);
-            if (latestEntry == null) {
-                latestEntry = historyNode.addObject();
-            }
-            latestEntry.put("date", this.getDocumentTrackingCurrentReleaseDate());
-            if (legacyVersion != null && !legacyVersion.isBlank()) {
-                latestEntry.put("legacy_version", legacyVersion);
-            }
-            latestEntry.put("number", this.getDocumentTrackingVersion());
-            latestEntry.put("summary", summary);
+    public AdvisoryWrapper editLastRevisionHistoryElement(String summary, String legacyVersion, String timestamp) {
+        ObjectNode lastHistoryNode = getLastHistoryElementByDate();
+        if (legacyVersion != null && !legacyVersion.isBlank()) {
+            lastHistoryNode.put("legacy_version", legacyVersion);
         }
+        lastHistoryNode.put("number", this.getDocumentTrackingVersion());
+        lastHistoryNode.put("summary", summary);
+        lastHistoryNode.put("date", timestamp);
         return this;
     }
 
-    public void removeAllRevisionHistoryEntries() {
+    public String getLastRevisionHistoryElementSummary() {
+        ObjectNode lastHistoryNode = getLastHistoryElementByDate();
+        return lastHistoryNode.get("summary").asText();
+    }
+
+    public AdvisoryWrapper setLastRevisionHistoryElementNumberAndDate(String newNumber, String newDate) {
+        ObjectNode lastHistoryNode = getLastHistoryElementByDate();
+        lastHistoryNode.put("number", newNumber);
+        lastHistoryNode.put("date", newDate);
+        return this;
+    }
+
+    private ObjectNode getLastHistoryElementByDate() {
+
+        ArrayNode historyNode = getOrCreateHistoryNode();
+
+        ObjectNode[] lastNode = {null};
+        String[] lastDate = {null};
+        historyNode.forEach(jsonNode -> {
+            String nodeDate = jsonNode.get("date").asText();
+            if (lastDate[0] == null || timestampIsBefore(lastDate[0], nodeDate)) {
+                lastNode[0] = (ObjectNode) jsonNode;
+                lastDate[0] = nodeDate;
+            }
+        });
+
+        return lastNode[0];
+
+    }
+
+    public void removeAllRevisionHistoryElements() {
 
         ArrayNode historyNode = getOrCreateHistoryNode();
         historyNode.removeAll();
     }
 
     public void removeAllPrereleaseVersions() {
+        ArrayNode historyNode = getOrCreateHistoryNode();
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ArrayNode newHistoryNode = jacksonMapper.createArrayNode();
 
-        if (getVersioningStrategy().getVersioningType() == VersioningType.Semantic && isInitialPublicReleaseOrEarlier()) {
-            ArrayNode historyNode = getOrCreateHistoryNode();
-            historyNode.removeAll();
-        }
-    }
-
-    private ObjectNode getLatestEntryInHistoryAfterPrerelease(ArrayNode historyNode) {
-
-        if (historyNode.size() > 0) {
-
-            ObjectNode node = (ObjectNode) historyNode.get(historyNode.size() - 1);
-            if (getLastVersion().equals(node.get("number").asText())) {
-                return null;
-            } else {
-               return node;
-            }
+        if (usesSemanticVersioning()) {
+            historyNode.forEach(historyItem -> {
+                Semver historyItemVersion = new Semver(historyItem.get("number").asText());
+                if (!SemanticVersioning.getDefault().isPrerelease(historyItemVersion)) {
+                    newHistoryNode.add(historyItem);
+                }
+            });
         } else {
-            return null;
+            historyNode.forEach(historyItem -> {
+                String historyItemVersion = historyItem.get("number").asText();
+                if (! ("0".equals(historyItemVersion))) {
+                    newHistoryNode.add(historyItem);
+                }
+            });
         }
-    }
-
-    public boolean isInitialPublicReleaseOrEarlier() {
-
-        Semver version = new Semver(this.getDocumentTrackingVersion());
-        return (version.getMajor() < 1)
-                || ((version.getMajor() == 1) && (version.getMinor() == 0) && (version.getPatch() == 0));
+        getOrCreateTrackingNode().set("revision_history", newHistoryNode);
     }
 
     /**
@@ -605,6 +636,18 @@ public class AdvisoryWrapper {
     }
 
     /**
+     * This utility method checks if the current_release_date of the advisory is set and if it lies in the past
+     * This is helpful for checking if the current_release_date must be updated or not
+     * @param comparedTo the timestamp to compare the current_release_date to
+     * @return true if the current release date is not set, or it is in the past
+     */
+    public boolean currentReleaseDateIsNotSetOrInPast(String comparedTo) {
+        return (this.getDocumentTrackingCurrentReleaseDate() == null
+                || timestampIsBefore(this.getDocumentTrackingCurrentReleaseDate(), comparedTo));
+    }
+
+
+    /**
      * Calculate the JavaScript Object Notation (JSON) Patch according to RFC 6902.
      * Computes and returns a JSON patch from source to target
      * Further, if resultant patch is applied to source, it will yield target
@@ -621,21 +664,6 @@ public class AdvisoryWrapper {
 
         ObjectNode patched = (ObjectNode) applyJsonPatchToNode(patch, this.getAdvisoryNode());
         return new AdvisoryWrapper(patched);
-    }
-
-
-    /**
-     * The current_release_date must always be filled.
-     * When saving, the system always checks whether the current_release_date is in the past. In this case the date is set to the current date. In all other cases (date in the future) this remains.
-     * @throws CsafException thrown when  date is invalid
-     */
-    public void checkCurrentReleaseDateIsSet() throws CsafException {
-
-        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        if (this.getDocumentTrackingCurrentReleaseDate() == null
-                || this.getDocumentTrackingCurrentReleaseDate().compareTo(now) < 0) {
-            this.setDocumentTrackingCurrentReleaseDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-        }
     }
 
 
@@ -666,7 +694,17 @@ public class AdvisoryWrapper {
         return JsonPatch.apply(patch, source);
     }
 
-
-
+    /**
+     * compares two timestamps if the first is chronologically before the second
+     * will be false if the timestamps are exactly the same
+     * @param timestamp1 the first timestamp
+     * @param timestamp2 the second timestamp
+     * @return true if timestamp1 is chronologically before timestamp2, false otherwise
+     */
+    private static boolean timestampIsBefore(String timestamp1, String timestamp2) {
+        LocalDateTime t1 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp1));
+        LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
+        return t1.compareTo(t2) < 0;
+    }
 
 }

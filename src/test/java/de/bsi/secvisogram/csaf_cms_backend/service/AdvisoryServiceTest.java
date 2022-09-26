@@ -10,8 +10,8 @@ import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -36,6 +36,9 @@ import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -57,7 +60,10 @@ import org.springframework.test.context.ContextConfiguration;
 /**
  * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
  */
-@SpringBootTest(properties = "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png")
+@SpringBootTest(properties = {
+        "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png",
+        "csaf.summary.publication=testPublishMessage"
+})
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration
@@ -308,6 +314,13 @@ public class AdvisoryServiceTest {
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asText());
         assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText());
+
+
+        String lastRevisionHistoryElementDate = updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/date").asText();
+        String currentReleaseDate = updatedAdvisory.getCsaf().at("/document/tracking/current_release_date").asText();
+
+        assertEquals(lastRevisionHistoryElementDate, currentReleaseDate, "the last revision history element should conform to the current release date");
+
     }
 
     @Test
@@ -448,6 +461,117 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER })
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void changeAdvisoryWorkflowStateTest_releaseDateNotGiven() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+
+            String timestampNowMinutes = DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
+            assertThat(advisory.getCurrentReleaseDate(), startsWith(timestampNowMinutes));
+            assertThat(advisory.getCsaf().at("/document/tracking/revision_history/0/date").asText(), startsWith(timestampNowMinutes));
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER })
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void changeAdvisoryWorkflowStateTest_releaseDateFuture() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+
+            String timestampFuture = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(20L, ChronoUnit.DAYS));
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, timestampFuture, null);
+
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(timestampFuture, advisory.getCurrentReleaseDate(),
+                    "the given release date given for the workflow state change should be set");
+            assertEquals(timestampFuture, advisory.getCsaf().at("/document/tracking/revision_history/0/date").asText(),
+                    "the last revision history element should have the current_release_date as date");
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER })
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void changeAdvisoryWorkflowStateTest_releaseDateFromDocument() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+
+            String timestampFuture = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(20L, ChronoUnit.DAYS));
+
+            AdvisoryResponse readAdvisory = advisoryService.getAdvisory(idRev.getId());
+            ((ObjectNode) readAdvisory.getCsaf().at("/document/tracking")).put("current_release_date", timestampFuture);
+            CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+            request.setSummary("update current_release_date");
+            String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
+
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(timestampFuture, advisory.getCurrentReleaseDate(), "the current_release_date should not be altered");
+            assertEquals(timestampFuture, advisory.getCsaf().at("/document/tracking/revision_history/0/date").asText(),
+                    "the last revision history element should have the current_release_date as date");
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
+    public void changeAdvisoryWorkflowStateTest_auditTrail() throws IOException, DatabaseException, CsafException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+        advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+
+        Collection<DbField> auditTrailFields = Arrays.asList(CouchDbField.ID_FIELD, DOC_VERSION, OLD_DOC_VERSION, NEW_WORKFLOW_STATE, OLD_WORKFLOW_STATE);
+
+        Map<String, Object> workflowAuditTrailsSelector = expr2CouchDBFilter(equal(ObjectType.AuditTrailWorkflow.name(), TYPE_FIELD.getDbName()));
+        List<JsonNode> workflowAuditTrails = advisoryService.findDocuments(workflowAuditTrailsSelector, auditTrailFields);
+
+        assertEquals(2, workflowAuditTrails.size(), "There should be one audit trail for each workflow state change");
+
+        Map<String, Object> toReviewSelector = expr2CouchDBFilter(equal(WorkflowState.Review.name(), NEW_WORKFLOW_STATE.getDbName()));
+        JsonNode toReviewWorkflowAuditTrail = advisoryService.findDocuments(toReviewSelector, auditTrailFields).get(0);
+        Map<String, Object> toApprovedSelector = expr2CouchDBFilter(equal(WorkflowState.Approved.name(), NEW_WORKFLOW_STATE.getDbName()));
+        JsonNode toApprovedWorkflowAuditTrail = advisoryService.findDocuments(toApprovedSelector, auditTrailFields).get(0);
+
+        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asText());
+        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asText());
+        assertEquals("Draft", toReviewWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asText());
+        assertEquals("Review", toReviewWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asText());
+
+        assertEquals("0.0.1", toApprovedWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asText());
+        assertEquals("1.0.0-1.0", toApprovedWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asText());
+        assertEquals("Review", toApprovedWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asText());
+        assertEquals("Approved", toApprovedWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asText());
+
+    }
+
+    @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
@@ -506,6 +630,29 @@ public class AdvisoryServiceTest {
             assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
         }
     }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void configurablePublishSummaryTest() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+
+            assertEquals("testPublishMessage", advisory.getCsaf().at("/document/tracking/revision_history/0/summary").asText());
+
+        }
+    }
+
 
     @Test
     @WithMockUser(username = "editor1", authorities = { CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})

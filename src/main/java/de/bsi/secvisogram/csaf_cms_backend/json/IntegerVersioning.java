@@ -28,6 +28,11 @@ public class IntegerVersioning implements Versioning {
     }
 
     @Override
+    public String getZeroVersion() {
+        return "0";
+    }
+
+    @Override
     public String getNextApprovedVersion(String  oldVersion) {
 
         return ("0").equals(oldVersion) ? "1" : oldVersion;

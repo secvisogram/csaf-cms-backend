@@ -648,34 +648,34 @@ As it stands, we have three different logics, how version numbers are
 assigned for intermediate states, i.e. stored documents between two "approvals":
 
 1. initial version < 1:
-   - each saved state gets a new version number,
-   - depending on the type of change made → the last version before 1.0.0-1 could
-   be 0.832.12.
+   - each saved state gets a new version number
+   - depending on the type of change made the last version before the first
+     approval could be 0.832.12.
 
 2. after the transition from approved → draft:
-   - here the "draft counter" is
-     incremented by 1 and remains the same during the whole processing cycle until
-     the next approval
+   - the "draft counter" is incremented by 1 and remains the same during the
+     whole processing cycle until the next approval
    - In this case, the changes that are then made in the "draft" state should be
-     traceable via a change index of the draft counter
-
+     traceable via a change of the draft counter's index
    - 1.0.0-1.0 becomes 1.0.0-1.1 with the first change in the draft state and
      increases with each further saved change up to 1.0.0-1.X
 
 3. after the transition from published → draft, i.e. for a new version > 1.0.0:
-   - It is checks what type of change was made compared to thet las published
-     version and increments major, minor, or patch by 1 accordingly, however a
-     higher level change resets the lower level change back to 0 and each level
-     can be incremented by 1 at most
-     → 1.0.0 can become only: 2.0.0, 1.1.0, 1.0.1
+   - It is checked what type of change was made compared to the last published
+     version and major, minor, or patch version are incremented by 1 accordingly,
+     however a higher level change resets the lower level change back to 0 and
+     each level can be incremented by 1 at most
+     → 1.0.0 can only become: 2.0.0, 1.1.0 or 1.0.1
 
-   - Here we will add the "draft counter" immediately when creating the new "draft"
-     version (-1) and thereafter increment the draft index with each save
-     (analog 2) )
+   - The "draft counter" is added immediately when creating the new "draft"
+     version (-1.0) and thereafter the draft index is incremented with each
+     save (analogous to 2.)
 
-for versions > 1.0.0
-Here we will add the "draft counter" immediately when creating the new "draft"
-version (-1) and thereafter increment the draft index with each save (analog 2) )
+For versions > 1.0.0
+
+The "draft counter" is added immediately when creating the new "draft"
+version (-1.0) and thereafter the draft index is incremented with each save
+(analogous to 2.)
 
 Regardless of the number of changes that theoretically led to the increase of
 the version number on each level.
@@ -690,7 +690,7 @@ change each time we save.
 
 With integer versioning, the version number is always incremented only when a
 new "draft" version is initially created (Predicted new version = target version).
-Exception: Version 0, until the first time "published".
+Exception: Version 0, until the first time "approved".
 
 ##### Configuration
 
@@ -727,12 +727,16 @@ The `tracking/revision_history` should be maintained in the backend
       are deleted. A new element is created
       with the default summary "Initial Publication". The text must be configurable.
   - Post 1.0.0
-    - A new revision history element is created at createNewVersion.
-    - This is always updated until the next publish and the Current Release
-      Date is set as date.
+    - A new revision history element is created at `createNewVersion`.
+    - The date of this element is set to the current date.
+    - Succeeding edits will update this revision history element until the
+      next publication.
+      That is, the summary is updated by extending it and the date is raised
     - The summary can be customized by the user when
       saving in the modal window. The user can also set a
       "Legacy Version of the Revision" in the modal window.
+    - Workflow status changes will not add text to the revision history element's
+      summary.
     - In the Wizzard, the list of Revision History Items can no longer be
       edited. The fields are grayed out and the user gets a hint that he can
       only edit it when saving.
@@ -746,17 +750,16 @@ The `tracking/revision_history` should be maintained in the backend
 
 - Integer Versioning
 
-    Initially a revision history element is created. If an element with the
+  - Initially a revision history element is created. If an element with the
     current version number already exists, none is created. New elements are
     only created if the version number increases.
     Behavior analogous to Semantic Versioning.
-
-When in the `Published` status:
-When switching to `Draft` workflow status, a new Revision History Item is created.
+  - Workflow state changes do not add text to the revision history summary.
 
 When a new document is created on the server, any existing revision history
 items are deleted, a new version number (matching the versioning scheme
-configured on the server) is assigned, and an initial revision history item is created.
+configured on the server) is assigned, and an initial revision history item
+is created.
 
 #### Backend States
 
