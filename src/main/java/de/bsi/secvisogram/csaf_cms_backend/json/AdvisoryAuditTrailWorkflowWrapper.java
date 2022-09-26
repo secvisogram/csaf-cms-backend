@@ -12,7 +12,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 public class AdvisoryAuditTrailWorkflowWrapper extends AdvisoryAuditTrailWrapper {
 
     /**
-     * Create an AuditTrailWorkflowWrapper for a change in the workflow state of anadvisory
+     * Create an AuditTrailWorkflowWrapper for a change in the workflow state of an advisory
      *
      * @param newWorkflowState the new state
      * @param oldWorkflowState the old state
