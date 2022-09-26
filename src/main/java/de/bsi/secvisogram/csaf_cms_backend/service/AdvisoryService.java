@@ -443,13 +443,17 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextApprovedVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
+                String timestampNow = getCurrentTimestamp();
+                if (existingAdvisoryNode.currentReleaseDateIsNotSetOrInPast(timestampNow)) {
+                    existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+                }
                 if (existingAdvisoryNode.usesSemanticVersioning() && existingAdvisoryNode.versionIsUntilIncludingInitialPublication()) {
-                    existingAdvisoryNode.addRevisionHistoryElement(workflowStateChangeMsg, "", getCurrentTimestamp());
+                    existingAdvisoryNode.addRevisionHistoryElement(workflowStateChangeMsg, "", timestampNow);
                 } else if (existingAdvisoryNode.usesIntegerVersioning() && "0".equals(previousVersion)) {
                     String lastRevSummary = existingAdvisoryNode.getLastRevisionHistoryElementSummary();
-                    existingAdvisoryNode.addRevisionHistoryElement(lastRevSummary, "", getCurrentTimestamp());
+                    existingAdvisoryNode.addRevisionHistoryElement(lastRevSummary, "", timestampNow);
                 } else {
-                    existingAdvisoryNode.setLastRevisionHistoryElementNumberAndDate(nextVersion, getCurrentTimestamp());
+                    existingAdvisoryNode.setLastRevisionHistoryElementNumberAndDate(nextVersion, timestampNow);
                 }
             }
 
@@ -457,10 +461,14 @@ public class AdvisoryService {
                 String nextVersion = existingAdvisoryNode.getVersioningStrategy()
                         .getNextDraftVersion(existingAdvisoryNode.getDocumentTrackingVersion());
                 existingAdvisoryNode.setDocumentTrackingVersion(nextVersion);
+                String timestampNow = getCurrentTimestamp();
+                if (existingAdvisoryNode.currentReleaseDateIsNotSetOrInPast(timestampNow)) {
+                    existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
+                }
                 if (existingAdvisoryNode.usesSemanticVersioning() && existingAdvisoryNode.versionIsUntilIncludingInitialPublication()) {
-                    existingAdvisoryNode.addRevisionHistoryElement(workflowStateChangeMsg, "", getCurrentTimestamp());
+                    existingAdvisoryNode.addRevisionHistoryElement(workflowStateChangeMsg, "", timestampNow);
                 } else {
-                    existingAdvisoryNode.setLastRevisionHistoryElementNumberAndDate(nextVersion, getCurrentTimestamp());
+                    existingAdvisoryNode.setLastRevisionHistoryElementNumberAndDate(nextVersion, timestampNow);
                 }
             }
 
