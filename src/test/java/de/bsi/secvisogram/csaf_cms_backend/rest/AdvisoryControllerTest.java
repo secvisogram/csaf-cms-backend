@@ -615,6 +615,34 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    void changeWorkflowStatePublishedTest_invalidAdvisory() throws Exception {
+
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
+                .thenThrow(new CsafException("Invalid Advisory", CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY));
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+                        .param("revision", revision)
+                        .param("proposedTime", "2022-07-15T05:50:21Z")
+                        .param("documentTrackingStatus", "Interim"))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void changeWorkflowStatePublishedTest_ValidationServiceNotReachable() throws Exception {
+
+        when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
+                .thenThrow(new CsafException("Validation Service not Available", CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.SERVICE_UNAVAILABLE));
+
+        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+                        .param("revision", revision)
+                        .param("proposedTime", "2022-07-15T05:50:21Z")
+                        .param("documentTrackingStatus", "Interim"))
+                .andDo(print())
+                .andExpect(status().isServiceUnavailable());
+    }
+
+    @Test
     void createNewCsafDocumentVersionTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
