@@ -89,7 +89,7 @@ The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
 
 ./gradlew bootRun
 
-with main class: de.exxcellent.bsi.SecvisogramApplication
+with main class: de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication
 
 ### check application running
 
@@ -99,7 +99,7 @@ http://localhost:8081/api/v1/about
 
 Swagger UI
 
-http://localhost:8081/swagger-ui/index.html
+  http://localhost:8081/swagger-ui/index.html
 
 OpenAPI specification
 
