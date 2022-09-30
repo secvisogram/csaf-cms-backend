@@ -27,7 +27,9 @@ You can find an example setup for local development in the 'compose.yaml' and
 an example configuration for Keycloak in 'keycloak/csaf-realm.json'. You 
 can take this as a starting point, but please check the documentation of the
 individual projects for a proper production setup. We also recommend 
-running behind some kind of reverse proxy.
+running everything behind some kind of reverse proxy. Please take a look at our
+[Architecture](https://github.com/secvisogram/csaf-cms-backend/blob/main/documents/BSISecvisogramArchitecture.drawio.svg)
+for an overview.
 
 The [secvisogram](https://github.com/secvisogram/secvisogram) frontend is usable
 as a standalone version without this server. You can still use this standalone
@@ -38,7 +40,7 @@ only required to manage documents on the server or validate against the
 
 To build the application run:
 ```shell
-./bradlew clean build
+./gradlew clean build
 ```
 The resulting jar file in the `build/libs` folder can then be run with
 `java -jar filename.jar`. To manage the process you can use Docker or an init
