@@ -643,6 +643,7 @@ public class AdvisoryWrapper {
      */
     public boolean currentReleaseDateIsNotSetOrInPast(String comparedTo) {
         return (this.getDocumentTrackingCurrentReleaseDate() == null
+                || this.getDocumentTrackingCurrentReleaseDate().isEmpty()
                 || timestampIsBefore(this.getDocumentTrackingCurrentReleaseDate(), comparedTo));
     }
 
