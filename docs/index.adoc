@@ -2068,6 +2068,12 @@ endif::internal-generation[]
 | A list of allowed state changes of the logged in user.
 |  _Enum:_ 
 
+| currentReleaseDate
+| 
+| String 
+| 
+|  
+
 | csaf
 | 
 | Object 
@@ -2146,6 +2152,12 @@ endif::internal-generation[]
 | List  of <<string>>
 | A list of allowed state changes of the logged in user.
 |  _Enum:_ 
+
+| currentReleaseDate
+| 
+| String 
+| 
+|  
 
 |===
 
