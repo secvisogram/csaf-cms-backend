@@ -47,10 +47,10 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation ('org.openapitools:openapi-generator:6.0.1') {
+	testImplementation ('org.openapitools:openapi-generator:6.2.0') {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
-	testImplementation ('org.openapitools:openapi-generator-cli:6.0.1') {
+	testImplementation ('org.openapitools:openapi-generator-cli:6.2.0') {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
 
