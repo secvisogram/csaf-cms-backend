@@ -20,6 +20,10 @@ java {
 	}
 }
 
+springBoot {
+	buildInfo()
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -79,12 +83,10 @@ task apiDocumentation(type: Test, description: "generates the API documentation"
 	}
 }
 
-
 jacoco {
 	toolVersion = "0.8.7"
 //	reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
-
 
 jacocoTestReport {
 	reports {
@@ -101,8 +103,6 @@ jacocoTestReport {
 
 }
 
-
-
 spotbugs {
 	ignoreFailures = false
 	showStackTraces = true
@@ -117,7 +117,6 @@ spotbugs {
 	extraArgs = [ '-nested:false' ]
 	jvmArgs = [ '-Duser.language=de' ]
 }
-
 
 spotbugsMain {
 	reports {
