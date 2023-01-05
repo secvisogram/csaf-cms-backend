@@ -237,6 +237,21 @@ public class AdvisoryWrapperTest {
     }
 
     @Test
+    public void setDocumentTrackingGeneratorEngineNameAndVersionTest() throws IOException, CsafException {
+
+        var csafJson = """
+                { "document": {
+                      "category": "CSAF_BASE"    }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJson), "Mustermann", Semantic.name());
+        advisory.setDocumentTrackingGeneratorEngineName("CSAF CMS Backend");
+        advisory.setDocumentTrackingGeneratorEngineVersion("0.0.1");
+        assertThat(advisory.getDocumentTrackingGeneratorEngineName(), equalTo("CSAF CMS Backend"));
+        assertThat(advisory.getDocumentTrackingGeneratorEngineVersion(), equalTo("0.0.1"));
+    }
+
+    @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void addRevisionHistoryElementTest_semanticVersioning() throws IOException, CsafException, InterruptedException {
 

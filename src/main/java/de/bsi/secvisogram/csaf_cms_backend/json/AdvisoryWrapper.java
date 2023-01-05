@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import org.springframework.http.HttpStatus;
@@ -238,6 +239,7 @@ public class AdvisoryWrapper {
 
     /**
      * set reference form AdvisoryVersion to source advisory
+     *
      * @param advisoryId the id of the referenced advisory
      * @return this
      */
@@ -399,7 +401,20 @@ public class AdvisoryWrapper {
 
     public String getDocumentTrackingStatus() {
 
-        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_STATUS);
+        JsonNode statusNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_STATUS);
+        return (statusNode.isMissingNode()) ? "" : statusNode.asText();
+    }
+
+    public String getDocumentTrackingGeneratorEngineName() {
+
+        JsonNode nameNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_GENERATOR_ENGINE_NAME);
+        return (nameNode.isMissingNode()) ? "" : nameNode.asText();
+    }
+
+
+    public String getDocumentTrackingGeneratorEngineVersion() {
+
+        JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_GENERATOR_ENGINE_VERSION);
         return (versionNode.isMissingNode()) ? "" : versionNode.asText();
     }
 
@@ -447,6 +462,47 @@ public class AdvisoryWrapper {
         ObjectNode trackingNode = getOrCreateTrackingNode();
         trackingNode.put("status", newState);
         return this;
+    }
+
+    /**
+     * Set name of the generator engine node.
+     * Create nodes when they not exist.
+     *
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingGeneratorEngineName(String engineName) {
+        ObjectNode engineNode = getOrCreateObjectNode(
+                getOrCreateTrackingNode(), List.of("generator", "engine")
+        );
+        engineNode.put("name", engineName);
+        return this;
+    }
+
+    /**
+     * Set version of the generator engine node.
+     * Create nodes when they not exist.
+     *
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingGeneratorEngineVersion(String engineVersion) {
+        ObjectNode engineNode = getOrCreateObjectNode(
+                getOrCreateTrackingNode(), List.of("generator", "engine")
+        );
+        engineNode.put("version", engineVersion);
+        return this;
+    }
+
+    private ObjectNode getOrCreateObjectNode(ObjectNode node, List<String> ptr) {
+        if (ptr.isEmpty()) {
+            return node;
+        }
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectNode nextNode = (ObjectNode) node.get(ptr.get(0));
+        if (nextNode == null) {
+            nextNode = jacksonMapper.createObjectNode();
+            node.set(ptr.get(0), nextNode);
+        }
+        return getOrCreateObjectNode(nextNode, ptr.subList(1, ptr.size()));
     }
 
     public AdvisoryWrapper addRevisionHistoryElement(CreateAdvisoryRequest changedCsafJson, String timestamp) {
@@ -531,7 +587,7 @@ public class AdvisoryWrapper {
         } else {
             historyNode.forEach(historyItem -> {
                 String historyItemVersion = historyItem.get("number").asText();
-                if (! ("0".equals(historyItemVersion))) {
+                if (!("0".equals(historyItemVersion))) {
                     newHistoryNode.add(historyItem);
                 }
             });
@@ -574,20 +630,13 @@ public class AdvisoryWrapper {
     }
 
     private ObjectNode getOrCreateTrackingNode() {
-
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectNode versionNode = (ObjectNode) this.at(AdvisorySearchField.DOCUMENT);
-        ObjectNode trackingNode = (ObjectNode) versionNode.get("tracking");
-        if (trackingNode == null) {
-            trackingNode = jacksonMapper.createObjectNode();
-            versionNode.set("tracking", trackingNode);
-        }
-        return trackingNode;
+        return getOrCreateObjectNode(this.advisoryNode, List.of("csaf", "document", "tracking"));
     }
 
     /**
      * Set current_release_date in document tracking node.
      * Create nodes when they not exist.
+     *
      * @param newDate the new date as ISO-8601 string
      * @return this
      */
@@ -638,6 +687,7 @@ public class AdvisoryWrapper {
     /**
      * This utility method checks if the current_release_date of the advisory is set and if it lies in the past
      * This is helpful for checking if the current_release_date must be updated or not
+     *
      * @param comparedTo the timestamp to compare the current_release_date to
      * @return true if the current release date is not set, or it is in the past
      */
@@ -698,6 +748,7 @@ public class AdvisoryWrapper {
     /**
      * compares two timestamps if the first is chronologically before the second
      * will be false if the timestamps are exactly the same
+     *
      * @param timestamp1 the first timestamp
      * @param timestamp2 the second timestamp
      * @return true if timestamp1 is chronologically before timestamp2, false otherwise

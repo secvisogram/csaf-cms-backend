@@ -46,8 +46,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -99,6 +102,20 @@ public class AdvisoryServiceTest {
     private static final String advisoryJsonString = String.format(advisoryTemplateString, csafJson);
     private static final String answerText = "This is an answer.";
 
+    private static final String testEngineName = "Test Engine";
+
+    private static final String testEngineVersion = "Test Version";
+
+    @TestConfiguration
+    public static class TestConfig {
+        @Bean
+        BuildProperties buildProperties() {
+            Properties props = new Properties();
+            props.setProperty("version", testEngineVersion);
+            props.setProperty("name", testEngineName);
+            return new BuildProperties(props);
+        }
+    }
 
     @Test
     public void contextLoads() {
@@ -217,6 +234,17 @@ public class AdvisoryServiceTest {
     public void getAdvisoryTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+        assertEquals(idRev.getId(), advisory.getAdvisoryId());
+        assertEquals(advisory.getCsaf().at("/document/tracking/generator/engine/name").asText(), testEngineName);
+        assertEquals(advisory.getCsaf().at("/document/tracking/generator/engine/version").asText(), testEngineVersion);
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryTest_engineDataSet() throws IOException, DatabaseException, CsafException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+
         assertEquals(idRev.getId(), advisory.getAdvisoryId());
     }
 

@@ -115,28 +115,6 @@ public class CsafDocumentJsonCreator {
                 }""".formatted(documentCategory, documentTitle);
     }
 
-
-    public static String csafJsonTrackingGeneratorVersion(String version) {
-
-        return """
-                {
-                  "document": {
-                      "category": "Category1",
-                      "title": "title1",
-                      "tracking": {
-                          "current_release_date": "2022-03-17T13:03:42.105Z",
-                          "generator": {
-                              "date": "2022-03-17T13:09:42.105Z",
-                              "engine": {
-                                  "name": "Secvisogram",
-                                  "version": "%s"
-                            }
-                          }
-                      }
-                  }
-                }""".formatted(version);
-    }
-
     public static String csafJsonRevisionHistorySummary(String summary) {
 
         return """
