@@ -1,6 +1,10 @@
+###############################################################################
+#          For development purposes only, do not use in production            #
+###############################################################################
+
 services:
   csaf-couchdb:
-    image: couchdb:3.2
+    image: couchdb:3.3
     container_name: csaf-couchdb
     restart: on-failure
     env_file: .env
@@ -13,7 +17,7 @@ services:
       - "${CSAF_COUCHDB_PORT}:5984"
 
   csaf-keycloak-db:
-    image: postgres:14.3
+    image: postgres:14
     container_name: csaf-keycloak-db
     volumes:
       - csaf-keycloak-db-data:/var/lib/postgresql/data
@@ -27,31 +31,32 @@ services:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
 
   csaf-keycloak:
-    image: bitnami/keycloak:18
+    image: quay.io/keycloak/keycloak:20.0
     container_name: csaf-keycloak
     env_file: .env
     environment:
-      KEYCLOAK_DATABASE_HOST: csaf-keycloak-db
-      KEYCLOAK_DATABASE_PORT: ${CSAF_KEYCLOAK_DATABASE_PORT}
-      KEYCLOAK_DATABASE_NAME: ${CSAF_KEYCLOAK_DATABASE_NAME}
-      KEYCLOAK_DATABASE_USER: ${CSAF_KEYCLOAK_DATABASE_USER}
-      KEYCLOAK_DATABASE_PASSWORD: ${CSAF_KEYCLOAK_DATABASE_PASSWORD}
-      KEYCLOAK_DATABASE_SCHEMA: public
-      # KEYCLOAK_JDBC_PARAMS:
-      KEYCLOAK_CREATE_ADMIN_USER: "true"
-      KEYCLOAK_ADMIN_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
+      # https://www.keycloak.org/server/all-config
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_DB: postgres
+      KC_DB_URL_HOST: csaf-keycloak-db
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: ${CSAF_KEYCLOAK_DATABASE_NAME}
+      KC_DB_USERNAME: ${CSAF_KEYCLOAK_DATABASE_USER}
+      KC_DB_PASSWORD: ${CSAF_KEYCLOAK_DATABASE_PASSWORD}
+      KC_DB_SCHEMA: public
+      KEYCLOAK_ADMIN: ${CSAF_KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-    volumes:
-      - ./keycloak/export:/tmp/export:z
     depends_on:
       - csaf-keycloak-db
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_PORT}:8080"
+    command: ["start-dev"] # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
 
   # Run this manually to import the default keycloak config since 'depends_on' is currently broken.
   csaf-keycloak-cli:
-    image: adorsys/keycloak-config-cli:latest-18.0.0
+    image: adorsys/keycloak-config-cli:latest-20.0.1
     container_name: csaf-keycloak-cli
     profiles: [ "run_manually" ]
     env_file: .env
@@ -65,7 +70,7 @@ services:
     restart: on-failure
 
   csaf-oauth2-proxy:
-    image: bitnami/oauth2-proxy:7.3.0
+    image: bitnami/oauth2-proxy:7.4.0
     container_name: csaf-oauth2-proxy
     command: [""]
     env_file: .env
