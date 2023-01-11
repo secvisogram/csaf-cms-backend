@@ -1951,7 +1951,7 @@ endif::internal-generation[]
 ===== Return Type
 
 
-<<String>>
+<<Map>>
 
 
 ===== Content Type
@@ -1968,7 +1968,7 @@ endif::internal-generation[]
 
 | 200
 | OK
-|  <<String>>
+| Map[<<string>>] 
 
 |===
 
