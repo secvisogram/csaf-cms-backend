@@ -49,19 +49,6 @@ public class AdvisorySearchUtilTest {
 
     @Test
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_documentTrackingGeneratorVersion() throws IOException, CsafException {
-
-        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGeneratorVersion("1.2.3")));
-        this.advisoryService.addAdvisory(csafToRequest(csafJsonTrackingGeneratorVersion("3.4.5")));
-        List<AdvisoryInformationResponse> infos =
-                this.advisoryService.getAdvisoryInformations(createExprTrackingGeneratorVersion("1.2.3"));
-        List<String> ids = infos.stream().map(AdvisoryInformationResponse::getAdvisoryId).toList();
-        assertThat(ids.size(), equalTo(1));
-        assertThat(ids, hasItems(idRev1.getId()));
-    }
-
-    @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTrackingRevisionHistorysummary() throws IOException, CsafException {
 
         this.advisoryService.addAdvisory(csafToRequest(csafJsonRevisionHistorySummary("SummaryOne")));
@@ -134,11 +121,6 @@ public class AdvisorySearchUtilTest {
 
         return createExpr(value, "csaf", "document", "title");
 
-    }
-
-    private String createExprTrackingGeneratorVersion(String value) {
-
-        return createExpr(value, "csaf", "document", "tracking", "generator", "engine", "version");
     }
 
     private String createExprRevisionHistorySummary(String value) {

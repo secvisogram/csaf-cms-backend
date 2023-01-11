@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -79,6 +80,9 @@ public class AdvisoryService {
 
     @Autowired
     private CsafConfiguration configuration;
+
+    @Autowired
+    private BuildProperties buildProperties;
 
     /**
      * get number of documents
@@ -180,6 +184,8 @@ public class AdvisoryService {
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(newCsafJson, credentials.getName(),
                 this.versioningStrategy);
+        newAdvisoryNode.setDocumentTrackingGeneratorEngineName(buildProperties.getName());
+        newAdvisoryNode.setDocumentTrackingGeneratorEngineVersion(buildProperties.getVersion());
         AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
                 .setAdvisoryId(advisoryId.toString())
                 .setChangeType(ChangeType.Create)
@@ -322,6 +328,8 @@ public class AdvisoryService {
 
                 AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
                 newAdvisoryNode.setRevision(revision);
+                newAdvisoryNode.setDocumentTrackingGeneratorEngineName(buildProperties.getName());
+                newAdvisoryNode.setDocumentTrackingGeneratorEngineVersion(buildProperties.getVersion());
                 PatchType changeType = AdvisoryWorkflowUtil.getChangeType(oldAdvisoryNode, newAdvisoryNode, configuration.getVersioning().getLevenshtein());
                 String nextVersion = oldAdvisoryNode.getVersioningStrategy().getNextVersion(changeType, oldAdvisoryNode.getDocumentTrackingVersion(), oldAdvisoryNode.getLastVersion());
                 newAdvisoryNode.setDocumentTrackingVersion(nextVersion);
