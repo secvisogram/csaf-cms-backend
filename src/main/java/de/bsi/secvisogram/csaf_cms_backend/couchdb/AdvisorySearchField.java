@@ -10,6 +10,10 @@ public enum AdvisorySearchField implements DbField {
 
     DOCUMENT_TRACKING_STATUS("csaf", "document", "tracking", "status"),
 
+    DOCUMENT_TRACKING_GENERATOR_ENGINE_NAME("csaf", "document", "tracking", "generator", "engine", "name"),
+
+    DOCUMENT_TRACKING_GENERATOR_ENGINE_VERSION("csaf", "document", "tracking", "generator", "engine", "version"),
+
     DOCUMENT_TRACKING_CURRENT_RELEASE_DATE("csaf", "document", "tracking", "current_release_date"),
 
     DOCUMENT_TRACKING_INITIAL_RELEASE_DATE("csaf", "document", "tracking", "initial_release_date");
