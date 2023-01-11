@@ -1,6 +1,10 @@
+###############################################################################
+#          For development purposes only, do not use in production            #
+###############################################################################
+
 services:
   csaf-couchdb:
-    image: couchdb:3.2
+    image: couchdb:3.3
     container_name: csaf-couchdb
     restart: on-failure
     env_file: .env
@@ -27,7 +31,7 @@ services:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
 
   csaf-keycloak:
-    image: quay.io/keycloak/keycloak:19.0
+    image: quay.io/keycloak/keycloak:20.0
     container_name: csaf-keycloak
     env_file: .env
     environment:
@@ -52,7 +56,7 @@ services:
 
   # Run this manually to import the default keycloak config since 'depends_on' is currently broken.
   csaf-keycloak-cli:
-    image: adorsys/keycloak-config-cli:latest-19.0.1
+    image: adorsys/keycloak-config-cli:latest-20.0.1
     container_name: csaf-keycloak-cli
     profiles: [ "run_manually" ]
     env_file: .env
@@ -66,7 +70,7 @@ services:
     restart: on-failure
 
   csaf-oauth2-proxy:
-    image: bitnami/oauth2-proxy:7.3.0
+    image: bitnami/oauth2-proxy:7.4.0
     container_name: csaf-oauth2-proxy
     command: [""]
     env_file: .env
