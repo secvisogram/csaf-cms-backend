@@ -49,7 +49,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping(SecvisogramApplication.BASE_ROUTE + "advisories")
 @Tag(
         name = "Advisory",
-        description = "API for for Creating, Retrieving, Updating and Deleting of CSAF documents," +
+        description = "API for Creating, Retrieving, Updating and Deleting of CSAF documents," +
                       " including their Versions, Comments and Workflow States."
 )
 public class AdvisoryController {
