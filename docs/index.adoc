@@ -1920,8 +1920,8 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
-[.MainController]
-=== MainController
+[.Main]
+=== Main
 
 
 [.about]
@@ -1929,11 +1929,11 @@ endif::internal-generation[]
 
 `GET /api/v1/about`
 
-
+Current version
 
 ===== Description
 
-
+Get the current version of the backend service.
 
 
 // markup not found, no include::{specDir}api/v1/about/GET/spec.adoc[opts=optional]
@@ -1943,6 +1943,19 @@ endif::internal-generation[]
 ===== Parameters
 
 
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+| Version String as JSON <<string>>
+| X
+| 
+| 
+
+|===
 
 
 
