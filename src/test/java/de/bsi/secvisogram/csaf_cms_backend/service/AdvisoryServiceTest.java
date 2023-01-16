@@ -11,7 +11,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpressio
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -26,6 +25,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
+import de.bsi.secvisogram.csaf_cms_backend.json.TrackingIdCounter;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -1117,6 +1117,42 @@ public class AdvisoryServiceTest {
         CommentResponse newAnswer = advisoryService.getComment(idRevAnswer.getId());
         Assertions.assertEquals("updated answer text", newAnswer.getCommentText());
 
+    }
+
+    @Test
+    void getNewTrackingIdCounterTest() throws IOException, DatabaseException, CsafException {
+        Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
+        Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
+        Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID));
+        Assertions.assertEquals(3, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
+        Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryTest_addTrackingId() throws IOException, DatabaseException, CsafException {
+
+        final String publisherPrefix = "Red";
+        String csafJsonWithPublisher = """
+                {
+                    "document": {
+                        "category": "CSAF_BASE",
+                        "publisher": {
+                              "category": "vendor",
+                              "contact_details": "https://access.redhat.com/security/team/contact/",
+                              "name": "%s Hat Product Security",
+                              "namespace": "https://www.redhat.com"
+                           }
+                    }
+                }""";
+
+        IdAndRevision idRev1 = advisoryService.addAdvisory(csafToRequest(csafJson));
+        IdAndRevision idRev2 = advisoryService.addAdvisory(csafToRequest(String.format(csafJsonWithPublisher, publisherPrefix)));
+        AdvisoryResponse advisory1 = advisoryService.getAdvisory(idRev1.getId());
+        AdvisoryResponse advisory2 = advisoryService.getAdvisory(idRev2.getId());
+
+        assertEquals("-TEMP-00001", advisory1.getCsaf().at("/document/tracking/id").asText());
+        assertEquals(publisherPrefix + "-TEMP-00002", advisory2.getCsaf().at("/document/tracking/id").asText());
     }
 
 }

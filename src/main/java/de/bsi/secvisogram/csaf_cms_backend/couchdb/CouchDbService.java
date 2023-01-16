@@ -111,11 +111,16 @@ public class CouchDbService {
      */
     public String writeDocument(final UUID uuid, String createString) {
 
+         return writeDocument(uuid.toString(), createString);
+    }
+
+    public String writeDocument(final String objectId, String createString) {
+
         Cloudant client = createCloudantClient();
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
                 .db(this.dbName)
-                .docId(uuid.toString())
+                .docId(objectId)
                 .contentType("application/json")
                 .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
                 .build();

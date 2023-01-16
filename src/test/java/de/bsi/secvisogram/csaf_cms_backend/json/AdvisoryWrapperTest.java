@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonTitle;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper.calculateFileName;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Integer;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -499,6 +501,100 @@ public class AdvisoryWrapperTest {
         assertEquals("last summary", advisory.getLastRevisionHistoryElementSummary(),
                 "summary of history element with most recent date should have been retrieved");
 
+    }
+
+    @Test
+    public void calculateFileNameTest() throws IOException, CsafException {
+
+        assertEquals("exxcellent-2023-00333.json", calculateFileName("eXXcellent-2023-00333"));
+        assertEquals("exx_-2023-00333.json", calculateFileName("eXXäöü-2023-00333"));
+        assertEquals("red_flag_+_2023.json", calculateFileName("red flag + 2023"));
+   }
+
+    @Test
+    public void formatNumberTest() throws IOException, CsafException {
+
+        assertEquals("0000790", AdvisoryWrapper.formatNumber("7", 790));
+        assertEquals("00790", AdvisoryWrapper.formatNumber("abc", 790));
+        assertEquals("7345790", AdvisoryWrapper.formatNumber("5", 7345790));
+    }
+
+    @Test
+    public void calculatePublishYearTest() throws IOException, CsafException {
+
+        var csafJsonWithReleaseDate = """
+                { "document": {
+                      "tracking": {
+                         "initial_release_date": "2022-05-27T10:00:00.000Z"
+                      }
+                   }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonWithReleaseDate), "Mustermann", Semantic.name());
+        assertEquals(2022, advisory.calculatePublishYear());
+
+        var csafJsonWithoutReleaseDate = """
+                { "document": {
+                   }
+                }""";
+
+        AdvisoryWrapper advisory2 = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonWithoutReleaseDate), "Mustermann", Semantic.name());
+        assertEquals(LocalDate.now().getYear(), advisory2.calculatePublishYear());
+
+    }
+
+    @Test
+    public void calculateCompanyNameTest() throws IOException, CsafException {
+
+        var csafJsonWithReleaseDate = """
+                { "document": {
+                      "publisher": {
+                         "name": "Red flag company"
+                      }
+                   }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonWithReleaseDate), "Mustermann", Semantic.name());
+        assertEquals("Red", advisory.calculateCompanyName(""));
+
+        assertEquals("ConfiguredCompany", advisory.calculateCompanyName("ConfiguredCompany"));
+    }
+
+    @Test
+    public void setTemporaryTrackingIdTest() throws IOException, CsafException {
+
+        var csafJsonWithReleaseDate = """
+                { "document": {
+                      "publisher": {
+                         "name": "Red flag company"
+                      }
+                   }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonWithReleaseDate), "Mustermann", Semantic.name());
+        advisory.setTemporaryTrackingId("example", "5", 158L );
+
+        assertEquals("example-TEMP-00158", advisory.getDocumentTrackingId());
+    }
+
+    @Test
+    public void setFinalTrackingIdTest() throws IOException, CsafException {
+
+        var csafJsonWithReleaseDate = """
+                { "document": {
+                      "publisher": {
+                         "name": "Red flag company"
+                      }
+                   }
+                }""";
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonWithReleaseDate), "Mustermann", Semantic.name());
+        advisory.setFinalTrackingIdAndUrl("https://example.com", "example", "5", 158L);
+
+        assertEquals("example-2023-00158", advisory.getDocumentTrackingId());
+        assertEquals("https://example.com/WHITE/2023/example-2023-00158.json", advisory.at("/csaf/document/references/0/url").asText());
+        assertEquals("https://example.com/WHITE/2023/example-2023-00158.json", advisory.at("/csaf/document/references/0/summary").asText());
+        assertEquals("self", advisory.at("/csaf/document/references/0/category").asText());
     }
 
 }

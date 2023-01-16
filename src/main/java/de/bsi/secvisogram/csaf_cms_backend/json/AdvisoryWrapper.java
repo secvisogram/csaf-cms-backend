@@ -4,6 +4,8 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.CSAF;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.InvalidObjectType;
+import static java.time.LocalDateTime.from;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,14 +31,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 /**
  * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
  */
 public class AdvisoryWrapper {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdvisoryWrapper.class);
 
     public static final String emptyCsafDocument = """
             { "document": {
@@ -430,9 +437,20 @@ public class AdvisoryWrapper {
         return (versionNode.isMissingNode()) ? null : versionNode.asText();
     }
 
+    public String getDocumentPublisherName() {
+
+        JsonNode versionNode = this.at("/csaf/document/publisher/name");
+        return (versionNode.isMissingNode()) ? null : versionNode.asText();
+    }
+
+    public String getDocumentDistributionTlp() {
+
+        JsonNode tlpNode = this.at("/csaf/document/distribution/tlp");
+        return (tlpNode.isMissingNode()) ? null : tlpNode.asText();
+    }
 
     /**
-     * Set tracking field in the document tracking node.
+     * Set version field in the document tracking node.
      * Create nodes when they not exist.
      *
      * @param newVersion the new version
@@ -442,6 +460,20 @@ public class AdvisoryWrapper {
 
         ObjectNode trackingNode = getOrCreateTrackingNode();
         trackingNode.put("version", newVersion);
+        return this;
+    }
+
+    /**
+     * Set id field in the document tracking node.
+     * Create nodes when they not exist.
+     *
+     * @param newId the new version
+     * @return this
+     */
+    public AdvisoryWrapper setDocumentTrackingId(String newId) {
+
+        ObjectNode trackingNode = getOrCreateTrackingNode();
+        trackingNode.put("id", newId);
         return this;
     }
 
@@ -754,9 +786,114 @@ public class AdvisoryWrapper {
      * @return true if timestamp1 is chronologically before timestamp2, false otherwise
      */
     private static boolean timestampIsBefore(String timestamp1, String timestamp2) {
-        LocalDateTime t1 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp1));
-        LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
+        LocalDateTime t1 = from(ISO_DATE_TIME.parse(timestamp1));
+        LocalDateTime t2 = from(ISO_DATE_TIME.parse(timestamp2));
         return t1.compareTo(t2) < 0;
     }
 
+    public AdvisoryWrapper addDocumentReferencesNode(String summary, String url) {
+
+        ObjectNode documentNode = getOrCreateObjectNode(this.advisoryNode, List.of("csaf", "document"));
+        ArrayNode referencesNode = (ArrayNode) documentNode.get("references");
+        if (referencesNode == null) {
+            final ObjectMapper jacksonMapper = new ObjectMapper();
+            referencesNode = jacksonMapper.createArrayNode();
+            documentNode.set("references", referencesNode);
+        }
+
+        ObjectNode entry = referencesNode.addObject();
+        entry.put("category", "self");
+
+        entry.put("summary", summary);
+        entry.put("url", url);
+        return this;
+    }
+
+    public void setTemporaryTrackingId(String trackingidCompany, String trackingidDigits, long sequentialNumber) {
+
+        String companyName = calculateCompanyName(trackingidCompany);
+        String formatted = formatNumber(trackingidDigits, sequentialNumber);
+        setDocumentTrackingId(companyName + "-TEMP-" + formatted);
+    }
+
+    public void setFinalTrackingIdAndUrl(String baseUrl, String trackingidCompany, String trackingidDigits, long sequentialNumber) {
+
+        String companyName = calculateCompanyName(trackingidCompany);
+        String formatted = formatNumber(trackingidDigits, sequentialNumber);
+        int year = calculatePublishYear();
+        String trackingId = companyName + "-" + year + "-" + formatted;
+        setDocumentTrackingId(trackingId);
+
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            String referenceUrl = calculateReferenceUrl(baseUrl, trackingidCompany, trackingidDigits, sequentialNumber);
+            this.addDocumentReferencesNode(referenceUrl, referenceUrl);
+        }
+    }
+
+    String calculateReferenceUrl(String baseUrl, String trackingidCompany, String trackingidDigits, long sequentialNumber) {
+
+        String companyName = calculateCompanyName(trackingidCompany);
+        String formatted = formatNumber(trackingidDigits, sequentialNumber);
+
+        int year = calculatePublishYear();
+        String trackingId = companyName + "-" + year + "-" + formatted;
+        String fileName = calculateFileName(trackingId);
+        String tlpLabel = getDocumentDistributionTlp() != null ? getDocumentDistributionTlp() : "WHITE";
+        return baseUrl + "/" + tlpLabel + "/" + year + "/" + fileName;
+    }
+
+    /**
+     * If trackingidCompany is  not set then we generate the abbreviation from the Publisher Name.
+     * Always the first letters of the words separated by spaces
+     * @param trackingidCompany configured company short name
+     * @return the calculated name
+     */
+    String calculateCompanyName(String trackingidCompany) {
+        String companyName = trackingidCompany;
+        if (trackingidCompany == null || trackingidCompany.isBlank()) {
+            String publisherName = this.getDocumentPublisherName();
+            publisherName = (publisherName != null) ? publisherName.trim() : "";
+            companyName = (publisherName.indexOf(" ") > 0) ? publisherName.substring(0, publisherName.indexOf(" ")) : "";
+        }
+        return companyName;
+    }
+
+    /**
+     * Calculate the year of publishing based on the initialReleaseDate
+     * @return
+     */
+    int calculatePublishYear() {
+
+        String date = this.getDocumentTrackingInitialReleaseDate();
+        return (date != null) ? from(ISO_DATE_TIME.parse(date)).getYear() : LocalDateTime.now().getYear();
+    }
+
+    /**
+     * add leading Zeros
+     * @param trackingidDigits number ofdigits
+     * @param sequentialNumber generated sequenital number
+     * @return number with leading zeros
+     */
+    static String formatNumber(String trackingidDigits, long sequentialNumber) {
+        int digits;
+        try {
+            digits = Integer.parseInt(trackingidDigits);
+        } catch (NumberFormatException ex) {
+            LOG.warn("csaf.trackingid.digits is not an integer ", ex);
+            digits = 5;
+        }
+        return String.format("%0" + digits + "d", sequentialNumber);
+    }
+
+    /**
+     * Generate CSAF filename from trackingId
+     * according to  <a href="https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#51-filename">CSAF 5.1</a>
+     * @param trackingId the value from /document/tracking/id
+     * @return the filename
+     */
+    static String calculateFileName(String trackingId) {
+
+        String documentName = trackingId.toLowerCase(Locale.ENGLISH).replaceAll("[^+\\-a-z0-9]+", "_");
+        return documentName + ".json";
+    }
 }

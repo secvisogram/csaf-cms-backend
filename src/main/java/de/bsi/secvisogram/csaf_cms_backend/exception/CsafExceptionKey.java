@@ -11,5 +11,6 @@ public enum CsafExceptionKey {
     InvalidObjectType,
     AdvisoryValidationError,
     ErrorAccessingValidationServer,
-    SummaryInHistoryEmpty
+    SummaryInHistoryEmpty,
+    ErrorCreatingTrackingIdCounter;
 }
