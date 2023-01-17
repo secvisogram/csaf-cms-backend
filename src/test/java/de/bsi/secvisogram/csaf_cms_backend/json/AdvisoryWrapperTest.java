@@ -572,7 +572,7 @@ public class AdvisoryWrapperTest {
                 }""";
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonWithReleaseDate), "Mustermann", Semantic.name());
-        advisory.setTemporaryTrackingId("example", "5", 158L );
+        advisory.setTemporaryTrackingId("example", "5", 158L);
 
         assertEquals("example-TEMP-00158", advisory.getDocumentTrackingId());
     }
