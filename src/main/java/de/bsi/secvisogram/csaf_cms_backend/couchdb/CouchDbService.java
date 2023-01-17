@@ -120,7 +120,8 @@ public class CouchDbService {
      * @param objectId         id fo the new document
      * @param createString JSON encoded string of the document to add
      * @return revision for concurrent control
-     */    public String writeDocument(final String objectId, String createString) {
+     */
+    public String writeDocument(final String objectId, String createString) {
 
         Cloudant client = createCloudantClient();
 
