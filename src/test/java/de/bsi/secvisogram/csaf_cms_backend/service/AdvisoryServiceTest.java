@@ -1120,6 +1120,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
     void getNewTrackingIdCounterTest() throws IOException, DatabaseException, CsafException {
         Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
         Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));

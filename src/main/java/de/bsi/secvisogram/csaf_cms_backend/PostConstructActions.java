@@ -4,13 +4,15 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Actions to do after startup of the application
  */
+@Component
 public class PostConstructActions {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SecvisogramApplication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PostConstructActions.class);
 
     @Value("${csaf.references.baseurl}")
     private String referencesBaseUrl;
@@ -22,6 +24,7 @@ public class PostConstructActions {
     public void init() {
         if (this.referencesBaseUrl == null || this.referencesBaseUrl.isBlank()) {
             LOG.warn("csaf.references.baseurl is not configured");
+        } else {
             if (!this.referencesBaseUrl.startsWith("https://")) {
                 LOG.warn("csaf.references.baseurl should start with https://");
             }

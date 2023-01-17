@@ -872,7 +872,7 @@ public class AdvisoryWrapper {
         if (trackingidCompany == null || trackingidCompany.isBlank()) {
             String publisherName = this.getDocumentPublisherName();
             publisherName = (publisherName != null) ? publisherName.trim() : "";
-            companyName = (publisherName.indexOf(" ") > 0) ? publisherName.substring(0, publisherName.indexOf(" ")) : "";
+            companyName = (publisherName.indexOf(' ') > 0) ? publisherName.substring(0, publisherName.indexOf(' ')) : "";
         }
         return companyName;
     }
