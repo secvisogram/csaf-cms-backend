@@ -443,6 +443,10 @@ public class AdvisoryWrapper {
         return (versionNode.isMissingNode()) ? null : versionNode.asText();
     }
 
+    /**
+     *  Get the tlp label for the tracking id. Use WHITE as default
+     * @return the tlp label
+     */
     public String getDocumentDistributionTlp() {
 
         JsonNode tlpNode = this.at("/csaf/document/distribution/tlp");
@@ -788,9 +792,15 @@ public class AdvisoryWrapper {
     private static boolean timestampIsBefore(String timestamp1, String timestamp2) {
         LocalDateTime t1 = from(ISO_DATE_TIME.parse(timestamp1));
         LocalDateTime t2 = from(ISO_DATE_TIME.parse(timestamp2));
-        return t1.compareTo(t2) < 0;
+        return t1.isBefore(t2);
     }
 
+    /**
+     * add new node to the document references with category 'sef'
+     * @param summary summary of the node
+     * @param url url of the node
+     * @return this wrapper
+     */
     public AdvisoryWrapper addDocumentReferencesNode(String summary, String url) {
 
         ObjectNode documentNode = getOrCreateObjectNode(this.advisoryNode, List.of("csaf", "document"));
@@ -816,27 +826,37 @@ public class AdvisoryWrapper {
         setDocumentTrackingId(companyName + "-TEMP-" + formatted);
     }
 
-    public void setFinalTrackingIdAndUrl(String baseUrl, String trackingidCompany, String trackingidDigits, long sequentialNumber) {
+    /**
+     * Set the final tracking id in the advisory and a DocumentReferencesNode with the url of the tracking id
+     * @param baseUrl the configured base url
+     * @param trackingIdCompany the configured company for the name of the tracking id
+     * @param trackingIdDigits the count of leading zeros to which the sequentialNumber is filled with
+     * @param sequentialNumber the next sequentialNumber
+     */
+    public void setFinalTrackingIdAndUrl(String baseUrl, String trackingIdCompany, String trackingIdDigits, long sequentialNumber) {
 
-        String companyName = calculateCompanyName(trackingidCompany);
-        String formatted = formatNumber(trackingidDigits, sequentialNumber);
+        String companyName = calculateCompanyName(trackingIdCompany);
+        String formatted = formatNumber(trackingIdDigits, sequentialNumber);
         int year = calculatePublishYear();
         String trackingId = companyName + "-" + year + "-" + formatted;
         setDocumentTrackingId(trackingId);
 
         if (baseUrl != null && !baseUrl.isBlank()) {
-            String referenceUrl = calculateReferenceUrl(baseUrl, trackingidCompany, trackingidDigits, sequentialNumber);
+            String referenceUrl = calculateReferenceUrl(baseUrl, trackingId);
             this.addDocumentReferencesNode(referenceUrl, referenceUrl);
         }
     }
 
-    String calculateReferenceUrl(String baseUrl, String trackingidCompany, String trackingidDigits, long sequentialNumber) {
-
-        String companyName = calculateCompanyName(trackingidCompany);
-        String formatted = formatNumber(trackingidDigits, sequentialNumber);
+    /**
+     * Generate the url for the given baseUrl and tracking id.
+     * Format: BaseURL/TLPLabel/YearOfPublication/trackingId.json
+     * @param baseUrl configured base url
+     * @param trackingId the trackingid
+     * @return the calculated url
+     */
+    String calculateReferenceUrl(String baseUrl, String trackingId) {
 
         int year = calculatePublishYear();
-        String trackingId = companyName + "-" + year + "-" + formatted;
         String fileName = calculateFileName(trackingId);
         String tlpLabel = getDocumentDistributionTlp() != null ? getDocumentDistributionTlp() : "WHITE";
         return baseUrl + "/" + tlpLabel + "/" + year + "/" + fileName;
@@ -860,7 +880,7 @@ public class AdvisoryWrapper {
 
     /**
      * Calculate the year of publishing based on the initialReleaseDate
-     * @return
+     * @return the calculated year
      */
     int calculatePublishYear() {
 
@@ -870,7 +890,7 @@ public class AdvisoryWrapper {
 
     /**
      * add leading Zeros
-     * @param trackingidDigits number ofdigits
+     * @param trackingidDigits number of digits
      * @param sequentialNumber generated sequenital number
      * @return number with leading zeros
      */

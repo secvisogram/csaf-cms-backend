@@ -10,6 +10,5 @@ public enum ObjectType {
     AuditTrailWorkflow,
     Comment,
     CommentAuditTrail,
-
     Counter
 }

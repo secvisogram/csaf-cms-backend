@@ -3,6 +3,10 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Counter Object in the CouchDB for the tracking id
+ * For every ObjectId there should only exist one counter object in the db
+ */
 public class TrackingIdCounter {
 
     public static final String TMP_OBJECT_ID = "TMP_TRACKING_ID_COUNTER";

@@ -103,7 +103,7 @@ public class CouchDbService {
 
 
     /**
-     * Write a new document to the database
+     * Write a new document to the database with a UUID as objectId
      *
      * @param uuid         id fo the new document
      * @param createString JSON encoded string of the document to add
@@ -114,7 +114,13 @@ public class CouchDbService {
          return writeDocument(uuid.toString(), createString);
     }
 
-    public String writeDocument(final String objectId, String createString) {
+    /**
+     * Write a new document to the database
+     *
+     * @param objectId         id fo the new document
+     * @param createString JSON encoded string of the document to add
+     * @return revision for concurrent control
+     */    public String writeDocument(final String objectId, String createString) {
 
         Cloudant client = createCloudantClient();
 

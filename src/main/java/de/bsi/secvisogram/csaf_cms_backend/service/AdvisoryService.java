@@ -213,17 +213,28 @@ public class AdvisoryService {
         return new IdAndRevision(advisoryId.toString(), revision);
     }
 
+    /**
+     * Insert a temporary tracking id in the advisory
+     * @param newAdvisoryNode node to set the id
+     * @throws CsafException
+     */
     void addTemporaryTrackingId(AdvisoryWrapper newAdvisoryNode) throws CsafException {
 
         long sequentialNumber =  getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID);
         newAdvisoryNode.setTemporaryTrackingId(this.trackingidCompany, this.trackingidDigits, sequentialNumber);
     }
 
+    /**
+     * Get the next unique tracking id from the db for the given counterId
+     * @param counterId id of the counter
+     * @return next id
+     * @throws CsafException
+     */
     long getNewTrackingIdCounter(String counterId) throws CsafException {
 
         Map<String, Object> selector = expr2CouchDBFilter(equal(counterId, ID_FIELD.getDbName()));
         try {
-            List<JsonNode> docList = findDocuments(selector, Arrays.asList(CouchDbField.ID_FIELD));
+            List<JsonNode> docList = findDocuments(selector, List.of(ID_FIELD));
             if (docList.size() == 0) {
                 final TrackingIdCounter counter = TrackingIdCounter.createInitialCounter(counterId);
                 final String result = new ObjectMapper().writeValueAsString(counter);
@@ -546,10 +557,15 @@ public class AdvisoryService {
         }
     }
 
-    void setFinalTrackingIdAndUrl(AdvisoryWrapper newAdvisoryNode) throws CsafException {
+    /**
+     * Set the final tracking id in the advisory and a DocumentReferencesNode with the url of the tracking id
+     * @param advisoryNode the node to set the tracking id
+     * @throws CsafException
+     */
+    void setFinalTrackingIdAndUrl(AdvisoryWrapper advisoryNode) throws CsafException {
 
-        long sequentialNumber =  getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID);
-        newAdvisoryNode.setFinalTrackingIdAndUrl(this.referencesBaseUrl, this.trackingidCompany, this.trackingidDigits, sequentialNumber);
+        final long sequentialNumber = getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID);
+        advisoryNode.setFinalTrackingIdAndUrl(this.referencesBaseUrl, this.trackingidCompany, this.trackingidDigits, sequentialNumber);
     }
 
 
