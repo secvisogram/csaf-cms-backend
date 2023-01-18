@@ -371,9 +371,10 @@ public class AdvisoryController {
     ) {
         LOG.debug("exportAdvisory");
         checkValidUuid(advisoryId);
+        Path filePath = null;
         try {
             // export to local temporary file
-            final Path filePath = advisoryService.exportAdvisory(advisoryId, format);
+            filePath = advisoryService.exportAdvisory(advisoryId, format);
 
             // return the export file through a stream (should be okay even with big files)
             final InputStream inputStream = Files.newInputStream(filePath);
@@ -387,6 +388,10 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        } finally {
+            if (filePath != null) {
+                filePath.toFile().delete();
+            }
         }
     }
 
