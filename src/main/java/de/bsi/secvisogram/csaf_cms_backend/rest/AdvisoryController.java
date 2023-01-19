@@ -390,7 +390,10 @@ public class AdvisoryController {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         } finally {
             if (filePath != null) {
-                filePath.toFile().delete();
+                boolean result = filePath.toFile().delete();
+                if (!result) {
+                    LOG.error("Could not delete temporary file {} after exporting.", filePath);
+                }
             }
         }
     }
