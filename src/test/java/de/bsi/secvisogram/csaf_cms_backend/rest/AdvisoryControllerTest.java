@@ -4,6 +4,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController.determineExportResponseContentType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -53,6 +55,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AdvisoryController.class)
@@ -224,7 +227,7 @@ public class AdvisoryControllerTest {
 
         when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
         String invalidCsaf = "{}";
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(
                         post(advisoryRoute).content(writer.writeValueAsString(csafToRequest(invalidCsaf)))
                                 .contentType(MediaType.APPLICATION_JSON).with(csrf()))
@@ -250,7 +253,7 @@ public class AdvisoryControllerTest {
         IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
         when(advisoryService.addAdvisory(any())).thenReturn(idRev);
 
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf())
                                 .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
@@ -289,7 +292,7 @@ public class AdvisoryControllerTest {
 
         doThrow(IdNotFoundException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -303,7 +306,7 @@ public class AdvisoryControllerTest {
 
         doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -317,7 +320,7 @@ public class AdvisoryControllerTest {
 
         doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -332,7 +335,7 @@ public class AdvisoryControllerTest {
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
 
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -375,7 +378,7 @@ public class AdvisoryControllerTest {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateAdvisory(eq(advisoryId), eq(revision), any())).thenReturn(newRevision);
 
-        ObjectWriter writer =  new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -684,6 +687,31 @@ public class AdvisoryControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string("<html></html>"));
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    void deleteFileAfterExportAdvisoryTest() throws Exception {
+
+        IdAndRevision fakeIdRev = new IdAndRevision(advisoryId, revision);
+        when(advisoryService.addAdvisory(any())).thenReturn(fakeIdRev);
+
+        UUID advisoryId = UUID.randomUUID();
+        Path tempPath = Files.createTempFile("", ".tmp");
+        try (BufferedWriter writer = Files.newBufferedWriter(tempPath, StandardCharsets.UTF_8)) {
+            writer.write(csafJsonString);
+        }
+        when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.JSON)).thenReturn(tempPath);
+
+        this.mockMvc.perform(
+                        get(advisoryRoute + advisoryId + "/csaf")
+                                .with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON)
+                                .param("format", ExportFormat.JSON.name()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(csafJsonString));
+
+        assertFalse(tempPath.toFile().exists());
     }
 
     @Test
