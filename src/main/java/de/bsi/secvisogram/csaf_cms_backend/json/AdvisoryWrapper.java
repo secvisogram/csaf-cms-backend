@@ -175,7 +175,8 @@ public class AdvisoryWrapper {
         AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromRequest(newCsafJson));
         Versioning versioning = Versioning.getStrategy(versioningStrategy);
         wrapper.setCreatedAtToNow()
-                 .setWorkflowState(WorkflowState.Draft)
+                .setOwner(userName)
+                .setWorkflowState(WorkflowState.Draft)
                 .setLastVersion(versioning.getZeroVersion())
                 .setVersioningType(versioning.getVersioningType())
                 .setType(ObjectType.Advisory)
