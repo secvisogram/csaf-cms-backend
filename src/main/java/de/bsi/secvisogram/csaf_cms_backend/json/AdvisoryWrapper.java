@@ -461,8 +461,8 @@ public class AdvisoryWrapper {
 
     public String getDocumentPublisherName() {
 
-        JsonNode versionNode = this.at("/csaf/document/publisher/name");
-        return (versionNode.isMissingNode()) ? null : versionNode.asText();
+        JsonNode publisherNameNode = this.at("/csaf/document/publisher/name");
+        return (publisherNameNode.isMissingNode()) ? null : publisherNameNode.asText();
     }
 
     /**
