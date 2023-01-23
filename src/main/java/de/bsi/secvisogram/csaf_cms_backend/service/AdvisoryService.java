@@ -76,6 +76,9 @@ public class AdvisoryService {
     @Value("${csaf.document.versioning}")
     private String versioningStrategy;
 
+    @Value("${csaf.validation.baseurl}")
+    private String validationBaseUrl;
+
     @Value("${csaf.references.baseurl}")
     private String referencesBaseUrl;
 
@@ -606,7 +609,7 @@ public class AdvisoryService {
             advisoryCopy.setDocumentTrackingInitialReleaseDate(releaseDate);
         }
 
-        if (! ValidatorServiceClient.isAdvisoryValid(this.referencesBaseUrl, advisoryCopy)) {
+        if (! ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
             throw new CsafException("Advisory is no valid CSAF document",
                     CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
         }

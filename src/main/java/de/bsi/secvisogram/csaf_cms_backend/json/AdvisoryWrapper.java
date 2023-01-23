@@ -245,7 +245,7 @@ public class AdvisoryWrapper {
     }
 
     /**
-     * set reference form AdvisoryVersion to source advisory
+     * set reference form AdvisoryVersion to source advisory in the advisory metadata
      *
      * @param advisoryId the id of the referenced advisory
      * @return this
@@ -253,6 +253,28 @@ public class AdvisoryWrapper {
     private AdvisoryWrapper setAdvisoryReference(String advisoryId) {
 
         this.advisoryNode.put(AdvisoryField.ADVISORY_REFERENCE.getDbName(), advisoryId);
+        return this;
+    }
+
+    /**
+     * get the temporary tracking id from the metadata
+     *
+      * @return this
+     */
+    public String getTempTrackingIdInFromMeta() {
+
+        return this.getTextFor(AdvisoryField.TMP_TRACKING_ID);
+    }
+
+    /**
+     * set the temporary tracking id in the metadata
+     *
+     * @param tempTrackingId the temporary tracking id
+     * @return this
+     */
+    private AdvisoryWrapper setTempTrackingIdInMeta(String tempTrackingId) {
+
+        this.advisoryNode.put(AdvisoryField.TMP_TRACKING_ID.getDbName(), tempTrackingId);
         return this;
     }
 
@@ -833,6 +855,8 @@ public class AdvisoryWrapper {
      * @param sequentialNumber the next sequentialNumber
      */
     public void setFinalTrackingIdAndUrl(String baseUrl, String trackingIdCompany, String trackingIdDigits, long sequentialNumber) {
+
+        setTempTrackingIdInMeta(getDocumentTrackingId());
 
         String companyName = calculateCompanyName(trackingIdCompany);
         String formatted = formatNumber(trackingIdDigits, sequentialNumber);

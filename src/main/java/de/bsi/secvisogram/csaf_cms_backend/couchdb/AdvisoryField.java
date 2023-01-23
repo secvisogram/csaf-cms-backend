@@ -7,7 +7,13 @@ public enum AdvisoryField implements DbField {
     CSAF("csaf"),
     VERSIONING_TYPE("versioningType"),
     LAST_VERSION("lastMajorVersion"),
-    ADVISORY_REFERENCE("advisoryReference");
+    ADVISORY_REFERENCE("advisoryReference"),
+
+    /** A temporary tracking ID is assigned to the CSAF document during the creation process.
+     * The final ID is assigned during publishing
+     * It must be traceable which TEMP ID became which final ID.
+     * Therefore, the temp id is stored in the metadata after publishing.*/
+    TMP_TRACKING_ID("tmpTrackingId");
 
     private final String dbName;
     private final String[] fieldPath;
