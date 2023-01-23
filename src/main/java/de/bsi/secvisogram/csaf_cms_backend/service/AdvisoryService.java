@@ -184,6 +184,44 @@ public class AdvisoryService {
         return addAdvisoryForCredentials(newCsafJson, credentials);
     }
 
+    /**
+     * Import an advisory to the system
+     *
+     * @param newCsafJson the advisory as JSON
+     * @return a tuple of assigned id as UUID and the current revision for concurrent control
+     * @throws JsonProcessingException if the given JSON string is not valid
+     */
+    @RolesAllowed({ CsafRoles.ROLE_AUTHOR})
+    public IdAndRevision importAdvisory(JsonNode newCsafJson) throws IOException, CsafException {
+
+        LOG.debug("addAdvisory");
+        Authentication credentials = getAuthentication();
+
+        return importAdvisoryForCredentials(newCsafJson, credentials);
+    }
+
+    IdAndRevision importAdvisoryForCredentials(JsonNode nodeToImport, Authentication credentials) throws IOException, CsafException {
+
+        UUID advisoryId = UUID.randomUUID();
+        if (! ValidatorServiceClient.isCsafValid(this.validationBaseUrl, nodeToImport)) {
+            throw new CsafException("Advisory is no valid CSAF document",
+                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
+        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.importNewFromCsaf(nodeToImport, credentials.getName());
+
+        AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
+                .setAdvisoryId(advisoryId.toString())
+                .setChangeType(ChangeType.Create)
+                .setUser(credentials.getName());
+
+
+        String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
+        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+        return new IdAndRevision(advisoryId.toString(), revision);
+    }
+
     IdAndRevision addAdvisoryForCredentials(CreateAdvisoryRequest newCsafJson, Authentication credentials) throws IOException, CsafException {
 
         if (newCsafJson.getSummary() == null || newCsafJson.getSummary().isBlank()) {

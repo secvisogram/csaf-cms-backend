@@ -165,6 +165,32 @@ public class AdvisoryController {
     }
 
     /**
+     * Create a new CSAF document
+     *
+     * @param newCsafJson content of the new CSAF document
+     * @return response with id and revision of the newly created advisory
+     */
+    @PostMapping(value = "/import", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Import a new Advisory.", tags = {"Advisory"},
+            description = "Import a new CSAF document into the system.")
+    public ResponseEntity<EntityCreateResponse> importCsafDocument(@RequestBody JsonNode newCsafJson) {
+
+        try {
+            LOG.debug("importCsafDocument");
+            IdAndRevision idRev = advisoryService.importAdvisory(newCsafJson);
+            URI advisoryLocation = URI.create("advisories/" + idRev.getId());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
+            return ResponseEntity.created(advisoryLocation).body(createResponse);
+        } catch (IOException jpEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        }
+    }
+
+    /**
      * Change a CSAF document
      *
      * @param advisoryId ID of the CSAF document to change

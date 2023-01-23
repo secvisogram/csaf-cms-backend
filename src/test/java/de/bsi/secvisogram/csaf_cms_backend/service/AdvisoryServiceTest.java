@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
@@ -34,7 +35,10 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -1156,6 +1160,19 @@ public class AdvisoryServiceTest {
 
         assertEquals("-TEMP-0000001", advisory1.getCsaf().at("/document/tracking/id").asText());
         assertEquals(publisherPrefix + "-TEMP-0000002", advisory2.getCsaf().at("/document/tracking/id").asText());
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void importAdvisoryTest() throws IOException, CsafException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+            final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+            IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
+            Assertions.assertNotNull(idRev);
+        }
+
     }
 
 }

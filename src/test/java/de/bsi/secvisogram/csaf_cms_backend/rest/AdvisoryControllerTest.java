@@ -25,6 +25,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -337,7 +338,7 @@ public class AdvisoryControllerTest {
 
         ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
-                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
                 .andDo(print())
@@ -1327,4 +1328,28 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
+
+    @Test
+    void importCsafDocument() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
+        when(advisoryService.importAdvisory(any())).thenReturn(idRev);
+
+        String expected = String.format(
+                """
+                        {
+                            "id": "%s",
+                            "revision": "%s"
+                        }
+                        """, idRev.getId(), idRev.getRevision());
+
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("revision", revision))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expected));
+    }
+
 }

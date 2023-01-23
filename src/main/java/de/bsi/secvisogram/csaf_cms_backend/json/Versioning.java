@@ -4,6 +4,32 @@ import de.bsi.secvisogram.csaf_cms_backend.service.PatchType;
 
 public interface Versioning {
 
+    /**
+     * Detect  Version Type (semantic or integer) from document tracking version
+     * @param trackingVersion document tracking version
+     * @return
+     */
+    public static Versioning detectStrategy(String trackingVersion) {
+
+        VersioningType type;
+        // semantic is  default, we assume semantic when the version string contains a dot
+        if (trackingVersion == null || trackingVersion.isBlank() || containsChar(trackingVersion, '.')) {
+            type = VersioningType.Semantic;
+        } else {
+            type = VersioningType.Integer;
+        }
+
+        if (type == VersioningType.Semantic) {
+            return SemanticVersioning.getDefault();
+        } else {
+            return IntegerVersioning.getDefault();
+        }
+    }
+
+    static boolean containsChar(String stringToTest, char charToDetect) {
+        return stringToTest != null && stringToTest.indexOf(charToDetect) >= 0;
+    }
+
     public static Versioning getStrategy(String versioningStrategy) {
 
         VersioningType type;
