@@ -1,6 +1,6 @@
 = Secvisogram 2.0 CSAF-Backend API
 team@openapitools.org
-v0.5.0
+1.0.0
 :toc: left
 :numbered:
 :toclevels: 3
