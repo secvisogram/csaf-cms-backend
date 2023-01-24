@@ -11,7 +11,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpressio
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -26,6 +25,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
+import de.bsi.secvisogram.csaf_cms_backend.json.TrackingIdCounter;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -65,7 +65,9 @@ import org.springframework.test.context.ContextConfiguration;
  */
 @SpringBootTest(properties = {
         "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png",
-        "csaf.summary.publication=testPublishMessage"
+        "csaf.summary.publication=testPublishMessage",
+        "csaf.trackingid.company=",
+        "csaf.trackingid.digits=7",
 })
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
@@ -131,8 +133,8 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryCount() throws IOException, CsafException {
         this.advisoryService.addAdvisory(csafToRequest(csafJson));
-        // creates advisory and 1 audit trail
-        assertEquals(2, this.advisoryService.getDocumentCount());
+        // creates advisory, 1 counter and 1 audit trail
+        assertEquals(3, this.advisoryService.getDocumentCount());
     }
 
     @Test
@@ -259,8 +261,8 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest_badRevision() throws IOException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        // creates advisory and 1 audit trail
-        assertEquals(2, advisoryService.getDocumentCount());
+        // creates advisory, 1 counter and 1 audit trail
+        assertEquals(3, advisoryService.getDocumentCount());
         String revision = "bad revision";
         assertThrows(DatabaseException.class, () -> this.advisoryService.deleteAdvisory(idRev.getId(), revision));
     }
@@ -269,9 +271,9 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisoryTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        assertEquals(2, advisoryService.getDocumentCount(), "there should be one advisory and one audit trail");
+        assertEquals(3, advisoryService.getDocumentCount(), "there should be one advisory, 1 counter and one audit trail");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        assertEquals(0, advisoryService.getDocumentCount(), "the advisory and audit trail should be deleted");
+        assertEquals(1, advisoryService.getDocumentCount(), "the advisory and audit trail should be deleted");
     }
 
     @Test
@@ -289,9 +291,9 @@ public class AdvisoryServiceTest {
     public void deleteAdvisoryTest_twoAdvisories() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         advisoryService.addAdvisory(csafToRequest(csafJson));
-        assertEquals(4, advisoryService.getDocumentCount(), "there should be two advisories with an audit trail each");
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be an counter and two advisories with an audit trail each");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        assertEquals(2, advisoryService.getDocumentCount(), "one advisory and one audit trail should be deleted");
+        assertEquals(3, advisoryService.getDocumentCount(), "one advisory and one audit trail should be deleted");
     }
 
     @Test
@@ -300,9 +302,9 @@ public class AdvisoryServiceTest {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("This is a comment", UUID.randomUUID().toString());
         advisoryService.addComment(idRev.getId(), comment);
-        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be one advisory, 1 counter and one comment each with an audit trail");
         this.advisoryService.deleteAdvisory(idRev.getId(), idRev.getRevision());
-        assertEquals(0, advisoryService.getDocumentCount(), "the comment and its audit trail should also be deleted");
+        assertEquals(1, advisoryService.getDocumentCount(), "the comment and its audit trail should also be deleted");
     }
 
     @Test
@@ -313,9 +315,9 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
-        assertEquals(6, advisoryService.getDocumentCount(), "there should be one advisory one comment and one answer each with an audit trail");
+        assertEquals(7, advisoryService.getDocumentCount(), "there should be one advisory, 1 counter, one comment and one answer each with an audit trail");
         this.advisoryService.deleteAdvisory(idRevAdvisory.getId(), idRevAdvisory.getRevision());
-        assertEquals(0, advisoryService.getDocumentCount(), "the comment and answer and their audit trails should also be deleted");
+        assertEquals(1, advisoryService.getDocumentCount(), "the comment and answer and their audit trails should also be deleted");
     }
 
 
@@ -337,8 +339,8 @@ public class AdvisoryServiceTest {
         request.setSummary("UpdateSummary");
         advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
 
-        // an advisory and 2 audit trails are created
-        assertEquals(3, advisoryService.getDocumentCount());
+        // an advisory, 1 counter and 2 audit trails are created
+        assertEquals(4, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asText());
         assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText());
@@ -359,8 +361,8 @@ public class AdvisoryServiceTest {
         var revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), csafToRequest(csafDocumentJson("Category2", "Title2")));
         revision = advisoryService.updateAdvisory(idRev.getId(), revision, csafToRequest(csafDocumentJson("Category3", "Title3")));
         advisoryService.updateAdvisory(idRev.getId(), revision, csafToRequest(csafDocumentJson("Category4", "Title4")));
-        // an advisory and 4 audit trail are created
-        assertEquals(5, advisoryService.getDocumentCount());
+        // an advisory, 1 counter and 4 audit trail are created
+        assertEquals(6, advisoryService.getDocumentCount());
         advisoryService.getAdvisory(idRev.getId());
 
         List<JsonNode> auditTrails = readAllAuditTrailDocumentsFromDb();
@@ -482,8 +484,8 @@ public class AdvisoryServiceTest {
     public void changeAdvisoryWorkflowStateTest() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
-        // an advisory and 2 audit trails are created
-        assertEquals(3, advisoryService.getDocumentCount());
+        // an advisory, 1 counter and 2 audit trails are created
+        assertEquals(4, advisoryService.getDocumentCount());
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(WorkflowState.Review, advisory.getWorkflowState());
     }
@@ -762,8 +764,8 @@ public class AdvisoryServiceTest {
         CreateCommentRequest comment = new CreateCommentRequest(commentText, UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
-        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment and an audit trail entry for both");
+        Assertions.assertEquals(5, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment and an audit trail entry for both");
 
         CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals(commentText, commentResp.getCommentText());
@@ -804,8 +806,8 @@ public class AdvisoryServiceTest {
         CreateCommentRequest comment = new CreateCommentRequest(commentText, UUID.randomUUID().toString(), "category");
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
-        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment and an audit trail entry for both");
+        Assertions.assertEquals(5, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment and an audit trail entry for both");
 
         CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals(commentText, commentResp.getCommentText());
@@ -824,8 +826,8 @@ public class AdvisoryServiceTest {
         CreateCommentRequest commentTwo = new CreateCommentRequest("This is another comment for the document", UUID.randomUUID().toString());
         advisoryService.addComment(idRevAdvisory.getId(), commentTwo);
 
-        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 2 comments and an audit trail entry for each comment");
+        Assertions.assertEquals(7, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 2 comments and an audit trail entry for each comment");
 
         List<CommentInformationResponse> commentInfos = advisoryService.getComments(idRevAdvisory.getId());
         Assertions.assertEquals(2, commentInfos.size());
@@ -861,12 +863,12 @@ public class AdvisoryServiceTest {
 
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
-        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment and an audit trail entry for both before deletion");
+        Assertions.assertEquals(5, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment and an audit trail entry for both before deletion");
 
         advisoryService.deleteComment(idRevComment.getId(), idRevComment.getRevision());
 
-        Assertions.assertEquals(2, advisoryService.getDocumentCount(),
+        Assertions.assertEquals(3, advisoryService.getDocumentCount(),
                 "There should be 1 advisory and 1 audit trail entry left after deletion");
 
     }
@@ -881,13 +883,13 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
-        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each before deletion");
+        Assertions.assertEquals(7, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment, 1 answer and an audit trail entry for each before deletion");
 
         advisoryService.deleteComment(idRevComment.getId(), idRevComment.getRevision());
         advisoryService.deleteComment(idRevAnswer.getId(), idRevAnswer.getRevision());
 
-        Assertions.assertEquals(2, advisoryService.getDocumentCount(),
+        Assertions.assertEquals(3, advisoryService.getDocumentCount(),
                 "There should be 1 advisory and 1 audit trail entry left after deletion");
 
     }
@@ -902,14 +904,14 @@ public class AdvisoryServiceTest {
 
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
-        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be one advisory, 1 counter and one comment each with an audit trail");
 
         CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("comment text", commentResp.getCommentText());
 
         advisoryService.updateComment(idRevAdvisory.getId(), idRevComment.getId(), idRevComment.getRevision(), "updated comment text");
 
-        assertEquals(5, advisoryService.getDocumentCount(), "there should be an additional audit trail for the comment update");
+        assertEquals(6, advisoryService.getDocumentCount(), "there should be an additional audit trail for the comment update");
 
         CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("updated comment text", newComment.getCommentText());
@@ -922,7 +924,7 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
-        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be one advisory, one counter and one comment each with an audit trail");
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SwitchUserGrantedAuthority registeredAuthority = new SwitchUserGrantedAuthority(CsafRoles.ROLE_AUTHOR, auth);
@@ -954,7 +956,7 @@ public class AdvisoryServiceTest {
 
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
-        assertEquals(4, advisoryService.getDocumentCount(), "there should be one advisory and one comment each with an audit trail");
+        assertEquals(5, advisoryService.getDocumentCount(), "there should be one advisory, 1 counter and one comment each with an audit trail");
 
         CommentResponse commentResp = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("comment text", commentResp.getCommentText());
@@ -1017,8 +1019,8 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
-        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
+        Assertions.assertEquals(7, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment, 1 answer and an audit trail entry for each");
 
         List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevAdvisory.getId(), idRevComment.getId());
         Assertions.assertEquals(1, answers.size());
@@ -1037,8 +1039,8 @@ public class AdvisoryServiceTest {
         advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
         advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), "This is answer  2");
 
-        Assertions.assertEquals(8, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment, 2 answers and an audit trail entry for each");
+        Assertions.assertEquals(9, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 counter, 1 comment, 2 answers and an audit trail entry for each");
 
         List<AnswerInformationResponse> answers = advisoryService.getAnswers(idRevAdvisory.getId(), idRevComment.getId());
         Assertions.assertEquals(2, answers.size(), "There should be two answers to the comment");
@@ -1087,12 +1089,12 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
-        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
+        Assertions.assertEquals(7, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment, 1 answer and an audit trail entry for each");
 
         advisoryService.deleteAnswer(idRevAnswer.getId(), idRevAnswer.getRevision());
 
-        Assertions.assertEquals(4, advisoryService.getDocumentCount(),
+        Assertions.assertEquals(5, advisoryService.getDocumentCount(),
                 "There should be 1 advisory and 1 comment and an audit trail entry for each left after deletion");
     }
 
@@ -1104,19 +1106,56 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
-        Assertions.assertEquals(6, advisoryService.getDocumentCount(),
-                "There should be 1 advisory, 1 comment, 1 answer and an audit trail entry for each");
+        Assertions.assertEquals(7, advisoryService.getDocumentCount(),
+                "There should be 1 advisory, 1 counter, 1 comment, 1 answer and an audit trail entry for each");
 
         CommentResponse commentResp = advisoryService.getComment(idRevAnswer.getId());
         Assertions.assertEquals(answerText, commentResp.getCommentText());
 
         advisoryService.updateComment(idRevAdvisory.getId(), idRevAnswer.getId(), idRevAnswer.getRevision(), "updated answer text");
 
-        assertEquals(7, advisoryService.getDocumentCount(), "there should be an additional audit trail for the answer update");
+        assertEquals(8, advisoryService.getDocumentCount(), "there should be an additional audit trail for the answer update");
 
         CommentResponse newAnswer = advisoryService.getComment(idRevAnswer.getId());
         Assertions.assertEquals("updated answer text", newAnswer.getCommentText());
 
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
+    void getNewTrackingIdCounterTest() throws IOException, DatabaseException, CsafException {
+        Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
+        Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
+        Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID));
+        Assertions.assertEquals(3, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
+        Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryTest_addTrackingId() throws IOException, DatabaseException, CsafException {
+
+        final String publisherPrefix = "Red";
+        String csafJsonWithPublisher = """
+                {
+                    "document": {
+                        "category": "CSAF_BASE",
+                        "publisher": {
+                              "category": "vendor",
+                              "contact_details": "https://access.redhat.com/security/team/contact/",
+                              "name": "%s Hat Product Security",
+                              "namespace": "https://www.redhat.com"
+                           }
+                    }
+                }""";
+
+        IdAndRevision idRev1 = advisoryService.addAdvisory(csafToRequest(csafJson));
+        IdAndRevision idRev2 = advisoryService.addAdvisory(csafToRequest(String.format(csafJsonWithPublisher, publisherPrefix)));
+        AdvisoryResponse advisory1 = advisoryService.getAdvisory(idRev1.getId());
+        AdvisoryResponse advisory2 = advisoryService.getAdvisory(idRev2.getId());
+
+        assertEquals("-TEMP-0000001", advisory1.getCsaf().at("/document/tracking/id").asText());
+        assertEquals(publisherPrefix + "-TEMP-0000002", advisory2.getCsaf().at("/document/tracking/id").asText());
     }
 
 }

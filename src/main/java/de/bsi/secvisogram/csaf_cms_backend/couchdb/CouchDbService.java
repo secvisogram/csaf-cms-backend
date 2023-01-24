@@ -103,7 +103,7 @@ public class CouchDbService {
 
 
     /**
-     * Write a new document to the database
+     * Write a new document to the database with a UUID as objectId
      *
      * @param uuid         id fo the new document
      * @param createString JSON encoded string of the document to add
@@ -111,11 +111,23 @@ public class CouchDbService {
      */
     public String writeDocument(final UUID uuid, String createString) {
 
+         return writeDocument(uuid.toString(), createString);
+    }
+
+    /**
+     * Write a new document to the database
+     *
+     * @param objectId         id fo the new document
+     * @param createString JSON encoded string of the document to add
+     * @return revision for concurrent control
+     */
+    public String writeDocument(final String objectId, String createString) {
+
         Cloudant client = createCloudantClient();
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
                 .db(this.dbName)
-                .docId(uuid.toString())
+                .docId(objectId)
                 .contentType("application/json")
                 .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
                 .build();
