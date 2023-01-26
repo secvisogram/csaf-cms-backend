@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField.DOCUMENT_TRACKING_ID;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
@@ -246,7 +247,9 @@ public class AdvisoryService {
      * @param nodeToImport the advisory as JSON
      * @return a tuple of ID and revision of the imported advisory
      * @throws IOException   when there are errors reading a file
-     * @throws CsafException when there are errors in reading advisory
+     * @throws CsafException when there are errors processing the advisory
+     *                       this could be invalid CSAF documents, importing a duplicate or importing an advisory which
+     *                       is not in interim or final status
      */
     public IdAndRevision importAdvisoryForSystem(JsonNode nodeToImport) throws IOException, CsafException {
         return importAdvisoryForUser(nodeToImport, "_SYSTEM_IMPORT_");
@@ -262,11 +265,17 @@ public class AdvisoryService {
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(userName);
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.importNewFromCsaf(nodeToImport, userName);
 
-        String documentTrackingStatustatus = newAdvisoryNode.getDocumentTrackingStatus();
-        if (!documentTrackingStatustatus.equals(Interim.getCsafValue()) &&
-            !documentTrackingStatustatus.equals(Final.getCsafValue())) {
+        String documentTrackingStatus = newAdvisoryNode.getDocumentTrackingStatus();
+        if (!documentTrackingStatus.equals(Interim.getCsafValue()) &&
+            !documentTrackingStatus.equals(Final.getCsafValue())) {
             throw new CsafException("Advisory is not in state final or interim",
                     CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        Map<String, Object> selector = expr2CouchDBFilter(equal(newAdvisoryNode.getDocumentTrackingId(), DOCUMENT_TRACKING_ID.getDbName()));
+        List<JsonNode> docList = findDocuments(selector, List.of(ID_FIELD));
+        if (!docList.isEmpty()) {
+            throw new CsafException("Trying to import a duplicate advisory (identical tracking ID)", DuplicateImport, UNPROCESSABLE_ENTITY);
         }
 
         AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
