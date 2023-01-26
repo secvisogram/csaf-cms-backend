@@ -336,7 +336,6 @@ public class AdvisoryControllerTest {
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -1345,11 +1344,47 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("revision", revision))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expected));
+    }
+
+    @Test
+    void importCsafDocument_IOException() throws Exception {
+
+         doThrow(IOException.class).when(advisoryService).importAdvisory(any());
+
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void importCsafDocument_CsafException() throws Exception {
+
+        CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
+        doThrow(csafExcp).when(advisoryService).importAdvisory(any());
+
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+    }
+
+    @Test
+    void importCsafDocument_unauthorized() throws Exception {
+
+        when(advisoryService.importAdvisory(any())).thenThrow(AccessDeniedException.class);
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
 }

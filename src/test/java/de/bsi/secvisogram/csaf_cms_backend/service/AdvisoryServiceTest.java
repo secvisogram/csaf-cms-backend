@@ -1166,13 +1166,62 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
     public void importAdvisoryTest() throws IOException, CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
-            final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
-            IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
-            Assertions.assertNotNull(idRev);
-        }
+        final String csafWithTrackingFinal = """
+            {
+                "document": {
+                    "category": "CSAF_BASE",
+                    "tracking": {
+                        "status": "draft"
+                    }
+                }
+            }""";
 
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
+            try (final InputStream csafStream = new ByteArrayInputStream(csafWithTrackingFinal.getBytes(StandardCharsets.UTF_8))) {
+                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+                CsafException expectedException = assertThrows(CsafException.class,
+                        () -> advisoryService.importAdvisory(csafRootNode));
+                assertEquals("Advisory is not in state final or interim", expectedException.getMessage());
+            }
+        }
     }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void importAdvisoryTest_NotFinalOrInterim() throws IOException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
+            try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+                CsafException expectedException = assertThrows(CsafException.class,
+                        () -> advisoryService.importAdvisory(csafRootNode));
+                assertEquals("Advisory is not in state final or interim", expectedException.getMessage());
+            }
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void importAdvisoryTest_CsafNotValid() throws IOException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.FALSE);
+            try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+                CsafException expectedException = assertThrows(CsafException.class,
+                        () -> advisoryService.importAdvisory(csafRootNode));
+                assertEquals("Advisory is no valid CSAF document", expectedException.getMessage());
+            }
+        }
+    }
+
 
 }
