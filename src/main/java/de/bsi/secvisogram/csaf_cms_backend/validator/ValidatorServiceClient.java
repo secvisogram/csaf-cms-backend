@@ -29,8 +29,8 @@ public class ValidatorServiceClient {
     private static final String VALIDATE_ENDPOINT = "/validate";
     private static final ValidationRequestTest csafSchemaTest = new ValidationRequestTest("test", "csaf_2_0");
     private static final ValidationRequestTest mandatoryTest = new ValidationRequestTest("preset", "mandatory");
-//    private static final ValidationRequestTest optionalTest = new ValidationRequestTest("preset", "optional");
-//    private static final ValidationRequestTest informativeTest = new ValidationRequestTest("preset", "informative");
+    // private static final ValidationRequestTest optionalTest = new ValidationRequestTest("preset", "optional");
+    // private static final ValidationRequestTest informativeTest = new ValidationRequestTest("preset", "informative");
     private static final ValidationRequestTest[] allValidationTests = {csafSchemaTest, mandatoryTest};
 
     public static boolean isAdvisoryValid(String baseUrl, AdvisoryWrapper advisory) throws CsafException {
@@ -45,7 +45,8 @@ public class ValidatorServiceClient {
 
     /**
      * Call the validator service to check whether the given advisory is valid
-     * @param baseUrl base url of the service
+     *
+     * @param baseUrl  base url of the service
      * @param advisory the advisory to check
      * @return true - advisory is valid
      * @throws CsafException error in accessing the server
@@ -60,12 +61,13 @@ public class ValidatorServiceClient {
             throw new CsafException("Error creating request to validation server",
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
         }
-     }
+    }
 
     /**
      * Call the validator service to check whether the given CSAF node is valid
+     *
      * @param baseUrl base url of the service
-     * @param csaf the CSAF node to check
+     * @param csaf    the CSAF node to check
      * @return true - advisory is valid
      * @throws CsafException error in accessing the server
      */
@@ -80,8 +82,10 @@ public class ValidatorServiceClient {
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
+
     /**
      * Check whether the validation response is valid
+     *
      * @param response the response to check
      * @return true - response is valid
      */
@@ -91,7 +95,8 @@ public class ValidatorServiceClient {
 
     /**
      * Execute request to the validator service to validate the given advisory
-     * @param baseUrl base url of the service
+     *
+     * @param baseUrl     base url of the service
      * @param requestBody the CSAF document to check
      * @return the validation response
      * @throws CsafException error in accessing the server
@@ -128,6 +133,7 @@ public class ValidatorServiceClient {
 
     /**
      * Convert csaf part of advisory into a validator service request
+     *
      * @param advisory the advisory to convert
      * @return the request
      * @throws JsonProcessingException error in creating request
@@ -142,6 +148,7 @@ public class ValidatorServiceClient {
 
     /**
      * Convert CSAF node into a validator service request
+     *
      * @param csafNode the CSAF node to convert
      * @return the request
      * @throws JsonProcessingException error in creating request

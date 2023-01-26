@@ -469,7 +469,7 @@ public class AdvisoryControllerTest {
     void listAllTemplatesTest() throws Exception {
 
         when(this.templateService.getAllTemplates())
-                .thenReturn(new DocumentTemplateDescription[]{new DocumentTemplateDescription("T1", "Template1", "File1")});
+                .thenReturn(new DocumentTemplateDescription[] {new DocumentTemplateDescription("T1", "Template1", "File1")});
 
         this.mockMvc.perform(get(advisoryRoute + "/templates"))
                 .andDo(print())
@@ -1353,7 +1353,7 @@ public class AdvisoryControllerTest {
     @Test
     void importCsafDocument_IOException() throws Exception {
 
-         doThrow(IOException.class).when(advisoryService).importAdvisory(any());
+        doThrow(IOException.class).when(advisoryService).importAdvisory(any());
 
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
