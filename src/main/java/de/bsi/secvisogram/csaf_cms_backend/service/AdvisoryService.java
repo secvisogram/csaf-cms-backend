@@ -220,7 +220,7 @@ public class AdvisoryService {
     }
 
     /**
-     * Import an advisory to the system
+     * Import an advisory to the system for an authenticated user
      *
      * @param newCsafJson the advisory as JSON
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
@@ -236,14 +236,31 @@ public class AdvisoryService {
     }
 
     IdAndRevision importAdvisoryForCredentials(JsonNode nodeToImport, Authentication credentials) throws IOException, CsafException {
+        return importAdvisoryForUser(nodeToImport, credentials.getName());
+    }
+
+    /**
+     * Import an advisory to the system for a system user
+     * Should only be used for imports on application startup
+     *
+     * @param nodeToImport the advisory as JSON
+     * @return a tuple of ID and revision of the imported advisory
+     * @throws IOException   when there are errors reading a file
+     * @throws CsafException when there are errors in reading advisory
+     */
+    public IdAndRevision importAdvisoryForSystem(JsonNode nodeToImport) throws IOException, CsafException {
+        return importAdvisoryForUser(nodeToImport, "_SYSTEM_IMPORT_");
+    }
+
+    IdAndRevision importAdvisoryForUser(JsonNode nodeToImport, String userName) throws IOException, CsafException {
 
         UUID advisoryId = UUID.randomUUID();
         if (!ValidatorServiceClient.isCsafValid(this.validationBaseUrl, nodeToImport)) {
             throw new CsafException("Advisory is no valid CSAF document",
                     CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
         }
-        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(credentials.getName());
-        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.importNewFromCsaf(nodeToImport, credentials.getName());
+        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(userName);
+        AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.importNewFromCsaf(nodeToImport, userName);
 
         String documentTrackingStatustatus = newAdvisoryNode.getDocumentTrackingStatus();
         if (!documentTrackingStatustatus.equals(Interim.getCsafValue()) &&
@@ -255,7 +272,7 @@ public class AdvisoryService {
         AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
                 .setAdvisoryId(advisoryId.toString())
                 .setChangeType(ChangeType.Create)
-                .setUser(credentials.getName());
+                .setUser(userName);
 
 
         String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
