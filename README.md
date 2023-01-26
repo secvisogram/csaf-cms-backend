@@ -15,7 +15,7 @@ TODO
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
-##  Getting started
+## Getting started
 
 To run the CSAF CMS server you need the following:
 
@@ -23,10 +23,10 @@ To run the CSAF CMS server you need the following:
 - A proxy like [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)
 - [CouchDB](https://couchdb.apache.org/)
 
-You can find an example setup for local development in the 'compose.yaml' and 
-an example configuration for Keycloak in 'keycloak/csaf-realm.json'. You 
-can take this as a starting point, but please check the documentation of the
-individual projects for a proper production setup. We also recommend 
+You can find an example setup for local development in the 'compose.yaml' and
+an example configuration for Keycloak in 'keycloak/csaf-realm.json'. You can
+take this as a starting point, but please check the documentation of the
+individual projects for a proper production setup. We also recommend
 running everything behind some kind of reverse proxy. Please take a look at our
 [Architecture](https://github.com/secvisogram/csaf-cms-backend/blob/main/documents/BSISecvisogramArchitecture.drawio.svg)
 for an overview.
@@ -34,18 +34,19 @@ for an overview.
 The [secvisogram](https://github.com/secvisogram/secvisogram) frontend is usable
 as a standalone version without this server. You can still use this standalone
 mode if the frontend is not behind the proxy, like in the development setup.
-In this setup where both standalone and server mode are available, the login is 
+In this setup where both standalone and server mode are available, the login is
 only required to manage documents on the server or validate against the
 [validator service](https://github.com/secvisogram/csaf-validator-service).
 
 To build the application run:
+
 ```shell
 ./gradlew clean build
 ```
+
 The resulting jar file in the `build/libs` folder can then be run with
 `java -jar filename.jar`. To manage the process you can use Docker or an init
 system of your choice.
-
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
@@ -77,10 +78,10 @@ only and should not be used in production.
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and
   stops CouchDB from spamming our logs
 - Open `http://localhost:9000/` and log in with the admin user.
-  - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
-  - On the left side, navigate to "Clients" and select the Secvisogram client.
-  - Select the **Credentials** tab and copy the Secret. This is our
-    `CSAF_CLIENT_SECRET` environment variable.
+    - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
+    - On the left side, navigate to "Clients" and select the Secvisogram client.
+    - Select the **Credentials** tab and copy the Secret. This is our
+      `CSAF_CLIENT_SECRET` environment variable.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
@@ -117,7 +118,7 @@ http://localhost:8081/api/v1/about
 
 Swagger UI
 
-  http://localhost:8081/swagger-ui/index.html
+http://localhost:8081/swagger-ui/index.html
 
 OpenAPI specification
 
@@ -144,6 +145,7 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 ### Spring Boot
 
 #### Reference Documentation
+
 For further reference, please consider the following sections:
 
 * [Official Gradle documentation](https://docs.gradle.org)
@@ -156,6 +158,7 @@ For further reference, please consider the following sections:
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### Guides
+
 The following guides illustrate how to use some features concretely:
 
 * [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
@@ -165,6 +168,7 @@ The following guides illustrate how to use some features concretely:
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### Additional Links
+
 These additional references should also help you:
 
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
@@ -193,7 +197,8 @@ These additional references should also help you:
 
 ### Links
 
-#### CSAF 
+#### CSAF
+
 [OASIS CSAF](https://oasis-open.github.io/csaf-documentation/)
 
 [BSI CSAF](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Empfehlungen-nach-Angriffszielen/Industrielle-Steuerungs-und-Automatisierungssysteme/CSAF/CSAF_node.html)
@@ -201,6 +206,7 @@ These additional references should also help you:
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 #### JSON
+
 - [CSAF 2.0 JSON Schema](https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json)
 - [JSON Schema](https://json-schema.org/draft/2019-09/json-schema-core.html)
 - [JSON Schema Validation](https://json-schema.org/draft/2019-09/json-schema-validation.html)
