@@ -959,7 +959,7 @@ public class AdvisoryWrapper {
         try {
             digits = Integer.parseInt(trackingidDigits);
         } catch (NumberFormatException ex) {
-            LOG.warn("csaf.trackingid.digits is not an integer ", ex);
+            LOG.warn("csaf.trackingid.digits is not an integer {}", ex.getMessage());
             digits = 5;
         }
         return String.format("%0" + digits + "d", sequentialNumber);
