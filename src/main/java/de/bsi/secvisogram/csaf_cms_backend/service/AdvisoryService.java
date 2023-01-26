@@ -5,11 +5,9 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailFiel
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.NoPermissionForAdvisory;
-import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.SummaryInHistoryEmpty;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
 import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
 import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Interim;
-import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
