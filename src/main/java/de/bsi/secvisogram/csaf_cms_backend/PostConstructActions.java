@@ -32,7 +32,12 @@ public class PostConstructActions {
     private AdvisoryService advisoryService;
 
     @PostConstruct
-    public void init() {
+    private void postConstruct() {
+        checkConfiguration();
+        importAdvisories("import");
+    }
+
+    private void checkConfiguration() {
         if (this.referencesBaseUrl == null || this.referencesBaseUrl.isBlank()) {
             LOG.warn("csaf.references.baseurl is not configured");
         } else {
@@ -45,9 +50,7 @@ public class PostConstructActions {
         }
     }
 
-    @PostConstruct
-    public void importAdvisories() {
-        String importDirectory = "import";
+    private void importAdvisories(String importDirectory) {
         File dir = new File(importDirectory);
         if (dir.exists()) {
             LOG.info("Importing files from directory {}.", importDirectory);
