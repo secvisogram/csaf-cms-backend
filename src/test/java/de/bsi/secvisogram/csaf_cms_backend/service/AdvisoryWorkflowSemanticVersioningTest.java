@@ -460,7 +460,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
                 // 1.Import
                 IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
                 // 2. Create new Dokument
-                String revision = advisoryService.createNewCsafDocumentVersion(idRev.getId(), idRev.getRevision());
+                advisoryService.createNewCsafDocumentVersion(idRev.getId(), idRev.getRevision());
                 AdvisoryResponse readAdvisory = advisoryService.getAdvisory(idRev.getId());
                 assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "1.0.1-1.0"),
                         "creating new version should raise patch version and add pre-release counter");

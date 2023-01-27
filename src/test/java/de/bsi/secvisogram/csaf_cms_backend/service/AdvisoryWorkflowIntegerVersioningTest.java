@@ -331,7 +331,7 @@ public class AdvisoryWorkflowIntegerVersioningTest {
                 // 1.Import
                 IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
                 // 2. Create new Dokument
-                String revision = advisoryService.createNewCsafDocumentVersion(idRev.getId(), idRev.getRevision());
+                advisoryService.createNewCsafDocumentVersion(idRev.getId(), idRev.getRevision());
 
                 AdvisoryResponse readAdvisory = advisoryService.getAdvisory(idRev.getId());
                 assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1", "2"),

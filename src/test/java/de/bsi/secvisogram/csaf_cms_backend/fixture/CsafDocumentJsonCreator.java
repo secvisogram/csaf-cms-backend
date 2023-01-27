@@ -26,7 +26,7 @@ public class CsafDocumentJsonCreator {
         return request;
     }
 
-    public static InputStream csafToInputstream(String csafJson) throws IOException {
+    public static InputStream csafToInputstream(String csafJson) {
 
         return new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
     }
