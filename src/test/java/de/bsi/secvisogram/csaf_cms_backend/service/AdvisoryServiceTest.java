@@ -5,6 +5,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToInputstream;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
@@ -1163,7 +1164,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
     public void importAdvisoryTest() throws IOException, CsafException {
 
         final String csafWithTrackingFinal = """
@@ -1179,7 +1180,7 @@ public class AdvisoryServiceTest {
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
-            try (final InputStream csafStream = new ByteArrayInputStream(csafWithTrackingFinal.getBytes(StandardCharsets.UTF_8))) {
+            try (final InputStream csafStream = csafToInputstream(csafWithTrackingFinal)) {
                 final ObjectMapper jacksonMapper = new ObjectMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
@@ -1189,7 +1190,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
     public void importAdvisoryTest_invalidDoc() throws IOException {
 
         final String csafWithTrackingFinal = """
@@ -1205,7 +1206,7 @@ public class AdvisoryServiceTest {
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.FALSE);
-            try (final InputStream csafStream = new ByteArrayInputStream(csafWithTrackingFinal.getBytes(StandardCharsets.UTF_8))) {
+            try (final InputStream csafStream = csafToInputstream(csafWithTrackingFinal)) {
                 final ObjectMapper jacksonMapper = new ObjectMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 CsafException expectedException = assertThrows(CsafException.class,
@@ -1216,13 +1217,13 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
     public void importAdvisoryTest_NotFinalOrInterim() throws IOException {
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
-            try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+            try (final InputStream csafStream = csafToInputstream(csafJson)) {
                 final ObjectMapper jacksonMapper = new ObjectMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 CsafException expectedException = assertThrows(CsafException.class,
@@ -1233,7 +1234,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
     public void importAdvisoryTest_importDuplicate() throws IOException, CsafException {
 
         final String csafWithTrackingId = """
@@ -1250,7 +1251,7 @@ public class AdvisoryServiceTest {
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
-            try (final InputStream csafStream = new ByteArrayInputStream(csafWithTrackingId.getBytes(StandardCharsets.UTF_8))) {
+            try (final InputStream csafStream = csafToInputstream(csafWithTrackingId)) {
                 final ObjectMapper jacksonMapper = new ObjectMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 advisoryService.importAdvisory(csafRootNode);
@@ -1262,7 +1263,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
+    @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
     public void importAdvisoryTest_CsafNotValid() throws IOException, CsafException {
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {

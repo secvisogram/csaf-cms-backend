@@ -227,7 +227,7 @@ public class AdvisoryService {
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
      * @throws JsonProcessingException if the given JSON string is not valid
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR})
+    @RolesAllowed({CsafRoles.ROLE_PUBLISHER})
     public IdAndRevision importAdvisory(JsonNode newCsafJson) throws IOException, CsafException {
 
         LOG.debug("importAdvisory");

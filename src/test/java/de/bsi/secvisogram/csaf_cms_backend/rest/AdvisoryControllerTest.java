@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Draft;
 import static de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController.determineExportResponseContentType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -337,7 +338,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
-                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
                 .andDo(print())
@@ -1343,7 +1344,7 @@ public class AdvisoryControllerTest {
                         """, idRev.getId(), idRev.getRevision());
 
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
-                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -1356,7 +1357,7 @@ public class AdvisoryControllerTest {
         doThrow(IOException.class).when(advisoryService).importAdvisory(any());
 
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
-                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -1370,7 +1371,7 @@ public class AdvisoryControllerTest {
         doThrow(csafExcp).when(advisoryService).importAdvisory(any());
 
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
-                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
@@ -1381,7 +1382,7 @@ public class AdvisoryControllerTest {
 
         when(advisoryService.importAdvisory(any())).thenThrow(AccessDeniedException.class);
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
-                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
