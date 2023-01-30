@@ -58,7 +58,7 @@ Please have a look at the [API documentation](https://secvisogram.github.io/csaf
 
 ### Importing
 
-Existing advisories can be imported on startup of the application.
+Existing valid and published advisories can be imported on startup of the application.
 The advisories to be imported must be stored in JSON format in a directory called `import` in the root directory.
 Duplicates are identified by their tracking ID and not imported again.
 
