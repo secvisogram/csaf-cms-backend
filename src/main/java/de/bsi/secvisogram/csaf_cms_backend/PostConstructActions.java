@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -71,7 +72,14 @@ public class PostConstructActions {
                             LOG.error("Error reading file {}.", advisoryPath);
                             LOG.error(e.getMessage());
                         } catch (CsafException e) {
-                            LOG.error("CSAF Error importing file {}.", advisoryPath);
+                            if (e.getRecommendedHttpState() == HttpStatus.SERVICE_UNAVAILABLE) {
+                                LOG.error(
+                                        "Could not reach Validation server and check validity - not importing file {}.",
+                                        advisoryPath
+                                );
+                            } else {
+                                LOG.error("CSAF Error importing file {}.", advisoryPath);
+                            }
                             LOG.error(e.getMessage());
                         }
                     } else {
