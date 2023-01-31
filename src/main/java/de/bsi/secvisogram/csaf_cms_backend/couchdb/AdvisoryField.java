@@ -5,10 +5,11 @@ public enum AdvisoryField implements DbField {
     WORKFLOW_STATE("workflowState"),
     OWNER("owner"),
     CSAF("csaf"),
+    /** semantic or integer */
     VERSIONING_TYPE("versioningType"),
     LAST_VERSION("lastMajorVersion"),
+    /** reference form AdvisoryVersion to source advisory */
     ADVISORY_REFERENCE("advisoryReference"),
-
     /** A temporary tracking ID is assigned to the CSAF document during the creation process.
      * The final ID is assigned during publishing
      * It must be traceable which TEMP ID became which final ID.

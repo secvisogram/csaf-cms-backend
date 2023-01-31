@@ -2,12 +2,15 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUTHOR;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.*;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Draft;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
@@ -21,6 +24,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -321,7 +325,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
             validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
 
-            final String csafJson = csafMinimalValidDoc();
+            final String csafJson = csafMinimalValidDoc(Draft, "0.0.1");
             IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
 
             AdvisoryResponse currentAdvisory = advisoryService.getAdvisory(idRev.getId());
@@ -440,6 +444,29 @@ public class AdvisoryWorkflowSemanticVersioningTest {
         }
     }
 
+    @Test
+    @WithMockUser(username = "manager", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR,
+            CsafRoles.ROLE_MANAGER, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void workflowTest_importCsafDocument() throws IOException, DatabaseException, CsafException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+            validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            try (final InputStream csafStream = csafToInputstream(csafMinimalValidDoc(Final, "1.0.0"))) {
+                final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
+                // 1.Import
+                IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
+                // 2. Create new Dokument
+                advisoryService.createNewCsafDocumentVersion(idRev.getId(), idRev.getRevision());
+                AdvisoryResponse readAdvisory = advisoryService.getAdvisory(idRev.getId());
+                assertRevisionHistoryVersionsMatch(readAdvisory, List.of("1.0.0", "1.0.1-1.0"),
+                        "creating new version should raise patch version and add pre-release counter");
+            }
+        }
+    }
     private void assertRevisionHistoryVersionsMatch(AdvisoryResponse advisory, List<String> expectedVersions, String message) {
         List<String> revisionHistoryVersions = getRevisionHistoryVersions(advisory);
         assertEquals(expectedVersions, revisionHistoryVersions, message);

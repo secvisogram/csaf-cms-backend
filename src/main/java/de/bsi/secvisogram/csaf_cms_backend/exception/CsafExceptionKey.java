@@ -12,5 +12,6 @@ public enum CsafExceptionKey {
     AdvisoryValidationError,
     ErrorAccessingValidationServer,
     SummaryInHistoryEmpty,
-    ErrorCreatingTrackingIdCounter;
+    ErrorCreatingTrackingIdCounter,
+    DuplicateImport;
 }

@@ -122,7 +122,7 @@ public class AdvisoryController {
             ) String advisoryId
     ) {
 
-        LOG.info("readCsafDocument");
+        LOG.debug("readCsafDocument");
         checkValidUuid(advisoryId);
         try {
             return ResponseEntity.ok(advisoryService.getAdvisory(advisoryId));
@@ -146,12 +146,38 @@ public class AdvisoryController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new Advisory.", tags = {"Advisory"},
             description = "Create a new CSAF document with added node IDs in the system. It possible to add an summary " +
-                    "and a legacy version information for the revision history.")
+                          "and a legacy version information for the revision history.")
     public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody CreateAdvisoryRequest newCsafJson) {
 
         LOG.debug("createCsafDocument");
         try {
             IdAndRevision idRev = advisoryService.addAdvisory(newCsafJson);
+            URI advisoryLocation = URI.create("advisories/" + idRev.getId());
+            EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
+            return ResponseEntity.created(advisoryLocation).body(createResponse);
+        } catch (IOException jpEx) {
+            return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        }
+    }
+
+    /**
+     * Create a new CSAF document
+     *
+     * @param newCsafJson content of the new CSAF document
+     * @return response with id and revision of the newly created advisory
+     */
+    @PostMapping(value = "/import", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Import a new Advisory.", tags = {"Advisory"},
+            description = "Import a new CSAF document into the system.")
+    public ResponseEntity<EntityCreateResponse> importCsafDocument(@RequestBody JsonNode newCsafJson) {
+
+        try {
+            LOG.debug("importCsafDocument");
+            IdAndRevision idRev = advisoryService.importAdvisory(newCsafJson);
             URI advisoryLocation = URI.create("advisories/" + idRev.getId());
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(advisoryLocation).body(createResponse);
@@ -186,7 +212,7 @@ public class AdvisoryController {
             CreateAdvisoryRequest changedCsafJson
     ) throws IOException {
 
-        LOG.info("changeCsafDocument");
+        LOG.debug("changeCsafDocument");
         checkValidUuid(advisoryId);
         try {
             String newRevision = advisoryService.updateAdvisory(advisoryId, revision, changedCsafJson);
@@ -231,9 +257,7 @@ public class AdvisoryController {
         try {
             String newRevision = advisoryService.createNewCsafDocumentVersion(advisoryId, revision);
             return ResponseEntity.ok(newRevision);
-        } catch (IOException idNfEx) {
-            return ResponseEntity.badRequest().build();
-        } catch (DatabaseException dbEx) {
+        } catch (IOException | DatabaseException ex) {
             return ResponseEntity.badRequest().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -268,7 +292,7 @@ public class AdvisoryController {
             ) String revision
     ) {
 
-        LOG.info("deleteCsafDocument");
+        LOG.debug("deleteCsafDocument");
         checkValidUuid(advisoryId);
         try {
             advisoryService.deleteAdvisory(advisoryId, revision);
@@ -298,7 +322,7 @@ public class AdvisoryController {
     )
     public ResponseEntity<List<AdvisoryTemplateInfoResponse>> listAllTemplates() {
 
-        LOG.info("listAllTemplates");
+        LOG.debug("listAllTemplates");
 
         try {
             var response = Arrays.stream(this.templateService.getAllTemplates())
@@ -331,7 +355,7 @@ public class AdvisoryController {
             ) String templateId
     ) {
 
-        LOG.info("readTemplate");
+        LOG.debug("readTemplate");
         try {
             Optional<JsonNode> templateJson = this.templateService.getTemplate(templateId);
             return templateJson.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -445,7 +469,7 @@ public class AdvisoryController {
     }
 
     private ResponseEntity<String> changeWorkflowState(String advisoryId, String revision, WorkflowState state,
-                               String proposedTime, DocumentTrackingStatus documentTrackingStatus) throws IOException {
+                                                       String proposedTime, DocumentTrackingStatus documentTrackingStatus) throws IOException {
         try {
             advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, state, proposedTime, documentTrackingStatus);
             return ResponseEntity.ok().build();
@@ -478,7 +502,6 @@ public class AdvisoryController {
             String revision
     ) throws IOException {
 
-        // only for debugging, remove when implemented
         LOG.debug("setWorkflowStateToReview");
         return changeWorkflowState(advisoryId, revision, WorkflowState.Review);
     }
@@ -560,7 +583,7 @@ public class AdvisoryController {
             String proposedTime,
             @RequestParam
             @Parameter(description = "The new Document Tracking Status of the CSAF Document." +
-                                  " Only Interim and Final are allowed.")
+                                     " Only Interim and Final are allowed.")
             DocumentTrackingStatus documentTrackingStatus
     ) throws IOException {
 
@@ -595,8 +618,8 @@ public class AdvisoryController {
     /**
      * Create a new comment in the system, belonging to the advisory with given ID
      *
-     * @param advisoryId      the ID of the advisory to add the comment to
-     * @param newComment      the comment to add as JSON string
+     * @param advisoryId the ID of the advisory to add the comment to
+     * @param newComment the comment to add as JSON string
      */
     @PostMapping("/{advisoryId}/comments")
     @Operation(
@@ -676,8 +699,8 @@ public class AdvisoryController {
     /**
      * Add an answer to a comment of an advisory
      *
-     * @param advisoryId ID of the CSAF document to add the answer to
-     * @param commentId  ID of the comment to add the answer to
+     * @param advisoryId        ID of the CSAF document to add the answer to
+     * @param commentId         ID of the comment to add the answer to
      * @param answerCommentText the answer text
      */
     @Operation(summary = "Add an answer to an advisory comment.", tags = {"Advisory"},
@@ -730,7 +753,7 @@ public class AdvisoryController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "A new comment text.", required = true,
                     content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(type = "string", format = "plain"),
-                        examples = {@ExampleObject(name = "A comment text", value = "This is a new text for a comment.")}
+                            examples = {@ExampleObject(name = "A comment text", value = "This is a new text for a comment.")}
                     )
             )
     )
@@ -823,6 +846,7 @@ public class AdvisoryController {
 
     /**
      * Check whether the given id is a valid uuid
+     *
      * @param uuidString the string to check
      */
     private static void checkValidUuid(String uuidString) {

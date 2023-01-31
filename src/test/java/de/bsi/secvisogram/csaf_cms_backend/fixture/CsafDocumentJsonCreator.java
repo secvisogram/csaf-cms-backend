@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.fixture;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,14 +19,19 @@ public class CsafDocumentJsonCreator {
         final ObjectMapper jacksonMapper = new ObjectMapper();
         var request = new CreateAdvisoryRequest();
         request.setSummary("Test Summary");
-        try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
+        try (final InputStream csafStream = csafToInputstream(csafJson)) {
             JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
             request.setCsaf(csafRootNode);
         }
         return request;
     }
 
-    public static String csafMinimalValidDoc() {
+    public static InputStream csafToInputstream(String csafJson) {
+
+        return new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String csafMinimalValidDoc(DocumentTrackingStatus status, String version) {
         return """
                 {
                     "document": {
@@ -56,17 +62,17 @@ public class CsafDocumentJsonCreator {
                             "initial_release_date": "2022-09-08T12:33:45.678Z",
                             "revision_history": [
                                 {
-                                    "number": "0.0.1",
+                                    "number": "%s",
                                     "date": "2022-09-08T12:33:45.678Z",
                                     "summary": "initial draft"
                                 }
                             ],
-                            "status": "draft",
-                            "version": "0.0.1"
+                            "status": "%s",
+                            "version": "%s"
                         }
                     }
                 }
-                """;
+                """.formatted(version, status.getCsafValue(), version);
     }
 
     public static String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {

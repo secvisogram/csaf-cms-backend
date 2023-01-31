@@ -115,6 +115,19 @@ public class AdvisoryWrapper {
         return rootNode;
     }
 
+    private static ObjectNode createAdvisoryNodeFromRequest(JsonNode csafJson) throws CsafException {
+
+        final ObjectMapper jacksonMapper = new ObjectMapper();
+        if (csafJson == null || !csafJson.has("document")) {
+            throw new CsafException("Csaf contains no document entry", CsafExceptionKey.CsafHasNoDocumentNode,
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        ObjectNode rootNode = jacksonMapper.createObjectNode();
+        rootNode.set(CSAF.getDbName(), csafJson);
+        return rootNode;
+    }
+
 
     private static ObjectNode createAdvisoryNodeFromString(String csafJson) throws IOException {
 
@@ -169,6 +182,30 @@ public class AdvisoryWrapper {
                 .setType(ObjectType.Advisory)
                 .setDocumentTrackingVersion(versioning.getInitialVersion())
                 .setDocumentTrackingStatus(DocumentTrackingStatus.Draft);
+
+        return wrapper;
+    }
+
+    /**
+     * Convert an CSAF document to an initial AdvisoryWrapper for a given user.
+     * The wrapper has no id and revision.
+     *
+     * @param newCsafJson        the csaf string
+     * @param userName           the user
+     * @return the wrapper
+     * @throws CsafException exception in handling json string
+     */
+    public static AdvisoryWrapper importNewFromCsaf(JsonNode newCsafJson, String userName) throws CsafException {
+
+        AdvisoryWrapper wrapper = new AdvisoryWrapper(createAdvisoryNodeFromRequest(newCsafJson));
+        String documentTrackingVersion = wrapper.getDocumentTrackingVersion();
+        Versioning versioning = Versioning.detectStrategy(documentTrackingVersion);
+        wrapper.setCreatedAtToNow()
+                .setWorkflowState(WorkflowState.Published)
+                .setOwner(userName)
+                .setLastVersion(documentTrackingVersion)
+                .setVersioningType(versioning.getVersioningType())
+                .setType(ObjectType.Advisory);
 
         return wrapper;
     }
@@ -922,7 +959,7 @@ public class AdvisoryWrapper {
         try {
             digits = Integer.parseInt(trackingidDigits);
         } catch (NumberFormatException ex) {
-            LOG.warn("csaf.trackingid.digits is not an integer ", ex);
+            LOG.warn("csaf.trackingid.digits is not an integer {}", ex.getMessage());
             digits = 5;
         }
         return String.format("%0" + digits + "d", sequentialNumber);
