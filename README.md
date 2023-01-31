@@ -11,7 +11,8 @@
 
 ## About The Project
 
-TODO
+This is the backend for a Content Management System for CSAF documents.
+It offers a REST service for listing, searching, deleting, creating, commenting on and exporting CSAF documents.
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
@@ -55,6 +56,22 @@ system of your choice.
 Please have a look at the [API documentation](https://secvisogram.github.io/csaf-cms-backend/) on how to use this application.
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
+
+### Management of tracking information
+
+The system automatically manages information under `document/tracking` of CSAF documents.
+The revision history is managed as described in the [architecture decisions document](documents/architecture-decisions.md).
+
+The tracking ID is automatically set to a temporary ID when creating a new advisory and updated to a final ID when the document is published.
+For generating the tracking IDs, a company name should be set in the environment variable `CSAF_TRACKINGID_COMPANY`.
+The variable `CSAF_TRACKINGID_DIGITS` defines the number of digits used in the tracking ID. It defaults to 5 if nothing is set.
+If `CSAF_REFERENCES_BASE_URL` is defined, a reference in `document/references` with the set URL is added when publishing the document.
+See **.env.example** for an example configuration.
+
+### Management of engine data
+
+When creating or updating an advisory, the information for `document/tracking/engine` is updated.
+The `name` and `version` are set according to the corresponding values of the backend's build. 
 
 ### Importing
 
