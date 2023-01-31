@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Draft;
 import static de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController.determineExportResponseContentType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,6 +26,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -335,9 +337,8 @@ public class AdvisoryControllerTest {
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
         this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
-                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
                 .andDo(print())
@@ -469,7 +470,7 @@ public class AdvisoryControllerTest {
     void listAllTemplatesTest() throws Exception {
 
         when(this.templateService.getAllTemplates())
-                .thenReturn(new DocumentTemplateDescription[]{new DocumentTemplateDescription("T1", "Template1", "File1")});
+                .thenReturn(new DocumentTemplateDescription[] {new DocumentTemplateDescription("T1", "Template1", "File1")});
 
         this.mockMvc.perform(get(advisoryRoute + "/templates"))
                 .andDo(print())
@@ -1327,4 +1328,64 @@ public class AdvisoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
+
+    @Test
+    void importCsafDocument() throws Exception {
+
+        IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
+        when(advisoryService.importAdvisory(any())).thenReturn(idRev);
+
+        String expected = String.format(
+                """
+                        {
+                            "id": "%s",
+                            "revision": "%s"
+                        }
+                        """, idRev.getId(), idRev.getRevision());
+
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void importCsafDocument_IOException() throws Exception {
+
+        doThrow(IOException.class).when(advisoryService).importAdvisory(any());
+
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void importCsafDocument_CsafException() throws Exception {
+
+        CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
+        doThrow(csafExcp).when(advisoryService).importAdvisory(any());
+
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+    }
+
+    @Test
+    void importCsafDocument_unauthorized() throws Exception {
+
+        when(advisoryService.importAdvisory(any())).thenThrow(AccessDeniedException.class);
+        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+                        .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
 }
