@@ -83,6 +83,10 @@ task apiDocumentation(type: Test, description: "generates the API documentation"
 	}
 }
 
+tasks.withType(JavaCompile) {
+	options.compilerArgs += ['-Xlint:deprecation']
+}
+
 jacoco {
 	toolVersion = "0.8.7"
 //	reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
