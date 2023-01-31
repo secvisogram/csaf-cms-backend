@@ -936,6 +936,88 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
+[.importCsafDocument]
+==== importCsafDocument
+
+`POST /api/v1/advisories/import`
+
+Import a new Advisory.
+
+===== Description
+
+Import a new CSAF document into the system.
+
+
+// markup not found, no include::{specDir}api/v1/advisories/import/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<object>>
+| X
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+<<EntityCreateResponse>>
+
+
+===== Content Type
+
+* */*
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<EntityCreateResponse>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}api/v1/advisories/import/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}api/v1/advisories/import/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :api/v1/advisories/import/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}api/v1/advisories/import/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
 [.listAllTemplates]
 ==== listAllTemplates
 

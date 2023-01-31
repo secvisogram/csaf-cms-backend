@@ -205,6 +205,7 @@ font-style: italic;
   <li><a href="#createNewCsafDocumentVersion"><code><span class="http-method">patch</span> /api/v1/advisories/{advisoryId}/createNewVersion</code></a></li>
   <li><a href="#deleteCsafDocument"><code><span class="http-method">delete</span> /api/v1/advisories/{advisoryId}</code></a></li>
   <li><a href="#exportAdvisory"><code><span class="http-method">get</span> /api/v1/advisories/{advisoryId}/csaf</code></a></li>
+  <li><a href="#importCsafDocument"><code><span class="http-method">post</span> /api/v1/advisories/import</code></a></li>
   <li><a href="#listAllTemplates"><code><span class="http-method">get</span> /api/v1/advisories/templates</code></a></li>
   <li><a href="#listAnswers"><code><span class="http-method">get</span> /api/v1/advisories/{advisoryId}/comments/{commentId}/answers</code></a></li>
   <li><a href="#listComments"><code><span class="http-method">get</span> /api/v1/advisories/{advisoryId}/comments</code></a></li>
@@ -725,6 +726,59 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     OK
         <a href="#File">File</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="importCsafDocument"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/v1/advisories/import</code></pre></div>
+    <div class="method-summary">Import a new Advisory. (<span class="nickname">importCsafDocument</span>)</div>
+    <div class="method-notes">Import a new CSAF document into the system.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#object">object</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntityCreateResponse">EntityCreateResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: */*</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>*/*</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listAllTemplates"/>
