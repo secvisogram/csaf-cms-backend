@@ -253,6 +253,7 @@ public class AdvisoryController {
     ) {
 
         LOG.debug("createNewCsafDocumentVersion");
+        checkValidUuid(advisoryId);
 
         try {
             String newRevision = advisoryService.createNewCsafDocumentVersion(advisoryId, revision);
@@ -503,6 +504,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.debug("setWorkflowStateToReview");
+        checkValidUuid(advisoryId);
         return changeWorkflowState(advisoryId, revision, WorkflowState.Review);
     }
 
@@ -529,6 +531,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.debug("setWorkflowStateToApproved");
+        checkValidUuid(advisoryId);
         return changeWorkflowState(advisoryId, revision, WorkflowState.Approved);
     }
 
@@ -557,6 +560,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.debug("setWorkflowStateToRfPublication");
+        checkValidUuid(advisoryId);
         return changeWorkflowState(advisoryId, revision, WorkflowState.RfPublication, proposedTime, null);
     }
 
@@ -588,6 +592,7 @@ public class AdvisoryController {
     ) throws IOException {
 
         LOG.debug("setWorkflowStateToPublish");
+        checkValidUuid(advisoryId);
         return changeWorkflowState(advisoryId, revision, WorkflowState.Published, proposedTime, documentTrackingStatus);
     }
 
@@ -605,6 +610,7 @@ public class AdvisoryController {
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to get the comments of.")
             String advisoryId
     ) throws IOException {
+        checkValidUuid(advisoryId);
         LOG.debug("listComments");
         try {
             return ResponseEntity.ok(advisoryService.getComments(advisoryId));
