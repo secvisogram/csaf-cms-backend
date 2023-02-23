@@ -1130,7 +1130,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
-    void getNewTrackingIdCounterTest() throws IOException, DatabaseException, CsafException {
+    void getNewTrackingIdCounterTest() throws CsafException {
         Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
         Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
         Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID));
@@ -1266,7 +1266,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
-    public void importAdvisoryTest_CsafNotValid() throws IOException, CsafException {
+    public void importAdvisoryTest_CsafNotValid() throws IOException {
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
