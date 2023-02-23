@@ -660,9 +660,11 @@ public class AdvisoryServiceTest {
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            String trackingId = advisoryService.getAdvisory(idRev.getId()).getDocumentTrackingId();
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
             AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
-            assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+            assertEquals(WorkflowState.Draft, advisory.getWorkflowState(), "new document version should be in draft state");
+            assertEquals(trackingId, advisory.getDocumentTrackingId(), "new document version should get same tracking ID");
         }
     }
 
