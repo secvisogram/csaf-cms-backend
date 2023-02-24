@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,9 +71,44 @@ public class AdvisoryController {
      * @return response with list of advisories satisfying the search criteria
      */
     @GetMapping("")
-    @Operation(summary = "Get all authorized advisories.", tags = {"Advisory"},
-            description = "All CSAF documents for which the logged in user is authorized are returned." +
-                          " This depends on the user's role and the state of the CSAF document.")
+    @Operation(
+      summary = "Get all authorized advisories.", 
+      tags = {"Advisory"},
+      description = "All CSAF documents for which the logged in user is authorized are returned." +
+                    " This depends on the user's role and the state of the CSAF document."
+    )
+    @ApiResponses(value= {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "List of all advisories that the user can access.", 
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = AdvisoryInformationResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Invalid filter expression", 
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(
+              title = "JSON", 
+              description = "String describing error")
+          )
+        }
+      ),
+      @ApiResponse(
+        responseCode = "401", 
+       	description = "Unauthorized access."
+      ),
+      @ApiResponse(
+        responseCode = "500", 
+    	description = "Error reading advisories"
+      )
+    })
     public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
             @RequestParam(required = false)
             @Parameter(in = ParameterIn.QUERY, name = "expression",
