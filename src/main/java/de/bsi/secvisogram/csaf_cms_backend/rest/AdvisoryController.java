@@ -1,7 +1,41 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.fasterxml.jackson.databind.JsonNode;
+
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
@@ -12,36 +46,25 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryTemplateInfoResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.EntityCreateResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.EntityUpdateResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -80,11 +103,13 @@ public class AdvisoryController {
     @ApiResponses(value= {
       @ApiResponse(
         responseCode = "200", 
-        description = "List of all advisories that the user can access.", 
+        description = "List of all advisories that the user can access.",
         content = { 
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            schema = @Schema(implementation = AdvisoryInformationResponse.class)
+            array = @ArraySchema(  
+              schema = @Schema(implementation = AdvisoryInformationResponse.class)
+            )
           )
         }
       ),
@@ -147,10 +172,40 @@ public class AdvisoryController {
      */
     @GetMapping("/{advisoryId}")
     @Operation(
-            summary = "Get a single Advisory.",
-            description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
-            tags = {"Advisory"}
+      summary = "Get a single Advisory.",
+      description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
+      tags = {"Advisory"}
     )
+    @ApiResponses(value= {
+      @ApiResponse( 
+        responseCode = "200", 
+        description = "Single requested advisory", 
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(
+                implementation = AdvisoryResponse.class
+            )
+          )
+        }
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Invalid UUID" 
+      ),
+      @ApiResponse(
+    	responseCode = "401", 
+    	description = "Unauthorized access."
+      ),
+      @ApiResponse(
+    	responseCode = "404", 
+    	description = "Requested advisory not found."
+      ),
+      @ApiResponse(
+        responseCode = "500", 
+      	description = "Error reading advisory."
+      )
+    })
     public ResponseEntity<AdvisoryResponse> readCsafDocument(
             @PathVariable
             @Parameter(
