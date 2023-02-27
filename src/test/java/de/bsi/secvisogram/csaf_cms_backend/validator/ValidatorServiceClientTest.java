@@ -109,7 +109,6 @@ public class ValidatorServiceClientTest {
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.ifNoneMatch(any())).thenReturn(requestHeadersSpec);
-            when(requestHeadersSpec.ifModifiedSince(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
             when(responseSpec.bodyToMono(ArgumentMatchers.<Class<String>>notNull())).thenReturn(Mono.just(jsonStr));
 
@@ -138,7 +137,6 @@ public class ValidatorServiceClientTest {
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.ifNoneMatch(any())).thenReturn(requestHeadersSpec);
-            when(requestHeadersSpec.ifModifiedSince(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
             when(responseSpec.bodyToMono(ArgumentMatchers.<Class<String>>notNull())).thenReturn(Mono.just(jsonStr));
 
@@ -170,7 +168,6 @@ public class ValidatorServiceClientTest {
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.ifNoneMatch(any())).thenReturn(requestHeadersSpec);
-            when(requestHeadersSpec.ifModifiedSince(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.retrieve()).thenThrow(Mockito.mock(WebClientRequestException.class));
 
             final AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(

@@ -113,7 +113,6 @@ public class ValidatorServiceClient {
                     .accept(MediaType.APPLICATION_JSON)
                     .acceptCharset(StandardCharsets.UTF_8)
                     .ifNoneMatch("*")
-                    .ifModifiedSince(ZonedDateTime.now())
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
