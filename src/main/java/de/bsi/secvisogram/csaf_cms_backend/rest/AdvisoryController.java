@@ -236,9 +236,38 @@ public class AdvisoryController {
      * @return response with id and revision of the newly created advisory
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create a new Advisory.", tags = {"Advisory"},
-            description = "Create a new CSAF document with added node IDs in the system. It possible to add an summary " +
-                          "and a legacy version information for the revision history.")
+    @Operation(summary = "Create a new Advisory.", 
+               tags = {"Advisory"},
+               description = "Create a new CSAF document with added node IDs"
+                   + " in the system. It possible to add an summary " 
+                   + "and a legacy version information for the revision"
+                   + " history.")
+    @ApiResponses(value= {
+        @ApiResponse( 
+          responseCode = "201", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                  implementation = EntityCreateResponse.class
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "There was a problem with the submitted csaf document." 
+        ),
+        @ApiResponse(
+        responseCode = "401", 
+        description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody CreateAdvisoryRequest newCsafJson) {
 
         LOG.debug("createCsafDocument");
