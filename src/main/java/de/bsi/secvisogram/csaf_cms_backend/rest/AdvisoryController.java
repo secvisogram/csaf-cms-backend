@@ -346,9 +346,46 @@ public class AdvisoryController {
      * @return response with the new optimistic locking revision
      */
     @PatchMapping("/{advisoryId}")
-    @Operation(summary = "Change advisory.", tags = {"Advisory"},
-            description = "Change a CSAF document in the system. On saving a document its content (version) may change " +
-                          " Thus, after changing a document, it must be reloaded on the client side.")
+    @Operation(summary = "Change advisory.", 
+               tags = {"Advisory"},
+               description = "Change a CSAF document in the system. On saving "
+                   + "a document its content (version) may change. Thus, after "
+                   + "changing a document, it must be reloaded on the client"
+                   + " side.")
+    @ApiResponses(value= {
+        @ApiResponse( 
+          responseCode = "200", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                  implementation = EntityUpdateResponse.class
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Database error."
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Advisory is not valid."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<EntityUpdateResponse> changeCsafDocument(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
