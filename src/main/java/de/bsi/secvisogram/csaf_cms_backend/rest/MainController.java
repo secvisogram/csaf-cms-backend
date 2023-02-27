@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -28,21 +29,28 @@ public class MainController {
 
     @Autowired
     private BuildProperties buildProperties;
-
+    
     @GetMapping(value = "about")
-    @Operation(summary = "Current version", tags = {"Main"},
-            description = "Get the current version of the backend service.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Version String as JSON", required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(title = "JSON", description = "Version string as JSON."),
-                            examples = {@ExampleObject(
-                                    name = "Version string",
-                                    value = "{\"version\":\"1.0.0\"}"
-                            )}
-                    )
-            ))
+    @Operation(summary = "Current version", 
+      tags = {"Main"},
+      description = "Get the current version of the backend service.")
+    @ApiResponse(
+      responseCode = "200", 
+      description = "Version String as JSON", 
+      content = { 
+        @Content(
+          mediaType = MediaType.APPLICATION_JSON_VALUE,
+          schema = @Schema(title = "JSON", 
+          description = "Version string as JSON."),
+          examples = {
+            @ExampleObject(
+              name = "Version string",
+              value = "{\"version\":\"x.y.z\"}"
+            )
+          }
+        )
+      }
+    )
     public Map<String, String> about() {
         LOG.info("about");
 
