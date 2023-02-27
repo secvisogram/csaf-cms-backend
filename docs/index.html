@@ -1342,19 +1342,7 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <div class="method-notes">Get the current version of the backend service.</div>
 
 
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
 
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">body <a href="#string">string</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
 
 
 
@@ -1362,7 +1350,7 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       
-      map[String, String]
+      String
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1372,13 +1360,13 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
-    OK
-        
+    Version String as JSON
+        <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
 

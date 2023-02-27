@@ -2025,19 +2025,6 @@ Get the current version of the backend service.
 ===== Parameters
 
 
-====== Body Parameter
-
-[cols="2,3,1,1,1"]
-|===
-|Name| Description| Required| Default| Pattern
-
-| body
-| Version String as JSON <<string>>
-| X
-| 
-| 
-
-|===
 
 
 
@@ -2046,12 +2033,12 @@ Get the current version of the backend service.
 ===== Return Type
 
 
-<<Map>>
+<<String>>
 
 
 ===== Content Type
 
-* */*
+* application/json
 
 ===== Responses
 
@@ -2062,8 +2049,8 @@ Get the current version of the backend service.
 
 
 | 200
-| OK
-| Map[<<string>>] 
+| Version String as JSON
+|  <<String>>
 
 |===
 
