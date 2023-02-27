@@ -434,10 +434,7 @@ public class AdvisoryController {
           description = "Id and revison id of new advisory-", 
           content = { 
             @Content(
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              schema = @Schema(
-                  implementation = EntityUpdateResponse.class
-              )
+              mediaType = MediaType.TEXT_PLAIN_VALUE
             )
           }
         ),
@@ -494,10 +491,33 @@ public class AdvisoryController {
     @DeleteMapping("/{advisoryId}")
     @Operation(
             summary = "Delete an advisory.",
-            description = "Delete a CSAF document from the system. All older versions of the document, corresponding" +
-                          " comments and audit-trails are also deleted.",
+            description = "Delete a CSAF document from the system. All older "
+                + "versions of the document, corresponding"
+                + " comments and audit-trails are also deleted.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value= {
+        @ApiResponse( 
+          responseCode = "200", 
+          description = "Advisory deleted."
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "No valid UUID."
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<Void> deleteCsafDocument(
             @PathVariable
             @Parameter(
@@ -524,6 +544,8 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        }catch (AccessDeniedException adEx) {
+          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
