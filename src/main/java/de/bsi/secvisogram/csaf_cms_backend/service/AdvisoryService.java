@@ -454,7 +454,7 @@ public class AdvisoryService {
             if (canChangeAdvisory(oldAdvisoryNode, credentials)) {
 
                 if (changedCsafJson.getSummary() == null || changedCsafJson.getSummary().isBlank()) {
-                    throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, BAD_REQUEST);
+                    throw new CsafException("Summary must not be empty", SummaryInHistoryEmpty, UNPROCESSABLE_ENTITY);
                 }
 
                 AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.updateFromExisting(oldAdvisoryNode, changedCsafJson);
