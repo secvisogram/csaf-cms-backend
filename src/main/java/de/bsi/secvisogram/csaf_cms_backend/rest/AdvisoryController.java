@@ -428,6 +428,36 @@ public class AdvisoryController {
             description = "Increase the version of a CSAF document. This can only be done in workflow state Published",
             tags = {"Advisory"}
     )
+    @ApiResponses(value= {
+        @ApiResponse( 
+          responseCode = "200", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                  implementation = EntityUpdateResponse.class
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "No valid UUID."
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<String> createNewCsafDocumentVersion(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
@@ -443,9 +473,11 @@ public class AdvisoryController {
         try {
             String newRevision = advisoryService.createNewCsafDocumentVersion(advisoryId, revision);
             return ResponseEntity.ok(newRevision);
-        } catch (IOException | DatabaseException ex) {
-            return ResponseEntity.badRequest().build();
-        } catch (AccessDeniedException adEx) {
+        } catch (IOException ex) {
+            return ResponseEntity.internalServerError().build();
+        } catch(DatabaseException ex) {
+            return ResponseEntity.notFound().build();
+        }catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
