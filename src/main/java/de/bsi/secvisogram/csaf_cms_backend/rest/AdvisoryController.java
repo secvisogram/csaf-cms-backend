@@ -436,16 +436,16 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
-            responseCode = "400", 
-            description = "No valid UUID."
-          ),
+          responseCode = "400", 
+          description = "No valid UUID."
+        ),
         @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access."
         ),
         @ApiResponse(
-            responseCode = "404", 
-            description = "Advisory not found."
+          responseCode = "404", 
+          description = "Advisory not found."
         ),
         @ApiResponse(
           responseCode = "500", 
@@ -469,9 +469,9 @@ public class AdvisoryController {
             return ResponseEntity.ok(newRevision);
         } catch (IOException ex) {
             return ResponseEntity.internalServerError().build();
-        } catch(DatabaseException ex) {
+        } catch (DatabaseException ex) {
             return ResponseEntity.notFound().build();
-        }catch (AccessDeniedException adEx) {
+        } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
@@ -494,27 +494,27 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @ApiResponses(value = {
-        @ApiResponse(
-          responseCode = "200", 
-          description = "Advisory deleted."
-        ),
-        @ApiResponse(
-            responseCode = "400", 
-            description = "No valid UUID."
-          ),
-        @ApiResponse(
-          responseCode = "401", 
-          description = "Unauthorized access."
-        ),
-        @ApiResponse(
-            responseCode = "404", 
-            description = "Advisory not found."
-        ),
-        @ApiResponse(
-          responseCode = "500", 
-          description = "Error storing or reading database."
-        )
-      })
+      @ApiResponse(
+        responseCode = "200", 
+        description = "Advisory deleted."
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "No valid UUID."
+      ),
+      @ApiResponse(
+        responseCode = "401", 
+        description = "Unauthorized access."
+      ),
+      @ApiResponse(
+        responseCode = "404", 
+        description = "Advisory not found."
+      ),
+      @ApiResponse(
+        responseCode = "500", 
+        description = "Error storing or reading database."
+      )
+    })
     public ResponseEntity<Void> deleteCsafDocument(
             @PathVariable
             @Parameter(
@@ -541,7 +541,7 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
-        }catch (AccessDeniedException adEx) {
+        } catch (AccessDeniedException adEx) {
           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -558,31 +558,19 @@ public class AdvisoryController {
             tags = {"Advisory"}
     )
     @ApiResponses(value = {
-        @ApiResponse(
-          responseCode = "200", 
-          description = "List of all templates that the user can access."
-        ),
-        @ApiResponse(
-          responseCode = "400", 
-          description = "Invalid filter expression", 
-          content = { 
-            @Content(
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              schema = @Schema(
-                title = "JSON", 
-                description = "String describing error")
+      @ApiResponse(
+        responseCode = "200", 
+        description = "List of all templates that the user can access. List is empty of no templates are available.",
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = @ArraySchema(
+              schema = @Schema(implementation = AdvisoryTemplateInfoResponse.class)
             )
-          }
-        ),
-        @ApiResponse(
-          responseCode = "401", 
-          description = "Unauthorized access."
-        ),
-        @ApiResponse(
-          responseCode = "500", 
-        description = "Error reading advisories"
-        )
-      })
+          )
+        }
+      )
+    })
     public ResponseEntity<List<AdvisoryTemplateInfoResponse>> listAllTemplates() {
 
         LOG.debug("listAllTemplates");
@@ -610,6 +598,24 @@ public class AdvisoryController {
             description = "Get the content of the template with the given templateId.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "JSON template for advisory"
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Template not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error loading template."
+        )
+      })
     public ResponseEntity<JsonNode> readTemplate(
             @PathVariable
             @Parameter(
