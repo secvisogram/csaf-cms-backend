@@ -403,7 +403,7 @@ public class AdvisoryController {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (CsafException ex) {
