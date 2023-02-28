@@ -560,6 +560,32 @@ public class AdvisoryController {
             description = "Get all available templates in the system.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value= {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "List of all templates that the user can access."
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid filter expression", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                title = "JSON", 
+                description = "String describing error")
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+        description = "Error reading advisories"
+        )
+      })
     public ResponseEntity<List<AdvisoryTemplateInfoResponse>> listAllTemplates() {
 
         LOG.debug("listAllTemplates");
