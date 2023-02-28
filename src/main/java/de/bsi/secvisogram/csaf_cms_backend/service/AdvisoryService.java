@@ -618,7 +618,9 @@ public class AdvisoryService {
 
             if (newWorkflowState == WorkflowState.Published) {
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
-                setFinalTrackingIdAndUrl(existingAdvisoryNode);
+                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
+                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
+                }
             }
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, previousWorkflowState)

@@ -660,9 +660,46 @@ public class AdvisoryServiceTest {
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            String trackingId = advisoryService.getAdvisory(idRev.getId()).getDocumentTrackingId();
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
             AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
-            assertEquals(WorkflowState.Draft, advisory.getWorkflowState());
+            assertEquals(WorkflowState.Draft, advisory.getWorkflowState(), "new document version should be in draft state");
+            assertEquals(trackingId, advisory.getDocumentTrackingId(), "new version of document should get same tracking ID");
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void createNewCsafDocumentVersionKeepTrackingIdTest() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            String trackingId = advisoryService.getAdvisory(idRev.getId()).getDocumentTrackingId();
+            revision = advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
+            AdvisoryResponse advisoryFirstPublish = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(trackingId, advisoryFirstPublish.getDocumentTrackingId(), "new version of document should get same tracking ID");
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            AdvisoryResponse advisorySecondPublish = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(trackingId, advisorySecondPublish.getDocumentTrackingId(), "new version of document should keep tracking ID also after publishing again");
+            revision = advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            AdvisoryResponse advisoryThirdPublish = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(trackingId, advisoryThirdPublish.getDocumentTrackingId(), "new version of document should keep tracking ID also after publishing yet again");
         }
     }
 
@@ -1128,7 +1165,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
-    void getNewTrackingIdCounterTest() throws IOException, DatabaseException, CsafException {
+    void getNewTrackingIdCounterTest() throws CsafException {
         Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
         Assertions.assertEquals(2, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.TMP_OBJECT_ID));
         Assertions.assertEquals(1, advisoryService.getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID));
@@ -1264,7 +1301,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
-    public void importAdvisoryTest_CsafNotValid() throws IOException, CsafException {
+    public void importAdvisoryTest_CsafNotValid() throws IOException {
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
