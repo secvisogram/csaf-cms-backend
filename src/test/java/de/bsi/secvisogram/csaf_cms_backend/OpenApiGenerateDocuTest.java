@@ -4,7 +4,7 @@ import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.openapitools.codegen.OpenAPIGenerator;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 /**
  * Test to generate swagger documentation.
