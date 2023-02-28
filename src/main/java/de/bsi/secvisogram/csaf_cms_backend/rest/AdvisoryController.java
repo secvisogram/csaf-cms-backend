@@ -755,8 +755,12 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formated advisory." 
+          ),
+        @ApiResponse(
             responseCode = "400", 
-            description = "Invalid advisory id." 
+            description = "Advisory ID not found." 
           ),
         @ApiResponse(
           responseCode = "401", 
@@ -816,8 +820,12 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formated advisory." 
+          ),
+        @ApiResponse(
             responseCode = "400", 
-            description = "Invalid advisory id." 
+            description = "Advisory ID not found." 
           ),
         @ApiResponse(
           responseCode = "401", 
@@ -860,8 +868,12 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formated advisory." 
+          ),
+        @ApiResponse(
             responseCode = "400", 
-            description = "Invalid advisory id." 
+            description = "Advisory ID not found." 
           ),
         @ApiResponse(
           responseCode = "401", 
@@ -905,8 +917,12 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formated advisory." 
+          ),
+        @ApiResponse(
             responseCode = "400", 
-            description = "Invalid advisory id." 
+            description = "Advisory ID not found." 
           ),
         @ApiResponse(
           responseCode = "401", 
@@ -940,6 +956,31 @@ public class AdvisoryController {
     @Operation(summary = "Change workflow state of an advisory to Published.", 
             tags = {"Advisory"},
             description = "Change the workflow state of the advisory with the given id to Published.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to Publication.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formated advisory." 
+          ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Advisory ID not found." 
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     @PatchMapping("/{advisoryId}/workflowstate/Published")
     public ResponseEntity<String> setWorkflowStateToPublished(
             @PathVariable
@@ -967,8 +1008,39 @@ public class AdvisoryController {
      * @param advisoryId id of the CSAF document to get comment ids for
      * @return list of comment ids
      */
-    @Operation(summary = "Show comments of an advisory.", tags = {"Advisory"},
-            description = "Show all comments of the advisory with the given advisoryId.")
+    @Operation(summary = "Show comments of an advisory.", 
+        tags = {"Advisory"},
+        description = "Show all comments of the advisory with the given advisoryId.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "List of all comments for an advisory.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              array = @ArraySchema(
+                schema = @Schema(implementation = CommentInformationResponse.class)
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     @GetMapping("/{advisoryId}/comments")
     public ResponseEntity<List<CommentInformationResponse>> listComments(
             @PathVariable
@@ -1010,6 +1082,30 @@ public class AdvisoryController {
                     )
             )
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Comment created.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> createComment(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to add the comments to.")
@@ -1046,6 +1142,36 @@ public class AdvisoryController {
             summary = "Show answers of a comment.", tags = {"Advisory"},
             description = "Show all answers of the comment with the given commentId.")
     @GetMapping("/{advisoryId}/comments/{commentId}/answers")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "List of all answers for a comment.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              array = @ArraySchema(
+                schema = @Schema(implementation = AnswerInformationResponse.class)
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id or comment id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory or comment not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<List<AnswerInformationResponse>> listAnswers(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to the comment belongs to.")
@@ -1077,6 +1203,34 @@ public class AdvisoryController {
     @Operation(summary = "Add an answer to an advisory comment.", tags = {"Advisory"},
             description = "Add a answer to the comment with the given ID.")
     @PostMapping("/{advisoryId}/comments/{commentId}/answers")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Answer created.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory or comment not found."
+          ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> addAnswer(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory the answered comment belongs to.")
@@ -1128,6 +1282,34 @@ public class AdvisoryController {
                     )
             )
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Comment changed.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory or comment not found."
+          ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<EntityUpdateResponse> changeComment(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory a comment of.")
@@ -1171,6 +1353,34 @@ public class AdvisoryController {
      */
     @Operation(summary = "Change answer text to an advisory comment.", tags = {"Advisory"},
             description = "Change the text of an answer to a comment.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Answer changed.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory or comment id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory, comment or answer not found."
+          ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     @PatchMapping("/{advisoryId}/comments/{commentId}/answers/{answerId}")
     public ResponseEntity<EntityUpdateResponse> changeAnswer(
             @PathVariable
