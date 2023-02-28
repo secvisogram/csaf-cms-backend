@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,7 +43,6 @@ public class MainControllerTest {
     @Test
     void aboutTest() throws Exception {
         this.mockMvc.perform(get("/api/v1/about"))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"version\": \"%s\"}", testVersion)));
 

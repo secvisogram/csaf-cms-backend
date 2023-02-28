@@ -12,7 +12,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -121,7 +120,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisoryInformations(null)).thenReturn(Collections.emptyList());
 
         this.mockMvc.perform(get(advisoryRoute))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
 
@@ -134,7 +132,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisoryInformations(null)).thenReturn(List.of(info));
 
         this.mockMvc.perform(get(advisoryRoute))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content()
                         .json(String.format("[{\"advisoryId\": \"%s\"}]", advisoryId))
@@ -150,7 +147,6 @@ public class AdvisoryControllerTest {
                 .thenThrow(csafExcp);
 
         this.mockMvc.perform(get(advisoryRoute))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -161,7 +157,6 @@ public class AdvisoryControllerTest {
                 .thenThrow(new IOException());
 
         this.mockMvc.perform(get(advisoryRoute))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -173,7 +168,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisory(advisoryId.toString())).thenThrow(IdNotFoundException.class);
 
         this.mockMvc.perform(get(advisoryRoute + advisoryId))
-                .andDo(print())
                 .andExpect(status().isNotFound());
 
     }
@@ -183,7 +177,6 @@ public class AdvisoryControllerTest {
 
         when(advisoryService.getAdvisory(any())).thenThrow(AccessDeniedException.class);
         this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
 
     }
@@ -194,7 +187,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisory(any())).thenThrow(DatabaseException.class);
 
         this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -205,7 +197,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisory(any())).thenThrow(csafExcp);
 
         this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
 
     }
@@ -219,7 +210,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisory(advisoryId)).thenReturn(advisoryResponse);
 
         this.mockMvc.perform(get(advisoryRoute + advisoryId))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"advisoryId\":  \"%s\", \"workflowState\": Draft}", advisoryId)));
     }
@@ -233,7 +223,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(
                         post(advisoryRoute).content(writer.writeValueAsString(csafToRequest(invalidCsaf)))
                                 .contentType(MediaType.APPLICATION_JSON).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -245,7 +234,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(
                         post(advisoryRoute).content(invalidJson)
                                 .contentType(MediaType.APPLICATION_JSON).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -260,7 +248,6 @@ public class AdvisoryControllerTest {
                         post(advisoryRoute).with(csrf())
                                 .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(String.format("{\"id\": \"%s\", \"revision\": \"%s\"}", advisoryId, revision)));
     }
@@ -273,7 +260,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -284,7 +270,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -299,7 +284,6 @@ public class AdvisoryControllerTest {
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -313,7 +297,6 @@ public class AdvisoryControllerTest {
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -327,7 +310,6 @@ public class AdvisoryControllerTest {
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -341,7 +323,6 @@ public class AdvisoryControllerTest {
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -355,7 +336,6 @@ public class AdvisoryControllerTest {
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", invalidRevision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -369,7 +349,6 @@ public class AdvisoryControllerTest {
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -384,7 +363,6 @@ public class AdvisoryControllerTest {
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
@@ -396,7 +374,6 @@ public class AdvisoryControllerTest {
         doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), revision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -406,7 +383,6 @@ public class AdvisoryControllerTest {
         String invalidId = "invalid ID";
 
         this.mockMvc.perform(delete(advisoryRoute + invalidId).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -419,7 +395,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
                         .param("revision", invalidRevision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -433,7 +408,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -442,7 +416,6 @@ public class AdvisoryControllerTest {
     void deleteCsafDocumentTest() throws Exception {
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -452,7 +425,6 @@ public class AdvisoryControllerTest {
         doThrow(AccessDeniedException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -462,7 +434,6 @@ public class AdvisoryControllerTest {
         doThrow(IOException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
 
         this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -473,7 +444,6 @@ public class AdvisoryControllerTest {
                 .thenReturn(new DocumentTemplateDescription[] {new DocumentTemplateDescription("T1", "Template1", "File1")});
 
         this.mockMvc.perform(get(advisoryRoute + "/templates"))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content()
                         .json("""
@@ -488,7 +458,6 @@ public class AdvisoryControllerTest {
         when(this.templateService.getAllTemplates()).thenThrow(new IOException());
 
         this.mockMvc.perform(get(advisoryRoute + "/templates"))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -499,7 +468,6 @@ public class AdvisoryControllerTest {
         when(this.templateService.getTemplate(templateId)).thenReturn(Optional.of(jacksonMapper.readTree(csafJsonString)));
 
         this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content()
                         .json(csafJsonString));
@@ -512,7 +480,6 @@ public class AdvisoryControllerTest {
         when(this.templateService.getTemplate(templateId)).thenThrow(new IOException("Server Error Test"));
 
         this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -523,7 +490,6 @@ public class AdvisoryControllerTest {
         when(this.templateService.getTemplateFileName(templateId)).thenReturn(Optional.empty());
 
         this.mockMvc.perform(get(advisoryRoute + "/templates/" + templateId))
-                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -535,7 +501,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Draft").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -547,7 +512,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Review").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -559,7 +523,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Approved").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -572,7 +535,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/RfPublication").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z"))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -586,7 +548,6 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -600,7 +561,6 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -614,7 +574,6 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -628,7 +587,6 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andDo(print())
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -642,7 +600,6 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andDo(print())
                 .andExpect(status().isServiceUnavailable());
     }
 
@@ -655,7 +612,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -667,7 +623,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -685,7 +640,6 @@ public class AdvisoryControllerTest {
                         get(advisoryRoute + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string("<html></html>"));
     }
@@ -708,7 +662,6 @@ public class AdvisoryControllerTest {
                         get(advisoryRoute + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON)
                                 .param("format", ExportFormat.JSON.name()))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(csafJsonString));
 
@@ -725,7 +678,6 @@ public class AdvisoryControllerTest {
                         get(advisoryRoute + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -740,7 +692,6 @@ public class AdvisoryControllerTest {
                         get(advisoryRoute + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -763,7 +714,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -775,7 +725,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -787,7 +736,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -795,7 +743,6 @@ public class AdvisoryControllerTest {
     void listCommentsTest_empty() throws Exception {
 
         this.mockMvc.perform(get(commentRoute))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -825,7 +772,6 @@ public class AdvisoryControllerTest {
         );
 
         this.mockMvc.perform(get(commentRoute))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
     }
@@ -836,7 +782,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getComments(advisoryId)).thenThrow(AccessDeniedException.class);
 
         this.mockMvc.perform(get(commentRoute))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -847,7 +792,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getComments(advisoryId)).thenThrow(csafExcp);
 
         this.mockMvc.perform(get(commentRoute))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -858,7 +802,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(invalidJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -874,7 +817,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -892,7 +834,6 @@ public class AdvisoryControllerTest {
                 """;
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -910,7 +851,6 @@ public class AdvisoryControllerTest {
                 """;
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -928,7 +868,6 @@ public class AdvisoryControllerTest {
                 """;
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -947,7 +886,6 @@ public class AdvisoryControllerTest {
                 """;
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -974,7 +912,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expected));
 
@@ -990,7 +927,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -1004,7 +940,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", invalidRevision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -1018,7 +953,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -1032,7 +966,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
@@ -1046,7 +979,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -1059,7 +991,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -1073,7 +1004,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -1087,7 +1017,6 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -1096,7 +1025,6 @@ public class AdvisoryControllerTest {
     void listAnswersTest_empty() throws Exception {
 
         this.mockMvc.perform(get(answerRoute))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -1124,7 +1052,6 @@ public class AdvisoryControllerTest {
         );
 
         this.mockMvc.perform(get(answerRoute))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
     }
@@ -1135,7 +1062,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAnswers(advisoryId, commentId)).thenThrow(AccessDeniedException.class);
 
         this.mockMvc.perform(get(answerRoute))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -1146,7 +1072,6 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAnswers(advisoryId, commentId)).thenThrow(csafExcp);
 
         this.mockMvc.perform(get(answerRoute))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -1159,7 +1084,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(answerRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
-                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -1173,7 +1097,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -1187,7 +1110,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -1201,7 +1123,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -1227,7 +1148,6 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(answerRoute).with(csrf()).content(answerJson).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expected));
 
@@ -1242,7 +1162,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -1255,7 +1174,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -1268,7 +1186,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -1282,7 +1199,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -1296,7 +1212,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", invalidRevision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -1310,7 +1225,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -1324,7 +1238,6 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"revision\": \"%s\"}", newRevision)));
     }
@@ -1346,7 +1259,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expected));
     }
@@ -1359,7 +1271,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -1373,7 +1284,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
@@ -1384,7 +1294,6 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
