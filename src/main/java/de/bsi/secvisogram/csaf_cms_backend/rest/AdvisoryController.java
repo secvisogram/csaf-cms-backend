@@ -654,6 +654,34 @@ public class AdvisoryController {
             description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "JSON template for advisory",
+          content = {
+              @Content(mediaType = MediaType.APPLICATION_PDF_VALUE),
+              @Content(mediaType = MediaType.APPLICATION_XHTML_XML_VALUE),
+              @Content(mediaType = MediaType.APPLICATION_JSON_VALUE),
+              @Content(mediaType = MediaType.TEXT_MARKDOWN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Bad format requested." 
+          ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during export."
+        )
+      })
     public ResponseEntity<InputStreamResource> exportAdvisory(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to export.")
