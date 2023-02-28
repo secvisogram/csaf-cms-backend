@@ -1,41 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.fasterxml.jackson.databind.JsonNode;
-
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
@@ -65,6 +31,37 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -100,14 +97,14 @@ public class AdvisoryController {
       description = "All CSAF documents for which the logged in user is authorized are returned." +
                     " This depends on the user's role and the state of the CSAF document."
     )
-    @ApiResponses(value= {
+    @ApiResponses(value = {
       @ApiResponse(
         responseCode = "200", 
         description = "List of all advisories that the user can access.",
         content = { 
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            array = @ArraySchema(  
+            array = @ArraySchema(
               schema = @Schema(implementation = AdvisoryInformationResponse.class)
             )
           )
@@ -127,11 +124,11 @@ public class AdvisoryController {
       ),
       @ApiResponse(
         responseCode = "401", 
-       	description = "Unauthorized access."
+        description = "Unauthorized access."
       ),
       @ApiResponse(
         responseCode = "500", 
-    	description = "Error reading advisories"
+        description = "Error reading advisories"
       )
     })
     public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
@@ -176,8 +173,8 @@ public class AdvisoryController {
       description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
       tags = {"Advisory"}
     )
-    @ApiResponses(value= {
-      @ApiResponse( 
+    @ApiResponses(value = {
+      @ApiResponse(
         responseCode = "200", 
         description = "Single requested advisory", 
         content = { 
@@ -194,16 +191,16 @@ public class AdvisoryController {
         description = "Invalid UUID" 
       ),
       @ApiResponse(
-    	responseCode = "401", 
-    	description = "Unauthorized access."
+        responseCode = "401", 
+        description = "Unauthorized access."
       ),
       @ApiResponse(
-    	responseCode = "404", 
-    	description = "Requested advisory not found."
+        responseCode = "404", 
+        description = "Requested advisory not found."
       ),
       @ApiResponse(
         responseCode = "500", 
-      	description = "Error reading advisory."
+        description = "Error reading advisory."
       )
     })
     public ResponseEntity<AdvisoryResponse> readCsafDocument(
@@ -242,8 +239,8 @@ public class AdvisoryController {
                    + " in the system. It possible to add an summary " 
                    + "and a legacy version information for the revision"
                    + " history.")
-    @ApiResponses(value= {
-        @ApiResponse( 
+    @ApiResponses(value = {
+        @ApiResponse(
           responseCode = "201", 
           description = "Id and revison id of new advisory-", 
           content = { 
@@ -295,8 +292,8 @@ public class AdvisoryController {
     @Operation(summary = "Import a new Advisory.", 
                tags = {"Advisory"},
                description = "Import a new CSAF document into the system.")
-    @ApiResponses(value= {
-        @ApiResponse( 
+    @ApiResponses(value = {
+        @ApiResponse(
           responseCode = "201", 
           description = "Id and revison id of new advisory-", 
           content = { 
@@ -352,8 +349,8 @@ public class AdvisoryController {
                    + "a document its content (version) may change. Thus, after "
                    + "changing a document, it must be reloaded on the client"
                    + " side.")
-    @ApiResponses(value= {
-        @ApiResponse( 
+    @ApiResponses(value = {
+        @ApiResponse(
           responseCode = "200", 
           description = "Id and revison id of new advisory-", 
           content = { 
@@ -428,8 +425,8 @@ public class AdvisoryController {
             description = "Increase the version of a CSAF document. This can only be done in workflow state Published",
             tags = {"Advisory"}
     )
-    @ApiResponses(value= {
-        @ApiResponse( 
+    @ApiResponses(value = {
+        @ApiResponse(
           responseCode = "200", 
           description = "Id and revison id of new advisory-", 
           content = { 
@@ -496,8 +493,8 @@ public class AdvisoryController {
                 + " comments and audit-trails are also deleted.",
             tags = {"Advisory"}
     )
-    @ApiResponses(value= {
-        @ApiResponse( 
+    @ApiResponses(value = {
+        @ApiResponse(
           responseCode = "200", 
           description = "Advisory deleted."
         ),
@@ -560,7 +557,7 @@ public class AdvisoryController {
             description = "Get all available templates in the system.",
             tags = {"Advisory"}
     )
-    @ApiResponses(value= {
+    @ApiResponses(value = {
         @ApiResponse(
           responseCode = "200", 
           description = "List of all templates that the user can access."
