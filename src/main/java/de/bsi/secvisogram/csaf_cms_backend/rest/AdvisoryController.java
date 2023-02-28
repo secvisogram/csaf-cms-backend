@@ -746,6 +746,23 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Draft.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to draft.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Invalid advisory id." 
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToDraft(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -790,6 +807,23 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Review.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to review.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Invalid advisory id." 
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToReview(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -817,6 +851,23 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Approve.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to approved.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Invalid advisory id." 
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToApproved(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -845,6 +896,23 @@ public class AdvisoryController {
                           " (Request for Publication).",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to RfPublication.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Invalid advisory id." 
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToRfPublication(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -869,7 +937,8 @@ public class AdvisoryController {
      * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
      * @return new optimistic locking revision
      */
-    @Operation(summary = "Change workflow state of an advisory to Published.", tags = {"Advisory"},
+    @Operation(summary = "Change workflow state of an advisory to Published.", 
+            tags = {"Advisory"},
             description = "Change the workflow state of the advisory with the given id to Published.")
     @PatchMapping("/{advisoryId}/workflowstate/Published")
     public ResponseEntity<String> setWorkflowStateToPublished(
