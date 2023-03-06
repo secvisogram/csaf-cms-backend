@@ -927,7 +927,11 @@ public class AdvisoryController {
         @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access to change workflow state."
-        )
+        ),
+        @ApiResponse(
+            responseCode = "503", 
+            description = "Validation server not available."
+          )
       })
     public ResponseEntity<String> setWorkflowStateToRfPublication(
             @PathVariable
