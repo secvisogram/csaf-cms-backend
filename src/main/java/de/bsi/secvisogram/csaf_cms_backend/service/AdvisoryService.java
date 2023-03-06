@@ -261,7 +261,7 @@ public class AdvisoryService {
     IdAndRevision importAdvisoryForUser(JsonNode nodeToImport, String userName) throws IOException, CsafException {
 
         UUID advisoryId = UUID.randomUUID();
-        if(this.validationEnabled) {
+        if (this.validationEnabled) {
           if (!ValidatorServiceClient.isCsafValid(this.validationBaseUrl, nodeToImport)) {
               throw new CsafException("Advisory is no valid CSAF document",
                       CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -693,7 +693,7 @@ public class AdvisoryService {
             advisoryCopy.setDocumentTrackingInitialReleaseDate(releaseDate);
         }
         
-        if(this.validationEnabled) {
+        if (this.validationEnabled) {
           if (!ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
               throw new CsafException("Advisory is no valid CSAF document",
                       CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
