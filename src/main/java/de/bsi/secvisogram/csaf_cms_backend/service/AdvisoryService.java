@@ -82,6 +82,9 @@ public class AdvisoryService {
     @Value("${csaf.validation.baseurl}")
     private String validationBaseUrl;
 
+    @Value("${csaf.validation.enabled}")
+    private boolean validationEnabled;
+    
     @Value("${csaf.references.baseurl}")
     private String referencesBaseUrl;
 
@@ -258,9 +261,11 @@ public class AdvisoryService {
     IdAndRevision importAdvisoryForUser(JsonNode nodeToImport, String userName) throws IOException, CsafException {
 
         UUID advisoryId = UUID.randomUUID();
-        if (!ValidatorServiceClient.isCsafValid(this.validationBaseUrl, nodeToImport)) {
-            throw new CsafException("Advisory is no valid CSAF document",
-                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        if(this.validationEnabled) {
+          if (!ValidatorServiceClient.isCsafValid(this.validationBaseUrl, nodeToImport)) {
+              throw new CsafException("Advisory is no valid CSAF document",
+                      CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+          }
         }
         AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(userName);
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.importNewFromCsaf(nodeToImport, userName);
@@ -687,12 +692,13 @@ public class AdvisoryService {
         if (advisoryCopy.getLastMajorVersion() == 0) {
             advisoryCopy.setDocumentTrackingInitialReleaseDate(releaseDate);
         }
-
-        if (!ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
-            throw new CsafException("Advisory is no valid CSAF document",
-                    CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+        
+        if(this.validationEnabled) {
+          if (!ValidatorServiceClient.isAdvisoryValid(this.validationBaseUrl, advisoryCopy)) {
+              throw new CsafException("Advisory is no valid CSAF document",
+                      CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
+          }
         }
-
         return advisoryCopy;
     }
 
