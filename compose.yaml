@@ -36,8 +36,8 @@ services:
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
-      KC_HEALTH_ENABLED: true
-      KC_METRICS_ENABLED: true
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
       KC_DB: postgres
       KC_DB_URL_HOST: csaf-keycloak-db
       KC_DB_URL_PORT: 5432
@@ -113,6 +113,15 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
+
+  csaf-validation-server:
+    build:
+      context: https://github.com/https://github.com/secvisogram/csaf-validator-service.git#main
+    container_name: csaf-validation-server
+    env_file: .env
+    ports:
+      - "$CSAF_VALIDATOR_PORT:8082"
+
 
 volumes:
   csaf-couchdb-data:
