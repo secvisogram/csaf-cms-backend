@@ -3,9 +3,8 @@ package de.bsi.secvisogram.csaf_cms_backend.model.filter;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
-
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.ArrayMatching.arrayContaining;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
