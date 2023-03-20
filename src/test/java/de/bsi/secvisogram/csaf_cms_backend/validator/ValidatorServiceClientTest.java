@@ -173,7 +173,9 @@ public class ValidatorServiceClientTest {
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.ifNoneMatch(any())).thenReturn(requestHeadersSpec);
-            when(requestHeadersSpec.retrieve()).thenThrow(new WebClientRequestException(new Exception("Test exception"), HttpMethod.GET,new URI("http://unreachable.test"),new HttpHeaders()));
+            when(requestHeadersSpec.retrieve()).thenThrow(new WebClientRequestException(
+                new Exception("Test exception"), HttpMethod.GET, 
+                new URI("http://unreachable.test"), new HttpHeaders()));
 
             final AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(
                     csafToRequest(TEST_CSAF),
