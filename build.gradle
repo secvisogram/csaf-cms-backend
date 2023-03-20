@@ -84,7 +84,7 @@ task apiDocumentation(type: Test, description: "generates the API documentation"
 }
 
 tasks.withType(JavaCompile) {
-	options.compilerArgs += ['-Xlint:deprecation']
+	options.compilerArgs += ['-Xlint:deprecation,unchecked']
 }
 
 jacoco {
