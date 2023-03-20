@@ -1,12 +1,12 @@
 package de.bsi.secvisogram.csaf_cms_backend.model.filter;
 
 import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.ArrayMatching.arrayContaining;
 
-import org.hamcrest.CoreMatchers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisorySearchUtil;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ public class ExpressionTest {
         AndExpression andExpr = new AndExpression(opExpr);
 
         String expressionString = AdvisorySearchUtil.expression2Json(andExpr);
-        assertThat(expressionString, equalToCompressingWhiteSpace("{" +
+        assertThat(expressionString, Matchers.equalToCompressingWhiteSpace("{" +
                 "  \"type\" : \"AND\"," +
                 "  \"expressions\" : [ {" +
                 "    \"type\" : \"Operator\"," +
