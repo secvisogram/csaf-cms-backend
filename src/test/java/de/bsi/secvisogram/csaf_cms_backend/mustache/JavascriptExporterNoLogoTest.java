@@ -1,7 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -224,10 +224,8 @@ class JavascriptExporterNoLogoTest {
 
     @Test
     void createHtml() throws IOException {
-
         String html = this.javascriptExporter.createHtml(json);
-        assertThat(html, equalToCompressingWhiteSpace(resultHtmlNoLogo));
-
+        assertThat(html, equalToIgnoringWhiteSpace(resultHtmlNoLogo));
     }
 
 }

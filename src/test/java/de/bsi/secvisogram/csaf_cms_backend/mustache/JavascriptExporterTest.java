@@ -1,9 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
 import static de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter.determineMediaTypeOfLogo;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -233,16 +232,16 @@ class JavascriptExporterTest {
     void createHtml() throws IOException {
 
         String html = this.javascriptExporter.createHtml(json);
-        MatcherAssert.assertThat(html, Matchers.equalToCompressingWhiteSpace(resultHtml));
+        assertThat(html, equalToCompressingWhiteSpace(resultHtml));
 
     }
 
     @Test
     void determineMediaTypeOfLogoTest() {
 
-      MatcherAssert.assertThat(determineMediaTypeOfLogo(Path.of("test.png")), CoreMatchers.is(CoreMatchers.equalTo(MediaType.IMAGE_PNG)));
-      MatcherAssert.assertThat(determineMediaTypeOfLogo(Path.of("test.jpg")), CoreMatchers.is(CoreMatchers.equalTo(MediaType.IMAGE_JPEG)));
-      MatcherAssert.assertThat(determineMediaTypeOfLogo(Path.of("test.jpeg")), CoreMatchers.is(CoreMatchers.equalTo(MediaType.IMAGE_JPEG)));
+      assertThat(determineMediaTypeOfLogo(Path.of("test.png")), is(equalTo(MediaType.IMAGE_PNG)));
+      assertThat(determineMediaTypeOfLogo(Path.of("test.jpg")), is(equalTo(MediaType.IMAGE_JPEG)));
+      assertThat(determineMediaTypeOfLogo(Path.of("test.jpeg")), is(equalTo(MediaType.IMAGE_JPEG)));
       assertThrows(IllegalArgumentException.class, () -> determineMediaTypeOfLogo(Path.of("test.txt")));
     }
 }
