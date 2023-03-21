@@ -232,7 +232,7 @@ class JavascriptExporterTest {
     void createHtml() throws IOException {
 
         String html = this.javascriptExporter.createHtml(json);
-        assertThat(html, equalToCompressingWhiteSpace(resultHtml));
+        assertThat(html, equalToIgnoringWhiteSpace(resultHtml));
 
     }
 
