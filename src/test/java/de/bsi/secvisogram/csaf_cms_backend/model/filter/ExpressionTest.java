@@ -1,12 +1,11 @@
 package de.bsi.secvisogram.csaf_cms_backend.model.filter;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.ArrayMatching.arrayContaining;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisorySearchUtil;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +18,7 @@ public class ExpressionTest {
         AndExpression andExpr = new AndExpression(opExpr);
 
         String expressionString = AdvisorySearchUtil.expression2Json(andExpr);
-        assertThat(expressionString, Matchers.equalToCompressingWhiteSpace("{" +
+        assertThat(expressionString, equalToIgnoringWhiteSpace("{" +
                 "  \"type\" : \"AND\"," +
                 "  \"expressions\" : [ {" +
                 "    \"type\" : \"Operator\"," +
@@ -47,15 +46,15 @@ public class ExpressionTest {
 
         Expression expression = AdvisorySearchUtil.json2Expression(expressionString);
 
-        assertThat(expression, CoreMatchers.instanceOf(AndExpression.class));
-        assertThat(((AndExpression) expression).getExpressions().size(), CoreMatchers.equalTo(1));
+        assertThat(expression, instanceOf(AndExpression.class));
+        assertThat(((AndExpression) expression).getExpressions().size(), equalTo(1));
         Expression expr2 = ((AndExpression) expression).getExpressions().get(0);
-        assertThat(expr2, CoreMatchers.instanceOf(OperatorExpression.class));
+        assertThat(expr2, instanceOf(OperatorExpression.class));
         OperatorExpression operatorExpr = (OperatorExpression) expr2;
-        assertThat(operatorExpr.getOperatorType(), CoreMatchers.equalTo(TypeOfOperator.Equal));
-        assertThat(operatorExpr.getValue(), CoreMatchers.equalTo("123.45"));
-        assertThat(operatorExpr.getValueType(), CoreMatchers.equalTo(TypeOfValue.Decimal));
-        assertThat(operatorExpr.getSelector(),  	arrayContaining("document", "version"));
+        assertThat(operatorExpr.getOperatorType(), equalTo(TypeOfOperator.Equal));
+        assertThat(operatorExpr.getValue(), equalTo("123.45"));
+        assertThat(operatorExpr.getValueType(), equalTo(TypeOfValue.Decimal));
+        assertThat(operatorExpr.getSelector(), arrayContaining("document", "version"));
     }
 
     @Test
@@ -74,6 +73,6 @@ public class ExpressionTest {
 
         Throwable thrown = Assertions.assertThrows(JsonProcessingException.class,
                 () ->  AdvisorySearchUtil.json2Expression(expressionString));
-        assertThat(thrown.getMessage(), CoreMatchers.startsWith("Unrecognized field \"expressi\""));
+        assertThat(thrown.getMessage(), startsWith("Unrecognized field \"expressi\""));
     }
 }
