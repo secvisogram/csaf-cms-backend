@@ -104,7 +104,8 @@ public class ValidatorServiceClientTest {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
             when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-            when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+            // Using different way because of type safety checks (see https://stackoverflow.com/questions/7366237/mockito-stubbing-methods-that-return-type-with-bounded-wild-cards)
+            Mockito.doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
             when(requestHeadersSpec.header(any(), any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
@@ -132,7 +133,8 @@ public class ValidatorServiceClientTest {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
             when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-            when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+            // Using different way because of type safety checks (see https://stackoverflow.com/questions/7366237/mockito-stubbing-methods-that-return-type-with-bounded-wild-cards)
+            Mockito.doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
             when(requestHeadersSpec.header(any(), any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
@@ -163,7 +165,8 @@ public class ValidatorServiceClientTest {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
             when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-            when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+            // Using different way because of type safety checks (see https://stackoverflow.com/questions/7366237/mockito-stubbing-methods-that-return-type-with-bounded-wild-cards)
+            Mockito.doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
             when(requestHeadersSpec.header(any(), any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
