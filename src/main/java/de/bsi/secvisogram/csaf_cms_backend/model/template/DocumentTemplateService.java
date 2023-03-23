@@ -3,12 +3,13 @@ package de.bsi.secvisogram.csaf_cms_backend.model.template;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import jakarta.annotation.security.RolesAllowed;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
-import javax.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
