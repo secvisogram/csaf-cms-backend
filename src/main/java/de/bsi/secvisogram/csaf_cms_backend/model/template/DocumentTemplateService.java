@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import jakarta.annotation.security.RolesAllowed;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

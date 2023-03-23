@@ -38,7 +38,6 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import jakarta.annotation.security.RolesAllowed;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
