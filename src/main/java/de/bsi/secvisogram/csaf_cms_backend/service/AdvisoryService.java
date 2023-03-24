@@ -37,7 +37,6 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
-import jakarta.annotation.security.RolesAllowed;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -56,6 +55,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -111,7 +111,7 @@ public class AdvisoryService {
      *
      * @return a list of information objects
      */
-    @RolesAllowed({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -178,7 +178,7 @@ public class AdvisoryService {
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
      * @throws JsonProcessingException if the given JSON string is not valid
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR})
+    @Secured({CsafRoles.ROLE_AUTHOR})
     public IdAndRevision addAdvisory(CreateAdvisoryRequest newCsafJson) throws IOException, CsafException {
 
         LOG.debug("addAdvisory");
@@ -227,7 +227,7 @@ public class AdvisoryService {
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
      * @throws JsonProcessingException if the given JSON string is not valid
      */
-    @RolesAllowed({CsafRoles.ROLE_PUBLISHER})
+    @Secured({CsafRoles.ROLE_PUBLISHER})
     public IdAndRevision importAdvisory(JsonNode newCsafJson) throws IOException, CsafException {
 
         LOG.debug("importAdvisory");
@@ -381,7 +381,7 @@ public class AdvisoryService {
      * @throws BadRequestException if the request was
      * @throws NotFoundException   if there is no advisory with given ID
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR})
+    @Secured({CsafRoles.ROLE_AUTHOR})
     public void deleteAdvisory(String advisoryId, String revision) throws DatabaseException, IOException, CsafException {
 
         LOG.debug("deleteAdvisory");
@@ -501,7 +501,7 @@ public class AdvisoryService {
      * @throws IOException          on any error regarding writing/reading from disk
      * @throws InterruptedException if the export did take too long and thus timed out
      */
-    @RolesAllowed({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public Path exportAdvisory(
             @Nonnull final String advisoryId,
             @Nullable final ExportFormat format)
@@ -759,7 +759,7 @@ public class AdvisoryService {
      * @throws DatabaseException when there are database errors
      * @throws CsafException     when a known csaf exception occurs
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
+    @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
     public IdAndRevision addComment(String advisoryId, CreateCommentRequest comment) throws DatabaseException, CsafException {
 
         LOG.debug("addComment");
@@ -790,7 +790,7 @@ public class AdvisoryService {
      * @return the requested comment
      * @throws IdNotFoundException if there is no comment with given ID
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public CommentResponse getComment(String commentId) throws DatabaseException, CsafException {
 
 
@@ -827,7 +827,7 @@ public class AdvisoryService {
      * @return a list of information on all comments for the requested advisory
      * @throws IOException when there are errors in JSON handling
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public List<CommentInformationResponse> getComments(String advisoryId) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -878,7 +878,7 @@ public class AdvisoryService {
      * @param newText   the updated text of the comment
      * @return the new revision of the updated comment
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
+    @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
     public String updateComment(String advisoryId, String commentId, String revision, String newText) throws IOException, DatabaseException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -915,7 +915,7 @@ public class AdvisoryService {
      * @throws DatabaseException when there are database errors
      * @throws CsafException     when there are errors in reading advisory
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
+    @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER})
     public IdAndRevision addAnswer(String advisoryId, String commentId, String commentText) throws DatabaseException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -947,7 +947,7 @@ public class AdvisoryService {
      * @return a list of information on all answers for the requested comment
      * @throws IOException when there are errors in JSON handling
      */
-    @RolesAllowed({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public List<AnswerInformationResponse> getAnswers(String advisoryId, String commentId) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();

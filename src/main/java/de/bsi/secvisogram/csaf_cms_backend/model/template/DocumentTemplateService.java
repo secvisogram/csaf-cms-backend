@@ -3,13 +3,13 @@ package de.bsi.secvisogram.csaf_cms_backend.model.template;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import jakarta.annotation.security.RolesAllowed;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,7 +27,7 @@ public class DocumentTemplateService {
      * @return all templates
      * @throws IOException error reading the files
      */
-    @RolesAllowed({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public DocumentTemplateDescription[] getAllTemplates() throws IOException {
 
         Path templateFilePath = Path.of(templatesFile);
@@ -42,7 +42,7 @@ public class DocumentTemplateService {
      * @param templateId the id of the template to get the filename of
      * @return the template file name
      */
-    @RolesAllowed({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public Optional<String> getTemplateFileName(String templateId) throws IOException {
 
         return Arrays.stream(this.getAllTemplates())
