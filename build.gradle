@@ -4,6 +4,7 @@ plugins {
 	id 'java'
 	id 'com.github.spotbugs' version '5.0.12'
 	id 'jacoco'
+	id 'com.github.jk1.dependency-license-report' version '2.0'
 }
 
 group = 'de.bsi.secvisogram'
@@ -150,4 +151,51 @@ spotbugsTest {
 		}
 
 	}
+}
+
+import com.github.jk1.license.render.*
+licenseReport {
+    // Set output directory for the report data.
+    // Defaults to ${project.buildDir}/reports/dependency-license.
+    outputDir = "$buildDir/licenses"
+
+    // Select projects to examine for dependencies.
+    // Defaults to current project and all its subprojects
+    projects = [project] + project.subprojects
+
+    // Adjust the configurations to fetch dependencies. Default is 'runtimeClasspath'
+    // For Android projects use 'releaseRuntimeClasspath' or 'yourFlavorNameReleaseRuntimeClasspath'
+    // Use 'ALL' to dynamically resolve all configurations:
+    // configurations = ALL
+    configurations = ['runtimeClasspath']
+
+    // List the groups ids to exclude from dependency report. Supports regular expressions.
+    // For finer granularity, see: excludes.
+    //excludeGroups = ['do.not.want']
+
+    // List the ids (in module:name format) to exclude from dependency report. Supports regular expressions.
+    // By default excludes is empty.
+    //excludes = ['moduleGroup:moduleName']
+
+    // Don't include artifacts of project's own group into the report
+    excludeOwnGroup = true
+
+    // Don't exclude bom dependencies.
+    // If set to true, then all boms will be excluded from the report
+    excludeBoms = false
+
+    // Set custom report renderer, implementing ReportRenderer.
+    // Yes, you can write your own to support any format necessary.
+    renderers = [
+     new XmlReportRenderer('third-party-libs.xml', 'CSAF CMS Libraries'),
+     new TextReportRenderer('third-party-libs.txt'), 
+     new InventoryHtmlReportRenderer('index.html', 'Some Title')]
+
+    // Set importers to import any external dependency information, i.e. from npm.
+    // Custom importer should implement DependencyDataImporter interface.
+    //importers = [new XmlReportImporter('Frontend dependencies', file(frontend_libs.xml))]
+
+    // This is for the allowed-licenses-file in checkLicense Task
+    // Accepts File, URL or String path to local or remote file
+    // allowedLicensesFile = new File("$projectDir/config/allowed-licenses.json")
 }
