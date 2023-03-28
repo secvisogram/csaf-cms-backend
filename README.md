@@ -1,6 +1,6 @@
 # BSI Secvisogram CSAF Backend
 
-![Coverage](https://raw.githubusercontent.com/secvisogram/csaf-cms-backend/badges/.github/badges/jacoco.svg)
+![Coverage](https://raw.githubusercontent.com/secvisogram/csaf-cms-backend/main/.github/badges/jacoco.svg)
 
 - [About The Project](#about-the-project)
 - [Getting started](#getting-started)
