@@ -18,7 +18,6 @@ public class ExpressionTest {
         AndExpression andExpr = new AndExpression(opExpr);
 
         String expressionString = AdvisorySearchUtil.expression2Json(andExpr);
-
         assertThat(expressionString, equalToIgnoringWhiteSpace("{" +
                 "  \"type\" : \"AND\"," +
                 "  \"expressions\" : [ {" +
@@ -55,7 +54,7 @@ public class ExpressionTest {
         assertThat(operatorExpr.getOperatorType(), equalTo(TypeOfOperator.Equal));
         assertThat(operatorExpr.getValue(), equalTo("123.45"));
         assertThat(operatorExpr.getValueType(), equalTo(TypeOfValue.Decimal));
-        assertThat(operatorExpr.getSelector(),  	arrayContaining("document", "version"));
+        assertThat(operatorExpr.getSelector(), arrayContaining("document", "version"));
     }
 
     @Test

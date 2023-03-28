@@ -239,9 +239,9 @@ class JavascriptExporterTest {
     @Test
     void determineMediaTypeOfLogoTest() {
 
-        assertThat(determineMediaTypeOfLogo(Path.of("test.png")), is(equalTo(MediaType.IMAGE_PNG)));
-        assertThat(determineMediaTypeOfLogo(Path.of("test.jpg")), is(equalTo(MediaType.IMAGE_JPEG)));
-        assertThat(determineMediaTypeOfLogo(Path.of("test.jpeg")), is(equalTo(MediaType.IMAGE_JPEG)));
-        assertThrows(IllegalArgumentException.class, () -> determineMediaTypeOfLogo(Path.of("test.txt")));
+      assertThat(determineMediaTypeOfLogo(Path.of("test.png")), is(equalTo(MediaType.IMAGE_PNG)));
+      assertThat(determineMediaTypeOfLogo(Path.of("test.jpg")), is(equalTo(MediaType.IMAGE_JPEG)));
+      assertThat(determineMediaTypeOfLogo(Path.of("test.jpeg")), is(equalTo(MediaType.IMAGE_JPEG)));
+      assertThrows(IllegalArgumentException.class, () -> determineMediaTypeOfLogo(Path.of("test.txt")));
     }
 }
