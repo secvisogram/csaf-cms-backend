@@ -14,6 +14,8 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.VersioningType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -160,7 +164,7 @@ public class ValidatorServiceClientTest {
     @Test
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
-    public void unreachableServiceTest() throws IOException, CsafException {
+    public void unreachableServiceTest() throws IOException, CsafException, URISyntaxException {
         try (final MockedStatic<WebClient> staticWebClient = Mockito.mockStatic(WebClient.class)) {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
@@ -171,7 +175,9 @@ public class ValidatorServiceClientTest {
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.ifNoneMatch(any())).thenReturn(requestHeadersSpec);
-            when(requestHeadersSpec.retrieve()).thenThrow(Mockito.mock(WebClientRequestException.class));
+            when(requestHeadersSpec.retrieve()).thenThrow(new WebClientRequestException(
+                new Exception("Test exception"), HttpMethod.GET, 
+                new URI("http://unreachable.test"), new HttpHeaders()));
 
             final AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.createNewFromCsaf(
                     csafToRequest(TEST_CSAF),

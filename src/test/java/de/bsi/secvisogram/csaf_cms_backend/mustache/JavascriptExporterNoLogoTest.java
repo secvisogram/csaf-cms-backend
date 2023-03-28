@@ -224,10 +224,8 @@ class JavascriptExporterNoLogoTest {
 
     @Test
     void createHtml() throws IOException {
-
         String html = this.javascriptExporter.createHtml(json);
         assertThat(html, equalToIgnoringWhiteSpace(resultHtmlNoLogo));
-
     }
 
 }
