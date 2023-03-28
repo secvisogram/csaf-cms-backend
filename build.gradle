@@ -1,8 +1,8 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.4'
-	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+	id 'org.springframework.boot' version '2.7.9'
+	id 'io.spring.dependency-management' version '1.1.0'
 	id 'java'
-	id 'com.github.spotbugs' version '5.0.12'
+	id 'com.github.spotbugs' version '5.0.13'
 	id 'jacoco'
 }
 
@@ -32,29 +32,29 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-	implementation 'com.ibm.cloud:cloudant:0.4.1'
+	implementation 'com.ibm.cloud:cloudant:0.4.3'
 	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
 
-	implementation 'io.swagger.core.v3:swagger-annotations:2.2.6'
-	implementation 'org.springdoc:springdoc-openapi-ui:1.6.14'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.8'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.15'
 	implementation 'org.apache.commons:commons-text:1.10.0'
 	implementation 'com.vdurmont:semver4j:3.1.0'
 
 
-	implementation 'org.graalvm.js:js:22.2.0'
-	implementation 'org.graalvm.js:js-scriptengine:22.2.0'
+	implementation 'org.graalvm.js:js:22.2.0.1'
+	implementation 'org.graalvm.js:js-scriptengine:22.2.0.1'
 
 	//https://github.com/flipkart-incubator/zjsonpatch
-	implementation ('com.flipkart.zjsonpatch:zjsonpatch:0.4.13') {
+	implementation ('com.flipkart.zjsonpatch:zjsonpatch:0.4.14') {
 		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
 	}
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation ('org.openapitools:openapi-generator:6.2.0') {
+	testImplementation ('org.openapitools:openapi-generator:6.2.1') {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
-	testImplementation ('org.openapitools:openapi-generator-cli:6.2.0') {
+	testImplementation ('org.openapitools:openapi-generator-cli:6.2.1') {
 		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	}
 
@@ -84,7 +84,7 @@ task apiDocumentation(type: Test, description: "generates the API documentation"
 }
 
 tasks.withType(JavaCompile) {
-	options.compilerArgs += ['-Xlint:deprecation']
+	options.compilerArgs += ['-Xlint:deprecation,unchecked']
 }
 
 jacoco {
