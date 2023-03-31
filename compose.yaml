@@ -116,7 +116,7 @@ services:
 
   csaf-validation-server:
     build:
-      context: https://github.com/mfd2007/csaf-validator-service.git#main
+      context: https://github.com/secvisogram/csaf-validator-service.git#main
     container_name: csaf-validation-server
     env_file: .env
     ports:
