@@ -51,10 +51,9 @@ public class MainController {
         )
       }
     )
-    public Map<String, String> about() {
+    public String about() {
         LOG.info("about");
-
-        return Map.of("version", buildProperties.getVersion());
+        return "{version:\"" + buildProperties.getVersion() + "\"}";
     }
 
 }
