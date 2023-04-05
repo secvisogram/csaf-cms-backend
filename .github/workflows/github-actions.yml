@@ -19,13 +19,26 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
       - name: Execute Gradle build
-        run: ./gradlew clean build
+        run: ./gradlew clean build jacocoTestReport
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always() # clause guarantees that this action always runs, even if earlier steps (e.g., the unit test step) in your workflow fail.
         with:
           files: "build/test-results/**/*.xml"
-
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: build/reports/jacoco/**
+          
   lint-markdown:
     name: Lint all markdown files in project
     runs-on: ubuntu-latest
@@ -50,35 +63,4 @@ jobs:
           fail_on_error: true
           reporter: 'github-check'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  testCoverage:
-    name: Run JaCoCo
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 7.4.2
-      - name: Change wrapper permissions
-        run: chmod +x ./gradlew
-      - name: Execute Gradle build
-        run: ./gradlew clean build jacocoTestReport
-      - name: Add coverage to PR
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.3  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
-        with:
-          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
-        with:
-          name: code-coverage-report
-          path: build/reports/jacoco/**
+
