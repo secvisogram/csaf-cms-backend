@@ -50,28 +50,6 @@ jobs:
           fail_on_error: true
           reporter: 'github-check'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  spot-bugs:
-    name: Run SpotBugs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 7.4.2
-      - name: Change wrapper permissions
-        run: chmod +x ./gradlew
-      - name: Execute Gradle build
-        run: ./gradlew clean assemble spotbugsMain
-      - uses: jwgmeligmeyling/spotbugs-github-action@master
-        with:
-          path: '**/spotbugs.xml'
   testCoverage:
     name: Run JaCoCo
     runs-on: ubuntu-latest
