@@ -738,11 +738,7 @@ public class AdvisoryService {
             this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
             this.deleteAllCommentsFromDbForAdvisory(existingAdvisoryNode.getAdvisoryId());
             this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersionBackup.advisoryAsString());
-            String newRevision = this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
-
-
-
-            return newRevision;
+            return this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
         } else {
             throw new CsafException("User has not the permission to create a new Version in this state",
                     NoPermissionForAdvisory, UNAUTHORIZED);
