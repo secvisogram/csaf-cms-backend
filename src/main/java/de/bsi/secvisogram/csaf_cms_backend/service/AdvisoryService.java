@@ -737,10 +737,10 @@ public class AdvisoryService {
                     .setUser(credentials.getName());
             this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
             this.deleteAllCommentsFromDbForAdvisory(existingAdvisoryNode.getAdvisoryId());
-
+            this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersionBackup.advisoryAsString());
             String newRevision = this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
 
-            this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersionBackup.advisoryAsString());
+
 
             return newRevision;
         } else {
