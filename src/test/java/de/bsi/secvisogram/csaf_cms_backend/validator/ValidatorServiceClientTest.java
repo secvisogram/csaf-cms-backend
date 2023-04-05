@@ -4,7 +4,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreato
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -109,7 +108,8 @@ public class ValidatorServiceClientTest {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
             when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-            doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
+            // Using different way because of type safety checks (see https://stackoverflow.com/questions/7366237/mockito-stubbing-methods-that-return-type-with-bounded-wild-cards)
+            Mockito.doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
             when(requestHeadersSpec.header(any(), any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
@@ -137,7 +137,8 @@ public class ValidatorServiceClientTest {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
             when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-            doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
+            // Using different way because of type safety checks (see https://stackoverflow.com/questions/7366237/mockito-stubbing-methods-that-return-type-with-bounded-wild-cards)
+            Mockito.doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
             when(requestHeadersSpec.header(any(), any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
@@ -168,7 +169,8 @@ public class ValidatorServiceClientTest {
             staticWebClient.when(() -> WebClient.create(anyString())).thenReturn(mockWebClient);
             when(mockWebClient.post()).thenReturn(requestBodyUriSpec);
             when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-            doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
+            // Using different way because of type safety checks (see https://stackoverflow.com/questions/7366237/mockito-stubbing-methods-that-return-type-with-bounded-wild-cards)
+            Mockito.doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
             when(requestHeadersSpec.header(any(), any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.accept(any())).thenReturn(requestHeadersSpec);
             when(requestHeadersSpec.acceptCharset(any())).thenReturn(requestHeadersSpec);
