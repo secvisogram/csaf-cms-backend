@@ -12,7 +12,9 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @WebMvcTest(MainController.class)
 public class MainControllerTest {
@@ -41,8 +43,12 @@ public class MainControllerTest {
     }
 
     @Test
+    //TODO: Check, if and how this can be removed, because the endpoint is 
+    //      accessable without authentication
+    @WithMockUser()
     void aboutTest() throws Exception {
-        this.mockMvc.perform(get("/api/v1/about"))
+      MockHttpServletRequestBuilder m = get("/api/v1/about");
+        this.mockMvc.perform(m)
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"version\": \"%s\"}", testVersion)));
 

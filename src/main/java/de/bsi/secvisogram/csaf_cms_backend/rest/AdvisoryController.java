@@ -1,3 +1,4 @@
+
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
@@ -223,6 +224,8 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        } catch (AccessDeniedException ex) {
+          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
@@ -543,7 +546,7 @@ public class AdvisoryController {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         } catch (AccessDeniedException adEx) {
           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        } 
     }
 
     /**

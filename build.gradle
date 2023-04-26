@@ -1,6 +1,6 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.9'
-	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.springframework.boot' version '3.0.4'
+	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
 	id 'java'
 	id 'com.github.spotbugs' version '5.0.13'
 	id 'jacoco'
@@ -76,20 +76,12 @@ test {
 	testLogging.showStandardStreams = false
 }
 
-task apiDocumentation(type: Test, description: "generates the API documentation") {
-	useJUnitPlatform()
-	filter {
-		includeTestsMatching "de.bsi.secvisogram.csaf_cms_backend.OpenApiGenerateDocuTest"
-	}
-}
-
 tasks.withType(JavaCompile) {
 	options.compilerArgs += ['-Xlint:deprecation,unchecked']
 }
 
 jacoco {
 	toolVersion = "0.8.7"
-//	reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
 
 jacocoTestReport {
