@@ -367,7 +367,7 @@ public class AdvisoryController {
         ),
         @ApiResponse(
             responseCode = "400", 
-            description = "Database error."
+            description = "Required content of advisory is wrong, malformed or missing."
           ),
         @ApiResponse(
           responseCode = "401", 
@@ -823,16 +823,16 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
-            responseCode = "422", 
-            description = "Invalid formated advisory." 
-          ),
-        @ApiResponse(
-            responseCode = "400", 
-            description = "Advisory ID not found." 
-          ),
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
         @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formated advisory." 
         )
       })
     public ResponseEntity<String> setWorkflowStateToReview(
@@ -871,16 +871,16 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
-            responseCode = "422", 
-            description = "Invalid formated advisory." 
-          ),
-        @ApiResponse(
-            responseCode = "400", 
-            description = "Advisory ID not found." 
-          ),
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
         @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formated advisory." 
         )
       })
     public ResponseEntity<String> setWorkflowStateToApproved(
@@ -920,21 +920,21 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
-            responseCode = "422", 
-            description = "Invalid formated advisory." 
-          ),
-        @ApiResponse(
-            responseCode = "400", 
-            description = "Advisory ID not found." 
-          ),
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
         @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access to change workflow state."
         ),
         @ApiResponse(
-            responseCode = "503", 
-            description = "Validation server not available."
-          )
+          responseCode = "422", 
+          description = "Invalid formated advisory." 
+        ),
+        @ApiResponse(
+          responseCode = "503", 
+          description = "Validation server not available."
+        )
       })
     public ResponseEntity<String> setWorkflowStateToRfPublication(
             @PathVariable
@@ -972,16 +972,16 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
-            responseCode = "422", 
-            description = "Invalid formated advisory." 
-          ),
-        @ApiResponse(
-            responseCode = "400", 
-            description = "Advisory ID not found." 
-          ),
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
         @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formated advisory." 
         ),
         @ApiResponse(
           responseCode = "500", 
