@@ -673,12 +673,12 @@ public class AdvisoryController {
             description = "Bad format requested." 
           ),
         @ApiResponse(
-          responseCode = "404", 
-          description = "Advisory not found." 
-        ),
-        @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory not found." 
         ),
         @ApiResponse(
           responseCode = "500", 
