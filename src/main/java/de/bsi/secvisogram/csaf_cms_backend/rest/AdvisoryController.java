@@ -758,16 +758,16 @@ public class AdvisoryController {
           }
         ),
         @ApiResponse(
-            responseCode = "422", 
-            description = "Invalid formated advisory." 
-          ),
-        @ApiResponse(
             responseCode = "400", 
             description = "Advisory ID not found." 
           ),
         @ApiResponse(
-          responseCode = "401", 
-          description = "Unauthorized access to change workflow state."
+            responseCode = "401", 
+            description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formatted advisory." 
         )
       })
     public ResponseEntity<String> setWorkflowStateToDraft(
