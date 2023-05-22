@@ -257,7 +257,7 @@ public class AdvisoryController {
         ),
         @ApiResponse(
           responseCode = "400", 
-          description = "There was a problem with the submitted csaf document." 
+          description = "Required content of advisory is wrong, malformed or missing." 
         ),
         @ApiResponse(
         responseCode = "401", 
@@ -607,12 +607,12 @@ public class AdvisoryController {
           description = "JSON template for advisory"
         ),
         @ApiResponse(
-          responseCode = "404", 
-          description = "Template not found." 
-        ),
-        @ApiResponse(
           responseCode = "401", 
           description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Template not found." 
         ),
         @ApiResponse(
           responseCode = "500", 
@@ -1380,9 +1380,9 @@ public class AdvisoryController {
           description = "Unauthorized access."
         ),
         @ApiResponse(
-            responseCode = "404", 
-            description = "Advisory, comment or answer not found."
-          ),
+          responseCode = "404", 
+          description = "Advisory, comment or answer not found."
+        ),
         @ApiResponse(
           responseCode = "500", 
           description = "Error during process the advisory."
