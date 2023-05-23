@@ -832,7 +832,7 @@ public class AdvisoryController {
         ),
         @ApiResponse(
           responseCode = "422", 
-          description = "Invalid formated advisory." 
+          description = "Invalid formatted advisory."
         )
       })
     public ResponseEntity<String> setWorkflowStateToReview(
