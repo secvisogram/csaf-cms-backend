@@ -271,17 +271,36 @@ font-style: italic;
   "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">400</h4>
+    Invalid advisory id.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
     <h4 class="field-label">200</h4>
-    OK
+    Answer created.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">404</h4>
+    Advisory or comment not found.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -328,7 +347,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+      <a href="#EntityCreateResponse">EntityCreateResponse</a>
       
     </div>
 
@@ -337,6 +356,13 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
 
@@ -345,11 +371,24 @@ font-style: italic;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">400</h4>
+    Invalid advisory or comment id.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
     <h4 class="field-label">200</h4>
-    OK
+    Answer changed.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">404</h4>
+    Advisory, comment or answer not found.
         <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -394,7 +433,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+      <a href="#EntityCreateResponse">EntityCreateResponse</a>
       
     </div>
 
@@ -403,6 +442,13 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
     <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
 
@@ -411,12 +457,25 @@ font-style: italic;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
         <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">400</h4>
+    Invalid advisory id.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">404</h4>
+    Advisory or comment not found.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">200</h4>
+    Comment changed.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="changeCsafDocument"/>
@@ -424,7 +483,7 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="patch"><code class="huge"><span class="http-method">patch</span> /api/v1/advisories/{advisoryId}</code></pre></div>
     <div class="method-summary">Change advisory. (<span class="nickname">changeCsafDocument</span>)</div>
-    <div class="method-notes">Change a CSAF document in the system. On saving a document its content (version) may change  Thus, after changing a document, it must be reloaded on the client side.</div>
+    <div class="method-notes">Change a CSAF document in the system. On saving a document its content (version) may change. Thus, after changing a document, it must be reloaded on the client side.</div>
 
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
@@ -469,17 +528,38 @@ font-style: italic;
     <pre class="example"><code>{
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
+      <li><code>application/json</code></li>
       <li><code>*/*</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
-    OK
+    Id and revison id of new advisory-
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">404</h4>
+    Advisory not found.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">422</h4>
+    Advisory is not valid.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">400</h4>
+    Required content of advisory is wrong, malformed or missing.
+        <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error storing or reading database.
         <a href="#EntityUpdateResponse">EntityUpdateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -528,17 +608,33 @@ font-style: italic;
   "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">400</h4>
+    Invalid advisory id.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
     <h4 class="field-label">200</h4>
-    OK
+    Comment created.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -581,17 +677,33 @@ font-style: italic;
   "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">400</h4>
+    Required content of advisory is wrong, malformed or missing.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">201</h4>
+    Id and revison id of new advisory-
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error storing or reading database.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -620,11 +732,6 @@ font-style: italic;
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -634,11 +741,24 @@ font-style: italic;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>text/plain</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">400</h4>
+    No valid UUID.
+        <a href="#String">String</a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#String">String</a>
+    <h4 class="field-label">404</h4>
+    Advisory not found.
+        <a href="#String">String</a>
     <h4 class="field-label">200</h4>
-    OK
+    Id and revison id of new advisory-
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Error storing or reading database.
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
@@ -673,8 +793,20 @@ font-style: italic;
 
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">400</h4>
+    No valid UUID.
+        <a href="#"></a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Advisory not found.
+        <a href="#"></a>
     <h4 class="field-label">200</h4>
-    OK
+    Advisory deleted.
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Error storing or reading database.
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -703,11 +835,6 @@ font-style: italic;
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      File
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -720,12 +847,25 @@ font-style: italic;
       <li><code>text/html</code></li>
       <li><code>text/markdown</code></li>
       <li><code>application/pdf</code></li>
+      <li><code>application/xhtml+xml</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
+    <h4 class="field-label">400</h4>
+    Bad format requested.
         <a href="#File">File</a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#File">File</a>
+    <h4 class="field-label">404</h4>
+    Advisory not found.
+        <a href="#File">File</a>
+    <h4 class="field-label">500</h4>
+    Error during export.
+        <a href="#File">File</a>
+    <h4 class="field-label">200</h4>
+    JSON template for advisory
+        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="importCsafDocument"/>
@@ -767,17 +907,33 @@ font-style: italic;
   "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
+    <h4 class="field-label">422</h4>
+    CSAF document is not valid, id dulicate or has wrong state.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">201</h4>
+    Id and revison id of new advisory-
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">500</h4>
+    Error storing or reading database.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -803,22 +959,25 @@ font-style: italic;
     <!--Todo: process Response Object and its headers, schema, examples -->
 
     <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
   "templateDescription" : "Template for the profile CSAF base.",
   "templateId" : "33476793"
-}</code></pre>
+}, {
+  "templateDescription" : "Template for the profile CSAF base.",
+  "templateId" : "33476793"
+} ]</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
-    OK
+    List of all templates that the user can access. List is empty of no templates are available.
         
   </div> <!-- method -->
   <hr/>
@@ -853,26 +1012,58 @@ font-style: italic;
 
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "answerTo" : "answerTo",
+    <pre class="example"><code>[ {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "owner" : "Mustermann",
-  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
-  "csafNodeId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "deletable" : false,
-  "commentId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "changeable" : true
-}</code></pre>
+}, {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "owner" : "Mustermann",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "changeable" : true
+} ]</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "owner" : "Mustermann",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "changeable" : true
+}, {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "owner" : "Mustermann",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "changeable" : true
+} ]</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        
     <h4 class="field-label">200</h4>
-    OK
+    List of all answers for a comment.
+        
+    <h4 class="field-label">404</h4>
+    Advisory or comment not found.
+        
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
+        
+    <h4 class="field-label">400</h4>
+    Invalid advisory id or comment id.
         
   </div> <!-- method -->
   <hr/>
@@ -905,26 +1096,58 @@ font-style: italic;
 
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
-  "answerTo" : "answerTo",
+    <pre class="example"><code>[ {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "owner" : "Mustermann",
-  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
-  "csafNodeId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "deletable" : false,
-  "commentId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
   "changeable" : true
-}</code></pre>
+}, {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "owner" : "Mustermann",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "changeable" : true
+} ]</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "owner" : "Mustermann",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "changeable" : true
+}, {
+  "answerId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "owner" : "Mustermann",
+  "answerTo" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "deletable" : false,
+  "changeable" : true
+} ]</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        
+    <h4 class="field-label">404</h4>
+    Advisory not found.
+        
     <h4 class="field-label">200</h4>
-    OK
+    List of all comments for an advisory.
+        
+    <h4 class="field-label">400</h4>
+    Invalid advisory id.
+        
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
         
   </div> <!-- method -->
   <hr/>
@@ -964,7 +1187,7 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
 
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: */*</div>
-    <pre class="example"><code>{
+    <pre class="example"><code>[ {
   "owner" : "Mustermann",
   "allowedStateChanges" : [ "Approved", "Published" ],
   "currentReleaseDate" : "currentReleaseDate",
@@ -976,19 +1199,68 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
   "changeable" : true,
   "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
-}</code></pre>
+}, {
+  "owner" : "Mustermann",
+  "allowedStateChanges" : [ "Approved", "Published" ],
+  "currentReleaseDate" : "currentReleaseDate",
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "documentTrackingId" : "RHBA-2019_0024",
+  "workflowState" : "Approved",
+  "deletable" : false,
+  "canCreateVersion" : false,
+  "changeable" : true,
+  "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+} ]</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "owner" : "Mustermann",
+  "allowedStateChanges" : [ "Approved", "Published" ],
+  "currentReleaseDate" : "currentReleaseDate",
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "documentTrackingId" : "RHBA-2019_0024",
+  "workflowState" : "Approved",
+  "deletable" : false,
+  "canCreateVersion" : false,
+  "changeable" : true,
+  "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}, {
+  "owner" : "Mustermann",
+  "allowedStateChanges" : [ "Approved", "Published" ],
+  "currentReleaseDate" : "currentReleaseDate",
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "documentTrackingId" : "RHBA-2019_0024",
+  "workflowState" : "Approved",
+  "deletable" : false,
+  "canCreateVersion" : false,
+  "changeable" : true,
+  "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+} ]</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    OK
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
         
+    <h4 class="field-label">200</h4>
+    List of all advisories that the user can access.
+        
+    <h4 class="field-label">500</h4>
+    Error reading advisories
+        
+    <h4 class="field-label">400</h4>
+    Invalid filter expression
+        <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="readCsafDocument"/>
@@ -1034,17 +1306,46 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
   "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
   "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
 }</code></pre>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "owner" : "Mustermann",
+  "allowedStateChanges" : [ "Approved", "Published" ],
+  "currentReleaseDate" : "currentReleaseDate",
+  "advisoryId" : "9690e3a3-614f-44be-8709-3aa8d58b6cb5",
+  "documentTrackingId" : "RHBA-2019_0024",
+  "workflowState" : "Approved",
+  "deletable" : false,
+  "canCreateVersion" : false,
+  "changeable" : true,
+  "csaf" : "{$nodeId: \"nodeId123\", document: { $nodeId: \"nodeId567\", category: \"CSAF Base\",... }, vulnerabilities: {...}}",
+  "title" : "Cisco IPv6 Crafted Packet Denial of Service Vulnerability",
+  "revision" : "2-efaa5db9409b2d4300535c70aaf6a66b"
+}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#AdvisoryDocument">AdvisoryDocument</a>
+    <h4 class="field-label">404</h4>
+    Requested advisory not found.
+        <a href="#AdvisoryDocument">AdvisoryDocument</a>
+    <h4 class="field-label">500</h4>
+    Error reading advisory.
+        <a href="#AdvisoryDocument">AdvisoryDocument</a>
     <h4 class="field-label">200</h4>
-    OK
+    Single requested advisory
+        <a href="#AdvisoryDocument">AdvisoryDocument</a>
+    <h4 class="field-label">400</h4>
+    Invalid UUID
         <a href="#AdvisoryDocument">AdvisoryDocument</a>
   </div> <!-- method -->
   <hr/>
@@ -1087,8 +1388,17 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">401</h4>
+    Unauthorized access.
+        <a href="#Object">Object</a>
+    <h4 class="field-label">500</h4>
+    Error loading template.
+        <a href="#Object">Object</a>
     <h4 class="field-label">200</h4>
-    OK
+    JSON template for advisory
+        <a href="#Object">Object</a>
+    <h4 class="field-label">404</h4>
+    Template not found.
         <a href="#Object">Object</a>
   </div> <!-- method -->
   <hr/>
@@ -1117,11 +1427,6 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -1131,11 +1436,21 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>text/plain</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">400</h4>
+    Advisory ID not found.
+        <a href="#String">String</a>
+    <h4 class="field-label">422</h4>
+    Invalid formatted advisory.
+        <a href="#String">String</a>
     <h4 class="field-label">200</h4>
-    OK
+    Workflow state changed to approved.
+        <a href="#"></a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access to change workflow state.
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
@@ -1164,11 +1479,6 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -1178,11 +1488,21 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>text/plain</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">400</h4>
+    Advisory ID not found.
+        <a href="#String">String</a>
+    <h4 class="field-label">422</h4>
+    Invalid formatted advisory.
+        <a href="#String">String</a>
     <h4 class="field-label">200</h4>
-    OK
+    Workflow state changed to draft.
+        <a href="#"></a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access to change workflow state.
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
@@ -1215,11 +1535,6 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -1229,11 +1544,24 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>text/plain</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">400</h4>
+    Advisory ID not found.
+        <a href="#String">String</a>
+    <h4 class="field-label">422</h4>
+    Invalid formatted advisory.
+        <a href="#String">String</a>
+    <h4 class="field-label">500</h4>
+    Error during process the advisory.
+        <a href="#String">String</a>
     <h4 class="field-label">200</h4>
-    OK
+    Workflow state changed to Publication.
+        <a href="#"></a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access to change workflow state.
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
@@ -1262,11 +1590,6 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -1275,12 +1598,22 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
+      <li><code>text/plain</code></li>
       <li><code>*/*</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
-    OK
+    Workflow state changed to review.
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Advisory ID not found.
+        <a href="#String">String</a>
+    <h4 class="field-label">422</h4>
+    Invalid formatted advisory.
+        <a href="#String">String</a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access to change workflow state.
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
@@ -1311,11 +1644,6 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     </div>  <!-- field-items -->
 
 
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      String
-    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -1325,11 +1653,24 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>*/*</code></li>
+      <li><code>text/plain</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">400</h4>
+    Advisory ID not found.
+        <a href="#String">String</a>
+    <h4 class="field-label">422</h4>
+    Invalid formatted advisory.
+        <a href="#String">String</a>
+    <h4 class="field-label">503</h4>
+    Validation server not available.
+        <a href="#String">String</a>
     <h4 class="field-label">200</h4>
-    OK
+    Workflow state changed to RfPublication.
+        <a href="#"></a>
+    <h4 class="field-label">401</h4>
+    Unauthorized access to change workflow state.
         <a href="#String">String</a>
   </div> <!-- method -->
   <hr/>
@@ -1403,7 +1744,7 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
         <div class="param-enum-header">Enum:</div>
         
 <div class="param">currentReleaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span> The CSAF document in JSON format including additional node IDs. </div>
+<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span> The current CSAF document enhanced with comment IDs. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -1439,13 +1780,11 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h3><a name="CommentInformation"><code>CommentInformation</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">commentId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the comment. </div>
-<div class="param">advisoryId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The ID of the advisory this is a comment to. </div>
-<div class="param">csafNodeId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The ID of the node this comment refers to. </div>
-<div class="param">answerTo (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the comment. </div>
-<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this comment. </div>
-<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this comment. </div>
+      <div class="param">answerId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The unique ID of the answer. </div>
+<div class="param">owner (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current owner of the answer. </div>
+<div class="param">answerTo (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The ID of the comment this is an answer to. </div>
+<div class="param">changeable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the currently logged in user can change this answer. </div>
+<div class="param">deletable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Indicates if the logged in user can delete this answer. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -1454,7 +1793,7 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <div class="field-items">
       <div class="param">summary (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the summary in the revision history. </div>
 <div class="param">legacyVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The text of the legacy version in the revision history. </div>
-<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span> The CSAF document in JSON format including additional node IDs. </div>
+<div class="param">csaf (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span> The current CSAF document enhanced with comment IDs. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
