@@ -401,7 +401,7 @@ public class AdvisoryWorkflowUtil {
             if (allResposes.size() == 1) {
                 return allResposes.get(0);
             } else {
-                throw new CsafException("Advisory not found", CsafExceptionKey.AdvisoryNotFound);
+                throw new CsafException("Advisory not found", CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
             }
         } catch (IOException ex) {
             LOG.error("Could not create Advisory", ex);

@@ -327,7 +327,7 @@ public class AdvisoryControllerTest {
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -775,7 +775,7 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -787,7 +787,7 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
