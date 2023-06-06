@@ -952,6 +952,63 @@ public class AdvisoryController {
     }
 
     /**
+     * Change workflow state of a CSAF document to AutoPublish
+     *
+     * @param advisoryId             advisoryId id of the CSAF document to change
+     * @param revision               optimistic locking revision
+     * @param proposedTime           optimistic locking revision
+     * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
+     * @return new optimistic locking revision
+     */
+    @Operation(summary = "Change workflow state of an advisory to Published.", 
+            tags = {"Advisory"},
+            description = "Change the workflow state of the advisory with the given id to Published.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to Publication.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formatted advisory."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
+    @PatchMapping("/{advisoryId}/workflowstate/AutoPublish")
+    public ResponseEntity<String> setWorkflowStateToAutoPublish(
+      @PathVariable
+      @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
+      String advisoryId,
+      @RequestParam @Parameter(description = "Optimistic locking revision.")
+      String revision,
+      @RequestParam(required = true)
+      @Parameter(description = "Proposed Time at which the publication should take place as ISO-8601 UTC string.")
+      String proposedTime,
+      @RequestParam
+      @Parameter(description = "The new Document Tracking Status of the CSAF Document." +
+                               " Only Interim and Final are allowed.")
+      DocumentTrackingStatus documentTrackingStatus
+    ) throws IOException {
+      LOG.debug("setWorkflowStateToPublish");
+      checkValidUuid(advisoryId);
+      return changeWorkflowState(advisoryId, revision, WorkflowState.AutoPublish, proposedTime, documentTrackingStatus);
+    }
+    
+    /**
      * Change workflow state of a CSAF document to Published
      *
      * @param advisoryId             advisoryId id of the CSAF document to change

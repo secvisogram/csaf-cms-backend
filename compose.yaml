@@ -122,7 +122,47 @@ services:
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
 
+  csaf-trusted-provider:
+    build:
+      context: ./trusted-provider
+    container_name: csaf-trusted-provider
+    env_file: .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - ./trusted-provider/config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./trusted-provider/config:/config
+      - ./trusted-provider/data:/data
+    ports:
+      - "9080:80"
 
+# Run this manually to initialize CSAF provider
+  init-provider:
+    build:
+      context: ./uploader
+    profiles: [ "run_manually" ]
+    depends_on:
+      - csaf-trusted-provider
+    environment:
+      OPTIONS: "--config=/data/config-create.ini"
+    volumes:
+      - ./uploader:/data
+
+# Run this manually to initialize CSAF provider
+  init-cms-backend-db:
+    image: curlimages/curl:7.85.0
+    depends_on:
+      - csaf-couchdb
+    profiles: [ "run_manually" ]
+    command: -u  ${CSAF_COUCHDB_USER}:${CSAF_COUCHDB_PASSWORD} -X PUT ${CSAF_COUCHDB_HOST}:${CSAF_COUCHDB_PORT}/${CSAF_COUCHDB_DATABASE}
+
+  hoppscotch:
+     image: hoppscotch/hoppscotch:latest
+     ports:
+       - 3000:3000
+   
 volumes:
   csaf-couchdb-data:
     driver: local

@@ -615,7 +615,11 @@ public class AdvisoryService {
                 // In this step we only want to check if the document would be valid if published but not change it yet.
                 createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
-
+          
+            if (newWorkflowState == WorkflowState.AutoPublish) {
+                existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(proposedTime);
+            }
+            
             if (newWorkflowState == WorkflowState.Published) {
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
                 if (existingAdvisoryNode.getLastMajorVersion() < 1) {
