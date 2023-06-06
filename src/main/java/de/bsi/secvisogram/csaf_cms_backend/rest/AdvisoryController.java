@@ -1,3 +1,4 @@
+
 package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
@@ -12,22 +13,35 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryTemplateInfoResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.EntityCreateResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.EntityUpdateResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -38,8 +52,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
 
 /**
  * API for Creating, Retrieving, Updating and Deleting CSAF Documents,
@@ -69,9 +92,46 @@ public class AdvisoryController {
      * @return response with list of advisories satisfying the search criteria
      */
     @GetMapping("")
-    @Operation(summary = "Get all authorized advisories.", tags = {"Advisory"},
-            description = "All CSAF documents for which the logged in user is authorized are returned." +
-                          " This depends on the user's role and the state of the CSAF document.")
+    @Operation(
+      summary = "Get all authorized advisories.", 
+      tags = {"Advisory"},
+      description = "All CSAF documents for which the logged in user is authorized are returned." +
+                    " This depends on the user's role and the state of the CSAF document."
+    )
+    @ApiResponses(value = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "List of all advisories that the user can access.",
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = @ArraySchema(
+              schema = @Schema(implementation = AdvisoryInformationResponse.class)
+            )
+          )
+        }
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Invalid filter expression", 
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(
+              title = "JSON", 
+              description = "String describing error")
+          )
+        }
+      ),
+      @ApiResponse(
+        responseCode = "401", 
+        description = "Unauthorized access."
+      ),
+      @ApiResponse(
+        responseCode = "500", 
+        description = "Error reading advisories"
+      )
+    })
     public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
             @RequestParam(required = false)
             @Parameter(in = ParameterIn.QUERY, name = "expression",
@@ -110,10 +170,40 @@ public class AdvisoryController {
      */
     @GetMapping("/{advisoryId}")
     @Operation(
-            summary = "Get a single Advisory.",
-            description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
-            tags = {"Advisory"}
+      summary = "Get a single Advisory.",
+      description = "Get the advisory CSAF document and some additional data for the given advisoryId.",
+      tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "Single requested advisory", 
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(
+                implementation = AdvisoryResponse.class
+            )
+          )
+        }
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Invalid UUID" 
+      ),
+      @ApiResponse(
+        responseCode = "401", 
+        description = "Unauthorized access."
+      ),
+      @ApiResponse(
+        responseCode = "404", 
+        description = "Requested advisory not found."
+      ),
+      @ApiResponse(
+        responseCode = "500", 
+        description = "Error reading advisory."
+      )
+    })
     public ResponseEntity<AdvisoryResponse> readCsafDocument(
             @PathVariable
             @Parameter(
@@ -134,6 +224,8 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        } catch (AccessDeniedException ex) {
+          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
@@ -144,9 +236,38 @@ public class AdvisoryController {
      * @return response with id and revision of the newly created advisory
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create a new Advisory.", tags = {"Advisory"},
-            description = "Create a new CSAF document with added node IDs in the system. It possible to add an summary " +
-                          "and a legacy version information for the revision history.")
+    @Operation(summary = "Create a new Advisory.", 
+               tags = {"Advisory"},
+               description = "Create a new CSAF document with added node IDs"
+                   + " in the system. It possible to add an summary " 
+                   + "and a legacy version information for the revision"
+                   + " history.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "201", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                  implementation = EntityCreateResponse.class
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Required content of advisory is wrong, malformed or missing." 
+        ),
+        @ApiResponse(
+        responseCode = "401", 
+        description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> createCsafDocument(@RequestBody CreateAdvisoryRequest newCsafJson) {
 
         LOG.debug("createCsafDocument");
@@ -171,8 +292,35 @@ public class AdvisoryController {
      * @return response with id and revision of the newly created advisory
      */
     @PostMapping(value = "/import", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Import a new Advisory.", tags = {"Advisory"},
-            description = "Import a new CSAF document into the system.")
+    @Operation(summary = "Import a new Advisory.", 
+               tags = {"Advisory"},
+               description = "Import a new CSAF document into the system.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "201", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                  implementation = EntityCreateResponse.class
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "CSAF document is not valid, id dulicate or has wrong state."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> importCsafDocument(@RequestBody JsonNode newCsafJson) {
 
         try {
@@ -198,9 +346,46 @@ public class AdvisoryController {
      * @return response with the new optimistic locking revision
      */
     @PatchMapping("/{advisoryId}")
-    @Operation(summary = "Change advisory.", tags = {"Advisory"},
-            description = "Change a CSAF document in the system. On saving a document its content (version) may change " +
-                          " Thus, after changing a document, it must be reloaded on the client side.")
+    @Operation(summary = "Change advisory.", 
+               tags = {"Advisory"},
+               description = "Change a CSAF document in the system. On saving "
+                   + "a document its content (version) may change. Thus, after "
+                   + "changing a document, it must be reloaded on the client"
+                   + " side.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(
+                  implementation = EntityUpdateResponse.class
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Required content of advisory is wrong, malformed or missing."
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Advisory is not valid."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<EntityUpdateResponse> changeCsafDocument(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
@@ -221,7 +406,7 @@ public class AdvisoryController {
             LOG.info("Advisory with given ID not found");
             return ResponseEntity.notFound().build();
         } catch (DatabaseException dbEx) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (CsafException ex) {
@@ -243,6 +428,33 @@ public class AdvisoryController {
             description = "Increase the version of a CSAF document. This can only be done in workflow state Published",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Id and revison id of new advisory-", 
+          content = { 
+            @Content(
+              mediaType = MediaType.TEXT_PLAIN_VALUE
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "No valid UUID."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error storing or reading database."
+        )
+      })
     public ResponseEntity<String> createNewCsafDocumentVersion(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change.")
@@ -258,8 +470,10 @@ public class AdvisoryController {
         try {
             String newRevision = advisoryService.createNewCsafDocumentVersion(advisoryId, revision);
             return ResponseEntity.ok(newRevision);
-        } catch (IOException | DatabaseException ex) {
-            return ResponseEntity.badRequest().build();
+        } catch (IOException ex) {
+            return ResponseEntity.internalServerError().build();
+        } catch (DatabaseException ex) {
+            return ResponseEntity.notFound().build();
         } catch (AccessDeniedException adEx) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (CsafException ex) {
@@ -277,10 +491,33 @@ public class AdvisoryController {
     @DeleteMapping("/{advisoryId}")
     @Operation(
             summary = "Delete an advisory.",
-            description = "Delete a CSAF document from the system. All older versions of the document, corresponding" +
-                          " comments and audit-trails are also deleted.",
+            description = "Delete a CSAF document from the system. All older "
+                + "versions of the document, corresponding"
+                + " comments and audit-trails are also deleted.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "Advisory deleted."
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "No valid UUID."
+      ),
+      @ApiResponse(
+        responseCode = "401", 
+        description = "Unauthorized access."
+      ),
+      @ApiResponse(
+        responseCode = "404", 
+        description = "Advisory not found."
+      ),
+      @ApiResponse(
+        responseCode = "500", 
+        description = "Error storing or reading database."
+      )
+    })
     public ResponseEntity<Void> deleteCsafDocument(
             @PathVariable
             @Parameter(
@@ -307,7 +544,9 @@ public class AdvisoryController {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
-        }
+        } catch (AccessDeniedException adEx) {
+          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } 
     }
 
     /**
@@ -321,6 +560,20 @@ public class AdvisoryController {
             description = "Get all available templates in the system.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "List of all templates that the user can access. List is empty of no templates are available.",
+        content = { 
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = @ArraySchema(
+              schema = @Schema(implementation = AdvisoryTemplateInfoResponse.class)
+            )
+          )
+        }
+      )
+    })
     public ResponseEntity<List<AdvisoryTemplateInfoResponse>> listAllTemplates() {
 
         LOG.debug("listAllTemplates");
@@ -348,6 +601,24 @@ public class AdvisoryController {
             description = "Get the content of the template with the given templateId.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "JSON template for advisory"
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Template not found." 
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error loading template."
+        )
+      })
     public ResponseEntity<JsonNode> readTemplate(
             @PathVariable
             @Parameter(
@@ -386,6 +657,34 @@ public class AdvisoryController {
             description = "Export advisory csaf in different formats, possible formats are: PDF, Markdown, HTML, JSON.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "JSON template for advisory",
+          content = {
+              @Content(mediaType = MediaType.APPLICATION_PDF_VALUE),
+              @Content(mediaType = MediaType.APPLICATION_XHTML_XML_VALUE),
+              @Content(mediaType = MediaType.APPLICATION_JSON_VALUE),
+              @Content(mediaType = MediaType.TEXT_MARKDOWN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Bad format requested." 
+          ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory not found." 
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during export."
+        )
+      })
     public ResponseEntity<InputStreamResource> exportAdvisory(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to export.")
@@ -450,6 +749,27 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Draft.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to draft.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Advisory ID not found." 
+          ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+            responseCode = "422", 
+            description = "Invalid formatted advisory." 
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToDraft(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -494,6 +814,27 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Review.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to review.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formatted advisory."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToReview(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -521,6 +862,27 @@ public class AdvisoryController {
             description = "Change the workflow state of the advisory with the given id to Approve.",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to approved.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formatted advisory."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToApproved(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -549,6 +911,31 @@ public class AdvisoryController {
                           " (Request for Publication).",
             tags = {"Advisory"}
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to RfPublication.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formatted advisory."
+        ),
+        @ApiResponse(
+          responseCode = "503", 
+          description = "Validation server not available."
+        )
+      })
     public ResponseEntity<String> setWorkflowStateToRfPublication(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to change the workflow state of.")
@@ -573,8 +960,34 @@ public class AdvisoryController {
      * @param documentTrackingStatus the new Document Tracking Status of the CSAF Document
      * @return new optimistic locking revision
      */
-    @Operation(summary = "Change workflow state of an advisory to Published.", tags = {"Advisory"},
+    @Operation(summary = "Change workflow state of an advisory to Published.", 
+            tags = {"Advisory"},
             description = "Change the workflow state of the advisory with the given id to Published.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Workflow state changed to Publication.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Advisory ID not found." 
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access to change workflow state."
+        ),
+        @ApiResponse(
+          responseCode = "422", 
+          description = "Invalid formatted advisory."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     @PatchMapping("/{advisoryId}/workflowstate/Published")
     public ResponseEntity<String> setWorkflowStateToPublished(
             @PathVariable
@@ -602,8 +1015,39 @@ public class AdvisoryController {
      * @param advisoryId id of the CSAF document to get comment ids for
      * @return list of comment ids
      */
-    @Operation(summary = "Show comments of an advisory.", tags = {"Advisory"},
-            description = "Show all comments of the advisory with the given advisoryId.")
+    @Operation(summary = "Show comments of an advisory.", 
+        tags = {"Advisory"},
+        description = "Show all comments of the advisory with the given advisoryId.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "List of all comments for an advisory.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              array = @ArraySchema(
+                schema = @Schema(implementation = CommentInformationResponse.class)
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     @GetMapping("/{advisoryId}/comments")
     public ResponseEntity<List<CommentInformationResponse>> listComments(
             @PathVariable
@@ -645,6 +1089,30 @@ public class AdvisoryController {
                     )
             )
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Comment created.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> createComment(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to add the comments to.")
@@ -681,6 +1149,36 @@ public class AdvisoryController {
             summary = "Show answers of a comment.", tags = {"Advisory"},
             description = "Show all answers of the comment with the given commentId.")
     @GetMapping("/{advisoryId}/comments/{commentId}/answers")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "List of all answers for a comment.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              array = @ArraySchema(
+                schema = @Schema(implementation = AnswerInformationResponse.class)
+              )
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id or comment id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory or comment not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<List<AnswerInformationResponse>> listAnswers(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to the comment belongs to.")
@@ -712,6 +1210,34 @@ public class AdvisoryController {
     @Operation(summary = "Add an answer to an advisory comment.", tags = {"Advisory"},
             description = "Add a answer to the comment with the given ID.")
     @PostMapping("/{advisoryId}/comments/{commentId}/answers")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Answer created.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory or comment not found."
+          ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<EntityCreateResponse> addAnswer(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory the answered comment belongs to.")
@@ -763,6 +1289,34 @@ public class AdvisoryController {
                     )
             )
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Comment changed.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "Advisory or comment not found."
+          ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     public ResponseEntity<EntityUpdateResponse> changeComment(
             @PathVariable
             @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory a comment of.")
@@ -806,6 +1360,34 @@ public class AdvisoryController {
      */
     @Operation(summary = "Change answer text to an advisory comment.", tags = {"Advisory"},
             description = "Change the text of an answer to a comment.")
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200", 
+          description = "Answer changed.",
+          content = { 
+            @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = EntityCreateResponse.class)
+            )
+          }
+        ),
+        @ApiResponse(
+          responseCode = "400", 
+          description = "Invalid advisory or comment id."
+        ),
+        @ApiResponse(
+          responseCode = "401", 
+          description = "Unauthorized access."
+        ),
+        @ApiResponse(
+          responseCode = "404", 
+          description = "Advisory, comment or answer not found."
+        ),
+        @ApiResponse(
+          responseCode = "500", 
+          description = "Error during process the advisory."
+        )
+      })
     @PatchMapping("/{advisoryId}/comments/{commentId}/answers/{answerId}")
     public ResponseEntity<EntityUpdateResponse> changeAnswer(
             @PathVariable

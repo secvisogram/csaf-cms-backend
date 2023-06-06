@@ -77,7 +77,7 @@ public class AdvisoryControllerTest {
 
     private static final ObjectMapper jacksonMapper = new ObjectMapper();
 
-    private static final String advisoryRoute = "/api/v1/advisories/";
+    private static final String advisoryRoute = "/api/v1/advisories";
 
     private static final String csafJsonString = """
             {
@@ -99,11 +99,11 @@ public class AdvisoryControllerTest {
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
 
-    private static final String commentRoute = advisoryRoute + advisoryId + "/comments/";
+    private static final String commentRoute = advisoryRoute + "/" + advisoryId + "/comments";
     private static final String commentId = UUID.randomUUID().toString();
     private static final String commentText = "This is a comment.";
 
-    private static final String answerRoute = commentRoute + commentId + "/answers/";
+    private static final String answerRoute = commentRoute + "/" + commentId + "/answers";
     private static final String answerId = UUID.randomUUID().toString();
     private static final String answerText = "This is an answer";
 
@@ -115,6 +115,7 @@ public class AdvisoryControllerTest {
 
 
     @Test
+    @WithMockUser()
     void listCsafDocumentsTest_empty() throws Exception {
 
         when(advisoryService.getAdvisoryInformations(null)).thenReturn(Collections.emptyList());
@@ -126,6 +127,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listCsafDocumentsTest_oneItem() throws Exception {
 
         AdvisoryInformationResponse info = new AdvisoryInformationResponse(advisoryId, WorkflowState.Draft);
@@ -140,6 +142,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listCsafDocumentsTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
@@ -151,6 +154,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listCsafDocumentsTest_ioException() throws Exception {
 
         when(advisoryService.getAdvisoryInformations(null))
@@ -162,6 +166,7 @@ public class AdvisoryControllerTest {
 
 
     @Test
+    @WithMockUser()
     void readCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
@@ -173,35 +178,39 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void readCsafDocumentTest_unauthorized() throws Exception {
 
         when(advisoryService.getAdvisory(any())).thenThrow(AccessDeniedException.class);
-        this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
+        this.mockMvc.perform(get(advisoryRoute + "/" + UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());
 
     }
 
     @Test
+    @WithMockUser()
     void readCsafDocumentTest_databaseException() throws Exception {
 
         when(advisoryService.getAdvisory(any())).thenThrow(DatabaseException.class);
 
-        this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
+        this.mockMvc.perform(get(advisoryRoute + "/" + UUID.randomUUID()))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
+    @WithMockUser()
     void readCsafDocumentTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         when(advisoryService.getAdvisory(any())).thenThrow(csafExcp);
 
-        this.mockMvc.perform(get(advisoryRoute + UUID.randomUUID()))
+        this.mockMvc.perform(get(advisoryRoute + "/" + UUID.randomUUID()))
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
 
     }
 
     @Test
+    @WithMockUser()
     void readCsafDocumentTest() throws Exception {
 
         JsonNode node = jacksonMapper.readTree(csafJsonString);
@@ -209,12 +218,13 @@ public class AdvisoryControllerTest {
 
         when(advisoryService.getAdvisory(advisoryId)).thenReturn(advisoryResponse);
 
-        this.mockMvc.perform(get(advisoryRoute + advisoryId))
+        this.mockMvc.perform(get(advisoryRoute + "/" + advisoryId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"advisoryId\":  \"%s\", \"workflowState\": Draft}", advisoryId)));
     }
 
     @Test
+    @WithMockUser()
     void createCsafDocumentTest_invalidCsaf() throws Exception {
 
         when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
@@ -227,6 +237,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCsafDocumentTest_invalidJson() throws Exception {
 
         when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
@@ -238,6 +249,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCsafDocumentTest() throws Exception {
 
         IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
@@ -253,6 +265,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCsafDocumentTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
@@ -264,6 +277,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCsafDocumentTest_accessDeniedException() throws Exception {
 
         when(advisoryService.addAdvisory(any())).thenThrow(AccessDeniedException.class);
@@ -275,12 +289,13 @@ public class AdvisoryControllerTest {
 
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest_notExisting() throws Exception {
 
         doThrow(IdNotFoundException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
         ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -288,12 +303,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest_unauthorized() throws Exception {
 
         doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
         ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -301,25 +317,27 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest_databaseException() throws Exception {
 
         doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
         ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         when(advisoryService.updateAdvisory(any(), any(), any())).thenThrow(csafExcp);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -327,12 +345,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
         doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(advisoryId, invalidRevision, csafToRequest(fullAdvisoryJsonString));
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", invalidRevision))
@@ -341,11 +360,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest_invalidId() throws Exception {
 
         String invalidId = "not an UUID";
 
-        this.mockMvc.perform(patch(advisoryRoute + invalidId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + invalidId).with(csrf())
                         .content(fullAdvisoryJsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -353,13 +373,14 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCsafDocumentTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateAdvisory(eq(advisoryId), eq(revision), any())).thenReturn(newRevision);
 
         ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
@@ -368,76 +389,84 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest_notExisting() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
         doThrow(IdNotFoundException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), revision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
+        this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).param("revision", revision).with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest_invalid() throws Exception {
 
         String invalidId = "invalid ID";
 
-        this.mockMvc.perform(delete(advisoryRoute + invalidId).with(csrf()))
+        this.mockMvc.perform(delete(advisoryRoute + "/" + invalidId).with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest_invalidRevision() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
         String invalidRevision = "invalid";
         doThrow(DatabaseException.class).when(advisoryService).deleteAdvisory(advisoryId.toString(), invalidRevision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).with(csrf())
                         .param("revision", invalidRevision))
                 .andExpect(status().isBadRequest());
 
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest_csafException() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
         doThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST))
                 .when(advisoryService).deleteAdvisory(advisoryId.toString(), revision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).with(csrf())
+        this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isBadRequest());
 
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest() throws Exception {
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
+        this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).param("revision", revision).with(csrf()))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest_unauthorized() throws Exception {
 
         doThrow(AccessDeniedException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
+        this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).param("revision", revision).with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
+    @WithMockUser()
     void deleteCsafDocumentTest_iOException() throws Exception {
 
         doThrow(IOException.class).when(advisoryService).deleteAdvisory(advisoryId, revision);
 
-        this.mockMvc.perform(delete(advisoryRoute + advisoryId).param("revision", revision).with(csrf()))
+        this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).param("revision", revision).with(csrf()))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
+    @WithMockUser()
     void listAllTemplatesTest() throws Exception {
 
         when(this.templateService.getAllTemplates())
@@ -453,6 +482,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listAllTemplatesTest_internalServerError() throws Exception {
 
         when(this.templateService.getAllTemplates()).thenThrow(new IOException());
@@ -462,6 +492,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void readTemplateTest() throws Exception {
 
         final String templateId = "T1";
@@ -474,6 +505,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void readTemplateTest_internalServerError() throws Exception {
 
         final String templateId = "T1";
@@ -484,6 +516,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void readTemplateTest_NotFound() throws Exception {
 
         final String templateId = "T1";
@@ -494,57 +527,62 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStateDraftTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Draft,
                 null, null)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Draft").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Draft").with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStateReviewTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Review,
                 null, null)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Review").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Review").with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStateApprovedTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision,
                 WorkflowState.Approved, null, null)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Approved").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Approved").with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStateRfPublicationTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication,
                 "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/RfPublication").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/RfPublication").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z"))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStatePublishedTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published,
                 "2022-07-15T05:50:21Z", null)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Published").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
@@ -552,12 +590,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStatePublishedTest_unauthorized() throws Exception {
 
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
                 .thenThrow(new CsafException("access denied", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED));
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Published").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
@@ -565,12 +604,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStatePublishedTest_databaseException() throws Exception {
 
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
                 .thenThrow(DatabaseException.class);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Published").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
@@ -578,12 +618,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStatePublishedTest_invalidAdvisory() throws Exception {
 
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
                 .thenThrow(new CsafException("Invalid Advisory", CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY));
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Published").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
@@ -591,12 +632,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeWorkflowStatePublishedTest_ValidationServiceNotReachable() throws Exception {
 
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published, "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim))
                 .thenThrow(new CsafException("Validation Service not Available", CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.SERVICE_UNAVAILABLE));
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/workflowstate/Published").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Published").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
@@ -604,29 +646,32 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createNewCsafDocumentVersionTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser()
     void createNewCsafDocumentVersionTest_unauthorized() throws Exception {
 
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenThrow(new CsafException("access denied", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED));
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
+    @WithMockUser()
     void exportAdvisoryTest_HTML() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
@@ -637,7 +682,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenReturn(tempPath);
 
         this.mockMvc.perform(
-                        get(advisoryRoute + advisoryId + "/csaf")
+                        get(advisoryRoute + "/" + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
                 .andExpect(status().isOk())
@@ -659,7 +704,7 @@ public class AdvisoryControllerTest {
         when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.JSON)).thenReturn(tempPath);
 
         this.mockMvc.perform(
-                        get(advisoryRoute + advisoryId + "/csaf")
+                        get(advisoryRoute + "/" + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON)
                                 .param("format", ExportFormat.JSON.name()))
                 .andExpect(status().isOk())
@@ -669,19 +714,21 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void exportAdvisoryTest_IOException() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
         when(advisoryService.exportAdvisory(advisoryId.toString(), ExportFormat.HTML)).thenThrow(IOException.class);
 
         this.mockMvc.perform(
-                        get(advisoryRoute + advisoryId + "/csaf")
+                        get(advisoryRoute + "/" + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
+    @WithMockUser()
     void exportAdvisoryTest_csafException() throws Exception {
 
         UUID advisoryId = UUID.randomUUID();
@@ -689,13 +736,14 @@ public class AdvisoryControllerTest {
                 .thenThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST));
 
         this.mockMvc.perform(
-                        get(advisoryRoute + advisoryId + "/csaf")
+                        get(advisoryRoute + "/" + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser()
     void determineExportResponseContentTypeTest() {
 
         assertThat(determineExportResponseContentType(ExportFormat.HTML), equalTo(MediaType.TEXT_HTML));
@@ -707,39 +755,43 @@ public class AdvisoryControllerTest {
 
 
     @Test
+    @WithMockUser()
     void createNewCsafDocumentVersionTest_accessDeniedException() throws Exception {
 
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenThrow(AccessDeniedException.class);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
+    @WithMockUser()
     void createNewCsafDocumentVersionTest_databaseException() throws Exception {
 
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenThrow(DatabaseException.class);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser()
     void createNewCsafDocumentVersionTest_iOException() throws Exception {
 
         when(advisoryService.createNewCsafDocumentVersion(advisoryId, revision))
                 .thenThrow(IOException.class);
 
-        this.mockMvc.perform(patch(advisoryRoute + advisoryId + "/createNewVersion").with(csrf())
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
+    @WithMockUser()
     void listCommentsTest_empty() throws Exception {
 
         this.mockMvc.perform(get(commentRoute))
@@ -748,6 +800,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listCommentsTest_oneItem() throws Exception {
 
         String owner = "Musterfrau";
@@ -777,6 +830,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listCommentsTest_unauthorized() throws Exception {
 
         when(advisoryService.getComments(advisoryId)).thenThrow(AccessDeniedException.class);
@@ -786,6 +840,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listCommentsTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
@@ -796,6 +851,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest_invalidJson() throws Exception {
 
         String invalidJson = "not a valid JSON string";
@@ -806,6 +862,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest_missingCsafNodeId() throws Exception {
 
 
@@ -821,6 +878,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest_unauthorized() throws Exception {
 
         when(advisoryService.addComment(eq(advisoryId), any(CreateCommentRequest.class)))
@@ -838,6 +896,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest_databaseException() throws Exception {
 
         when(advisoryService.addComment(eq(advisoryId), any(CreateCommentRequest.class)))
@@ -855,6 +914,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest_illegalArgumentException() throws Exception {
 
         when(advisoryService.addComment(eq(advisoryId), any(CreateCommentRequest.class)))
@@ -872,6 +932,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
@@ -890,6 +951,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void createCommentTest() throws Exception {
 
         IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
@@ -919,11 +981,12 @@ public class AdvisoryControllerTest {
 
 
     @Test
+    @WithMockUser()
     void changeCommentTest_notExisting() throws Exception {
 
         doThrow(IdNotFoundException.class).when(advisoryService).updateComment(advisoryId, commentId, revision, commentText);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -931,12 +994,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
         doThrow(DatabaseException.class).when(advisoryService).updateComment(advisoryId, commentId, invalidRevision, commentText);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", invalidRevision))
@@ -945,11 +1009,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest_invalidId() throws Exception {
 
         String invalidId = "not an UUID";
 
-        this.mockMvc.perform(patch(commentRoute + invalidId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + invalidId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -957,12 +1022,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateComment(advisoryId, commentId, revision, commentText)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -971,11 +1037,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest_unauthorized() throws Exception {
 
         when(advisoryService.updateComment(advisoryId, commentId, revision, commentText)).thenThrow(AccessDeniedException.class);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -983,11 +1050,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest_ioException() throws Exception {
 
         when(advisoryService.updateComment(advisoryId, commentId, revision, commentText)).thenThrow(IOException.class);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -995,12 +1063,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest_csafException() throws Exception {
 
         doThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST))
                 .when(advisoryService).updateComment(advisoryId, commentId, revision, commentText);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1008,12 +1077,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeCommentTest_dbException() throws Exception {
 
         doThrow(DatabaseException.class)
                 .when(advisoryService).updateComment(advisoryId, commentId, revision, commentText);
 
-        this.mockMvc.perform(patch(commentRoute + commentId).with(csrf())
+        this.mockMvc.perform(patch(commentRoute + "/" + commentId).with(csrf())
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1022,6 +1092,7 @@ public class AdvisoryControllerTest {
 
 
     @Test
+    @WithMockUser()
     void listAnswersTest_empty() throws Exception {
 
         this.mockMvc.perform(get(answerRoute))
@@ -1030,6 +1101,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listAnswersTest_oneItem() throws Exception {
 
         String owner = "Musterfrau";
@@ -1057,6 +1129,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listAnswersTest_unauthorized() throws Exception {
 
         when(advisoryService.getAnswers(advisoryId, commentId)).thenThrow(AccessDeniedException.class);
@@ -1066,6 +1139,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void listAnswersTest_csafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
@@ -1076,6 +1150,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void addAnswerTest_advisoryNotFound() throws Exception {
 
         String invalidJson = "not a valid JSON string";
@@ -1088,6 +1163,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void addAnswerTest_unauthorized() throws Exception {
 
         String answerText = "This is an answer.";
@@ -1101,6 +1177,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void addAnswerTest_databaseException() throws Exception {
 
         String answerText = "This is an answer.";
@@ -1114,6 +1191,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void addAnswerTest_illegalArgumentException() throws Exception {
 
         String answerText = "This is an answer.";
@@ -1127,6 +1205,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void addAnswerTest() throws Exception {
 
         IdAndRevision idRev = new IdAndRevision(UUID.randomUUID().toString(), "rev-123-abc");
@@ -1154,11 +1233,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest_notExisting() throws Exception {
 
         doThrow(IdNotFoundException.class).when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
 
-        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + answerId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1166,11 +1246,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest_unauthorized() throws Exception {
 
         doThrow(AccessDeniedException.class).when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
 
-        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + answerId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1178,11 +1259,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest_ioException() throws Exception {
 
         doThrow(IOException.class).when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
 
-        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + answerId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1190,12 +1272,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest_csafException() throws Exception {
 
         doThrow(new CsafException("wrong id", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.BAD_REQUEST))
                 .when(advisoryService).updateComment(advisoryId, answerId, revision, answerText);
 
-        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + answerId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1203,12 +1286,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
         doThrow(DatabaseException.class).when(advisoryService).updateComment(advisoryId, answerId, invalidRevision, answerText);
 
-        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + answerId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", invalidRevision))
@@ -1217,11 +1301,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest_invalidId() throws Exception {
 
         String invalidId = "not an UUID";
 
-        this.mockMvc.perform(patch(answerRoute + invalidId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + invalidId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1229,12 +1314,13 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void changeAnswerTest() throws Exception {
 
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateComment(advisoryId, answerId, revision, answerText)).thenReturn(newRevision);
 
-        this.mockMvc.perform(patch(answerRoute + answerId).with(csrf())
+        this.mockMvc.perform(patch(answerRoute + "/" + answerId).with(csrf())
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
@@ -1243,6 +1329,7 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void importCsafDocument() throws Exception {
 
         IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
@@ -1256,7 +1343,7 @@ public class AdvisoryControllerTest {
                         }
                         """, idRev.getId(), idRev.getRevision());
 
-        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+        this.mockMvc.perform(post(advisoryRoute + "/import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -1264,11 +1351,12 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void importCsafDocument_IOException() throws Exception {
 
         doThrow(IOException.class).when(advisoryService).importAdvisory(any());
 
-        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+        this.mockMvc.perform(post(advisoryRoute + "/import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -1276,22 +1364,24 @@ public class AdvisoryControllerTest {
     }
 
     @Test
+    @WithMockUser()
     void importCsafDocument_CsafException() throws Exception {
 
         CsafException csafExcp = new CsafException("Test", CsafExceptionKey.AdvisoryNotFound);
         doThrow(csafExcp).when(advisoryService).importAdvisory(any());
 
-        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+        this.mockMvc.perform(post(advisoryRoute + "/import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
     }
 
     @Test
+    @WithMockUser()
     void importCsafDocument_unauthorized() throws Exception {
 
         when(advisoryService.importAdvisory(any())).thenThrow(AccessDeniedException.class);
-        this.mockMvc.perform(post(advisoryRoute + "import").with(csrf())
+        this.mockMvc.perform(post(advisoryRoute + "/import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
