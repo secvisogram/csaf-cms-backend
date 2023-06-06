@@ -1010,10 +1010,8 @@ public class AdvisoryController {
       checkValidUuid(advisoryId);
       return changeWorkflowState(advisoryId, revision, WorkflowState.AutoPublish, proposedTime, documentTrackingStatus);
     }
-    
-    /**
-     * Change workflow state of a CSAF document to Published
-     *
+
+    /*
      * @param advisoryId             advisoryId id of the CSAF document to change
      * @param revision               optimistic locking revision
      * @param proposedTime           optimistic locking revision

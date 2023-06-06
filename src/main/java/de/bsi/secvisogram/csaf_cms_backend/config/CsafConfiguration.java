@@ -12,7 +12,8 @@ public class CsafConfiguration {
     private CsafAutoPublishConfiguration autoPublish;
     
     private CsafWorkflowConfiguration workflow;
-
+    private CsafAutoPublishConfiguration autoPublish;
+    
     public CsafSummaryConfiguration getSummary() {
         return summary;
     }
@@ -46,5 +47,13 @@ public class CsafConfiguration {
     public CsafConfiguration setWorkflow(CsafWorkflowConfiguration workflow) {
         this.workflow = workflow;
         return this;
+    }
+
+    public CsafAutoPublishConfiguration getAutoPublish() {
+      return autoPublish;
+    }
+
+    public void setAutoPublish(CsafAutoPublishConfiguration autoPublish) {
+      this.autoPublish = autoPublish;
     }
 }
