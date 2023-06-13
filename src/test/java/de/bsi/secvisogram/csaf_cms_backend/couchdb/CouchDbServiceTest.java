@@ -412,24 +412,4 @@ public class CouchDbServiceTest {
       String createString = writer.writeValueAsString(objectToWrite);
       this.couchDbService.writeDocument(UUID.randomUUID(), createString);
     }
-
-    
-    @Test
-    public void t2() throws IdNotFoundException, IOException, CsafException {
-      UUID id = UUID.randomUUID();
-//      String r = this.couchDbService.writeDocument(id.toString(), "{\"_id\":\"1da33cb4-dda9-4eb0-aa89-f7ffa4368bc3\",\"_rev\":\"1-44fcf4bcc665d921c58f7e97b72c8398\",\"csaf\":{\"document\":{\"category\":\"CSAF Base\",\"csaf_version\":\"2.0\",\"title\":\"Minimal Valid Doc\",\"lang\":\"en\",\"distribution\":{\"tlp\":{\"label\":\"GREEN\"}},\"publisher\":{\"category\":\"other\",\"name\":\"Secvisogram Automated Tester\",\"namespace\":\"https://github.com/secvisogram/secvisogram\"},\"references\":[{\"category\":\"self\",\"summary\":\"A non-canonical URL\",\"url\":\"https://example.com/security/data/csaf/2021/my-thing-_10.json\"}],\"tracking\":{\"current_release_date\":\"2022-09-08T12:33:45.678Z\",\"id\":\"My-Thing-.10\",\"initial_release_date\":\"2022-09-08T12:33:45.678Z\",\"revision_history\":[{\"number\":\"1.0.0\",\"date\":\"2022-09-08T12:33:45.678Z\",\"summary\":\"initial draft\"}],\"status\":\"final\",\"version\":\"1.0.0\"}}},\"createdAt\":\"2023-06-13T08:45:33.407476519Z\",\"workflowState\":\"Published\",\"owner\":\"manager\",\"lastMajorVersion\":\"1.0.0\",\"versioningType\":\"Semantic\",\"type\":\"AdvisoryVersion\",\"advisoryReference\":\"1da33cb4-dda9-4eb0-aa89-f7ffa4368bc3\"}\n");
-      String r = this.couchDbService.writeDocument(id.toString(), "{\"csaf\":{\"document\":{\"category\":\"CSAF Base\",\"csaf_version\":\"2.0\",\"title\":\"Minimal Valid Doc\",\"lang\":\"en\",\"distribution\":{\"tlp\":{\"label\":\"GREEN\"}},\"publisher\":{\"category\":\"other\",\"name\":\"Secvisogram Automated Tester\",\"namespace\":\"https://github.com/secvisogram/secvisogram\"},\"references\":[{\"category\":\"self\",\"summary\":\"A non-canonical URL\",\"url\":\"https://example.com/security/data/csaf/2021/my-thing-_10.json\"}],\"tracking\":{\"current_release_date\":\"2022-09-08T12:33:45.678Z\",\"id\":\"My-Thing-.10\",\"initial_release_date\":\"2022-09-08T12:33:45.678Z\",\"revision_history\":[{\"number\":\"1.0.0\",\"date\":\"2022-09-08T12:33:45.678Z\",\"summary\":\"initial draft\"}],\"status\":\"final\",\"version\":\"1.0.0\"}}},\"createdAt\":\"2023-06-13T08:45:33.407476519Z\",\"workflowState\":\"Published\",\"owner\":\"manager\",\"lastMajorVersion\":\"1.0.0\",\"versioningType\":\"Semantic\",\"type\":\"Advisory\"}");
-      AdvisoryWrapper advisory = AdvisoryWrapper.createFromCouchDb(this.couchDbService.readDocumentAsStream(id.toString()));
-//      advisory.setRevision(r);
-      
-      System.out.println("-----");
-      advisory.setDocumentTrackingId("DD");
-//      advisory.setRevision(r);
-      String r2 = this.couchDbService.writeDocument(id.toString(), advisory.advisoryAsString());
-      System.out.println("-----");
-      advisory.setDocumentTrackingId("EE");
-      advisory.setRevision("");
-      this.couchDbService.writeDocument(UUID.randomUUID().toString(), advisory.advisoryAsString());
-      System.out.println("-----");
-    }
 }
