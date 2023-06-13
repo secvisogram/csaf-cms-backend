@@ -72,7 +72,7 @@ public class CsafDocumentJsonCreator {
                         }
                     }
                 }
-                """.formatted(Integer.toString((int)(Math.random()*1000)),version, status.getCsafValue(), version);
+                """.formatted(Integer.toString((int) (Math.random() * 1000)), version, status.getCsafValue(), version);
     }
 
     public static String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
