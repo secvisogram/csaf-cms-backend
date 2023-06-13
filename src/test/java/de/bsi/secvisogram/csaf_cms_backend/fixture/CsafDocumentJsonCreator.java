@@ -58,7 +58,7 @@ public class CsafDocumentJsonCreator {
                         ],
                         "tracking": {
                             "current_release_date": "2022-09-08T12:33:45.678Z",
-                            "id": "My-Thing-.10",
+                            "id": "My-Thing-.10-%s",
                             "initial_release_date": "2022-09-08T12:33:45.678Z",
                             "revision_history": [
                                 {
@@ -72,7 +72,7 @@ public class CsafDocumentJsonCreator {
                         }
                     }
                 }
-                """.formatted(version, status.getCsafValue(), version);
+                """.formatted(Integer.toString((int)(Math.random()*1000)),version, status.getCsafValue(), version);
     }
 
     public static String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
