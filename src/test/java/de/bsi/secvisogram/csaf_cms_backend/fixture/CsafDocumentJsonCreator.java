@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * Utility class to create CSAF document json's
@@ -32,47 +34,51 @@ public class CsafDocumentJsonCreator {
     }
 
     public static String csafMinimalValidDoc(DocumentTrackingStatus status, String version) {
-        return """
-                {
-                    "document": {
-                        "category": "CSAF Base",
-                        "csaf_version": "2.0",
-                        "title": "Minimal Valid Doc",
-                        "lang": "en",
-                        "distribution": {
-                            "tlp": {
-                                "label": "GREEN"
-                            }
-                        },
-                        "publisher": {
-                            "category": "other",
-                            "name": "Secvisogram Automated Tester",
-                            "namespace": "https://github.com/secvisogram/secvisogram"
-                        },
-                        "references": [
-                            {
-                                "category": "self",
-                                "summary": "A non-canonical URL",
-                                "url": "https://example.com/security/data/csaf/2021/my-thing-_10.json"
-                            }
-                        ],
-                        "tracking": {
-                            "current_release_date": "2022-09-08T12:33:45.678Z",
-                            "id": "My-Thing-.10-%s",
-                            "initial_release_date": "2022-09-08T12:33:45.678Z",
-                            "revision_history": [
-                                {
-                                    "number": "%s",
-                                    "date": "2022-09-08T12:33:45.678Z",
-                                    "summary": "initial draft"
-                                }
-                            ],
-                            "status": "%s",
-                            "version": "%s"
-                        }
-                    }
-                }
-                """.formatted(Integer.toString((int) (Math.random() * 1000)), version, status.getCsafValue(), version);
+        try {
+          return """
+                  {
+                      "document": {
+                          "category": "CSAF Base",
+                          "csaf_version": "2.0",
+                          "title": "Minimal Valid Doc",
+                          "lang": "en",
+                          "distribution": {
+                              "tlp": {
+                                  "label": "GREEN"
+                              }
+                          },
+                          "publisher": {
+                              "category": "other",
+                              "name": "Secvisogram Automated Tester",
+                              "namespace": "https://github.com/secvisogram/secvisogram"
+                          },
+                          "references": [
+                              {
+                                  "category": "self",
+                                  "summary": "A non-canonical URL",
+                                  "url": "https://example.com/security/data/csaf/2021/my-thing-_10.json"
+                              }
+                          ],
+                          "tracking": {
+                              "current_release_date": "2022-09-08T12:33:45.678Z",
+                              "id": "My-Thing-.10-%s",
+                              "initial_release_date": "2022-09-08T12:33:45.678Z",
+                              "revision_history": [
+                                  {
+                                      "number": "%s",
+                                      "date": "2022-09-08T12:33:45.678Z",
+                                      "summary": "initial draft"
+                                  }
+                              ],
+                              "status": "%s",
+                              "version": "%s"
+                          }
+                      }
+                  }
+                  """.formatted(SecureRandom.getInstanceStrong().nextInt(10000), version, status.getCsafValue(), version);
+        } catch (NoSuchAlgorithmException e) {
+          return "";
+        }
     }
 
     public static String csafJsonCategoryTitleId(String category, String documentTitle, String documentTrackingId) {
