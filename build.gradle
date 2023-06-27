@@ -73,7 +73,7 @@ dependencies {
 
 test {
 	useJUnitPlatform()
-	testLogging.showStandardStreams = true
+	testLogging.showStandardStreams = false
 }
 
 tasks.withType(JavaCompile) {
