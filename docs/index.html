@@ -282,16 +282,16 @@ font-style: italic;
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>application/json</code></li>
       <li><code>*/*</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Answer created.
-        <a href="#EntityCreateResponse">EntityCreateResponse</a>
     <h4 class="field-label">401</h4>
     Unauthorized access.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
+    <h4 class="field-label">200</h4>
+    Answer created.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
     <h4 class="field-label">400</h4>
     Invalid advisory id.
@@ -619,11 +619,14 @@ font-style: italic;
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
       <li><code>application/json</code></li>
+      <li><code>*/*</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Comment created.
+        <a href="#EntityCreateResponse">EntityCreateResponse</a>
     <h4 class="field-label">401</h4>
     Unauthorized access.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
@@ -632,9 +635,6 @@ font-style: italic;
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
     <h4 class="field-label">500</h4>
     Error during process the advisory.
-        <a href="#EntityCreateResponse">EntityCreateResponse</a>
-    <h4 class="field-label">200</h4>
-    Comment created.
         <a href="#EntityCreateResponse">EntityCreateResponse</a>
   </div> <!-- method -->
   <hr/>
@@ -843,14 +843,17 @@ font-style: italic;
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>application/json</code></li>
-      <li><code>text/html</code></li>
-      <li><code>text/markdown</code></li>
       <li><code>application/pdf</code></li>
       <li><code>application/xhtml+xml</code></li>
+      <li><code>application/json</code></li>
+      <li><code>text/markdown</code></li>
+      <li><code>text/html</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    JSON template for advisory
+        <a href="#"></a>
     <h4 class="field-label">400</h4>
     Bad format requested.
         <a href="#File">File</a>
@@ -863,9 +866,6 @@ font-style: italic;
     <h4 class="field-label">500</h4>
     Error during export.
         <a href="#File">File</a>
-    <h4 class="field-label">200</h4>
-    JSON template for advisory
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="importCsafDocument"/>
@@ -1053,9 +1053,6 @@ font-style: italic;
     <h4 class="field-label">401</h4>
     Unauthorized access.
         
-    <h4 class="field-label">200</h4>
-    List of all answers for a comment.
-        
     <h4 class="field-label">404</h4>
     Advisory or comment not found.
         
@@ -1064,6 +1061,9 @@ font-style: italic;
         
     <h4 class="field-label">400</h4>
     Invalid advisory id or comment id.
+        
+    <h4 class="field-label">200</h4>
+    List of all answers for a comment.
         
   </div> <!-- method -->
   <hr/>
@@ -1140,11 +1140,11 @@ font-style: italic;
     <h4 class="field-label">404</h4>
     Advisory not found.
         
-    <h4 class="field-label">200</h4>
-    List of all comments for an advisory.
-        
     <h4 class="field-label">400</h4>
     Invalid advisory id.
+        
+    <h4 class="field-label">200</h4>
+    List of all comments for an advisory.
         
     <h4 class="field-label">500</h4>
     Error during process the advisory.
@@ -1341,11 +1341,11 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h4 class="field-label">500</h4>
     Error reading advisory.
         <a href="#AdvisoryDocument">AdvisoryDocument</a>
-    <h4 class="field-label">200</h4>
-    Single requested advisory
-        <a href="#AdvisoryDocument">AdvisoryDocument</a>
     <h4 class="field-label">400</h4>
     Invalid UUID
+        <a href="#AdvisoryDocument">AdvisoryDocument</a>
+    <h4 class="field-label">200</h4>
+    Single requested advisory
         <a href="#AdvisoryDocument">AdvisoryDocument</a>
   </div> <!-- method -->
   <hr/>
@@ -1498,12 +1498,12 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h4 class="field-label">422</h4>
     Invalid formatted advisory.
         <a href="#String">String</a>
-    <h4 class="field-label">200</h4>
-    Workflow state changed to draft.
-        <a href="#"></a>
     <h4 class="field-label">401</h4>
     Unauthorized access to change workflow state.
         <a href="#String">String</a>
+    <h4 class="field-label">200</h4>
+    Workflow state changed to draft.
+        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="setWorkflowStateToPublished"/>
@@ -1543,11 +1543,14 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
-      <li><code>*/*</code></li>
       <li><code>text/plain</code></li>
+      <li><code>*/*</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Workflow state changed to Publication.
+        <a href="#"></a>
     <h4 class="field-label">400</h4>
     Advisory ID not found.
         <a href="#String">String</a>
@@ -1560,9 +1563,6 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h4 class="field-label">401</h4>
     Unauthorized access to change workflow state.
         <a href="#String">String</a>
-    <h4 class="field-label">200</h4>
-    Workflow state changed to Publication.
-        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="setWorkflowStateToReview"/>
@@ -1606,12 +1606,12 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h4 class="field-label">400</h4>
     Advisory ID not found.
         <a href="#String">String</a>
-    <h4 class="field-label">422</h4>
-    Invalid formatted advisory.
-        <a href="#String">String</a>
     <h4 class="field-label">200</h4>
     Workflow state changed to review.
         <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid formatted advisory.
+        <a href="#String">String</a>
     <h4 class="field-label">401</h4>
     Unauthorized access to change workflow state.
         <a href="#String">String</a>
@@ -1666,12 +1666,12 @@ Possible valueType's: 'Text', 'Decimal', 'Boolean'. You can search for all attri
     <h4 class="field-label">503</h4>
     Validation server not available.
         <a href="#String">String</a>
-    <h4 class="field-label">200</h4>
-    Workflow state changed to RfPublication.
-        <a href="#"></a>
     <h4 class="field-label">401</h4>
     Unauthorized access to change workflow state.
         <a href="#String">String</a>
+    <h4 class="field-label">200</h4>
+    Workflow state changed to RfPublication.
+        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Main">Main</a></h1>
