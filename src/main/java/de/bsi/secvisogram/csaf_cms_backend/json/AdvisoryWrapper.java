@@ -85,6 +85,9 @@ public class AdvisoryWrapper {
                 .setType(ObjectType.AdvisoryVersion)
                 .setAdvisoryReference(advisoryToClone.getAdvisoryId());
         RemoveIdHelper.removeCommentIds(newAdvisory.getCsaf());
+       
+        RemoveIdHelper.removeIds(newAdvisory.advisoryNode, "_rev");
+        
         return newAdvisory;
     }
 

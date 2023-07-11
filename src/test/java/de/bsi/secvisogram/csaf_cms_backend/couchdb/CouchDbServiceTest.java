@@ -13,8 +13,10 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.ibm.cloud.cloudant.v1.model.Document;
@@ -400,8 +402,9 @@ public class CouchDbServiceTest {
     }
 
     public void writeToDb(Object objectToWrite) throws JsonProcessingException {
-
-        this.couchDbService.writeDocument(UUID.randomUUID(), objectToWrite);
+      final ObjectMapper jacksonMapper = new ObjectMapper();
+      ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+      String createString = writer.writeValueAsString(objectToWrite);
+      this.couchDbService.writeDocument(UUID.randomUUID(), createString);
     }
-
 }
