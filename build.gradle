@@ -68,7 +68,7 @@ dependencies {
 	spotbugsSlf4j 'org.slf4j:slf4j-simple:2.0.7'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
 
-	spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.4.7'
+	spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.6.0'
 }
 
 test {
