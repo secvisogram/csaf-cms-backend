@@ -1,6 +1,6 @@
 plugins {
 	id 'org.springframework.boot' version '3.1.1'
-	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+	id 'io.spring.dependency-management' version '1.1.1'
 	id 'java'
 	id 'com.github.spotbugs' version '5.0.14'
 	id 'jacoco'
@@ -36,18 +36,17 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-	implementation 'com.ibm.cloud:cloudant:0.4.3'
+	implementation 'com.ibm.cloud:cloudant:0.5.3'
 	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
 
-	implementation 'io.swagger.core.v3:swagger-annotations:2.2.11'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.15'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 	implementation 'org.apache.commons:commons-text:1.10.0'
 	implementation 'com.vdurmont:semver4j:3.1.0'
 
-
-	implementation 'org.graalvm.js:js:22.2.0.1'
-	//implementation 'org.graalvm.js:js-scriptengine:22.2.0.1'
+	implementation 'org.graalvm.js:js:23.0.0'
+	implementation 'org.graalvm.js:js-scriptengine:23.0.0'
 
 	//https://github.com/flipkart-incubator/zjsonpatch
 	implementation ('com.flipkart.zjsonpatch:zjsonpatch:0.4.14') {
