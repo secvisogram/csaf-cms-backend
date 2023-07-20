@@ -3,7 +3,7 @@ package de.bsi.secvisogram.csaf_cms_backend.integration;
 import com.intuit.karate.junit5.Karate;
 
 
-public class KarateRunner{
+public class KarateRunner {
   @Karate.Test
   Karate testSample() {
     
