@@ -26,9 +26,12 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain configure(HttpSecurity http) throws Exception {
         http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthenticationConverter());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer((oauth2ResourceServer) ->
+                  oauth2ResourceServer.jwt((jwt) ->
+                    jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                  )
+                );
                 
         if (this.isCsrfEnabled) {
             http
@@ -36,7 +39,7 @@ public class SecurityConfig {
                     csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 );
         } else {
-            http.csrf().disable();
+            http.csrf(csrf -> csrf.disable());
         }
         
         return http.build();
