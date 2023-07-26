@@ -78,7 +78,7 @@ test {
 }
 
 tasks.withType(JavaCompile) {
-	options.compilerArgs += []//'-Xlint:deprecation,unchecked']
+	options.compilerArgs += ['-Xlint:deprecation,unchecked']
 }
 
 jacoco {
