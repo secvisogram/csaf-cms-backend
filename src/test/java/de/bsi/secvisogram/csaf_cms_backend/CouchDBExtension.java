@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import javax.xml.bind.DatatypeConverter;
 import org.junit.jupiter.api.extension.*;
 import org.testcontainers.containers.GenericContainer;
 
@@ -74,7 +73,7 @@ public class CouchDBExtension implements BeforeAllCallback, AfterAllCallback, Be
     private String createBasicAuth() {
 
         String auth = user + ":" + password;
-        return "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8));
+        return "Basic " + java.util.Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
     }
 
     private URL createCreateDeleteDatabaseUrl() throws IOException {
