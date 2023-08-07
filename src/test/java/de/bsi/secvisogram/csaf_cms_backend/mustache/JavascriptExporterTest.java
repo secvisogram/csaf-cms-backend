@@ -2,7 +2,9 @@ package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
 import static de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter.determineMediaTypeOfLogo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -232,7 +234,7 @@ class JavascriptExporterTest {
     void createHtml() throws IOException {
 
         String html = this.javascriptExporter.createHtml(json);
-        assertThat(html, equalToIgnoringWhiteSpace(resultHtml));
+        assertThat(html, equalToCompressingWhiteSpace(resultHtml));
 
     }
 
