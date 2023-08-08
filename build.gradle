@@ -84,6 +84,15 @@ test {
      }
 }
 
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform()
+	testLogging.showStandardStreams = false
+    filter {
+        //exclude all integration tests
+        includeTestsMatching("de.bsi.secvisogram.csaf_cms_backend.integration.*")
+     }
+}
+
 tasks.withType(JavaCompile) {
 	options.compilerArgs += ['-Xlint:deprecation,unchecked']
 }
