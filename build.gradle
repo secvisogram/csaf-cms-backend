@@ -1,9 +1,11 @@
 plugins {
-	id 'org.springframework.boot' version '3.1.1'
-	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.springframework.boot' version '3.1.2'
+	id 'io.spring.dependency-management' version '1.1.1'
 	id 'java'
 	id 'com.github.spotbugs' version '5.0.14'
 	id 'jacoco'
+	
+	// Needed for OpenAPI tasks
 	id 'org.springdoc.openapi-gradle-plugin' version '1.6.0'
 	id 'org.openapi.generator' version '6.6.0'
 }
@@ -27,22 +29,21 @@ springBoot {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-mustache'
+	//implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-	implementation 'com.ibm.cloud:cloudant:0.5.3'
+	implementation 'com.ibm.cloud:cloudant:0.5.4'
 	implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
 
-	implementation 'io.swagger.core.v3:swagger-annotations:2.2.11'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.15'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 	implementation 'org.apache.commons:commons-text:1.10.0'
 	implementation 'com.vdurmont:semver4j:3.1.0'
-
 
 	implementation 'org.graalvm.js:js:23.0.0'
 	implementation 'org.graalvm.js:js-scriptengine:23.0.0'
@@ -54,15 +55,16 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation ('org.openapitools:openapi-generator:6.2.1') {
-		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
-	}
-	testImplementation ('org.openapitools:openapi-generator-cli:6.6.0') {
-		exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
-	}
 
-	testImplementation 'org.testcontainers:testcontainers:1.18.3'
-	testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
+	//testImplementation ('org.openapitools:openapi-generator:6.2.1') {
+	//	exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
+	//}
+	//testImplementation ('org.openapitools:openapi-generator-cli:6.2.1') {
+	//	exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
+	//}
+
+	testImplementation 'org.testcontainers:testcontainers:1.17.6'
+	//testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
 	// used for integration tests in de.bsi.secvisogram.csaf_cms_backend.integration.KarateRunner
@@ -70,8 +72,7 @@ dependencies {
 
 	spotbugsSlf4j 'org.slf4j:slf4j-simple:2.0.7'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
-
-	spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.4.7'
+	//spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.6.0'
 }
 
 test {
@@ -109,13 +110,13 @@ jacocoTestReport {
 spotbugs {
 	ignoreFailures = false
 	showStackTraces = true
-	showProgress = true
+	showProgress = false
 	effort = 'default'
 	reportLevel = 'default'
-//	visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
-//	omitVisitors = [ 'FindNonShortCircuit' ]
+//	visitors = [  ]
+//	omitVisitors = [  ]
 	reportsDir = file("$buildDir/spotbugs")
-//	onlyAnalyze = [ 'com.foobar.MyClass', 'com.foobar.mypkg.*' ]
+//	onlyAnalyze = [  ]
 	maxHeapSize = '1g'
 	extraArgs = [ '-nested:false' ]
 	jvmArgs = [ '-Duser.language=de' ]
