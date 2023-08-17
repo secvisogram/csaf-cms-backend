@@ -86,11 +86,10 @@ test {
 
 tasks.register('integrationTest', Test) {
     useJUnitPlatform()
-	testLogging.showStandardStreams = false
+	testLogging.showStandardStreams = true
     filter {
-        //exclude all integration tests
         includeTestsMatching("de.bsi.secvisogram.csaf_cms_backend.integration.*")
-     }
+    }
 }
 
 tasks.withType(JavaCompile) {

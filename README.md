@@ -153,9 +153,11 @@ CouchDb Info (port is defined in .env):
 
 ### Integration tests with Karate
 
-The folder `src/test/java/de.bsi.secvisogram.csaf_cms_backend.integration/`contains [Karate](https://github.com/karatelabs/karate) test files.
+The folder `src/test/java/de.bsi.secvisogram.csaf_cms_backend.integration/` & `src/test/java/de.bsi.secvisogram.csaf_cms_backend.integration/` contains [Karate](https://github.com/karatelabs/karate) test files.
 
-Use `./gradlew integrationTest` to run the tests. CSAF-CMS-Backend and all other components must be up an running on localhost. Host and ports can be changed in the feature-files. `template.feature`-file  contains all basic request to build that can be used to assemble futher workflow.
+Use `./gradlew integrationTest` to run the tests. CSAF-CMS-Backend and all other components must be up an running with the development setup described above. 
+
+Settings (like hostnames, port, user and password) can can be changed in the feature-files. `template.feature`-file  contains all basic request to build that can be used to assemble futher workflow.
 
 
 ## Contributing
