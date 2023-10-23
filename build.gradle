@@ -63,7 +63,7 @@ dependencies {
 	//	exclude group: 'io.swagger.core.v3', module: 'swagger-models' // conflict with swagger-annotations
 	//}
 
-	testImplementation 'org.testcontainers:testcontainers:1.17.6'
+	testImplementation 'org.testcontainers:testcontainers:1.19.1'
 	//testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
