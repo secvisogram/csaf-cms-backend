@@ -1,4 +1,4 @@
-Feature: Hello World
+Feature: Template
 
   Background:
       * url 'http://localhost:8081'
