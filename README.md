@@ -157,7 +157,7 @@ The folder `src/test/java/de.bsi.secvisogram.csaf_cms_backend.integration/` & `s
 
 Use `./gradlew integrationTest` to run the tests. CSAF-CMS-Backend and all other components must be up an running with the development setup described above. 
 
-Settings (like hostnames, port, user and password) can can be changed in the feature-files. `template.feature`-file  contains all basic request to build that can be used to assemble futher workflow.
+Settings (like hostnames, port, user and password) can be changed in the feature-files. `template.feature`-file contains all basic request to build that can be used to assemble futher workflow.
 
 
 ## Contributing
