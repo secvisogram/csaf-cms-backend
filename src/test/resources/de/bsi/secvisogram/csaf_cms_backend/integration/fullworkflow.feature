@@ -1,4 +1,4 @@
-Feature: Hello World
+Feature: Full workflow
 
   Background:
       * url 'http://localhost:8081'
