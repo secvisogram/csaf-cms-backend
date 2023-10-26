@@ -51,8 +51,8 @@ Feature: Full workflow
 	When method get
 	Then status 200
 	* def filt = function(x){ return x.advisoryId == advisoryId }
-    * def items = get response[*]
-    * def revision = karate.filter(items, filt)[0].revision    
+	* def items = get response[*]
+	* def revision = karate.filter(items, filt)[0].revision    
 
 	########	
 	#Change workflow state to Approved
@@ -71,8 +71,8 @@ Feature: Full workflow
 	When method get
 	Then status 200
 	* def filt = function(x){ return x.advisoryId == advisoryId }
-    * def items = get response[*]
-    * def revision = karate.filter(items, filt)[0].revision    
+	* def items = get response[*]
+	* def revision = karate.filter(items, filt)[0].revision    
 
 	########	
 	#Change workflow state to RfPublication
@@ -91,8 +91,8 @@ Feature: Full workflow
 	When method get
 	Then status 200
 	* def filt = function(x){ return x.advisoryId == advisoryId }
-    * def items = get response[*]
-    * def revision = karate.filter(items, filt)[0].revision 
+	* def items = get response[*]
+	* def revision = karate.filter(items, filt)[0].revision 
 
 	########	
 	#Change workflow state to Published
@@ -114,8 +114,8 @@ Feature: Full workflow
 	When method get
 	Then status 200
 	* def filt = function(x){ return x.advisoryId == advisoryId }
-    * def items = get response[*]
-    * def revision = karate.filter(items, filt)[0].revision 
+	* def items = get response[*]
+	* def revision = karate.filter(items, filt)[0].revision 
 
 	# Logout
 	Given url 'http://localhost:9000/realms/csaf/protocol/openid-connect/logout'
