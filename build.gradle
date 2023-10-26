@@ -46,7 +46,7 @@ dependencies {
 	implementation 'com.vdurmont:semver4j:3.1.0'
 
 	implementation 'org.graalvm.js:js:23.0.1'
-	implementation 'org.graalvm.js:js-scriptengine:23.0.1'
+	implementation 'org.graalvm.js:js-scriptengine:23.1.1'
 
 	//https://github.com/flipkart-incubator/zjsonpatch
 	implementation ('com.flipkart.zjsonpatch:zjsonpatch:0.4.14') {
