@@ -4,10 +4,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.e
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
@@ -110,7 +106,6 @@ public class CouchDbService {
      * @return revision for concurrent control
      */
     public String writeDocument(final UUID uuid, String createString) {
-
          return writeDocument(uuid.toString(), createString);
     }
 
@@ -122,7 +117,6 @@ public class CouchDbService {
      * @return revision for concurrent control
      */
     public String writeDocument(final String objectId, String createString) {
-
         Cloudant client = createCloudantClient();
 
         PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
@@ -139,33 +133,6 @@ public class CouchDbService {
         return createDocumentResponse.getRev();
     }
 
-    /**
-     * Write a new document to the database
-     *
-     * @param uuid     id fo the new document
-     * @param rootNode object to encode as json and write to the database
-     * @return revision for concurrent control
-     */
-    public String writeDocument(final UUID uuid, Object rootNode) throws JsonProcessingException {
-
-        Cloudant client = createCloudantClient();
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
-        String createString = writer.writeValueAsString(rootNode);
-
-        PutDocumentOptions createDocumentOptions = new PutDocumentOptions.Builder()
-                .db(this.dbName)
-                .docId(uuid.toString())
-                .contentType("application/json")
-                .body(new ByteArrayInputStream(createString.getBytes(StandardCharsets.UTF_8)))
-                .build();
-        DocumentResult createDocumentResponse = client
-                .putDocument(createDocumentOptions)
-                .execute()
-                .getResult();
-
-        return createDocumentResponse.getRev();
-    }
 
     /**
      * Change a document in the couchDB

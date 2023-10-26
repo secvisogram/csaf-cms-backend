@@ -55,13 +55,17 @@ public class IntegerVersioning implements Versioning {
     }
 
     @Override
+    /**
+     * Get next version string
+     * @param currentVersionString
+     * @return current version + 1 or "1" if currentVersionString is not a number. 
+     */
     public String getNewDocumentVersion(String currentVersionString) {
 
         int oldVersion = 0;
         try {
             oldVersion = Integer.parseInt(currentVersionString);
         } catch (NumberFormatException ex) {
-            LOG.error("Invalid Versioning Format", ex);
         }
         return "" + (oldVersion + 1);
     }

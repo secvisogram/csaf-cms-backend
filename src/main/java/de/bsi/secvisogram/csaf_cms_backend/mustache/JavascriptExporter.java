@@ -14,6 +14,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.io.IOAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -50,7 +51,7 @@ public class JavascriptExporter {
         }
         final var jsContext = Context.newBuilder("js")
                 .allowExperimentalOptions(true)
-                .allowIO(true)
+                .allowIO(IOAccess.ALL)
                 .option("js.esm-eval-returns-exports", "true")
                 .currentWorkingDirectory(tempDir)
                 .build();
