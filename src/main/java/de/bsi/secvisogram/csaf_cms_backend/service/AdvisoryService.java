@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.icu.text.SimpleDateFormat;
-
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
@@ -619,8 +618,8 @@ public class AdvisoryService {
             }
           
             if (newWorkflowState == WorkflowState.AutoPublish) {
-                if(proposedTime == null) {
-                  SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
+                if (proposedTime == null) {
+                  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
                   proposedTime = sdf.format(new Date());
                 }
                 existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(proposedTime);
