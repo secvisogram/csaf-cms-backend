@@ -21,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.ibm.icu.text.SimpleDateFormat;
+
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
@@ -44,7 +46,11 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.*;
+
+import org.assertj.core.api.InstantAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -646,7 +652,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
+    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void changeAdvisoryWorkflowStateTest_AutoPublish() throws IOException, DatabaseException, CsafException {
@@ -659,7 +665,10 @@ public class AdvisoryServiceTest {
             String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, null, null);
+            
+            SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
+            String publishTime = sdf.format(new Date());
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, publishTime, null);
 
             assertEquals(WorkflowState.AutoPublish, advisoryService.getAdvisory(idRev.getId()).getWorkflowState());
 
