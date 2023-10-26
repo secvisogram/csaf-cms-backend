@@ -7,7 +7,7 @@ plugins {
 	
 	// Needed for OpenAPI tasks
 	id 'org.springdoc.openapi-gradle-plugin' version '1.7.0'
-	id 'org.openapi.generator' version '6.6.0'
+	id 'org.openapi.generator' version '7.0.1'
 }
 
 group = 'de.bsi.secvisogram'
