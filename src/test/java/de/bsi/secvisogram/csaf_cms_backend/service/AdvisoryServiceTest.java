@@ -668,7 +668,7 @@ public class AdvisoryServiceTest {
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
             
-            SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
             String publishTime = sdf.format(new Date());
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, publishTime, null);
 

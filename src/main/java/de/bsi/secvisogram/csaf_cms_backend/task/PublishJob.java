@@ -1,27 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.task;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-import javax.net.ssl.SSLException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -35,6 +13,25 @@ import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import javax.net.ssl.SSLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 @Component
@@ -70,6 +67,7 @@ public class PublishJob implements Runnable {
             webClient.post().uri(this.configuration.getAutoPublish().getUrl())
                 .contentType(MediaType.MULTIPART_FORM_DATA).header("X-Csaf-Provider-Auth", getAuthenticationCode())
                 .body(BodyInserters.fromMultipartData(fromFile(p, trackingId))).retrieve()
+// TODO Check, if still needed for exception handling
 //        	                .onStatus(HttpStatus::isError, response -> {
 //        	                	return Mono.error(new PublisherException(
 //        	                            String.format("Failed! %s %s", response.statusCode(), response.bodyToMono(String.class))
@@ -103,7 +101,6 @@ public class PublishJob implements Runnable {
     if (this.configuration.getAutoPublish().isEnableInsecureTLS()) {
       SslContext sslContext = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
       httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
     } else {
       httpClient = HttpClient.create();
     }

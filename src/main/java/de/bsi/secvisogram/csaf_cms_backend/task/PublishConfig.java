@@ -1,9 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.task;
 
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import java.util.Collection;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +22,10 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
-
 @Configuration
 @EnableScheduling
 @ComponentScan(basePackages = {"de.bsi.secvisogram.csaf_cms_backend.task"})
-public class PublishConfig implements SchedulingConfigurer{
+public class PublishConfig implements SchedulingConfigurer {
 
   @Autowired
   private CsafConfiguration configuration;
@@ -35,8 +33,8 @@ public class PublishConfig implements SchedulingConfigurer{
     
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {	
-		if(this.configuration.getAutoPublish() != null) {
-			if(this.configuration.getAutoPublish().isEnabled()) {
+		if (this.configuration.getAutoPublish() != null) {
+			if (this.configuration.getAutoPublish().isEnabled()) {
 				taskRegistrar.setScheduler(taskExecutor());
 				taskRegistrar.addCronTask(task(), this.configuration.getAutoPublish().getCron());
 				LOG.info("Autopublish activated. Task created with " + this.configuration.getAutoPublish().getCron());
