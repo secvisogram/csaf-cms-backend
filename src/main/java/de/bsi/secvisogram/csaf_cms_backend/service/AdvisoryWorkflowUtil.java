@@ -249,7 +249,15 @@ public class AdvisoryWorkflowUtil {
         if (oldWorkflowState == WorkflowState.RfPublication && newWorkflowState == WorkflowState.Published) {
             canBeChanged = hasRole(PUBLISHER, credentials);
         }
+        
+        if (oldWorkflowState == WorkflowState.RfPublication && newWorkflowState == WorkflowState.AutoPublish) {
+          canBeChanged = hasRole(PUBLISHER, credentials);
+        }
 
+        if (oldWorkflowState == WorkflowState.AutoPublish && newWorkflowState == WorkflowState.Published) {
+          canBeChanged = hasRole(PUBLISHER, credentials);
+        }
+        
         return canBeChanged;
     }
 
