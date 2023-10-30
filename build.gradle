@@ -67,7 +67,7 @@ dependencies {
 	//testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
-	spotbugsSlf4j 'org.slf4j:slf4j-simple:2.0.7'
+	spotbugsSlf4j 'org.slf4j:slf4j-simple:2.0.9'
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
 	//spotbugsPlugins 'com.mebigfatguy.sb-contrib:sb-contrib:7.6.0'
 }
