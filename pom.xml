@@ -11,7 +11,7 @@
 	<url>https://github.com/secvisogram/csaf-cms-backend</url>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 	</properties>
 
 	<parent>
@@ -45,22 +45,24 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
-		
+
 		<!-- Database -->
 		<dependency>
 			<groupId>com.ibm.cloud</groupId>
 			<artifactId>cloudant</artifactId>
 			<version>0.5.4</version>
 		</dependency>
-		
+
 		<!-- OpenAPI -->
-		<!-- https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations -->
+		<!--
+		https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations -->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-annotations</artifactId>
 			<version>2.2.19</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-models -->
+		<!--
+		https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-models -->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-models</artifactId>
@@ -71,8 +73,9 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.3.0</version>
 		</dependency>
-		
-		<!-- Used in de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflow -->
+
+		<!-- Used in
+		de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflow -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
@@ -90,7 +93,8 @@
 			<version>0.4.14</version>
 		</dependency>
 
-		<!-- Used in de.bsi.secvisogram.csaf_cms_backend.mustacheJavaScriptExporter -->
+		<!-- Used in
+		de.bsi.secvisogram.csaf_cms_backend.mustacheJavaScriptExporter -->
 		<dependency>
 			<groupId>org.graalvm.js</groupId>
 			<artifactId>js</artifactId>
@@ -251,7 +255,14 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<consoleOutputReporter>
+						<disable>true</disable>
+					</consoleOutputReporter>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.spdx</groupId>
 				<artifactId>spdx-maven-plugin</artifactId>
