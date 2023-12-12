@@ -30,7 +30,7 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
         with:
-          paths: ${{ github.workspace }}/target/jacoco-resources/jacoco.xml
+          paths: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
@@ -38,11 +38,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
-          path: /target/jacoco-reports/**
+          path: /target/jacoco-report/**
       - name: Generate JaCoCo Badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
-          jacoco-csv-file: ${{ github.workspace }}/target/jacoco-resources/jacoco.csv
+          jacoco-csv-file: ${{ github.workspace }}/target/jacoco-report/jacoco.csv
           generate-coverage-badge: true
           badges-directory: .github/badges
       - name: Commit the badge (if it changed)
