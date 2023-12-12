@@ -25,12 +25,12 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         #if: always() # clause guarantees that this action always runs, even if earlier steps (e.g., the unit test step) in your workflow fail.
         with:
-          files: "build/test-results/**/*.xml"
+          files: ${{ github.workspace }}/target/surefire-reports/**/*.xml
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
         with:
-          paths: ${{ github.workspace }}/target/jacoco-reports/jacoco.xml
+          paths: ${{ github.workspace }}/target/jacoco-resources/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
@@ -42,7 +42,7 @@ jobs:
       - name: Generate JaCoCo Badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
-          jacoco-csv-file: ${{ github.workspace }}/target/jacoco-reports/jacoco.csv
+          jacoco-csv-file: ${{ github.workspace }}/target/jacoco-resources/jacoco.csv
           generate-coverage-badge: true
           badges-directory: .github/badges
       - name: Commit the badge (if it changed)
