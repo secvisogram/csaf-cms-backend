@@ -33,6 +33,7 @@
 		<dependency.version.spotbugs-annotations>4.9.8</dependency.version.spotbugs-annotations> 
 	</properties>
 
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -369,11 +370,15 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<consoleOutputReporter>
 						<disable>true</disable>
 					</consoleOutputReporter>
+					<excludes>
+     					<exclude>${exclude.tests}</exclude>
+    				</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
