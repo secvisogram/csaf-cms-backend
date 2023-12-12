@@ -19,7 +19,7 @@ public class CouchDBExtension implements BeforeAllCallback, AfterAllCallback, Be
     public static final String couchDbVersion = "3.2.2";
     private static final String user = "testUser";
     private static final String password = "testPassword";
-    private static final int initialPort = 5984;
+    private static final int initialPort = 32773;//5984;
     private static final String dbName = "test-db";
 
     @Override
