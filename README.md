@@ -139,7 +139,7 @@ http://localhost:8081/swagger-ui/index.html
 
 OpenAPI specification
 
-http://localhost:8081/v3/api-docs/
+http://localhost:8081/api-docs/
 
 ### access couchDB
 
@@ -158,6 +158,10 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 ## Dependencies
+
+### Check for Maven Plugin update
+
+`` mvn versions:display-plugin-updates `` 
 
 ### Spring Boot
 
