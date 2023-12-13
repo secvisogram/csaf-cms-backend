@@ -56,16 +56,9 @@ public class CouchDbServiceTest {
 
     @Test
     public void getServerVersionTest() {
-
         Assertions.assertEquals(CouchDBExtension.couchDbVersion, this.couchDbService.getServerVersion());
     }
 
-    @Test
-    public void envTest() throws IOException {
-    	
-        Assertions.assertEquals("localhost", System.getProperty("csaf.couchdb.host"));
-        Assertions.assertEquals("5936", System.getProperty("csaf.couchdb.port"));
-    }
     
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")

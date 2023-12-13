@@ -38,7 +38,17 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
-          path: /target/jacoco-report/**
+          path: ${{ github.workspace }}/target/jacoco-report/**
+      - name: find files
+        run: ls  ${{ github.workspace }}
+      - name: find files
+        run: ls  ${{ github.workspace }}/target
+      - name: find files
+        run: ls  ${{ github.workspace }}/target/jacoco-report/
+      - name: find files
+        run: ls  ${{ github.workspace }}/target/surefire-reports/**/*.xml
+      
+        
 #      - name: Generate JaCoCo Badge
 #        uses: cicirello/jacoco-badge-generator@v2
 #        with:
