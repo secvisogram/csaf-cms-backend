@@ -26,6 +26,44 @@
           </properties>
 	      <build>
 			<plugins>
+			  <plugin>
+				<groupId>org.spdx</groupId>
+				<artifactId>spdx-maven-plugin</artifactId>
+				<!-- please check for updates on
+				https://search.maven.org/search?q=a:spdx-maven-plugin -->
+				<version>0.7.0</version>
+				<executions>
+					<execution>
+						<id>build-spdx</id>
+						<phase>package</phase>
+						<goals>
+							<goal>createSPDX</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- See documentation below for additional configuration -->
+					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<version>2.7.10</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>makeAggregateBom</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputName>${project.groupId}_${project.artifactId}-${project.version}.cyclonedx</outputName>
+					<outputFormat>json</outputFormat>
+					<outputDirectory>sbom/</outputDirectory>
+				</configuration>
+				</plugin>
 			    <plugin>
 				  <groupId>org.apache.maven.plugins</groupId>
 				  <artifactId>maven-surefire-plugin</artifactId>
@@ -245,19 +283,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
-			<plugin>
-				  <groupId>org.apache.maven.plugins</groupId>
-				  <artifactId>maven-surefire-plugin</artifactId>
-				  <configuration>
-					<consoleOutputReporter>
-					  <disable>true</disable>
-					</consoleOutputReporter>
-					<excludes>
-	     			  <exclude>${exclude.tests}</exclude>
-	    			</excludes>
-				  </configuration>
-				</plugin>-->
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
@@ -281,7 +306,6 @@
 				<version>3.3.1</version>
 				<configuration>
 					<configLocation>checkstyle.xml</configLocation>
-
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>true</failsOnError>
 					<linkXRef>false</linkXRef>
@@ -319,58 +343,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.spdx</groupId>
-				<artifactId>spdx-maven-plugin</artifactId>
-				<!-- please check for updates on
-				https://search.maven.org/search?q=a:spdx-maven-plugin -->
-				<version>0.7.0</version>
-				<executions>
-					<execution>
-						<id>build-spdx</id>
-						<phase>package</phase>
-						<goals>
-							<goal>createSPDX</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<!-- See documentation below for additional configuration -->
-					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.cyclonedx</groupId>
-				<artifactId>cyclonedx-maven-plugin</artifactId>
-				<version>2.7.10</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>makeAggregateBom</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<outputName>${project.groupId}_${project.artifactId}-${project.version}.cyclonedx</outputName>
-					<outputFormat>json</outputFormat>
-					<outputDirectory>sbom/</outputDirectory>
-				</configuration>
-			</plugin>
-			<!-- very slow because of ndv database download 
-			<plugin>
-				<groupId>org.owasp</groupId>
-				<artifactId>dependency-check-maven</artifactId>
-				<version>9.0.4</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			-->
 		</plugins>
 	</build>
 </project>
