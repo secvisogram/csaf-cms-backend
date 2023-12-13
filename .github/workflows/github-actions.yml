@@ -1,8 +1,8 @@
 name: Build and Test
 on:
-  push:
-    branches:
-      -  chore_change_to_maven
+  pull_request:
+    branches:    
+      - main
 jobs:
   build: 
     runs-on: ubuntu-latest
