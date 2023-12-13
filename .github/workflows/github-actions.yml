@@ -40,13 +40,13 @@ jobs:
           name: code-coverage-report
           path: ${{ github.workspace }}/target/jacoco-report/**
       - name: find files
-        run: ls  ${{ github.workspace }}
+        run: ls -al ${{ github.workspace }}
       - name: find files
-        run: ls  ${{ github.workspace }}/target
+        run: ls -al ${{ github.workspace }}/target
       - name: find files
-        run: ls  ${{ github.workspace }}/target/jacoco-report/
+        run: ls -al ${{ github.workspace }}/target/jacoco-report
       - name: find files
-        run: ls  ${{ github.workspace }}/target/surefire-reports/**/*.xml
+        run: ls -al ${{ github.workspace }}/target/surefire-reports
       
         
 #      - name: Generate JaCoCo Badge
