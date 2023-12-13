@@ -19,6 +19,7 @@
       <profile>
         <id>github-action</id>
         <properties>
+		  <java.version>18</java.version>
           <exclude.tests>**/CouchDbServiceTest.java</exclude.tests>
         </properties>
       </profile>
@@ -295,6 +296,7 @@
 				</executions>
 				<configuration>
 					<!-- See documentation below for additional configuration -->
+					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -309,6 +311,11 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<outputName>{project.groupId}_${project.artifactId}-${project.version}.cyclonedx.json</outputName>
+					<outputFormat>json</outputFormat>
+					<outputDirectory>sbom/</outputDirectory>
+				</configuration>
 			</plugin>
 			<!-- very slow because of ndv database download 
 			<plugin>
