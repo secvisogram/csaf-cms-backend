@@ -39,6 +39,8 @@ jobs:
         with:
           name: code-coverage-report
           path: ${{ github.workspace }}/target/jacoco-report/**
+      - name: ls
+        run: ls -al target/jacoco-report/
       - name: Generate JaCoCo Badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
