@@ -36,7 +36,7 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-	implementation 'com.ibm.cloud:cloudant:0.5.4'
+	implementation 'com.ibm.cloud:cloudant:0.8.2'
 	implementation 'com.github.spotbugs:spotbugs-annotations:4.8.0'
 
 	implementation 'io.swagger.core.v3:swagger-annotations:2.2.15'
