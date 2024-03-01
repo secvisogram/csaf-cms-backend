@@ -15,3 +15,5 @@ out/
 
 ### local configuration ###
 .env
+/bin/
+/target/

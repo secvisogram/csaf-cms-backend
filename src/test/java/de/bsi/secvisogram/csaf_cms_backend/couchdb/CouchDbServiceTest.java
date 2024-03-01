@@ -56,10 +56,10 @@ public class CouchDbServiceTest {
 
     @Test
     public void getServerVersionTest() {
-
         Assertions.assertEquals(CouchDBExtension.couchDbVersion, this.couchDbService.getServerVersion());
     }
 
+    
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
     public void writeDocumentTest() throws IOException {
