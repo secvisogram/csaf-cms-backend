@@ -42,10 +42,10 @@ only required to manage documents on the server or validate against the
 To build the application run:
 
 ```shell
-./gradlew clean build
+./mvn package
 ```
 
-The resulting jar file in the `build/libs` folder can then be run with
+The resulting jar file in the `target` folder can then be run with
 `java -jar filename.jar`. To manage the process you can use Docker or an init
 system of your choice.
 
@@ -115,15 +115,12 @@ The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
 
 ### build and execute tests
 
-./gradlew clean build
+./mvnw clean verify
 
-### build and run SpotBugs
-
-./gradlew clean assemble spotbugsMain
 
 ### start application
 
-./gradlew bootRun
+./mvnw spring-boot:run
 
 with main class: de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication
 
