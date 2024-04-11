@@ -160,6 +160,9 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 
 `` mvn versions:display-plugin-updates `` 
 
+## Check for dependency update
+`` mvn versions:display-dependency-updates `
+
 ### Spring Boot
 
 #### Reference Documentation
