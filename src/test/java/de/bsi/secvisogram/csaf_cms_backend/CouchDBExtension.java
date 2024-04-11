@@ -16,7 +16,7 @@ public class CouchDBExtension implements BeforeAllCallback, AfterAllCallback, Be
 
     private GenericContainer<?> couchDb;
 
-    public static final String couchDbVersion = "3.2.2";
+    public static final String couchDbVersion = "3.3.3";
     private static final String user = "testUser";
     private static final String password = "testPassword";
     private static final int initialPort = 5984;
