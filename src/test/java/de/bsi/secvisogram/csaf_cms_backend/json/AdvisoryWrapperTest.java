@@ -6,7 +6,10 @@ import static de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper.calculate
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Integer;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -40,6 +43,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
+
 
 public class AdvisoryWrapperTest {
 
