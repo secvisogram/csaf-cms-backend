@@ -133,10 +133,10 @@ services:
         aliases:
           - "oauth2.csaf.internal"
     
-  csaf-validation-server:
+  validation-server:
     build:
       context: https://github.com/secvisogram/csaf-validator-service.git#main
-    container_name: csaf-validation-server
+    container_name: validation-server
     hostname: validator.csaf.internal
     env_file: .env
     ports:
@@ -146,6 +146,18 @@ services:
         aliases:
           - "validator.csaf.internal"
 
+  secvisogram:
+    build:
+      context: ./docker/secvisogram
+      dockerfile: Dockerfile
+    hostname: secvisogram.csaf.internal
+    volumes:
+      - "${PWD}/docker/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific"
+    networks:
+      proxy-internal: 
+        aliases:
+          - "secvisogram.csaf.internal"        
+          
 volumes:
   csaf-couchdb-data:
     driver: local
