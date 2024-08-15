@@ -1,0 +1,366 @@
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.bsi.csaf</groupId>
+	<artifactId>csaf-cms-backend</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0.0</version>
+	<name>csaf-cms-backend</name>
+	<url>https://github.com/secvisogram/csaf-cms-backend</url>
+
+	<properties>
+		<java.version>17</java.version>
+		<exclude.tests>nothing-to-exclude</exclude.tests>
+		<version.maven>3.3.9</version.maven>
+		<plugin.version.spdx>0.7.0</plugin.version.spdx>
+		<plugin.version.cyclonedx>2.7.10</plugin.version.cyclonedx>
+		<plugin.version.enforcer>3.3.9</plugin.version.enforcer>
+		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
+		<plugin.version.spotbugs>4.8.2.0</plugin.version.spotbugs>
+		<plugin.version.checkstyle>3.3.1</plugin.version.checkstyle>
+		<plugin.version.jacoco>0.8.11</plugin.version.jacoco>
+		<dependency.version.springboot>3.2.4</dependency.version.springboot>
+		<dependency.version.cloudant>0.5.4</dependency.version.cloudant>
+		<dependency.version.swagger-annotations>2.2.21</dependency.version.swagger-annotations>
+		<dependency.version.swagger-models>2.2.21</dependency.version.swagger-models>
+		<dependency.version.commons-text>1.11.0</dependency.version.commons-text>
+		<dependency.version.springdoc-openapi>2.5.0</dependency.version.springdoc-openapi>
+		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
+		<dependency.version.zjsonpatch>0.4.16</dependency.version.zjsonpatch>
+		<dependency.version.org.graalvm.js>23.0.3</dependency.version.org.graalvm.js>
+		<dependency.version.org.graalvm.js-scriptengine>24.0.0</dependency.version.org.graalvm.js-scriptengine>
+		<dependency.version.spotbugs-annotations>4.8.4</dependency.version.spotbugs-annotations> 
+	</properties>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.4</version>
+	</parent>
+
+    <profiles>
+	  <profile>
+		  <id>default</id>
+		  <activation>
+			  <activeByDefault>true</activeByDefault>
+	      </activation>
+	      <properties>
+		  	<java.version>18</java.version>
+          </properties>
+	      <build>
+			<plugins>
+			  <plugin>
+				<groupId>org.spdx</groupId>
+				<artifactId>spdx-maven-plugin</artifactId>
+				<!-- please check for updates on
+				https://search.maven.org/search?q=a:spdx-maven-plugin -->
+				<version>${plugin.version.spdx}</version>
+				<executions>
+					<execution>
+						<id>build-spdx</id>
+						<phase>package</phase>
+						<goals>
+							<goal>createSPDX</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- See documentation below for additional configuration -->
+					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<version>${plugin.version.cyclonedx}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>makeAggregateBom</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputName>${project.groupId}_${project.artifactId}-${project.version}.cyclonedx</outputName>
+					<outputFormat>json</outputFormat>
+					<outputDirectory>sbom/</outputDirectory>
+				</configuration>
+				</plugin>
+			    <plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-surefire-plugin</artifactId>
+				  <configuration>
+					<consoleOutputReporter>
+					  <disable>false</disable>
+					</consoleOutputReporter>
+				  </configuration>
+				</plugin>
+			</plugins>
+		  </build>
+	  </profile>	
+		
+      <profile>
+        <id>github-action</id>
+        <build>
+			<plugins>
+			    <plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-surefire-plugin</artifactId>
+				  <configuration>
+					<consoleOutputReporter>
+					  <disable>true</disable>
+					</consoleOutputReporter>
+					<excludes>
+	     			  <exclude>**/CouchDbServiceTest.java</exclude>
+	     			  <exclude>**/AdvisoryWorkflowSemanticVersioningTest.java</exclude>
+	    			</excludes>
+				  </configuration>
+				</plugin>
+			</plugins>
+		  </build>
+        <properties>
+		  <java.version>18</java.version>
+        </properties>
+      </profile>
+    </profiles>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-oauth2-resource-server</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-oauth2-jose</artifactId>
+		</dependency>
+
+		<!-- Database -->
+		<dependency>
+			<groupId>com.ibm.cloud</groupId>
+			<artifactId>cloudant</artifactId>
+			<version>${dependency.version.cloudant}</version>
+		</dependency>
+
+		<!-- OpenAPI -->
+		<!--
+		https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations -->
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${dependency.version.swagger-annotations}</version>
+		</dependency>
+		<!--
+		https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-models -->
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-models</artifactId>
+			<version>${dependency.version.swagger-models}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${dependency.version.springdoc-openapi}</version>
+		</dependency>
+
+		<!-- Used in
+		de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflow -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>${dependency.version.commons-text}</version>
+		</dependency>
+		<!-- Used in de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper -->
+		<dependency>
+			<groupId>com.vdurmont</groupId>
+			<artifactId>semver4j</artifactId>
+			<version>${dependency.version.semver4j}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.flipkart.zjsonpatch</groupId>
+			<artifactId>zjsonpatch</artifactId>
+			<version>${dependency.version.zjsonpatch}</version>
+		</dependency>
+
+		<!-- Used in
+		de.bsi.secvisogram.csaf_cms_backend.mustacheJavaScriptExporter -->
+		<dependency>
+			<groupId>org.graalvm.js</groupId>
+			<artifactId>js</artifactId>
+			<version>${dependency.version.org.graalvm.js}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.graalvm.js</groupId>
+			<artifactId>js-scriptengine</artifactId>
+			<version>${dependency.version.org.graalvm.js-scriptengine}</version>
+		</dependency>
+
+		<!-- Spotbugs -->
+		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<version>${dependency.version.spotbugs-annotations}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- DevTools -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Tests -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!--
+		https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!--
+		https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!--
+		https://mvnrepository.com/artifact/org.springframework.security/spring-security-test -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>${version.maven}</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<encoding.source>UTF-8</encoding.source>
+								<encoding.reporting>UTF-8</encoding.reporting>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>${plugin.version.spotbugs}</version>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>High</threshold><!-- Target: low -->
+					<xmlOutput>true</xmlOutput>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${plugin.version.checkstyle}</version>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<linkXRef>false</linkXRef>
+				</configuration>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${plugin.version.jacoco}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<!-- default target/jscoco/site/* -->
+						<configuration>
+							<outputDirectory>target/jacoco-report</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
