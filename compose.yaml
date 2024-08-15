@@ -156,7 +156,7 @@ services:
       dockerfile: Dockerfile
     hostname: secvisogram.csaf.internal
     volumes:
-      - "${PWD}/docker/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific"
+      - "./docker/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific"
     networks:
       default: 
         aliases:
