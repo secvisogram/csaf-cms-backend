@@ -87,13 +87,53 @@ If you want different passwords, database names or ports you can change them
 in that file. Please note that the following setup is for development purposes
 only and should not be used in production.
 
+```mermaid
+   C4Component
+    title Component diagram for CSAF CMS Backend
+
+    Person(user,"User")
+    Container(reverseproxy, "Reverse-Proxy", "nginx")
+    
+    Container_Boundary(c4, "Internal") {
+        Container(secvisogram, "Secvisogram", "nginx + javascript", "Provides secvisogramm via their web browser.")
+
+        Container_Boundary(c2, "Keycloak") {
+            Container(keycloak, "Keycloak", "keycloak")
+            ContainerDb(keycloak-db, "PostGreSQL", "Keycloak-Database")
+        }
+
+        Container_Boundary(c3, "Oauth") {
+            Container(oauth, "OAuth2-Proxy", "Authentication for REST-API")
+            Container(validator, "CSAF validator service", "node")
+
+            Container_Boundary(c1, "Backend") {
+                Container(backend, "CSAF-CMS-Backend", "Spring Boot")
+                ContainerDb(backend-db, "CouchDB", "CMS-Backend-Database")
+            }
+        }
+    }
+
+    Rel(user, reverseproxy,"","HTTPS")
+    Rel(reverseproxy, secvisogram,"/")
+    Rel(reverseproxy, oauth,"/api/*")
+    Rel(reverseproxy, keycloak,"/realm/csaf/")
+    Rel(oauth, validator, "/api/v1/test")
+    Rel(oauth, validator, "/api/v1/validate")
+    Rel(oauth, backend, "/api/v1/advisories/*")
+    Rel(backend, backend-db,"")
+    Rel(backend, keycloak,"")
+    Rel(keycloak, keycloak-db,"")
+   
+
+```
+
 - run `docker compose up`
 - After Keycloak is up, open a second terminal window and run
   `docker compose up csaf-keycloak-cli` to import a realm with all the users
   and roles already set up.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and
-  stops CouchDB from spamming our logs
+  stops CouchDB from spamming our logs (Admin credentials from .env)
 - Open `http://localhost:9000/` and log in with the admin user.
     - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
     - On the left side, navigate to "Clients" and select the Secvisogram client.
