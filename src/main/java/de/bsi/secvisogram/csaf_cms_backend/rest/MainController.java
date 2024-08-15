@@ -53,7 +53,7 @@ public class MainController {
     )
     public String about() {
         LOG.info("about");
-        return "{version:\"" + buildProperties.getVersion() + "\"}";
+        return "{\"version\":\"" + buildProperties.getVersion() + "\"}";
     }
 
 }
