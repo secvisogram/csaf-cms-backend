@@ -3,9 +3,10 @@
 ###############################################################################
 
 services:
-  csaf-couchdb:
+  cms-couchdb:
     image: couchdb:3.3
-    container_name: csaf-couchdb
+    hostname: couchdb.csaf.internal
+    container_name: cms-couchdb
     restart: on-failure
     env_file: .env
     environment:
@@ -15,10 +16,15 @@ services:
       - csaf-couchdb-data:/opt/couchdb/data
     ports:
       - "${CSAF_COUCHDB_PORT}:5984"
+    networks:
+      default:
+        aliases:
+          - "couchdb.csaf.internal"
 
-  csaf-keycloak-db:
+  keycloak-db:
     image: postgres:14
-    container_name: csaf-keycloak-db
+    hostname: keycloak-db.csaf.internal
+    container_name: keycloak-db
     volumes:
       - csaf-keycloak-db-data:/var/lib/postgresql/data
     env_file: .env
@@ -29,17 +35,22 @@ services:
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
+    networks:
+      default:
+        aliases:
+          - "keycloak-db.csaf.internal"
 
-  csaf-keycloak:
+  keycloak:
     image: quay.io/keycloak/keycloak:20.0
-    container_name: csaf-keycloak
+    hostname: keycloak.csaf.internal
+    container_name: keycloak
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
       KC_HEALTH_ENABLED: "true"
       KC_METRICS_ENABLED: "true"
       KC_DB: postgres
-      KC_DB_URL_HOST: csaf-keycloak-db
+      KC_DB_URL_HOST: keycloak-db.csaf.internal
       KC_DB_URL_PORT: 5432
       KC_DB_URL_DATABASE: ${CSAF_KEYCLOAK_DATABASE_NAME}
       KC_DB_USERNAME: ${CSAF_KEYCLOAK_DATABASE_USER}
@@ -53,31 +64,35 @@ services:
     ports:
       - "${CSAF_KEYCLOAK_PORT}:8080"
     command: ["start-dev"] # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
-
+    networks:
+      default:
+        aliases:
+          - "keycloak.csaf.internal"
+    
   # Run this manually to import the default keycloak config since 'depends_on' is currently broken.
-  csaf-keycloak-cli:
+  keycloak-cli:
     image: adorsys/keycloak-config-cli:latest-20.0.1
-    container_name: csaf-keycloak-cli
+    container_name: keycloak-cli
     profiles: [ "run_manually" ]
     env_file: .env
     environment:
-      KEYCLOAK_URL: "http://csaf-keycloak:8080/"
+      KEYCLOAK_URL: "http://keycloak.csaf.internal:8080/"
       KEYCLOAK_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
       KEYCLOAK_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
       IMPORT_FILES_LOCATIONS: "/config/csaf-realm.json"
     volumes:
       - ./keycloak:/config:z
-    restart: on-failure
 
-  csaf-oauth2-proxy:
+  oauth2-proxy:
     image: bitnami/oauth2-proxy:7.4.0
-    container_name: csaf-oauth2-proxy
+    hostname: oauth2.csaf.internal
+    container_name: oauth2-proxy
     command: [""]
     env_file: .env
     environment:
       # listening address and proxy target
       OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
-      OAUTH2_PROXY_UPSTREAMS: "http://host.docker.internal:${CSAF_VALIDATOR_PORT}/api/v1/validate,http://host.docker.internal:${CSAF_VALIDATOR_PORT}/api/v1/tests,http://host.docker.internal:${CSAF_CMS_BACKEND_PORT}/api/v1/"
+      OAUTH2_PROXY_UPSTREAMS: "http://validator.csaf.internal:${CSAF_VALIDATOR_PORT}/api/v1/validate,http://validator.csaf.internal:${CSAF_VALIDATOR_PORT}/api/v1/tests,http://host.docker.internal:${CSAF_CMS_BACKEND_PORT}/api/v1/"
 
       # Security related config
       OAUTH2_PROXY_COOKIE_SECURE: "false"
@@ -91,7 +106,7 @@ services:
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "CSAF OIDC Provider"
       # You need to set your keycloak "Frontend URL", in our case "http://localhost:9000/auth/"
       # If you don't want to use autodiscovery, you have to set all urls by hand (login-url, oidc-jwks-url, redeem-url, ...)
-      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://csaf-keycloak:8080/realms/${CSAF_REALM}"
+      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://keycloak.csaf.internal:8080/realms/${CSAF_REALM}"
       OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
       OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080"
 
@@ -113,15 +128,23 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
-
+    networks:
+      default:
+        aliases:
+          - "oauth2.csaf.internal"
+    
   csaf-validation-server:
     build:
       context: https://github.com/secvisogram/csaf-validator-service.git#main
     container_name: csaf-validation-server
+    hostname: validator.csaf.internal
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
-
+    networks:
+      default:
+        aliases:
+          - "validator.csaf.internal"
 
 volumes:
   csaf-couchdb-data:
