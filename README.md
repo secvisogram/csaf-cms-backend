@@ -132,16 +132,16 @@ only and should not be used in production.
   `docker compose up csaf-keycloak-cli` to import a realm with all the users
   and roles already set up.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
-  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and
-  stops CouchDB from spamming our logs (Admin credentials from .env)
+  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from .env)
+- Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - Open `http://localhost:9000/` and log in with the admin user.
     - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
+    - Select `CSAF`-Realm
     - On the left side, navigate to "Clients" and select the Secvisogram client.
     - Select the **Credentials** tab and copy the Secret. This is our
       `CSAF_CLIENT_SECRET` environment variable.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
-- Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - restart compose
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
@@ -149,9 +149,23 @@ only and should not be used in production.
 - (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
 
 You should now be able to start the spring boot application, navigate to
-`localhost:4180/api/v1/about`, log in with one of the users and get a
+`http://localhost/api/v1/about`, log in with one of the users and get a
 response from the server.
 The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
+
+You should now be able to access Secvisogram, navigate to `http://localhost/`.
+There are the following default users:
+|User       |Password   |Roles                                                        |
+|-----      |--------   |-----                                                        |
+|registered |registered |**registered**                                               |
+|author     |author     |registered, editor, **author**                               |
+|editor     |editor     |registered, **editor**                                       |
+|publisher  |publisher  |registered, editor, **publisher**                            |
+|reviewer   |reviewer   |registered, **reviewer**                                     |
+|auditor    |auditor    |**auditor**                                                  |
+|all        |all        |**auditor, reviewer, publisher, editor, author, registred**  |
+|none       |none       |                                                             |
+
 
 ### build and execute tests
 
