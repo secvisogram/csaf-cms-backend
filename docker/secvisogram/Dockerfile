@@ -16,4 +16,3 @@ RUN apk add git; \
 FROM nginx:1.23-alpine
 COPY --from=build /usr/src/secvisogram/app/dist /usr/share/nginx/html
 EXPOSE 80
-VOLUME /usr/share/nginx/html/.well-known/appspecific/
