@@ -183,6 +183,20 @@ Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.s
 `/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keyloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
 When hostnames are changed, this has to adapted.
 
+You should now be able to access Secvisogram, navigate to `http://localhost/`.
+There are the following default users:
+|User       |Password   |Roles                                                        |
+|-----      |--------   |-----                                                        |
+|registered |registered |**registered**                                               |
+|author     |author     |registered, editor, **author**                               |
+|editor     |editor     |registered, **editor**                                       |
+|publisher  |publisher  |registered, editor, **publisher**                            |
+|reviewer   |reviewer   |registered, **reviewer**                                     |
+|auditor    |auditor    |**auditor**                                                  |
+|all        |all        |**auditor, reviewer, publisher, editor, author, registred**  |
+|none       |none       |                                                             |
+
+
 ### build and execute tests
 
 `` ./mvnw clean verify``
