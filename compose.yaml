@@ -161,6 +161,7 @@ services:
       default: 
         aliases:
           - "secvisogram.csaf.internal"        
+     
 
   reverse-proxy:
     image:  nginx:1.23-alpine
