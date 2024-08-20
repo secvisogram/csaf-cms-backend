@@ -42,7 +42,7 @@
   "registrationAllowed": false,
   "verifyEmail": false,
   "attributes" : {
-    "frontendUrl": "http://localhost:9000/"
+    "frontendUrl": "http://localhost/"
   },
   "roles": {
     "client": {
