@@ -39,7 +39,7 @@ public class AdvisorySearchUtilTest {
       IdAndRevision idRev1 = null;
       try {
         idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
-      }catch(IOException e) {
+      }catch(Exception e) {
         System.out.println(e.toString());
         return;
       }
