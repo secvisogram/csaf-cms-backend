@@ -41,7 +41,8 @@ public class AdvisorySearchUtilTest {
         idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
       }catch(Exception e) {
         System.out.println(e.toString());
-        return;
+        System.err.println(e.toString());
+        e.printStackTrace();
       }
         this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title2")));
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations(createExprDocumentTitle("title1"));
