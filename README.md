@@ -175,7 +175,7 @@ Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.s
 ```
 
 `/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keyloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
-When changes hostnames this has to adopted. 
+When hostnames are changed, this has to adapted.
 
 ### build and execute tests
 
