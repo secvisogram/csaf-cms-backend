@@ -36,14 +36,7 @@ public class AdvisorySearchUtilTest {
     @Test
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_documentTitle() throws IOException, CsafException {
-      IdAndRevision idRev1 = null;
-      try {
-        idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
-      }catch(Exception e) {
-        System.out.println(e.toString());
-        System.err.println(e.toString());
-        e.printStackTrace();
-      }
+        IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
         this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title2")));
         List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations(createExprDocumentTitle("title1"));
         List<String> expectedIDs = List.of(idRev1.getId());
