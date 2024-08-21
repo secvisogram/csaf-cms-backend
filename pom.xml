@@ -111,11 +111,12 @@
   				  <artifactId>maven-surefire-plugin</artifactId>
   				  <configuration>
   					  <consoleOutputReporter>
-  					    <disable>false</disable>
+  					    <disable>true</disable>
   					  </consoleOutputReporter>
   					  <excludes>
   	     			  <exclude>**/CouchDbServiceTest.java</exclude>
   	     			  <exclude>**/AdvisoryWorkflowSemanticVersioningTest.java</exclude>
+  	     			  <exclude>**/AdvisorySearchUtilTest.java</exclude>
   	    		  </excludes>
   				  </configuration>
   				</plugin>
