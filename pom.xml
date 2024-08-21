@@ -40,92 +40,93 @@
 		<version>3.2.4</version>
 	</parent>
 
-    <profiles>
+  <profiles>
 	  <profile>
 		  <id>default</id>
 		  <activation>
 			  <activeByDefault>true</activeByDefault>
-	      </activation>
-	      <properties>
-		  	<java.version>18</java.version>
-          </properties>
-	      <build>
-			<plugins>
-			  <plugin>
-				<groupId>org.spdx</groupId>
-				<artifactId>spdx-maven-plugin</artifactId>
-				<!-- please check for updates on
-				https://search.maven.org/search?q=a:spdx-maven-plugin -->
-				<version>${plugin.version.spdx}</version>
-				<executions>
-					<execution>
-						<id>build-spdx</id>
-						<phase>package</phase>
-						<goals>
-							<goal>createSPDX</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<!-- See documentation below for additional configuration -->
-					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.cyclonedx</groupId>
-				<artifactId>cyclonedx-maven-plugin</artifactId>
-				<version>${plugin.version.cyclonedx}</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>makeAggregateBom</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<outputName>${project.groupId}_${project.artifactId}-${project.version}.cyclonedx</outputName>
-					<outputFormat>json</outputFormat>
-					<outputDirectory>sbom/</outputDirectory>
-				</configuration>
-				</plugin>
+	    </activation>
+	    <properties>
+		   <java.version>18</java.version>
+      </properties>
+	    <build>
+			  <plugins>
 			    <plugin>
-				  <groupId>org.apache.maven.plugins</groupId>
-				  <artifactId>maven-surefire-plugin</artifactId>
-				  <configuration>
-					<consoleOutputReporter>
-					  <disable>false</disable>
-					</consoleOutputReporter>
-				  </configuration>
-				</plugin>
-			</plugins>
+    				<groupId>org.spdx</groupId>
+    				<artifactId>spdx-maven-plugin</artifactId>
+    				<!-- please check for updates on
+    				https://search.maven.org/search?q=a:spdx-maven-plugin -->
+    				<version>${plugin.version.spdx}</version>
+    				<executions>
+    					<execution>
+    						<id>build-spdx</id>
+    						<phase>package</phase>
+    						<goals>
+    							<goal>createSPDX</goal>
+    						</goals>
+    					</execution>
+    				</executions>
+    				<configuration>
+    					<!-- See documentation below for additional configuration -->
+    					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
+    				</configuration>
+    			</plugin>
+			    <plugin>
+    				<groupId>org.cyclonedx</groupId>
+    				<artifactId>cyclonedx-maven-plugin</artifactId>
+    				<version>${plugin.version.cyclonedx}</version>
+    				<executions>
+    					<execution>
+    						<phase>package</phase>
+    						<goals>
+    							<goal>makeAggregateBom</goal>
+    						</goals>
+    					</execution>
+    				</executions>
+    				<configuration>
+    					<outputName>${project.groupId}_${project.artifactId}-${project.version}.cyclonedx</outputName>
+    					<outputFormat>json</outputFormat>
+    					<outputDirectory>sbom/</outputDirectory>
+    				</configuration>
+  				</plugin>
+			    <plugin>
+  				  <groupId>org.apache.maven.plugins</groupId>
+  				  <artifactId>maven-surefire-plugin</artifactId>
+  				  <configuration>
+    					<consoleOutputReporter>
+    					  <disable>false</disable>
+    					</consoleOutputReporter>
+  				  </configuration>
+				  </plugin>
+			 </plugins>
 		  </build>
 	  </profile>	
 		
-      <profile>
-        <id>github-action</id>
-        <build>
-			<plugins>
-			    <plugin>
-				  <groupId>org.apache.maven.plugins</groupId>
-				  <artifactId>maven-surefire-plugin</artifactId>
-				  <configuration>
-					<consoleOutputReporter>
-					  <disable>true</disable>
-					</consoleOutputReporter>
-					<excludes>
-	     			  <exclude>**/CouchDbServiceTest.java</exclude>
-	     			  <exclude>**/AdvisoryWorkflowSemanticVersioningTest.java</exclude>
-	    			</excludes>
-				  </configuration>
-				</plugin>
-			</plugins>
-		  </build>
-        <properties>
-		  <java.version>18</java.version>
-        </properties>
-      </profile>
-    </profiles>
+    <profile>
+      <id>github-action</id>
+      <build>
+  			<plugins>
+  			  <plugin>
+  				  <groupId>org.apache.maven.plugins</groupId>
+  				  <artifactId>maven-surefire-plugin</artifactId>
+  				  <configuration>
+  					  <consoleOutputReporter>
+  					    <disable>true</disable>
+  					  </consoleOutputReporter>
+  					  <excludes>
+  	     			  <exclude>**/CouchDbServiceTest.java</exclude>
+  	     			  <exclude>**/AdvisoryWorkflowSemanticVersioningTest.java</exclude>
+  	     			  <exclude>**/AdvisorySearchUtilTest.java</exclude>
+  	    		  </excludes>
+  				  </configuration>
+  				</plugin>
+  			</plugins>
+  		</build>
+      <properties>
+		    <java.version>18</java.version>
+      </properties>
+    </profile>
+  </profiles>
 
 	<dependencies>
 		<dependency>
