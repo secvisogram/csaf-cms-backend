@@ -151,7 +151,6 @@ only and should not be used in production.
 You should now be able to start the spring boot application, navigate to
 `http://localhost/api/v1/about`, log in with one of the users and get a
 response from the server.
-The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
 
 You should now be able to access Secvisogram, navigate to `http://localhost/`.
 There are the following default users:
