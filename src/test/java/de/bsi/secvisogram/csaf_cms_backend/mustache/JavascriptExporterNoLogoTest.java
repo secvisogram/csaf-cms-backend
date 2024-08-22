@@ -70,6 +70,7 @@ class JavascriptExporterNoLogoTest {
 <!DOCTYPE html>
 <html lang="en">
 
+<<<<<<< HEAD
                     <head>
   <meta charset="utf-8" />
   <style>
@@ -490,12 +491,95 @@ class JavascriptExporterNoLogoTest {
  
   </style>
 </head>
+=======
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/gutenberg-css" charset="utf-8">
+  <link rel="stylesheet" href="https://unpkg.com/gutenberg-css/dist/themes/modern.min.css" charset="utf-8">
+  <meta charset="utf-8" />
+  <style>
+    @page {
+        size: A4;
+    }
+>>>>>>> branch 'fix/mustache_bug' of git@github.com:secvisogram/csaf-cms-backend.git
+
+<<<<<<< HEAD
+<body>
+=======
+    table {
+      text-align: left;
+    }
+>>>>>>> branch 'fix/mustache_bug' of git@github.com:secvisogram/csaf-cms-backend.git
+
+<<<<<<< HEAD
+=======
+    h1 {
+      font-size: 2rem;
+    }
+>>>>>>> branch 'fix/mustache_bug' of git@github.com:secvisogram/csaf-cms-backend.git
+
+<<<<<<< HEAD
+  <h1>exxcellent-2021AB123: TestRSc</h1>
+=======
+    h2 {
+      font-size: 1.7rem;
+    }
+>>>>>>> branch 'fix/mustache_bug' of git@github.com:secvisogram/csaf-cms-backend.git
+
+<<<<<<< HEAD
+=======
+    h3 {
+      font-size: 1.5rem;
+    }
+
+    h4 {
+      font-size: 1.35rem;
+    }
+
+    h5 {
+      font-size: 1.2rem;
+    }
+
+    h6 {
+      font-size: 1.1rem;
+    }
+
+    .logo {
+        display: inline-block;
+        max-height: 40mm;
+        margin-bottom: 20mm;
+    }
+
+    .tlp {
+        display: table;
+        background-color: #000000 !important;
+        margin: 0 auto 30px auto;
+        padding: 0 3px;
+    }
+
+    .RED {
+        color: #ff0033;
+    }
+
+    .AMBER {
+        color: #ffc000;
+    }
+
+    .GREEN {
+        color: #33ff00;
+    }
+
+    .WHITE {
+        color: #ffffff;
+    }
+  </style>
+</head>
 
 <body>
 
 
   <h1>exxcellent-2021AB123: TestRSc</h1>
 
+>>>>>>> branch 'fix/mustache_bug' of git@github.com:secvisogram/csaf-cms-backend.git
   <table>
     <tr>
       <td>Publisher: exccellent</td>
