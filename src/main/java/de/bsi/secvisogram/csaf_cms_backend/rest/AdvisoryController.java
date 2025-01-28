@@ -714,9 +714,11 @@ public class AdvisoryController {
             return ResponseEntity.status(ex.getRecommendedHttpState()).build();
         } finally {
             if (filePath != null) {
-                boolean result = filePath.toFile().delete();
-                if (!result) {
-                    LOG.error("Could not delete temporary file {} after exporting.", filePath);
+                LOG.info(String.format("Deleting file: %s", filePath));
+                try   {
+                    Files.delete(filePath);
+                } catch (IOException ex) {
+                    LOG.error(String.format("Error deleting file: %s", filePath), ex);
                 }
             }
         }
