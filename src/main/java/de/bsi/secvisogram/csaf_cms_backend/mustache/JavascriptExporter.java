@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
 /**
  * Create Html String from a mustache template file and Json Input File
@@ -44,7 +45,9 @@ public class JavascriptExporter {
         // It has to bbe available in the Context WorkingDirectory
         final String documentEntityScript = "DocumentEntity.mjs";
         final Path tempDir = Files.createTempDirectory("mustache");
+        LOG.info("Creating temporary directory: {}", tempDir.toFile().getAbsolutePath());
         final Path tempDocFile = tempDir.resolve(documentEntityScript);
+        LOG.info("Creating temporary doc file: {}", tempDocFile.toFile().getAbsolutePath());
 
         try (final InputStream in = JavascriptExporter.class.getResourceAsStream(documentEntityScript)) {
             Files.write(tempDocFile, in.readAllBytes());
@@ -70,6 +73,13 @@ public class JavascriptExporter {
             final Value renderFunction = scriptResult.getMember("renderWithMustache");
             final Object result = renderFunction.execute(template, advisoryJson, createLogoJson());
             return result.toString();
+        } finally {
+            try {
+                LOG.info("Delete temporary directory: {}", tempDir.toFile().getAbsolutePath());
+                FileSystemUtils.deleteRecursively(tempDir);
+            }   catch (IOException ex) {
+                LOG.warn("Failed to delete temporary directory: {}", tempDir.toFile().getAbsolutePath(), ex);
+            }
         }
     }
 
