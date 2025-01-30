@@ -42,7 +42,7 @@ only required to manage documents on the server or validate against the
 To build the application run:
 
 ```shell
-./mvn package
+./mvnw package
 ```
 
 The resulting jar file in the `target` folder can then be run with
@@ -129,7 +129,7 @@ only and should not be used in production.
 
 - run `docker compose up`
 - After Keycloak is up, open a second terminal window and run
-  `docker compose up csaf-keycloak-cli` to import a realm with all the users
+  `docker compose up keycloak-cli` to import a realm with all the users
   and roles already set up.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from .env)
@@ -140,7 +140,7 @@ only and should not be used in production.
     - On the left side, navigate to "Clients" and select the Secvisogram client.
     - Select the **Credentials** tab and copy the Secret. This is our
       `CSAF_CLIENT_SECRET` environment variable.
-- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret)
+- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
 - restart compose
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
@@ -154,6 +154,7 @@ response from the server.
 
 You should now be able to access Secvisogram, navigate to `http://localhost/`.
 There are the following default users:
+
 |User       |Password   |Roles                                                        |
 |-----      |--------   |-----                                                        |
 |registered |registered |**registered**                                               |
@@ -178,12 +179,12 @@ When hostnames are changed, this has to adapted.
 
 ### build and execute tests
 
-./mvnw clean verify
+`` ./mvnw clean verify``
 
 
 ### start application
 
-./mvnw spring-boot:run
+`` ./mvnw spring-boot:run``
 
 with main class: de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication
 
@@ -199,7 +200,7 @@ http://localhost:8081/swagger-ui/index.html
 
 OpenAPI specification
 
-http://localhost:8081/api-docs/
+http://localhost:8081/api-docs
 
 ### access couchDB
 
@@ -221,10 +222,10 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 
 ### Check for Maven Plugin update
 
-`` mvn versions:display-plugin-updates `` 
+`` ./mvnw versions:display-plugin-updates `` 
 
 ## Check for dependency update
-`` mvn versions:display-dependency-updates `
+`` ./mvnw versions:display-dependency-updates ``
 
 ### Spring Boot
 
