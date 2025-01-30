@@ -11,7 +11,7 @@
 	<url>https://github.com/secvisogram/csaf-cms-backend</url>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>18</java.version>
 		<exclude.tests>nothing-to-exclude</exclude.tests>
 		<version.maven>3.3.9</version.maven>
 		<plugin.version.spdx>0.7.0</plugin.version.spdx>

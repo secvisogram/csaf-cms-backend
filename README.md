@@ -42,7 +42,7 @@ only required to manage documents on the server or validate against the
 To build the application run:
 
 ```shell
-./mvn package
+./mvnw package
 ```
 
 The resulting jar file in the `target` folder can then be run with
@@ -179,12 +179,12 @@ When hostnames are changed, this has to adapted.
 
 ### build and execute tests
 
-./mvnw clean verify
+`` ./mvnw clean verify``
 
 
 ### start application
 
-./mvnw spring-boot:run
+`` ./mvnw spring-boot:run``
 
 with main class: de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication
 
@@ -222,10 +222,10 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 
 ### Check for Maven Plugin update
 
-`` mvn versions:display-plugin-updates `` 
+`` ./mvnw versions:display-plugin-updates `` 
 
 ## Check for dependency update
-`` mvn versions:display-dependency-updates `
+`` ./mvnw versions:display-dependency-updates ``
 
 ### Spring Boot
 
