@@ -511,7 +511,7 @@ public class AdvisoryWrapper {
      */
     public String getDocumentDistributionTlp() {
 
-        JsonNode tlpNode = this.at("/csaf/document/distribution/tlp");
+        JsonNode tlpNode = this.at("/csaf/document/distribution/tlp/label");
         return (tlpNode.isMissingNode()) ? null : tlpNode.asText();
     }
 
@@ -922,7 +922,7 @@ public class AdvisoryWrapper {
         int year = calculatePublishYear();
         String fileName = calculateFileName(trackingId);
         String tlpLabel = getDocumentDistributionTlp() != null ? getDocumentDistributionTlp() : "WHITE";
-        return baseUrl + "/" + tlpLabel + "/" + year + "/" + fileName;
+        return baseUrl + "/" + tlpLabel.toLowerCase() + "/" + year + "/" + fileName;
     }
 
     /**
