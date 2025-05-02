@@ -42,10 +42,10 @@ only required to manage documents on the server or validate against the
 To build the application run:
 
 ```shell
-./gradlew clean build
+./mvnw package
 ```
 
-The resulting jar file in the `build/libs` folder can then be run with
+The resulting jar file in the `target` folder can then be run with
 `java -jar filename.jar`. To manage the process you can use Docker or an init
 system of your choice.
 
@@ -87,21 +87,61 @@ If you want different passwords, database names or ports you can change them
 in that file. Please note that the following setup is for development purposes
 only and should not be used in production.
 
+```mermaid
+   C4Component
+    title Component diagram for CSAF CMS Backend
+
+    Person(user,"User")
+    Container(reverseproxy, "Reverse-Proxy", "nginx")
+    
+    Container_Boundary(c4, "Internal") {
+        Container(secvisogram, "Secvisogram", "nginx + javascript", "Provides secvisogramm via their web browser.")
+
+        Container_Boundary(c2, "Keycloak") {
+            Container(keycloak, "Keycloak", "keycloak")
+            ContainerDb(keycloak-db, "PostGreSQL", "Keycloak-Database")
+        }
+
+        Container_Boundary(c3, "Oauth") {
+            Container(oauth, "OAuth2-Proxy", "Authentication for REST-API")
+            Container(validator, "CSAF validator service", "node")
+
+            Container_Boundary(c1, "Backend") {
+                Container(backend, "CSAF-CMS-Backend", "Spring Boot")
+                ContainerDb(backend-db, "CouchDB", "CMS-Backend-Database")
+            }
+        }
+    }
+
+    Rel(user, reverseproxy,"","HTTPS")
+    Rel(reverseproxy, secvisogram,"/")
+    Rel(reverseproxy, oauth,"/api/*")
+    Rel(reverseproxy, keycloak,"/realm/csaf/")
+    Rel(oauth, validator, "/api/v1/test")
+    Rel(oauth, validator, "/api/v1/validate")
+    Rel(oauth, backend, "/api/v1/advisories/*")
+    Rel(backend, backend-db,"")
+    Rel(backend, keycloak,"")
+    Rel(keycloak, keycloak-db,"")
+   
+
+```
+
 - run `docker compose up`
 - After Keycloak is up, open a second terminal window and run
-  `docker compose up csaf-keycloak-cli` to import a realm with all the users
+  `docker compose up keycloak-cli` to import a realm with all the users
   and roles already set up.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
-  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and
-  stops CouchDB from spamming our logs
+  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from .env)
+- Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - Open `http://localhost:9000/` and log in with the admin user.
     - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
+    - Select `CSAF`-Realm
     - On the left side, navigate to "Clients" and select the Secvisogram client.
     - Select the **Credentials** tab and copy the Secret. This is our
       `CSAF_CLIENT_SECRET` environment variable.
-- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#generating-a-cookie-secret)
+- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
-- Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - restart compose
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
@@ -109,21 +149,42 @@ only and should not be used in production.
 - (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
 
 You should now be able to start the spring boot application, navigate to
-`localhost:4180/api/v1/about`, log in with one of the users and get a
+`http://localhost/api/v1/about`, log in with one of the users and get a
 response from the server.
-The port is defined in .env - CSAF_APP_EXTERNAL_PORT, default 4180
+
+You should now be able to access Secvisogram, navigate to `http://localhost/`.
+There are the following default users:
+
+|User       |Password   |Roles                                                        |
+|-----      |--------   |-----                                                        |
+|registered |registered |**registered**                                               |
+|author     |author     |registered, editor, **author**                               |
+|editor     |editor     |registered, **editor**                                       |
+|publisher  |publisher  |registered, editor, **publisher**                            |
+|reviewer   |reviewer   |registered, **reviewer**                                     |
+|auditor    |auditor    |**auditor**                                                  |
+|all        |all        |**auditor, reviewer, publisher, editor, author, registred**  |
+|none       |none       |                                                             |
+
+### Login & Logout in combination with Secvisogram
+
+Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
+
+``` 
+"logoutUrl": "/oauth2/sign_out?rd=http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram", 
+```
+
+`/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keyloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
+When hostnames are changed, this has to adapted.
 
 ### build and execute tests
 
-./gradlew clean build
+`` ./mvnw clean verify``
 
-### build and run SpotBugs
-
-./gradlew clean assemble spotbugsMain
 
 ### start application
 
-./gradlew bootRun
+`` ./mvnw spring-boot:run``
 
 with main class: de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication
 
@@ -139,7 +200,7 @@ http://localhost:8081/swagger-ui/index.html
 
 OpenAPI specification
 
-http://localhost:8081/v3/api-docs/
+http://localhost:8081/api-docs
 
 ### access couchDB
 
@@ -167,6 +228,13 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 ## Dependencies
+
+### Check for Maven Plugin update
+
+`` ./mvnw versions:display-plugin-updates `` 
+
+## Check for dependency update
+`` ./mvnw versions:display-dependency-updates ``
 
 ### Spring Boot
 
