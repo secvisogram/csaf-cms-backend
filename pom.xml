@@ -32,6 +32,7 @@
 		<dependency.version.org.graalvm.js>23.0.3</dependency.version.org.graalvm.js>
 		<dependency.version.org.graalvm.js-scriptengine>24.0.0</dependency.version.org.graalvm.js-scriptengine>
 		<dependency.version.spotbugs-annotations>4.8.4</dependency.version.spotbugs-annotations> 
+		<dependency.version.karate>1.5.1</dependency.version.karate>
 	</properties>
 
 	<parent>
@@ -262,6 +263,13 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Used for Integration tests-->
+		<dependency>
+      <groupId>io.karatelabs</groupId>
+      <artifactId>karate-junit5</artifactId>
+      <version>${dependency.version.karate}</version>
+      <scope>test</scope>
+    </dependency>
 	</dependencies>
 
 	<build>
