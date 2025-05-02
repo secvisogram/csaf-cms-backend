@@ -29,14 +29,14 @@ jobs:
           files: ${{ github.workspace }}/target/surefire-reports/**/*.xml
       - name: Add coverage to PR
         id: jacoco
-        uses: madrapps/jacoco-report@v1.6.1  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
+        uses: madrapps/jacoco-report@v1.7.1  # requires at least two pushes to a PR, see https://github.com/Madrapps/jacoco-report/issues/13
         with:
           paths: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: target/jacoco-report/**
@@ -64,7 +64,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
       - name: Lint markdowns
-        uses: nosborn/github-action-markdown-cli@v3.0.1
+        uses: nosborn/github-action-markdown-cli@v3.4.0
         with:
           files: '**/*.md'
 
