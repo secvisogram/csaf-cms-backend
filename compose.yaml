@@ -58,6 +58,13 @@ services:
       KC_DB_SCHEMA: public
       KEYCLOAK_ADMIN: ${CSAF_KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+    healthcheck:
+        start_period: 30s
+        test:
+          ["CMD-SHELL", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/8080'", ]
+        interval: 10s
+        timeout: 10s
+        retries: 10
     depends_on:
       - keycloak-db
     restart: on-failure
@@ -110,7 +117,7 @@ services:
       # If you don't want to use autodiscovery, you have to set all urls by hand (login-url, oidc-jwks-url, redeem-url, ...)
       OAUTH2_PROXY_OIDC_ISSUER_URL: "http://keycloak.csaf.internal:8080/realms/${CSAF_REALM}"
       OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
-      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080,localhost:http://localhost"
 
       # Client credentials
       OAUTH2_PROXY_CLIENT_ID: ${CSAF_CLIENT_ID}
