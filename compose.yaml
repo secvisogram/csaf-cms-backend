@@ -4,7 +4,7 @@
 
 services:
   cms-couchdb:
-    image: couchdb:3.3
+    image: couchdb:3.4
     hostname: couchdb.csaf.internal
     #container_name: cms-couchdb
     restart: on-failure
@@ -20,14 +20,14 @@ services:
       test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
       interval: 10s
       timeout: 10s
-      retries: 1
+      retries: 10
     networks:
       default:
         aliases:
           - "couchdb.csaf.internal"
 
   keycloak-db:
-    image: postgres:14
+    image: postgres:17
     hostname: keycloak-db.csaf.internal
     #container_name: keycloak-db
     volumes:
@@ -195,7 +195,7 @@ services:
      
 
   reverse-proxy:
-    image:  nginx:1.23-alpine
+    image:  nginx:1.27-alpine
     hostname: "reverseproxy.csaf.internal"
     restart: on-failure
     ports:

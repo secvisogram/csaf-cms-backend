@@ -13,6 +13,6 @@ RUN apk add git; \
 # This build takes the production build from staging build
 #
 
-FROM nginx:1.23-alpine
+FROM nginx:1.27-alpine
 COPY --from=build /usr/src/secvisogram/app/dist /usr/share/nginx/html
 EXPOSE 80
