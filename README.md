@@ -128,9 +128,6 @@ only and should not be used in production.
 ```
 
 - run `docker compose up`
-- After Keycloak is up, open a second terminal window and run
-  `docker compose up keycloak-cli` to import a realm with all the users
-  and roles already set up.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from .env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
