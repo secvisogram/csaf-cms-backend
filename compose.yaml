@@ -27,7 +27,7 @@ services:
           - "couchdb.csaf.internal"
 
   keycloak-db:
-    image: postgres:14
+    image: postgres:17
     hostname: keycloak-db.csaf.internal
     #container_name: keycloak-db
     volumes:
@@ -41,7 +41,7 @@ services:
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -51,23 +51,29 @@ services:
           - "keycloak-db.csaf.internal"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:20.0
+    image: quay.io/keycloak/keycloak:26.2
     hostname: keycloak.csaf.internal
     #container_name: keycloak
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
       KC_HEALTH_ENABLED: "true"
-      KC_METRICS_ENABLED: "true"
       KC_DB: postgres
+      KC_DB_SCHEMA: public
+
       KC_DB_URL_HOST: keycloak-db.csaf.internal
       KC_DB_URL_PORT: 5432
       KC_DB_URL_DATABASE: ${CSAF_KEYCLOAK_DATABASE_NAME}
+      
       KC_DB_USERNAME: ${CSAF_KEYCLOAK_DATABASE_USER}
       KC_DB_PASSWORD: ${CSAF_KEYCLOAK_DATABASE_PASSWORD}
-      KC_DB_SCHEMA: public
+      
       KEYCLOAK_ADMIN: ${CSAF_KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+      
+      KEYCLOAK_EXTRA_ARGS: --import-realm
+    volumes:
+      - ./keycloak:/opt/bitnami/keycloak/data/import
     healthcheck:
         start_period: 120s
         test:
@@ -87,23 +93,6 @@ services:
       default:
         aliases:
           - "keycloak.csaf.internal"
-    
-  # Run this manually to import the default keycloak config since 'depends_on' is currently broken.
-  keycloak-cli:
-    image: adorsys/keycloak-config-cli:latest-20.0.1
-    #container_name: keycloak-cli
-    profiles: [ "run_manually" ]
-    env_file: .env
-    environment:
-      KEYCLOAK_URL: "http://keycloak.csaf.internal:8080/"
-      KEYCLOAK_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
-      KEYCLOAK_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-      IMPORT_FILES_LOCATIONS: "/config/csaf-realm.json"
-    volumes:
-      - ./keycloak:/config:z
-    depends_on:
-      keycloak:
-        condition: service_healthy
 
   oauth2-proxy:
     image: bitnami/oauth2-proxy:7.4.0
