@@ -27,7 +27,7 @@ services:
           - "couchdb.csaf.internal"
 
   keycloak-db:
-    image: postgres:17
+    image: postgres:14
     hostname: keycloak-db.csaf.internal
     #container_name: keycloak-db
     volumes:
