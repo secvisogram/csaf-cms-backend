@@ -35,6 +35,11 @@ services:
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
     networks:
       default:
         aliases:
@@ -117,7 +122,7 @@ services:
       # If you don't want to use autodiscovery, you have to set all urls by hand (login-url, oidc-jwks-url, redeem-url, ...)
       OAUTH2_PROXY_OIDC_ISSUER_URL: "http://keycloak.csaf.internal:8080/realms/${CSAF_REALM}"
       OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
-      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080,localhost:http://localhost"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080"
 
       # Client credentials
       OAUTH2_PROXY_CLIENT_ID: ${CSAF_CLIENT_ID}
