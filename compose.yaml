@@ -97,7 +97,8 @@ services:
     volumes:
       - ./keycloak:/config:z
     depends_on:
-      - keycloak
+      keycloak:
+        condition: service_healthy
 
   oauth2-proxy:
     image: bitnami/oauth2-proxy:7.4.0
@@ -185,6 +186,11 @@ services:
       - "80:80" 
     volumes:
       - "./docker/reverseproxy/nginx.conf:/etc/nginx/nginx.conf"
+    healthcheck:
+        test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
+        interval: 10s
+        timeout: 10s
+        retries: 10
     depends_on:
       - secvisogram
       - keycloak
