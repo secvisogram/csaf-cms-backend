@@ -4,6 +4,10 @@
       "adminUrl": "http://localhost",
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
+      "secret": {
+        "type": "password",
+        "value": "mDmZiwDL814MCTHJwySSiECRwcncIuHu"
+      },
       "clientId": "secvisogram",
       "consentRequired": false,
       "directAccessGrantsEnabled": false,
