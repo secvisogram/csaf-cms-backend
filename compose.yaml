@@ -71,7 +71,9 @@ services:
         timeout: 10s
         retries: 10
     depends_on:
-      - keycloak-db
+      keycloak-db:
+        condition: service_healthy
+        restart: true
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_PORT}:8080"
