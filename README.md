@@ -127,19 +127,20 @@ only and should not be used in production.
 
 ```
 
-- run `docker compose up`
+- run `docker compose up -d` in folder `docker`
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from .env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
-- Open `http://localhost:9000/` and log in with the admin user.
-    - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000
+- run `docker compose up keycloak-setup` to initialize Keycloak.
+- Open `http://localhost:9000/` and log in with the admin user, that is specified in `CSAF_KEYCLOAK_ADMIN_USER` and `CSAF_KEYCLOAK_ADMIN_PASSWORD`.
+    - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000.
     - Select `CSAF`-Realm
     - On the left side, navigate to "Clients" and select the Secvisogram client.
     - Select the **Credentials** tab and copy the Secret. This is our
       `CSAF_CLIENT_SECRET` environment variable.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
-- restart compose
+- restart `docker compose down` and `docker compose up -d`
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
