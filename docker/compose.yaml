@@ -15,11 +15,11 @@ services:
       - ./data/cms-db:/opt/couchdb/data
     ports:
       - "${CSAF_COUCHDB_PORT}:5984"
-    #healthcheck:
-    #  test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
-    #  interval: 10s
-    #  timeout: 10s
-    #  retries: 10
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
     networks:
       default:
         aliases:
@@ -29,7 +29,7 @@ services:
   keycloak-db:
     image: postgres:17-alpine
     hostname: keycloak-db.csaf.internal
-    #container_name: keycloak-db
+    container_name: keycloak-db
     volumes:
       - ./data/keycloak-db:/var/lib/postgresql/data
     env_file: .env
@@ -40,11 +40,11 @@ services:
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
-    #healthcheck:
-    #  test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
-    #  interval: 10s
-    #  timeout: 10s
-    #  retries: 10
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
     networks:
       default:
         aliases:
@@ -75,25 +75,24 @@ services:
       #KC_HOSTNAME: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
     volumes:
       - ./config/keycloak:/opt/keycloak/data/import
-    #healthcheck:
-    #    start_period: 120s
-    #    test:
-    #      ["CMD-SHELL", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/8080'", ]
-    #    interval: 10s
-    #    timeout: 10s
-    #    retries: 10
-    #depends_on:
-    #  keycloak-db:
-    #    condition: service_healthy
-    #    restart: true
+    healthcheck:
+      start_period: 120s
+      test:
+        ["CMD-SHELL", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/8080'", ]
+      interval: 10s
+      timeout: 10s
+       retries: 10
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+        restart: true
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_PORT}:8080"
     command: 
-      - start-dev 
-#      - --verbose
-#      - --import-realm
-    #command: ["start-dev"] # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
+      - start-dev # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
+      - --verbose
+      - --import-realm
     networks:
       default:
         aliases:
@@ -114,14 +113,14 @@ services:
       ISDUBA_KEYCLOAK_REALM: ${CSAF_KEYCLOAK_HOSTNAME_URL}
     volumes:
       - ./config/keycloak/init.sh:/opt/keycloak/init.sh
-    #depends_on:
-    #  keycloak:
-    #    condition: service_healthy
+    depends_on:
+      keycloak:
+        condition: service_healthy
 
   oauth2-proxy:
     image: bitnami/oauth2-proxy:7.4.0
     hostname: oauth2.csaf.internal
-    #container_name: oauth2-proxy
+    container_name: oauth2-proxy
     command: [""]
     env_file: .env
     environment:
@@ -171,9 +170,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
-    #depends_on:
-    #  keycloak:
-    #    condition: service_healthy
+    depends_on:
+      keycloak:
+        condition: service_healthy
     networks:
       default:
         aliases:
@@ -186,11 +185,11 @@ services:
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
-  #  healthcheck:
-  #    test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1:8082/api/v1/tests || exit 1"]
-  #    interval: 10s
-  #    timeout: 10s
-  #    retries: 10 
+    healthcheck:
+      test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1:8082/api/v1/tests || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10 
     networks:
       default:
         aliases:
@@ -221,17 +220,17 @@ services:
       - "80:80" 
     volumes:
       - "./config/reverseproxy/nginx.conf:/etc/nginx/nginx.conf:ro"
-   # healthcheck:
-   #     test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
-   #     interval: 10s
-   #     timeout: 10s
-   #     retries: 10
-   # depends_on:
-   #   secvisogram:
-   #     condition: service_healthy
-   #   keycloak: 
-   #     condition: service_healthy
-   #   oauth2-proxy:
-   #     condition: service_started
-   #   validator:
-   #     condition: service_healthy
+    healthcheck:
+        test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
+        interval: 10s
+        timeout: 10s
+        retries: 10
+    depends_on:
+      secvisogram:
+        condition: service_healthy
+      keycloak: 
+        condition: service_healthy
+      oauth2-proxy:
+        condition: service_started
+      validator:
+        condition: service_healthy
