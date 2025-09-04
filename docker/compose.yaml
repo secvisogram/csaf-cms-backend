@@ -6,21 +6,20 @@ services:
   cms-couchdb:
     image: couchdb:3.4
     hostname: couchdb.csaf.internal
-    #container_name: cms-couchdb
     restart: on-failure
     env_file: .env
     environment:
       COUCHDB_USER: ${CSAF_COUCHDB_USER}
       COUCHDB_PASSWORD: ${CSAF_COUCHDB_PASSWORD}
     volumes:
-      - csaf-couchdb-data:/opt/couchdb/data
+      - ./data/cms-db:/opt/couchdb/data
     ports:
       - "${CSAF_COUCHDB_PORT}:5984"
-    healthcheck:
-      test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
+    #healthcheck:
+    #  test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
+    #  interval: 10s
+    #  timeout: 10s
+    #  retries: 10
     networks:
       default:
         aliases:
@@ -28,11 +27,11 @@ services:
 
 
   keycloak-db:
-    image: postgres:17
+    image: postgres:17-alpine
     hostname: keycloak-db.csaf.internal
     #container_name: keycloak-db
     volumes:
-      - csaf-keycloak-db-data:/var/lib/postgresql/data
+      - ./data/keycloak-db:/var/lib/postgresql/data
     env_file: .env
     environment:
       POSTGRES_DB: ${CSAF_KEYCLOAK_DATABASE_NAME}
@@ -41,20 +40,19 @@ services:
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
+    #healthcheck:
+    #  test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
+    #  interval: 10s
+    #  timeout: 10s
+    #  retries: 10
     networks:
       default:
         aliases:
           - "keycloak-db.csaf.internal"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.2
+    image: quay.io/keycloak/keycloak:26.3.3
     hostname: keycloak.csaf.internal
-    #container_name: keycloak
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
@@ -69,31 +67,56 @@ services:
       KC_DB_USERNAME: ${CSAF_KEYCLOAK_DATABASE_USER}
       KC_DB_PASSWORD: ${CSAF_KEYCLOAK_DATABASE_PASSWORD}
       
-      KEYCLOAK_ADMIN: ${CSAF_KEYCLOAK_ADMIN_USER}
-      KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-      
-      KEYCLOAK_EXTRA_ARGS: --import-realm
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${CSAF_KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+
+      KC_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
+      KC_HOSTNAME_ADMIN_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
+      #KC_HOSTNAME: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
     volumes:
-      - ./keycloak:/opt/bitnami/keycloak/data/import
-    healthcheck:
-        start_period: 120s
-        test:
-          ["CMD-SHELL", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/8080'", ]
-        interval: 10s
-        timeout: 10s
-        retries: 10
-    depends_on:
-      keycloak-db:
-        condition: service_healthy
-        restart: true
+      - ./config/keycloak:/opt/keycloak/data/import
+    #healthcheck:
+    #    start_period: 120s
+    #    test:
+    #      ["CMD-SHELL", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/8080'", ]
+    #    interval: 10s
+    #    timeout: 10s
+    #    retries: 10
+    #depends_on:
+    #  keycloak-db:
+    #    condition: service_healthy
+    #    restart: true
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_PORT}:8080"
-    command: ["start-dev"] # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
+    command: 
+      - start-dev 
+#      - --verbose
+#      - --import-realm
+    #command: ["start-dev"] # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
     networks:
       default:
         aliases:
           - "keycloak.csaf.internal"
+
+  keycloak-setup:
+    image: keycloak/keycloak:26.3.3
+    container_name: "keycloak-setup"
+    restart: "no"
+    profiles: [ "run_manually" ]
+    env_file:
+      - .env
+    entrypoint: ["bash", "/opt/keycloak/init.sh"]
+    environment:
+      KEYCLOAK_ADMIN: ${CSAF_KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+      CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
+      ISDUBA_KEYCLOAK_REALM: ${CSAF_KEYCLOAK_HOSTNAME_URL}
+    volumes:
+      - ./config/keycloak/init.sh:/opt/keycloak/init.sh
+    #depends_on:
+    #  keycloak:
+    #    condition: service_healthy
 
   oauth2-proxy:
     image: bitnami/oauth2-proxy:7.4.0
@@ -148,9 +171,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
-    depends_on:
-      keycloak:
-        condition: service_healthy
+    #depends_on:
+    #  keycloak:
+    #    condition: service_healthy
     networks:
       default:
         aliases:
@@ -159,16 +182,15 @@ services:
   validator:
     build:
       context: https://github.com/secvisogram/csaf-validator-service.git#main
-    #container_name: validator
     hostname: validator.csaf.internal
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1:8082/api/v1/tests || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10 
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1:8082/api/v1/tests || exit 1"]
+  #    interval: 10s
+  #    timeout: 10s
+  #    retries: 10 
     networks:
       default:
         aliases:
@@ -176,11 +198,11 @@ services:
 
   secvisogram:
     build:
-      context: ./docker/secvisogram
+      context: ./container/secvisogram
       dockerfile: Dockerfile
     hostname: secvisogram.csaf.internal
     volumes:
-      - "./docker/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific"
+      - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
     healthcheck:
       test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
       interval: 10s
@@ -198,24 +220,18 @@ services:
     ports:
       - "80:80" 
     volumes:
-      - "./docker/reverseproxy/nginx.conf:/etc/nginx/nginx.conf"
-    healthcheck:
-        test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
-        interval: 10s
-        timeout: 10s
-        retries: 10
-    depends_on:
-      secvisogram:
-        condition: service_healthy
-      keycloak: 
-        condition: service_healthy
-      oauth2-proxy:
-        condition: service_started
-      validator:
-        condition: service_healthy
-                 
-volumes:
-  csaf-couchdb-data:
-    driver: local
-  csaf-keycloak-db-data:
-    driver: local
+      - "./config/reverseproxy/nginx.conf:/etc/nginx/nginx.conf:ro"
+   # healthcheck:
+   #     test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
+   #     interval: 10s
+   #     timeout: 10s
+   #     retries: 10
+   # depends_on:
+   #   secvisogram:
+   #     condition: service_healthy
+   #   keycloak: 
+   #     condition: service_healthy
+   #   oauth2-proxy:
+   #     condition: service_started
+   #   validator:
+   #     condition: service_healthy
