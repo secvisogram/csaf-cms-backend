@@ -129,7 +129,7 @@ only and should not be used in production.
 
 - run `docker compose up -d` in folder `docker`
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
-  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from .env)
+  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from docker/.env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - run `docker compose up keycloak-setup` to initialize Keycloak.
 - Open `http://localhost:9000/` and log in with the admin user, that is specified in `CSAF_KEYCLOAK_ADMIN_USER` and `CSAF_KEYCLOAK_ADMIN_PASSWORD`.
