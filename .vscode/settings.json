@@ -1,0 +1,3 @@
+{
+    "java.checkstyle.configuration": "${workspaceFolder}/csaf-cms-backend/pom.xml"
+}
