@@ -133,7 +133,7 @@ only and should not be used in production.
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
 - run `docker compose up keycloak-setup` to initialize Keycloak.
 - Open `http://localhost:9000/` and log in with the admin user, that is specified in `CSAF_KEYCLOAK_ADMIN_USER` and `CSAF_KEYCLOAK_ADMIN_PASSWORD`.
-    - The port is defined in .env - CSAF_KEYCLOAK_PORT, default 9000.
+    - The port is defined in docker/.env - CSAF_KEYCLOAK_PORT, default 9000.
     - Select `CSAF`-Realm
     - On the left side, navigate to "Clients" and select the Secvisogram client.
     - Select the **Credentials** tab and copy the Secret. This is our
