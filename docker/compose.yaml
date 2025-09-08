@@ -72,7 +72,7 @@ services:
 
       KC_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
       KC_HOSTNAME_ADMIN_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
-      #KC_HOSTNAME: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
+      
     volumes:
       - ./config/keycloak:/opt/keycloak/data/import
     healthcheck:
