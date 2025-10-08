@@ -13,11 +13,11 @@ PATH=/opt/keycloak/bin:$PATH
 adminuser=${CSAF_KEYCLOAK_ADMIN_USER}
 adminpass=${CSAF_KEYCLOAK_ADMIN_PASSWORD}
 client_hostname_url=${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
-keycloak_url=${CSAF_KEYCLOAK_HOSTNAME_URL}
+keycloak_url=http://keycloak.csaf.internal:8080
 realm=${CSAF_REALM}
-client_id=secvisogram
+client_id=${CSAF_CLIENT_ID}
 
-
+#sleep 100000
 # log into the master realm with admin rights, token saved in ~/.keycloak/kcadm.config
 echo "Login to keycloak $keycloak_url with user $adminuser"
 kcadm.sh config credentials --server "$keycloak_url" --realm master --user "$adminuser" --password "$adminpass"
@@ -43,10 +43,11 @@ kcadm.sh update clients/$id --server "$keycloak_url" --target-realm="$realm" \
     "backchannel.logout.revoke.offline.tokens" : "false" }' \
 	--set 'webOrigins=["*"]' \
 	--set "adminUrl=$client_hostname_url/" \
-	--set publicClient=true \
 	--set standardFlowEnabled=true \
 	--set directAccessGrantsEnabled=true \
-	--set consentRequired=false
+	--set consentRequired=false \
+    --set clientAuthenticatorType=client-secret \
+    --set secret="$CSAF_CLIENT_SECRET" \
 
 echo "Configure protocol mappers config of client $client_id ($id) in realm $realm"    
 kcadm.sh update clients/$id --server "$keycloak_url" --target-realm="$realm" \
