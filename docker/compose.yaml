@@ -51,7 +51,7 @@ services:
           - "keycloak-db.csaf.internal"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.3
+    image: quay.io/keycloak/keycloak:26.4
     hostname: keycloak.csaf.internal
     env_file: .env
     environment:
@@ -73,8 +73,6 @@ services:
       KC_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
       KC_HOSTNAME_ADMIN_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
       
-    volumes:
-      - ./config/keycloak:/opt/keycloak/data/import
     healthcheck:
       start_period: 120s
       test:
@@ -92,14 +90,13 @@ services:
     command: 
       - start-dev # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
       - --verbose
-      - --import-realm
     networks:
       default:
         aliases:
           - "keycloak.csaf.internal"
 
   keycloak-setup:
-    image: keycloak/keycloak:26.3.3
+    image: keycloak/keycloak:26.4
     container_name: "keycloak-setup"
     restart: "no"
     profiles: [ "run_manually" ]
@@ -107,10 +104,11 @@ services:
       - .env
     entrypoint: ["bash", "/opt/keycloak/init.sh"]
     environment:
-      KEYCLOAK_ADMIN: ${CSAF_KEYCLOAK_ADMIN_USER}
-      KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-      CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
-      #ISDUBA_KEYCLOAK_REALM: ${CSAF_KEYCLOAK_HOSTNAME_URL}
+      CSAF_KEYCLOAK_ADMIN_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
+      CSAF_KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+      CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
+      CSAF_REALM: ${CSAF_REALM}
+      CSAF_KEYCLOAK_HOSTNAME_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
     volumes:
       - ./config/keycloak/init.sh:/opt/keycloak/init.sh
     depends_on:
@@ -118,7 +116,7 @@ services:
         condition: service_healthy
 
   oauth2-proxy:
-    image: bitnami/oauth2-proxy:7.4.0
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0-alpine
     hostname: oauth2.csaf.internal
     container_name: oauth2-proxy
     command: [""]
