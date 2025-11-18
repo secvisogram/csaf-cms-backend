@@ -17,3 +17,5 @@ out/
 .env
 /bin/
 /target/
+docker/data/
+sbom/
