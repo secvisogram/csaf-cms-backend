@@ -254,6 +254,10 @@ public class AdvisoryWorkflowUtil {
           canBeChanged = hasRole(PUBLISHER, credentials);
         }
 
+        if (oldWorkflowState == WorkflowState.AutoPublish && newWorkflowState == WorkflowState.Draft) {
+            canBeChanged = hasRole(PUBLISHER, credentials);
+          }
+        
         if (oldWorkflowState == WorkflowState.AutoPublish && newWorkflowState == WorkflowState.Published) {
           canBeChanged = hasRole(PUBLISHER, credentials);
         }

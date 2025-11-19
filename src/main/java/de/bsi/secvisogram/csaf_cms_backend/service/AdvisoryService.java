@@ -548,6 +548,42 @@ public class AdvisoryService {
     }
 
     /**
+     * Export the Advisory with the given advisoryId and perform release activities on the document
+     * The export will be written to a temporary file and the path to the file will be returned.
+     *
+     * @param advisoryId the id of the advisory that should be exported
+     * @param format     the format in which the export should be written (default JSON on null)
+     * @return the path to the temporary file that contains the export
+     * @throws CsafException        if the advisory with the given id does not exist or the export format is unknown
+     * @throws IOException          on any error regarding writing/reading from disk
+     * @throws InterruptedException if the export did take too long and thus timed out
+     */
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    public Path exportAdvisoryForAutoPublish(
+            @Nonnull final String advisoryId)
+            throws IOException, CsafException {
+        // read the advisory form the database
+        try {
+            final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
+            final AdvisoryWrapper finalAdvisory = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            
+            //final AdvisoryWrapper finalAdvisory = createReleaseReadyAdvisoryAndValidate(draftAdvisory, draftAdvisory.getDocumentTrackingCurrentReleaseDate());
+            
+            final JsonNode csaf = finalAdvisory.getCsaf();
+            RemoveIdHelper.removeCommentIds(csaf);
+            final String csafDocument = csaf.toString();
+
+            // if format is JSON - write it to temporary file and return the path
+            final Path jsonFile = Files.createTempFile(finalAdvisory.getDocumentTrackingId(), ".json");
+            Files.writeString(jsonFile, csafDocument);
+            return jsonFile;
+        } catch (IdNotFoundException e) {
+            throw new CsafException("Can not find advisory with ID " + advisoryId,
+                    CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    /**
      * Changes the workflow state of the advisory to the given new WorkflowState
      *
      * @param advisoryId       the ID of the advisory to update the workflow state of
@@ -619,13 +655,30 @@ public class AdvisoryService {
           
             if (newWorkflowState == WorkflowState.AutoPublish) {
                 if (proposedTime == null) {
-                  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
-                  proposedTime = sdf.format(new Date());
+                	proposedTime = existingAdvisoryNode.getDocumentTrackingCurrentReleaseDate();
+                	if (proposedTime == null) {
+                		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
+                		proposedTime = sdf.format(new Date());  
+                	}
                 }
-                existingAdvisoryNode.setDocumentTrackingCurrentReleaseDate(proposedTime);
+                
+                if (documentTrackingStatus == null) {
+                	documentTrackingStatus = DocumentTrackingStatus.Final;
+                }
+                
+                if (existingAdvisoryNode.getDocumentDistributionTlp() == null) {
+                	throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError);
+                }
+                //TODO: Check, if further checks for upload are needed
+                
+                existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
+                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
+                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
+                }
             }
             
-            if (newWorkflowState == WorkflowState.Published) {
+            if (newWorkflowState == WorkflowState.Published && (previousWorkflowState != WorkflowState.AutoPublish)) {
+            	
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
                 if (existingAdvisoryNode.getLastMajorVersion() < 1) {
                     setFinalTrackingIdAndUrl(existingAdvisoryNode);

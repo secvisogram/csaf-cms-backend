@@ -44,7 +44,7 @@ public class PublishConfig implements SchedulingConfigurer {
 	
     private SecurityContext createSchedulerSecurityContext() {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_publisher", "ROLE_registred");
+        Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_publisher", "ROLE_auditor", "ROLE_registred");
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 "PublisherTask",
                 "Publisher",
@@ -55,8 +55,8 @@ public class PublishConfig implements SchedulingConfigurer {
         return context;
     }
 
-  @Bean
-  Runnable task() {
+    @Bean
+    Runnable task() {
 		return new PublishJob();
 	}
     

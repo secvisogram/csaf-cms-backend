@@ -5,7 +5,6 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
-import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.netty.http.client.HttpClient;
 
 @Component
@@ -54,14 +54,15 @@ public class PublishJob implements Runnable {
   }
 
   public void publishJob() throws CsafException, IOException, DatabaseException {
+	LOG.info("AutoPublisher started");
     List<AdvisoryInformationResponse> advisoryList = this.advisoryService.getAdvisoryInformations("");
     for (AdvisoryInformationResponse advisory : advisoryList) {
       if (advisory.getWorkflowState() == WorkflowState.AutoPublish) {
         if (AdvisoryWrapper.timestampIsBefore(advisory.getCurrentReleaseDate(),
             DateTimeFormatter.ISO_INSTANT.format(Instant.now()))) {
-          Path p = this.advisoryService.exportAdvisory(advisory.getAdvisoryId(), ExportFormat.JSON);
+          Path p = this.advisoryService.exportAdvisoryForAutoPublish(advisory.getAdvisoryId());
           String trackingId = advisory.getDocumentTrackingId().toLowerCase();
-
+          
           final WebClient webClient = createWebClient();
           try {
             webClient.post().uri(this.configuration.getAutoPublish().getUrl())
@@ -74,13 +75,18 @@ public class PublishJob implements Runnable {
 //        	                    ));
 //        	                })
                 .bodyToMono(String.class).onErrorMap(throwable -> {
+                	if (WebClientResponseException.class.isInstance(throwable)) {
+                		WebClientResponseException wcre = (WebClientResponseException) throwable;
+                		return new PublisherException(throwable.getMessage() + wcre.getResponseBodyAsString());
+                	}
                   return new PublisherException(throwable.getMessage());
                 }).block();
           } catch (PublisherException pe) {
-            LOG.info(pe.getMessage());
+            LOG.error(pe.getMessage());
             // Skip workflow state change.
             continue;
           }
+          
           this.advisoryService.changeAdvisoryWorkflowState(advisory.getAdvisoryId(), advisory.getRevision(),
               WorkflowState.Published, advisory.getCurrentReleaseDate(), DocumentTrackingStatus.Final);
         }

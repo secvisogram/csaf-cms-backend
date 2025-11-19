@@ -997,15 +997,15 @@ public class AdvisoryController {
       String advisoryId,
       @RequestParam @Parameter(description = "Optimistic locking revision.")
       String revision,
-      @RequestParam(required = true)
+      @RequestParam(required = false)
       @Parameter(description = "Proposed Time at which the publication should take place as ISO-8601 UTC string.")
       String proposedTime,
-      @RequestParam
+      @RequestParam(required = false)
       @Parameter(description = "The new Document Tracking Status of the CSAF Document." +
                                " Only Interim and Final are allowed.")
       DocumentTrackingStatus documentTrackingStatus
     ) throws IOException {
-      LOG.debug("setWorkflowStateToPublish");
+      LOG.debug("setWorkflowStateToAutoPublish");
       checkValidUuid(advisoryId);
       return changeWorkflowState(advisoryId, revision, WorkflowState.AutoPublish, proposedTime, documentTrackingStatus);
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -29,7 +30,7 @@ public class DocumentTemplateService {
      */
     @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public DocumentTemplateDescription[] getAllTemplates() throws IOException {
-
+    	
         Path templateFilePath = Path.of(templatesFile);
         String templatesJson = Files.readString(templateFilePath);
 
