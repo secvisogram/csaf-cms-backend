@@ -15,10 +15,11 @@ FROM  nginx:alpine AS provider
 COPY --from=base /usr/local/go/ /usr/local/go/
 COPY --from=base /app/csaf_distribution/bin-linux-amd64/csaf_provider /usr/lib/cgi-bin/csaf_provider.go
 COPY --from=base /version /version
- 
+COPY trustedprovider-nginx.conf /etc/nginx/conf.d/default.conf
+COPY fcgiwarp /docker-entrypoint.d/40-fcgiwrap.sh
+
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 RUN apk add --no-cache spawn-fcgi fcgiwrap
-COPY root/ /
 
-EXPOSE 80 443
+EXPOSE 80

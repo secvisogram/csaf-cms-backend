@@ -4,10 +4,10 @@
 password = "secretpassword"
 
 # Set the path to the public OpenPGP key.
-#openpgp_public_key = "/etc/csaf/openpgp_public.asc"
+openpgp_public_key = "/config/public.asc"
 
 # Set the path to the private OpenPGP key.
-#openpgp_private_key = "/etc/csaf/openpgp_private.asc"
+openpgp_private_key = "/config/private.asc"
 
 # Specify the root folder.
 folder = "/data/"
