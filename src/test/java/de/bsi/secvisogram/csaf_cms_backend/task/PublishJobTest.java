@@ -135,7 +135,7 @@ public class PublishJobTest {
         .thenReturn(List.of(adv));
 
     Path tmp = Files.createTempFile("adv2", ".json");
-    when(advisoryService.exportAdvisoryForAutoPublish("adv-2")).thenReturn(tmp);
+    when(advisoryService.exportAdvisory("adv-2", ExportFormat.JSON)).thenReturn(tmp);
 
     // prepare failing WebClient chain
     WebClient mockWebClient = mock(WebClient.class);
