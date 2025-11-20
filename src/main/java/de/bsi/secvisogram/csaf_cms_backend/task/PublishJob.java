@@ -5,6 +5,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
@@ -60,7 +61,7 @@ public class PublishJob implements Runnable {
       if (advisory.getWorkflowState() == WorkflowState.AutoPublish) {
         if (AdvisoryWrapper.timestampIsBefore(advisory.getCurrentReleaseDate(),
             DateTimeFormatter.ISO_INSTANT.format(Instant.now()))) {
-          Path p = this.advisoryService.exportAdvisoryForAutoPublish(advisory.getAdvisoryId());
+          Path p = this.advisoryService.exportAdvisory(advisory.getAdvisoryId(), ExportFormat.JSON);
           String trackingId = advisory.getDocumentTrackingId().toLowerCase();
           
           final WebClient webClient = createWebClient();

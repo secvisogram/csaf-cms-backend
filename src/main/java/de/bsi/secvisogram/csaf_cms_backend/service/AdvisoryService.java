@@ -514,69 +514,34 @@ public class AdvisoryService {
             final JsonNode csaf = advisoryNode.getCsaf();
             RemoveIdHelper.removeCommentIds(csaf);
             final String csafDocument = csaf.toString();
-
+            final String filename = advisoryNode.getDocumentTrackingId() == null ? "advisory__" : advisoryNode.getDocumentTrackingId(); 
+            
             // if format is JSON - write it to temporary file and return the path
             if (format == ExportFormat.JSON || format == null) {
-                final Path jsonFile = Files.createTempFile("advisory__", ".json");
+                final Path jsonFile = Files.createTempFile(filename, ".json");
                 Files.writeString(jsonFile, csafDocument);
                 return jsonFile;
             } else {
                 // other formats have to start with an HTML export first
                 final String htmlExport = javascriptExporter.createHtml(csafDocument);
-                final Path htmlFile = Files.createTempFile("advisory__", ".html");
+                final Path htmlFile = Files.createTempFile(filename, ".html");
                 Files.writeString(htmlFile, htmlExport);
                 if (format == ExportFormat.HTML) {
                     // we already have an HTML file - done!
                     return htmlFile;
                 } else if (format == ExportFormat.Markdown && pandocService.isReady()) {
-                    final Path markdownFile = Files.createTempFile("advisory__", ".md");
+                    final Path markdownFile = Files.createTempFile(filename, ".md");
                     pandocService.convert(htmlFile, markdownFile);
                     Files.delete(htmlFile);
                     return markdownFile;
                 } else if (format == ExportFormat.PDF && weasyprintService.isReady()) {
-                    final Path pdfFile = Files.createTempFile("advisory__", ".pdf");
+                    final Path pdfFile = Files.createTempFile(filename, ".pdf");
                     weasyprintService.convert(htmlFile, pdfFile);
                     Files.delete(htmlFile);
                     return pdfFile;
                 }
                 throw new CsafException("Unknown export format: " + format, CsafExceptionKey.UnknownExportFormat, BAD_REQUEST);
             }
-        } catch (IdNotFoundException e) {
-            throw new CsafException("Can not find advisory with ID " + advisoryId,
-                    CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
-        }
-    }
-
-    /**
-     * Export the Advisory with the given advisoryId and perform release activities on the document
-     * The export will be written to a temporary file and the path to the file will be returned.
-     *
-     * @param advisoryId the id of the advisory that should be exported
-     * @param format     the format in which the export should be written (default JSON on null)
-     * @return the path to the temporary file that contains the export
-     * @throws CsafException        if the advisory with the given id does not exist or the export format is unknown
-     * @throws IOException          on any error regarding writing/reading from disk
-     * @throws InterruptedException if the export did take too long and thus timed out
-     */
-    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
-    public Path exportAdvisoryForAutoPublish(
-            @Nonnull final String advisoryId)
-            throws IOException, CsafException {
-        // read the advisory form the database
-        try {
-            final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
-            final AdvisoryWrapper finalAdvisory = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
-            
-            //final AdvisoryWrapper finalAdvisory = createReleaseReadyAdvisoryAndValidate(draftAdvisory, draftAdvisory.getDocumentTrackingCurrentReleaseDate());
-            
-            final JsonNode csaf = finalAdvisory.getCsaf();
-            RemoveIdHelper.removeCommentIds(csaf);
-            final String csafDocument = csaf.toString();
-
-            // if format is JSON - write it to temporary file and return the path
-            final Path jsonFile = Files.createTempFile(finalAdvisory.getDocumentTrackingId(), ".json");
-            Files.writeString(jsonFile, csafDocument);
-            return jsonFile;
         } catch (IdNotFoundException e) {
             throw new CsafException("Can not find advisory with ID " + advisoryId,
                     CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);

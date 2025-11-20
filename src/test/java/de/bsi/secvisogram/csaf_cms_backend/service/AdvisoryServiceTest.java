@@ -101,7 +101,13 @@ public class AdvisoryServiceTest {
     private static final String csafJson = """
             {
                 "document": {
-                    "category": "CSAF_BASE"
+                    "category": "CSAF_BASE",
+                    "distribution": {
+                      	"tlp": {
+                      		"label": "WHITE"
+                      	}
+                    },
+                    "id": "a-1"
                 }
             }""";
 
