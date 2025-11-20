@@ -6,22 +6,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
-import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
-import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.file.Path;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
@@ -36,10 +38,10 @@ public class AdvisoryServiceExportNoLogoTest {
     @Autowired
     private AdvisoryService advisoryService;
 
-    @MockBean
+    @MockitoBean
     private PandocService pandocService;
 
-    @MockBean
+    @MockitoBean
     private WeasyprintService weasyprintService;
 
 

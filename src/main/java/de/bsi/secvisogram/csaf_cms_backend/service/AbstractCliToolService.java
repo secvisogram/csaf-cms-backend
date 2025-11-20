@@ -1,8 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import com.oracle.truffle.js.runtime.SuppressFBWarnings;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
