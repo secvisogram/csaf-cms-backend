@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafAutoPublishConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
@@ -65,7 +66,7 @@ public class PublishJobTest {
     when(advisoryService.getAdvisoryInformations("")).thenReturn(List.of(adv));
 
     Path tmp = Files.createTempFile("adv", ".json");
-    when(advisoryService.exportAdvisoryForAutoPublish("adv-1")).thenReturn(tmp);
+    when(advisoryService.exportAdvisory("adv-1", ExportFormat.JSON)).thenReturn(tmp);
 
     // mock WebClient static builder to return a mock chain that returns Mono.just("ok")
     WebClient mockWebClient = mock(WebClient.class);
