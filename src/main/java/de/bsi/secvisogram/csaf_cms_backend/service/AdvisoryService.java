@@ -628,7 +628,7 @@ public class AdvisoryService {
                 }
                 
                 if (documentTrackingStatus == null) {
-                	documentTrackingStatus = DocumentTrackingStatus.Final;
+                	existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Final);
                 }
                 
                 if (existingAdvisoryNode.getDocumentDistributionTlp() == null) {
