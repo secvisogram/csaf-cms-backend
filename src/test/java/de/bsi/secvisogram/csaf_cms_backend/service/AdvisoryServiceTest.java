@@ -121,13 +121,7 @@ public class AdvisoryServiceTest {
     private static final String csafJson = """
             {
                 "document": {
-                    "category": "CSAF_BASE",
-                    "distribution": {
-                      	"tlp": {
-                      		"label": "WHITE"
-                      	}
-                    },
-                    "id": "a-1"
+                    "category": "CSAF_BASE"
                 }
             }""";
 
@@ -680,7 +674,7 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void changeAdvisoryWorkflowStateTest_AutoPublish() throws IOException, DatabaseException, CsafException {
