@@ -3,14 +3,12 @@ package de.bsi.secvisogram.csaf_cms_backend.mustache;
 import static de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter.determineMediaTypeOfLogo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
