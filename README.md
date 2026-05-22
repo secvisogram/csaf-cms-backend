@@ -232,9 +232,6 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 
 For further reference, please consider the following sections:
 
-* [Official Gradle documentation](https://docs.gradle.org)
-* [Spring Boot Gradle Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.6.2/gradle-plugin/reference/html/)
-* [Create an OCI image](https://docs.spring.io/spring-boot/docs/2.6.2/gradle-plugin/reference/html/#build-image)
 * [Mustache](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-spring-mvc-template-engines)
 * [Spring Data Couchbase](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-couchbase)
 * [Spring Web](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-developing-web-applications)
@@ -251,12 +248,6 @@ The following guides illustrate how to use some features concretely:
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
-#### Additional Links
-
-These additional references should also help you:
-
-* [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
-
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 ### Code Quality Rules
@@ -268,14 +259,7 @@ These additional references should also help you:
 #### SpotBugs
 
 - [IntelliJ SpotBugs](https://plugins.jetbrains.com/plugin/14014-spotbugs)
-- [spotbugs-gradle-plugin](https://github.com/spotbugs/spotbugs-gradle-plugin)
 - [find-sec-bugs](https://find-sec-bugs.github.io/)
-
-[(back to top)](#bsi-secvisogram-csaf-backend)
-
-#### Jacoco
-
-- [Jacoco Plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html#sec:jacoco_report_configuration)
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
