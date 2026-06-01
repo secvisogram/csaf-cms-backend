@@ -18,7 +18,7 @@
 		<plugin.version.cyclonedx>2.9.1</plugin.version.cyclonedx>
 		<plugin.version.enforcer>3.3.9</plugin.version.enforcer>
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
-		<plugin.version.spotbugs>4.9.8.1</plugin.version.spotbugs>
+		<plugin.version.spotbugs>4.9.8.3</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
 		<plugin.version.jacoco>0.8.14</plugin.version.jacoco>
 		<dependency.version.cloudant>0.10.12</dependency.version.cloudant>
