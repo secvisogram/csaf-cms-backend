@@ -13,6 +13,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.template.DocumentTemplateService;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationPageResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryTemplateInfoResponse;
@@ -91,48 +92,61 @@ public class AdvisoryController {
      * @param expression optional search expression as json string
      * @return response with list of advisories satisfying the search criteria
      */
+    private static final int MIN_PAGE_LIMIT = 1;
+    private static final int MAX_PAGE_LIMIT = 1000;
+
     @GetMapping("")
     @Operation(
-      summary = "Get all authorized advisories.", 
+      summary = "Get all authorized advisories.",
       tags = {"Advisory"},
       description = "All CSAF documents for which the logged in user is authorized are returned." +
-                    " This depends on the user's role and the state of the CSAF document."
+                    " This depends on the user's role and the state of the CSAF document." +
+                    " When the 'limit' query parameter is absent the response is the bare advisory" +
+                    " array (legacy mode). When 'limit' is present the response is a paginated" +
+                    " AdvisoryDocumentInformationPage envelope; follow its 'bookmark' to read" +
+                    " further pages until 'hasMore' is false."
     )
     @ApiResponses(value = {
       @ApiResponse(
-        responseCode = "200", 
-        description = "List of all advisories that the user can access.",
-        content = { 
+        responseCode = "200",
+        description = "List of advisories that the user can access. Without 'limit' a bare array;" +
+                      " with 'limit' an AdvisoryDocumentInformationPage envelope.",
+        content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
             array = @ArraySchema(
               schema = @Schema(implementation = AdvisoryInformationResponse.class)
             )
+          ),
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = AdvisoryInformationPageResponse.class)
           )
         }
       ),
       @ApiResponse(
-        responseCode = "400", 
-        description = "Invalid filter expression", 
-        content = { 
+        responseCode = "400",
+        description = "Invalid filter expression, 'limit' out of range (1..1000), or a 'bookmark'" +
+                      " that cannot be decoded / does not match the current expression.",
+        content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
             schema = @Schema(
-              title = "JSON", 
+              title = "JSON",
               description = "String describing error")
           )
         }
       ),
       @ApiResponse(
-        responseCode = "401", 
+        responseCode = "401",
         description = "Unauthorized access."
       ),
       @ApiResponse(
-        responseCode = "500", 
+        responseCode = "500",
         description = "Error reading advisories"
       )
     })
-    public ResponseEntity<List<AdvisoryInformationResponse>> listCsafDocuments(
+    public ResponseEntity<?> listCsafDocuments(
             @RequestParam(required = false)
             @Parameter(in = ParameterIn.QUERY, name = "expression",
                     description = """
@@ -147,12 +161,34 @@ public class AdvisoryController {
                     schema = @Schema(type = "string", format = "json",
                             description = "An optional expression in JSON to filter documents by.")
             )
-            String expression
+            String expression,
+            @RequestParam(required = false)
+            @Parameter(in = ParameterIn.QUERY, name = "limit",
+                    description = "Maximum number of visible advisories per page (1..1000). When absent"
+                                  + " the response is the legacy bare array; when present the response is"
+                                  + " a paginated AdvisoryDocumentInformationPage envelope.",
+                    schema = @Schema(type = "integer", minimum = "1", maximum = "1000")
+            )
+            Integer limit,
+            @RequestParam(required = false)
+            @Parameter(in = ParameterIn.QUERY, name = "bookmark",
+                    description = "Opaque cursor returned as the 'bookmark' of the previous page."
+                                  + " Echo it back verbatim to read the next page. Ignored when 'limit'"
+                                  + " is absent.",
+                    schema = @Schema(type = "string")
+            )
+            String bookmark
     ) {
 
         LOG.debug("findAdvisories");
         try {
-            return ResponseEntity.ok(advisoryService.getAdvisoryInformations(expression));
+            if (limit == null) {
+                return ResponseEntity.ok(advisoryService.getAdvisoryInformations(expression));
+            }
+            if (limit < MIN_PAGE_LIMIT || limit > MAX_PAGE_LIMIT) {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity.ok(advisoryService.getAdvisoryInformationsPage(expression, limit, bookmark));
         } catch (IOException e) {
             LOG.info("Error reading Advisory");
             return ResponseEntity.internalServerError().build();
