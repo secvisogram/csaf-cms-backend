@@ -4,6 +4,9 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.e
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ibm.cloud.cloudant.v1.Cloudant;
 import com.ibm.cloud.cloudant.v1.model.*;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
@@ -13,13 +16,16 @@ import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -255,6 +261,65 @@ public class CouchDbService {
                 .postFindAsStream(findOptions)
                 .execute()
                 .getResult();
+    }
+
+    /**
+     * Result of a single paged Mango {@code _find} request: the raw document rows of this page
+     * together with the CouchDB bookmark that resumes the scan after the last returned row.
+     *
+     * @param rows     the document rows of this page as JSON nodes, in CouchDB result order
+     * @param bookmark the CouchDB Mango bookmark for the next page (opaque; never {@code null} in a
+     *                 CouchDB response, but may point past the end of the result set)
+     */
+    public record PagedResult(List<JsonNode> rows, String bookmark) {
+    }
+
+    /**
+     * Read a single page of documents matching the selector.
+     *
+     * <p>Unlike {@link #findDocuments(Map, Collection)} / {@link #findDocumentsAsStream(Map, Collection)},
+     * this variant sets an explicit Mango {@code limit} and (optionally) resumes from a previously
+     * returned Mango {@code bookmark}. It returns both the rows of this page and the response's
+     * bookmark so callers can resume the scan. The unlimited variants are intentionally left
+     * unchanged because other callers rely on reading the full result set.
+     *
+     * @param selector the selector to search for
+     * @param fields   the fields of information to select
+     * @param limit    the maximum number of rows to read in this page (Mango {@code limit})
+     * @param bookmark the Mango bookmark to resume from, or {@code null} to start from the beginning
+     * @return the rows of this page and the bookmark for the next page
+     * @throws IOException if the CouchDB result stream cannot be parsed
+     */
+    public PagedResult findDocumentsPaged(Map<String, Object> selector, Collection<DbField> fields,
+                                          long limit, @Nullable String bookmark) throws IOException {
+
+        Cloudant client = createCloudantClient();
+
+        PostFindOptions.Builder findOptionsBuilder = new PostFindOptions.Builder()
+                .db(this.dbName)
+                .selector(selector)
+                .fields(fields.stream().map(DbField::getDbName).collect(Collectors.toList()))
+                .limit(limit);
+        if (bookmark != null) {
+            findOptionsBuilder.bookmark(bookmark);
+        }
+
+        InputStream resultStream = client
+                .postFindAsStream(findOptionsBuilder.build())
+                .execute()
+                .getResult();
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode resultNode = mapper.readValue(resultStream, JsonNode.class);
+        ArrayNode docNodes = (ArrayNode) resultNode.get("docs");
+        List<JsonNode> rows = new ArrayList<>();
+        if (docNodes != null) {
+            docNodes.forEach(rows::add);
+        }
+        JsonNode bookmarkNode = resultNode.get("bookmark");
+        String nextBookmark = (bookmarkNode != null && !bookmarkNode.isNull()) ? bookmarkNode.asText() : null;
+
+        return new PagedResult(rows, nextBookmark);
     }
 
     /**
