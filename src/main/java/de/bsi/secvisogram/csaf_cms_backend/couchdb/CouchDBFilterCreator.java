@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 /**
  * Create the selector part of a CouchDB find expression as Cloudant FindOptions selector
- *
  * <a href="https://docs.couchdb.org/en/stable/api/database/find.html">CouchDB find</a>
  * <a href="https://cloud.ibm.com/apidocs/cloudant?code=java#postfind">Cloudant postfind</a>
  *  */
@@ -84,6 +83,16 @@ public class CouchDBFilterCreator {
                         .collect(Collectors.toList());
 
                 return createAndExpression(andExpressions);
+            }
+
+            @Override
+            public Map<String, Object> or(OrExpression orExpr) {
+                List<Object> orExpressions = orExpr.getExpressions()
+                        .stream()
+                        .map(expr -> expression2Filter(expr))
+                        .collect(Collectors.toList());
+
+                return createOrExpression(orExpressions);
             }
 
             @Override
@@ -180,12 +189,22 @@ public class CouchDBFilterCreator {
     }
 
     /**
-     * Create Cloudant And expression for list of expression
-     * @param expressions the expression to add to the 'and' expression
+     * Create Cloudant And expression for list of expressions
+     * @param expressions the expressions to add to the 'and' expression
      * @return the cloudant and expression object
      */
     private Map<String, Object> createAndExpression(List<Object> expressions) {
 
         return Map.of("$and", expressions);
-   }
+    }
+
+    /**
+     * Create Cloudant Or expression for list of expressions
+     * @param expressions the expressions to add to the 'or' expression
+     * @return the cloudant or expression object
+     */
+    private Map<String, Object> createOrExpression(List<Object> expressions) {
+
+        return Map.of("$or", expressions);
+    }
 }

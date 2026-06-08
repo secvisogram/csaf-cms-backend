@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AndExpression.class, name = "AND"),
+        @JsonSubTypes.Type(value = OrExpression.class, name = "OR"),
         @JsonSubTypes.Type(value = OperatorExpression.class, name = "Operator")
 })
 public interface Expression {
