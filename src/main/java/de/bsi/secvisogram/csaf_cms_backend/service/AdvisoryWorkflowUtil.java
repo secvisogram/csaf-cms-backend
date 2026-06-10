@@ -190,38 +190,46 @@ public class AdvisoryWorkflowUtil {
     /**
      * Check whether the workflow state of the given advisory can be changed with the given credentials
      * @param advisory the advisory to check
-     * @param credentials the credentials for the check
      * @param newWorkflowState the state to change into
-     * @return true - info can be deleted
+     * @param credentials the credentials for the check
+     * @param allowOwnDocumentsApproved whether a user may approve their own advisory (Review → Approved)
+     * @return true - workflow can be changed
      */
-    public static boolean canChangeWorkflow(AdvisoryWrapper advisory, WorkflowState newWorkflowState, Authentication credentials) {
+    public static boolean canChangeWorkflow(AdvisoryWrapper advisory, WorkflowState newWorkflowState,
+                                            Authentication credentials, boolean allowOwnDocumentsApproved) {
 
-        return canChangeWorkflow(advisory.getOwner(), advisory.getWorkflowState(), newWorkflowState, credentials);
+        return canChangeWorkflow(advisory.getOwner(), advisory.getWorkflowState(), newWorkflowState,
+                credentials, allowOwnDocumentsApproved);
     }
 
     /**
-     * Check whether the given advisory info can be viewed with the given credentials
+     * Check whether the workflow state of the given advisory info can be changed with the given credentials
      * @param response the advisory info to check
      * @param newWorkflowState the state to change into
      * @param credentials the credentials for the check
-     * @return true - info can be changed
+     * @param allowOwnDocumentsApproved whether a user may approve their own advisory (Review → Approved)
+     * @return true - workflow can be changed
      */
     public static boolean canChangeWorkflow(AdvisoryInformationResponse response, WorkflowState newWorkflowState,
-                                            Authentication credentials) {
+                                            Authentication credentials, boolean allowOwnDocumentsApproved) {
 
-        return canChangeWorkflow(response.getOwner(), response.getWorkflowState(), newWorkflowState, credentials);
+        return canChangeWorkflow(response.getOwner(), response.getWorkflowState(), newWorkflowState,
+                credentials, allowOwnDocumentsApproved);
     }
 
     /**
-     * Check whether  the workflow state of an advisory with the given user and state can be changed
-     * @param userToCheck the advisory user to check
-     * @param oldWorkflowState the advisory workflow state to check
-     * @param newWorkflowState the state to change into
-     * @param credentials the credentials for the check
-     * @return true - info can be changed
+     * Check whether the workflow state of an advisory with the given user and state can be changed.
+     *
+     * @param userToCheck the owner of the advisory
+     * @param oldWorkflowState the current workflow state of the advisory
+     * @param newWorkflowState the desired target workflow state
+     * @param credentials the credentials of the requesting user
+     * @param allowOwnDocumentsApproved when {@code false}, a user may not approve their own advisory
+     * @return {@code true} if the transition is permitted
      */
     static boolean canChangeWorkflow(String userToCheck, WorkflowState oldWorkflowState,
-                                     WorkflowState newWorkflowState, Authentication credentials) {
+                                     WorkflowState newWorkflowState, Authentication credentials,
+                                     boolean allowOwnDocumentsApproved) {
 
         boolean canBeChanged = false;
         if (oldWorkflowState == WorkflowState.Draft && newWorkflowState == WorkflowState.Review) {
@@ -230,11 +238,13 @@ public class AdvisoryWorkflowUtil {
         }
 
         if (oldWorkflowState == WorkflowState.Review && newWorkflowState == WorkflowState.Draft) {
-            canBeChanged = hasRole(REVIEWER, credentials);
+            canBeChanged = hasRole(REVIEWER, credentials) || hasRole(PUBLISHER, credentials);
         }
 
         if (oldWorkflowState == WorkflowState.Review && newWorkflowState == WorkflowState.Approved) {
-            canBeChanged = hasRole(REVIEWER, credentials);
+            boolean hasReviewPermission = hasRole(REVIEWER, credentials) || hasRole(PUBLISHER, credentials);
+            boolean ownDocumentBlocked = !allowOwnDocumentsApproved && isOwnAdvisory(userToCheck, credentials);
+            canBeChanged = hasReviewPermission && !ownDocumentBlocked;
         }
 
         if (oldWorkflowState == WorkflowState.Approved && newWorkflowState == WorkflowState.RfPublication) {
