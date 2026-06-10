@@ -1,3 +1,4 @@
 {
-    "java.checkstyle.configuration": "${workspaceFolder}/csaf-cms-backend/pom.xml"
+    "java.checkstyle.configuration": "${workspaceFolder}/csaf-cms-backend/pom.xml",
+    "java.compile.nullAnalysis.mode": "automatic"
 }

@@ -161,9 +161,9 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
 - may change the workflow state of all CSAF documents from `RfPublication` to `Published`
 - may change the workflow state of all CSAF documents from `Approved` to `Draft`
 - may change the workflow state of all CSAF documents from `Review` to `Draft`
-- may change the workflow state of CSAF documents **not created by the user** 
+- may change the workflow state of CSAF documents **not created by the user**
   from `Review` to `Approved`
-- may change the workflow state of own (created by the user) CSAF documents 
+- may change the workflow state of own (created by the user) CSAF documents
   from `Review` to `Approved`
   only when `csaf.workflow.allow-own-documents-approved=true` (default: `false`)
 
@@ -174,9 +174,9 @@ A user with the role 'Editor' for Example has always also the role 'Author'.
   the user
 - May view, reply to and create comments on CSAF documents
 - may change the status from `Review` to `Draft` (including own advisories)
-- may change the status of CSAF documents **not created by the user** 
+- may change the status of CSAF documents **not created by the user**
   from `Review` to `Approved`
-- may change the status of own (created by the user) CSAF documents 
+- may change the status of own (created by the user) CSAF documents
   from `Review` to `Approved`
   only when `csaf.workflow.allow-own-documents-approved=true` (default: `false`)
 

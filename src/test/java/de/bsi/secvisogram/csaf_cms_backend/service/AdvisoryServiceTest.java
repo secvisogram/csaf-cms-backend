@@ -99,6 +99,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         "csaf.summary.publication=testPublishMessage",
         "csaf.trackingid.company=",
         "csaf.trackingid.digits=7",
+        "csaf.workflow.allowOwnDocumentsApproved=true",
 })
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
