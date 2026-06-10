@@ -2,16 +2,11 @@ package de.bsi.secvisogram.csaf_cms_backend.json;
 
 import de.bsi.secvisogram.csaf_cms_backend.service.PatchType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "Class has no internal state")
 public class IntegerVersioning implements Versioning {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IntegerVersioning.class);
-
-    private static final IntegerVersioning DEFAULT_INSTANCE = new IntegerVersioning();
+	private static final IntegerVersioning DEFAULT_INSTANCE = new IntegerVersioning();
 
     public static IntegerVersioning getDefault() {
         return DEFAULT_INSTANCE;
