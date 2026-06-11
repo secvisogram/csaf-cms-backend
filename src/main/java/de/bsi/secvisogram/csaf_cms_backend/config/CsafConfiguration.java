@@ -9,7 +9,8 @@ public class CsafConfiguration {
 
     private CsafSummaryConfiguration summary;
     private CsafVersioningConfiguration versioning;
-
+    private CsafAutoPublishConfiguration autoPublish;
+    
     public CsafSummaryConfiguration getSummary() {
         return summary;
     }
@@ -26,5 +27,13 @@ public class CsafConfiguration {
     public CsafConfiguration setVersioning(CsafVersioningConfiguration versioning) {
         this.versioning = versioning;
         return this;
+    }
+
+    public CsafAutoPublishConfiguration getAutoPublish() {
+      return autoPublish;
+    }
+
+    public void setAutoPublish(CsafAutoPublishConfiguration autoPublish) {
+      this.autoPublish = autoPublish;
     }
 }

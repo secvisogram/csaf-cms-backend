@@ -111,10 +111,13 @@ only and should not be used in production.
                 ContainerDb(backend-db, "CouchDB", "CMS-Backend-Database")
             }
         }
+        
+        Container(trustedprovider, "Trusted Provider", "nginx + go", "Trusted CSAF provider")
     }
 
     Rel(user, reverseproxy,"","HTTPS")
     Rel(reverseproxy, secvisogram,"/")
+    Rel(reverseproxy, trustedprovider,"/.well-known/csaf")
     Rel(reverseproxy, oauth,"/api/*")
     Rel(reverseproxy, keycloak,"/realm/csaf/")
     Rel(oauth, validator, "/api/v1/test")
@@ -123,6 +126,7 @@ only and should not be used in production.
     Rel(backend, backend-db,"")
     Rel(backend, keycloak,"")
     Rel(keycloak, keycloak-db,"")
+    Rel(backend, trustedprovider,"/cgi-bin/csaf_provider.go/api/upload")
    
 
 ```
@@ -141,6 +145,9 @@ only and should not be used in production.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
 - restart `docker compose down` and `docker compose up -d`
+- The trusted CSAF provider can be initialized with `docker compose up trusted-provider-setup` 
+  	- The folder `docker/config/trustedprovider` contains example / development PGP keys.
+  	- More details on configuring the trusted provider can be found [GoCSAF](https://github.com/gocsaf/csaf)
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
@@ -307,10 +314,3 @@ The following guides illustrate how to use some features concretely:
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
-#### diagrams.net (formerly known as draw.io)
-
-- [diagrams.net](https://www.diagrams.net/)
-
-- [Intellij Integration](https://plugins.jetbrains.com/plugin/15635-diagrams-net-integration)
-
-[(back to top)](#bsi-secvisogram-csaf-backend)

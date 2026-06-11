@@ -850,7 +850,7 @@ public class AdvisoryWrapper {
      * @param timestamp2 the second timestamp
      * @return true if timestamp1 is chronologically before timestamp2, false otherwise
      */
-    private static boolean timestampIsBefore(String timestamp1, String timestamp2) {
+    public static boolean timestampIsBefore(String timestamp1, String timestamp2) {
         LocalDateTime t1 = from(ISO_DATE_TIME.parse(timestamp1));
         LocalDateTime t2 = from(ISO_DATE_TIME.parse(timestamp2));
         return t1.isBefore(t2);

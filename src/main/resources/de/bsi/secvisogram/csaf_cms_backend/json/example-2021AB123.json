@@ -4,19 +4,19 @@
     "csaf_version": "2.0",
     "publisher": {
       "category": "coordinator",
-      "name": "exccellent",
-      "namespace": "https://exccellent.de"
+      "name": "Example Inc.",
+      "namespace": "https://example.com"
     },
     "title": "TestRSc",
     "tracking": {
       "current_release_date": "2022-01-11T11:00:00.000Z",
-      "id": "exxcellent-2021AB123",
+      "id": "example-2021AB123",
       "initial_release_date": "2022-01-12T11:00:00.000Z",
       "revision_history": [
         {
           "date": "2022-01-12T11:00:00.000Z",
           "number": "0.0.1",
-          "summary": "Test rsvSummary"
+          "summary": "Test summary"
         }
       ],
       "status": "draft",
@@ -32,15 +32,13 @@
     "acknowledgments": [
       {
         "names": [
-          "Rainer",
-          "Gregor",
-          "Timo"
+          "Tom",
+          "Jerry"
         ],
-        "organization": "exxcellent contribute",
-        "summary": "Summary 1234",
+        "organization": "Example Inc.",
+        "summary": "Summary",
         "urls": [
-          "https://exccellent.de",
-          "https:/heise.de"
+          "https://example.com"
         ]
       }
     ]
