@@ -21,7 +21,7 @@
 		<plugin.version.spotbugs>4.9.8.1</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
 		<plugin.version.jacoco>0.8.14</plugin.version.jacoco>
-		<dependency.version.cloudant>0.10.12</dependency.version.cloudant>
+		<dependency.version.cloudant>0.10.18</dependency.version.cloudant>
 		<dependency.version.swagger-annotations>2.2.40</dependency.version.swagger-annotations>
 		<dependency.version.swagger-models>2.2.40</dependency.version.swagger-models>
 		<dependency.version.commons-text>1.14.0</dependency.version.commons-text>
