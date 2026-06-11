@@ -38,7 +38,8 @@ import org.springframework.test.context.ContextConfiguration;
 /**
  * Test for the workflow in the Advisory service. The required CouchDB container is started in the CouchDBExtension.
  */
-@SpringBootTest(properties = "csaf.document.versioning=Integer")
+@SpringBootTest(properties = { "csaf.document.versioning=Integer",
+        "csaf.workflow.allowOwnDocumentsApproved=true"})
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
 @ContextConfiguration

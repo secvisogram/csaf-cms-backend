@@ -9,6 +9,7 @@ public class CsafConfiguration {
 
     private CsafSummaryConfiguration summary;
     private CsafVersioningConfiguration versioning;
+    private CsafWorkflowConfiguration workflow;
 
     public CsafSummaryConfiguration getSummary() {
         return summary;
@@ -25,6 +26,15 @@ public class CsafConfiguration {
 
     public CsafConfiguration setVersioning(CsafVersioningConfiguration versioning) {
         this.versioning = versioning;
+        return this;
+    }
+
+    public CsafWorkflowConfiguration getWorkflow() {
+        return workflow;
+    }
+
+    public CsafConfiguration setWorkflow(CsafWorkflowConfiguration workflow) {
+        this.workflow = workflow;
         return this;
     }
 }
