@@ -15,6 +15,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,6 @@ import org.springframework.http.HttpStatus;
 public class AdvisorySearchUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisorySearchUtil.class);
-    private static final OperatorExpression typeExpr = equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName());
     private static final String[] selectDocAcknowledgments = {"csaf", "document", "acknowledgments"};
     private static final String[] selectDocAcknowledgmentsNames = {"csaf", "document", "acknowledgments", "names"};
     private static final String[] selectDocAcknowledgmentsUrls = {"csaf", "document", "acknowledgments", "urls"};
@@ -35,31 +35,64 @@ public class AdvisorySearchUtil {
     private static final String[] selectProductTreeBranches = {"csaf", "product_tree", "branches"};
 
 
-    public static Map<String, Object> buildAdvisoryExpression(String expression, ObjectType objectType) throws CsafException {
+    /**
+     * Build a CouchDB Mango selector for advisories of the given type that match the optional
+     * search expression AND an optional visibility constraint expression.
+     *
+     * @param expression      optional search expression (JSON-encoded); {@code null} or blank means
+     *                        no content filter
+     * @param objectType      the advisory type to filter by (Advisory or AdvisoryVersion)
+     * @param visibilityExpr  optional additional visibility filter; {@code null} means no extra
+     *                        constraint (caller can see everything)
+     * @return a ready-to-use Mango selector map
+     * @throws CsafException if the expression string cannot be parsed
+     */
+    public static Map<String, Object> buildAdvisoryExpression(String expression, ObjectType objectType,
+                                                              @Nullable Expression visibilityExpr)
+            throws CsafException {
 
         try {
-            final Map<String, Object> selector;
+            final Map<String, Object> resulSelector;
+            OperatorExpression typeExpr = equal(objectType.name(), TYPE_FIELD.getDbName());
+
             if (expression != null && !expression.isBlank()) {
                 Expression searchExpression = json2Expression(expression);
 
-
-                AndExpression wholeExpr = new AndExpression(typeExpr, searchExpression);
-                selector = expr2CouchDBFilter(wholeExpr,
-                        selectDocAcknowledgments,
-                        selectDocAcknowledgmentsNames,
-                        selectDocAcknowledgmentsUrls,
-                        selectDocNotes,
-                        selectDocReferences,
-                        selectDocTrackingRev,
-                        selectDocTrackingAliases,
-                        selectVulnerabilities,
-                        selectProductTreeFullProductNames,
-                        selectProductTreeBranches);
+                if (visibilityExpr != null) {
+                    AndExpression wholeExpr = new AndExpression(typeExpr, searchExpression, visibilityExpr);
+                    resulSelector = expr2CouchDBFilter(wholeExpr,
+                            selectDocAcknowledgments,
+                            selectDocAcknowledgmentsNames,
+                            selectDocAcknowledgmentsUrls,
+                            selectDocNotes,
+                            selectDocReferences,
+                            selectDocTrackingRev,
+                            selectDocTrackingAliases,
+                            selectVulnerabilities,
+                            selectProductTreeFullProductNames,
+                            selectProductTreeBranches);
+                } else {
+                    AndExpression wholeExpr = new AndExpression(typeExpr, searchExpression);
+                    resulSelector = expr2CouchDBFilter(wholeExpr,
+                            selectDocAcknowledgments,
+                            selectDocAcknowledgmentsNames,
+                            selectDocAcknowledgmentsUrls,
+                            selectDocNotes,
+                            selectDocReferences,
+                            selectDocTrackingRev,
+                            selectDocTrackingAliases,
+                            selectVulnerabilities,
+                            selectProductTreeFullProductNames,
+                            selectProductTreeBranches);
+                }
             } else {
-                selector = expr2CouchDBFilter(equal(objectType.name(), TYPE_FIELD.getDbName()));
+                if (visibilityExpr != null) {
+                    resulSelector = expr2CouchDBFilter(new AndExpression(typeExpr, visibilityExpr));
+                } else {
+                    resulSelector = expr2CouchDBFilter(typeExpr);
+                }
             }
-
-            return selector;
+            return resulSelector;
         } catch (JsonProcessingException ex) {
             LOG.debug("Invalid expression", ex);
             throw new CsafException("Invalid filter expression", CsafExceptionKey.InvalidFilterExpression,
