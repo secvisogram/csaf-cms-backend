@@ -192,7 +192,7 @@ public class AdvisoryWorkflowUtil {
      * @param advisory the advisory to check
      * @param newWorkflowState the state to change into
      * @param credentials the credentials for the check
-     * @param allowOwnDocumentsApproved whether a user may approve their own advisory (Review → Approved)
+     * @param allowOwnDocumentsApproved whether a user may approve their own advisory (Review -> Approved)
      * @return true - workflow can be changed
      */
     public static boolean canChangeWorkflow(AdvisoryWrapper advisory, WorkflowState newWorkflowState,
@@ -207,7 +207,7 @@ public class AdvisoryWorkflowUtil {
      * @param response the advisory info to check
      * @param newWorkflowState the state to change into
      * @param credentials the credentials for the check
-     * @param allowOwnDocumentsApproved whether a user may approve their own advisory (Review → Approved)
+     * @param allowOwnDocumentsApproved whether a user may approve their own advisory (Review -> Approved)
      * @return true - workflow can be changed
      */
     public static boolean canChangeWorkflow(AdvisoryInformationResponse response, WorkflowState newWorkflowState,

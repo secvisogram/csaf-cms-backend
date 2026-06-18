@@ -367,7 +367,7 @@ public class AdvisoryWorkflowUtilTest {
         canChangeWorkflowNotAllowOwnDocsApproved(Published, Approved, EDITOR, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Published, RfPublication, EDITOR, own, false);
 
-        // REVIEWER — own document: Review→Draft allowed, Review→Approved blocked (default flag=false)
+        // REVIEWER — own document: Review->Draft allowed, Review->Approved blocked (default flag=false)
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Draft, REVIEWER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, REVIEWER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, REVIEWER, notOwn, false);
@@ -376,8 +376,8 @@ public class AdvisoryWorkflowUtilTest {
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Published, REVIEWER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, REVIEWER, own, true);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, REVIEWER, notOwn, true);
-        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, REVIEWER, own, false);   // own → blocked by default
-        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, REVIEWER, notOwn, true); // not-own → allowed
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, REVIEWER, notOwn, true);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, RfPublication, REVIEWER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, Published, REVIEWER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Approved, Draft, REVIEWER, own, false);
@@ -393,7 +393,7 @@ public class AdvisoryWorkflowUtilTest {
         canChangeWorkflowNotAllowOwnDocsApproved(Published, Approved, REVIEWER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Published, RfPublication, REVIEWER, own, false);
 
-        // PUBLISHER — inherits EDITOR+REVIEWER; own Review→Draft allowed, own Review→Approved blocked (default flag=false)
+        // PUBLISHER — inherits EDITOR+REVIEWER; own Review->Draft allowed, own Review->Approved blocked (default flag=false)
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Draft, PUBLISHER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, PUBLISHER, own, true);
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, PUBLISHER, notOwn, true);
@@ -402,8 +402,8 @@ public class AdvisoryWorkflowUtilTest {
         canChangeWorkflowNotAllowOwnDocsApproved(Draft, Published, PUBLISHER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, PUBLISHER, own, true);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, PUBLISHER, notOwn, true);
-        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, PUBLISHER, own, false);   // own → blocked by default
-        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, PUBLISHER, notOwn, true); // not-own → allowed
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, PUBLISHER, notOwn, true);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, RfPublication, PUBLISHER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Review, Published, PUBLISHER, own, false);
         canChangeWorkflowNotAllowOwnDocsApproved(Approved, Draft, PUBLISHER, own, true);
@@ -422,7 +422,7 @@ public class AdvisoryWorkflowUtilTest {
 
     /**
      * Tests workflow-change permissions when allowOwnDocumentsApproved = true.
-     * In this mode, a Reviewer or Publisher IS allowed to approve their own advisory (Review → Approved).
+     * In this mode, a Reviewer or Publisher IS allowed to approve their own advisory (Review -> Approved).
      */
     @Test
     public void canChangeWorkflows_allowOwnDocsApproved() {
