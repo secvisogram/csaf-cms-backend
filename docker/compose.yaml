@@ -96,7 +96,7 @@ services:
           - "keycloak.csaf.internal"
 
   keycloak-setup:
-    image: keycloak/keycloak:26.4
+    image: quay.io/keycloak/keycloak:26.4
     container_name: "keycloak-setup"
     restart: "no"
     profiles: [ "run_manually" ]
@@ -119,7 +119,6 @@ services:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0-alpine
     hostname: oauth2.csaf.internal
     container_name: oauth2-proxy
-    command: [""]
     env_file: .env
     environment:
       # listening address and proxy target
@@ -148,7 +147,7 @@ services:
       OAUTH2_PROXY_OIDC_JWKS_URL: http://keycloak.csaf.internal:8080/realms/csaf/protocol/openid-connect/certs
       OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
       
-      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080,localhost,locahost:80"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080,localhost,localhost:80"
 
       # Client credentials
       OAUTH2_PROXY_CLIENT_ID: ${CSAF_CLIENT_ID}
