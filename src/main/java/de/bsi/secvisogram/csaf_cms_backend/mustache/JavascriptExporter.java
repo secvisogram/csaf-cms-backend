@@ -52,33 +52,34 @@ public class JavascriptExporter {
         try (final InputStream in = JavascriptExporter.class.getResourceAsStream(documentEntityScript)) {
             Files.write(tempDocFile, in.readAllBytes());
         }
-        final var jsContext = Context.newBuilder("js")
+        try (var jsContext = Context.newBuilder("js")
                 .allowExperimentalOptions(true)
                 .allowIO(IOAccess.ALL)
                 .option("js.esm-eval-returns-exports", "true")
                 .currentWorkingDirectory(tempDir)
-                .build();
+                .build()) {
 
-        try (final InputStream templateResource = JavascriptExporter.class.getResourceAsStream("Template.html");
-             final InputStream mustacheResource = JavascriptExporter.class.getResourceAsStream("mustache.min.js");
-             final InputStream scriptResource = JavascriptExporter.class.getResourceAsStream("Script.mjs")) {
-            final var template = new String(templateResource.readAllBytes(), StandardCharsets.UTF_8);
-            final var mustacheSource = Source.newBuilder("js", this.createResourceReader(mustacheResource), "mustache.js")
-                    .build();
-            jsContext.eval(mustacheSource);
-            final var scriptSource = Source.newBuilder("js", createResourceReader(scriptResource), "Script.mjs")
-                    .mimeType("application/javascript+module")
-                    .build();
-            final Value scriptResult = jsContext.eval(scriptSource);
-            final Value renderFunction = scriptResult.getMember("renderWithMustache");
-            final Object result = renderFunction.execute(template, advisoryJson, createLogoJson());
-            return result.toString();
-        } finally {
-            try {
-                LOG.info("Delete temporary directory: {}", tempDir.toFile().getAbsolutePath());
-                FileSystemUtils.deleteRecursively(tempDir);
-            }   catch (IOException ex) {
-                LOG.warn("Failed to delete temporary directory: {}", tempDir.toFile().getAbsolutePath(), ex);
+            try (final InputStream templateResource = JavascriptExporter.class.getResourceAsStream("Template.html");
+                 final InputStream mustacheResource = JavascriptExporter.class.getResourceAsStream("mustache.min.js");
+                 final InputStream scriptResource = JavascriptExporter.class.getResourceAsStream("Script.mjs")) {
+                final var template = new String(templateResource.readAllBytes(), StandardCharsets.UTF_8);
+                final var mustacheSource = Source.newBuilder("js", this.createResourceReader(mustacheResource), "mustache.js")
+                        .build();
+                jsContext.eval(mustacheSource);
+                final var scriptSource = Source.newBuilder("js", createResourceReader(scriptResource), "Script.mjs")
+                        .mimeType("application/javascript+module")
+                        .build();
+                final Value scriptResult = jsContext.eval(scriptSource);
+                final Value renderFunction = scriptResult.getMember("renderWithMustache");
+                final Object result = renderFunction.execute(template, advisoryJson, createLogoJson());
+                return result.toString();
+            } finally {
+                try {
+                    LOG.info("Delete temporary directory: {}", tempDir.toFile().getAbsolutePath());
+                    FileSystemUtils.deleteRecursively(tempDir);
+                } catch (IOException ex) {
+                    LOG.warn("Failed to delete temporary directory: {}", tempDir.toFile().getAbsolutePath(), ex);
+                }
             }
         }
     }
