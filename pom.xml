@@ -20,7 +20,7 @@
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
 		<plugin.version.spotbugs>4.9.8.3</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
-		<plugin.version.jacoco>0.8.14</plugin.version.jacoco>
+		<plugin.version.jacoco>0.8.15</plugin.version.jacoco>
 		<dependency.version.cloudant>0.10.12</dependency.version.cloudant>
 		<dependency.version.swagger-annotations>2.2.40</dependency.version.swagger-annotations>
 		<dependency.version.swagger-models>2.2.50</dependency.version.swagger-models>
