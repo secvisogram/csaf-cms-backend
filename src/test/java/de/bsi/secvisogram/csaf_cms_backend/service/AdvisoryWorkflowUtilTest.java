@@ -319,110 +319,153 @@ public class AdvisoryWorkflowUtilTest {
         final boolean own = true;
         final boolean notOwn = false;
 
-        canChangeWorkflow(Draft, Draft, AUTHOR, own, false);
-        canChangeWorkflow(Draft, Review, AUTHOR, own, true);
-        canChangeWorkflow(Draft, Review, AUTHOR, notOwn, false);
-        canChangeWorkflow(Draft, Approved, AUTHOR, own, false);
-        canChangeWorkflow(Draft, RfPublication, AUTHOR, own, false);
-        canChangeWorkflow(Draft, Published, AUTHOR, own, false);
-        canChangeWorkflow(Review, Draft, AUTHOR, own, false);
-        canChangeWorkflow(Review, Approved, AUTHOR, own, false);
-        canChangeWorkflow(Review, RfPublication, AUTHOR, own, false);
-        canChangeWorkflow(Review, Published, AUTHOR, own, false);
-        canChangeWorkflow(Approved, Draft, AUTHOR, own, false);
-        canChangeWorkflow(Approved, Review, AUTHOR, own, false);
-        canChangeWorkflow(Approved, RfPublication, AUTHOR, own, true);
-        canChangeWorkflow(Approved, RfPublication, AUTHOR, notOwn, false);
-        canChangeWorkflow(Approved, Published, AUTHOR, own, false);
-        canChangeWorkflow(RfPublication, Draft, AUTHOR, own, false);
-        canChangeWorkflow(RfPublication, Review, AUTHOR, own, false);
-        canChangeWorkflow(RfPublication, Approved, AUTHOR, own, false);
-        canChangeWorkflow(RfPublication, Published, AUTHOR, own, false);
-        canChangeWorkflow(Published, Draft, AUTHOR, own, false);
-        canChangeWorkflow(Published, Review, AUTHOR, own, false);
-        canChangeWorkflow(Published, Approved, AUTHOR, own, false);
-        canChangeWorkflow(Published, RfPublication, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Draft, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, AUTHOR, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, AUTHOR, notOwn, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Approved, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, RfPublication, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Published, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, RfPublication, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Published, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Draft, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Review, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, RfPublication, AUTHOR, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, RfPublication, AUTHOR, notOwn, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Published, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Draft, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Review, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Approved, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Published, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Draft, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Review, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Approved, AUTHOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, RfPublication, AUTHOR, own, false);
 
-        canChangeWorkflow(Draft, Draft, EDITOR, own, false);
-        canChangeWorkflow(Draft, Review, EDITOR, own, true);
-        canChangeWorkflow(Draft, Review, EDITOR, notOwn, true);
-        canChangeWorkflow(Draft, Approved, EDITOR, own, false);
-        canChangeWorkflow(Draft, RfPublication, EDITOR, own, false);
-        canChangeWorkflow(Draft, Published, EDITOR, own, false);
-        canChangeWorkflow(Review, Draft, EDITOR, own, false);
-        canChangeWorkflow(Review, Approved, EDITOR, own, false);
-        canChangeWorkflow(Review, RfPublication, EDITOR, own, false);
-        canChangeWorkflow(Review, Published, EDITOR, own, false);
-        canChangeWorkflow(Approved, Draft, EDITOR, own, false);
-        canChangeWorkflow(Approved, Review, EDITOR, own, false);
-        canChangeWorkflow(Approved, RfPublication, EDITOR, own, true);
-        canChangeWorkflow(Approved, RfPublication, EDITOR, notOwn, true);
-        canChangeWorkflow(Approved, Published, EDITOR, own, false);
-        canChangeWorkflow(RfPublication, Draft, EDITOR, own, false);
-        canChangeWorkflow(RfPublication, Review, EDITOR, own, false);
-        canChangeWorkflow(RfPublication, Approved, EDITOR, own, false);
-        canChangeWorkflow(RfPublication, Published, EDITOR, own, false);
-        canChangeWorkflow(Published, Draft, EDITOR, own, false);
-        canChangeWorkflow(Published, Review, EDITOR, own, false);
-        canChangeWorkflow(Published, Approved, EDITOR, own, false);
-        canChangeWorkflow(Published, RfPublication, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Draft, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, EDITOR, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, EDITOR, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Approved, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, RfPublication, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Published, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, RfPublication, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Published, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Draft, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Review, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, RfPublication, EDITOR, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, RfPublication, EDITOR, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Published, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Draft, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Review, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Approved, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Published, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Draft, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Review, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Approved, EDITOR, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, RfPublication, EDITOR, own, false);
 
+        // REVIEWER — own document: Review->Draft allowed, Review->Approved blocked (default flag=false)
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Draft, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, REVIEWER, notOwn, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Approved, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, RfPublication, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Published, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, REVIEWER, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, REVIEWER, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, REVIEWER, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, RfPublication, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Published, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Draft, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Review, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, RfPublication, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Published, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Draft, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Review, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Approved, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Published, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Draft, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Review, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Approved, REVIEWER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, RfPublication, REVIEWER, own, false);
 
-        canChangeWorkflow(Draft, Draft, REVIEWER, own, false);
-        canChangeWorkflow(Draft, Review, REVIEWER, own, false);
-        canChangeWorkflow(Draft, Review, REVIEWER, notOwn, false);
-        canChangeWorkflow(Draft, Approved, REVIEWER, own, false);
-        canChangeWorkflow(Draft, RfPublication, REVIEWER, own, false);
-        canChangeWorkflow(Draft, Published, REVIEWER, own, false);
-        canChangeWorkflow(Review, Draft, REVIEWER, own, true);
-        canChangeWorkflow(Review, Approved, REVIEWER, own, true);
-        canChangeWorkflow(Review, RfPublication, REVIEWER, own, false);
-        canChangeWorkflow(Review, Published, REVIEWER, own, false);
-        canChangeWorkflow(Approved, Draft, REVIEWER, own, false);
-        canChangeWorkflow(Approved, Review, REVIEWER, own, false);
-        canChangeWorkflow(Approved, RfPublication, REVIEWER, own, false);
-        canChangeWorkflow(Approved, Published, REVIEWER, own, false);
-        canChangeWorkflow(RfPublication, Draft, REVIEWER, own, false);
-        canChangeWorkflow(RfPublication, Review, REVIEWER, own, false);
-        canChangeWorkflow(RfPublication, Approved, REVIEWER, own, false);
-        canChangeWorkflow(RfPublication, Published, REVIEWER, own, false);
-        canChangeWorkflow(Published, Draft, REVIEWER, own, false);
-        canChangeWorkflow(Published, Review, REVIEWER, own, false);
-        canChangeWorkflow(Published, Approved, REVIEWER, own, false);
-        canChangeWorkflow(Published, RfPublication, REVIEWER, own, false);
-
-        canChangeWorkflow(Draft, Draft, PUBLISHER, own, false);
-        canChangeWorkflow(Draft, Review, PUBLISHER, own, true);
-        canChangeWorkflow(Draft, Review, PUBLISHER, notOwn, true);
-        canChangeWorkflow(Draft, Approved, PUBLISHER, own, false);
-        canChangeWorkflow(Draft, RfPublication, PUBLISHER, own, false);
-        canChangeWorkflow(Draft, Published, PUBLISHER, own, false);
-        canChangeWorkflow(Review, Draft, PUBLISHER, own, false);
-        canChangeWorkflow(Review, Approved, PUBLISHER, own, false);
-        canChangeWorkflow(Review, RfPublication, PUBLISHER, own, false);
-        canChangeWorkflow(Review, Published, PUBLISHER, own, false);
-        canChangeWorkflow(Approved, Draft, PUBLISHER, own, true);
-        canChangeWorkflow(Approved, Review, PUBLISHER, own, false);
-        canChangeWorkflow(Approved, RfPublication, PUBLISHER, own, true);
-        canChangeWorkflow(Approved, Published, PUBLISHER, own, false);
-        canChangeWorkflow(RfPublication, Draft, PUBLISHER, own, false);
-        canChangeWorkflow(RfPublication, Review, PUBLISHER, own, false);
-        canChangeWorkflow(RfPublication, Approved, PUBLISHER, own, false);
-        canChangeWorkflow(RfPublication, Published, PUBLISHER, own, true);
-        canChangeWorkflow(Published, Draft, PUBLISHER, own, false);
-        canChangeWorkflow(Published, Review, PUBLISHER, own, false);
-        canChangeWorkflow(Published, Approved, PUBLISHER, own, false);
-        canChangeWorkflow(Published, RfPublication, PUBLISHER, own, false);
-
+        // PUBLISHER — inherits EDITOR+REVIEWER; own Review->Draft allowed, own Review->Approved blocked (default flag=false)
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Draft, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, PUBLISHER, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Review, PUBLISHER, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Approved, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, RfPublication, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Draft, Published, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, PUBLISHER, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Draft, PUBLISHER, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Approved, PUBLISHER, notOwn, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, RfPublication, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Review, Published, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Draft, PUBLISHER, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Review, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, RfPublication, PUBLISHER, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Approved, Published, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Draft, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Review, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Approved, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(RfPublication, Published, PUBLISHER, own, true);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Draft, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Review, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, Approved, PUBLISHER, own, false);
+        canChangeWorkflowNotAllowOwnDocsApproved(Published, RfPublication, PUBLISHER, own, false);
     }
 
+    /**
+     * Tests workflow-change permissions when allowOwnDocumentsApproved = true.
+     * In this mode, a Reviewer or Publisher IS allowed to approve their own advisory (Review -> Approved).
+     */
+    @Test
+    public void canChangeWorkflows_allowOwnDocsApproved() {
 
-     private void canChangeWorkflow(WorkflowState from, WorkflowState to, Role role, boolean own, boolean canChange)  {
+        final boolean own = true;
+        final boolean notOwn = false;
+
+        // REVIEWER with own-approval flag enabled
+        canChangeWorkflowAllowOwnDocsApproved(Review, Draft, REVIEWER, own, true);
+        canChangeWorkflowAllowOwnDocsApproved(Review, Draft, REVIEWER, notOwn, true);
+        canChangeWorkflowAllowOwnDocsApproved(Review, Approved, REVIEWER, own, true);   // allowed when flag=true
+        canChangeWorkflowAllowOwnDocsApproved(Review, Approved, REVIEWER, notOwn, true);
+
+        // PUBLISHER with own-approval flag enabled
+        canChangeWorkflowAllowOwnDocsApproved(Review, Draft, PUBLISHER, own, true);
+        canChangeWorkflowAllowOwnDocsApproved(Review, Draft, PUBLISHER, notOwn, true);
+        canChangeWorkflowAllowOwnDocsApproved(Review, Approved, PUBLISHER, own, true);   // allowed when flag=true
+        canChangeWorkflowAllowOwnDocsApproved(Review, Approved, PUBLISHER, notOwn, true);
+
+        // All other transitions are unaffected by the flag
+        canChangeWorkflowAllowOwnDocsApproved(Draft, Review, REVIEWER, own, false);
+        canChangeWorkflowAllowOwnDocsApproved(Draft, Review, PUBLISHER, own, true);
+        canChangeWorkflowAllowOwnDocsApproved(Approved, Draft, PUBLISHER, own, true);
+        canChangeWorkflowAllowOwnDocsApproved(RfPublication, Published, PUBLISHER, own, true);
+    }
+
+    private void canChangeWorkflowNotAllowOwnDocsApproved(WorkflowState from, WorkflowState to, Role role, boolean own, boolean canChange) {
+
+        canChangeWorkflow(from, to, role, own, canChange, false);
+    }
+
+    private void canChangeWorkflowAllowOwnDocsApproved(WorkflowState from, WorkflowState to, Role role, boolean own, boolean canChange) {
+
+        canChangeWorkflow(from, to, role, own, canChange, true);
+    }
+    private void canChangeWorkflow(WorkflowState from, WorkflowState to, Role role, boolean own,
+                                   boolean canChange, boolean allowOwnDocumentsApproved) {
 
         var userName = "John";
         var advisory = new AdvisoryInformationResponse().setWorkflowState(from).setOwner(userName);
         var credentials = createCredentials(role, userName, own);
-        assertThat(AdvisoryWorkflowUtil.canChangeWorkflow(advisory, to, credentials), is(canChange));
+        assertThat(AdvisoryWorkflowUtil.canChangeWorkflow(advisory, to, credentials, allowOwnDocumentsApproved),
+                is(canChange));
     }
 
     private Authentication createCredentials(Role role, String userName, boolean own) {
