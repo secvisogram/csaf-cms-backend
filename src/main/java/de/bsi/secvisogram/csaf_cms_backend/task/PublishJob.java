@@ -30,7 +30,6 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.rest.AdvisoryController;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import io.netty.handler.ssl.SslContext;
@@ -40,7 +39,7 @@ import reactor.netty.http.client.HttpClient;
 
 @Component
 public class PublishJob implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(AdvisoryController.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PublishJob.class);
 
   @Autowired
   private AdvisoryService advisoryService;
