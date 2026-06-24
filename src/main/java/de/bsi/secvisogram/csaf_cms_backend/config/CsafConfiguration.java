@@ -9,7 +9,6 @@ public class CsafConfiguration {
 
     private CsafSummaryConfiguration summary;
     private CsafVersioningConfiguration versioning;
-    private CsafAutoPublishConfiguration autoPublish;
     
     private CsafWorkflowConfiguration workflow;
     private CsafAutoPublishConfiguration autoPublish;
@@ -30,14 +29,6 @@ public class CsafConfiguration {
     public CsafConfiguration setVersioning(CsafVersioningConfiguration versioning) {
         this.versioning = versioning;
         return this;
-    }
-
-    public CsafAutoPublishConfiguration getAutoPublish() {
-      return autoPublish;
-    }
-
-    public void setAutoPublish(CsafAutoPublishConfiguration autoPublish) {
-      this.autoPublish = autoPublish;
     }
     
     public CsafWorkflowConfiguration getWorkflow() {
