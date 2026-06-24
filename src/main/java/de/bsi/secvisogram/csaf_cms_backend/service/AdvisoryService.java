@@ -242,8 +242,9 @@ public class AdvisoryService {
 
     private List<WorkflowState> getAllowedStates(AdvisoryInformationResponse response, Authentication credentials) {
 
+        final var allowOwnDocumentsApproved = configuration.getWorkflow().isAllowOwnDocumentsApproved();
         return Arrays.stream(WorkflowState.values())
-                .filter(state -> AdvisoryWorkflowUtil.canChangeWorkflow(response, state, credentials))
+                .filter(state -> AdvisoryWorkflowUtil.canChangeWorkflow(response, state, credentials, allowOwnDocumentsApproved))
                 .collect(Collectors.toList());
     }
 
@@ -655,7 +656,8 @@ public class AdvisoryService {
         }
         AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
 
-        if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials)) {
+        final var allowOwnDocumentsApproved = configuration.getWorkflow().isAllowOwnDocumentsApproved();
+        if (canChangeWorkflow(existingAdvisoryNode, newWorkflowState, credentials, allowOwnDocumentsApproved)) {
 
             WorkflowState previousWorkflowState = existingAdvisoryNode.getWorkflowState();
             String previousVersion = existingAdvisoryNode.getDocumentTrackingVersion();
