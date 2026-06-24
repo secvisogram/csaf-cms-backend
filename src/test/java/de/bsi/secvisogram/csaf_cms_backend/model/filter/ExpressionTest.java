@@ -18,40 +18,66 @@ public class ExpressionTest {
     public void expressionToJson() throws JsonProcessingException {
 
         OperatorExpression opExpr = new OperatorExpression(new String[] {"document"}, TypeOfOperator.Equal, "123.45", TypeOfValue.Decimal);
+        OperatorExpression opExpr2 = new OperatorExpression(new String[] {"document"}, TypeOfOperator.Greater, "123.45", TypeOfValue.Decimal);
         AndExpression andExpr = new AndExpression(opExpr);
+        OrExpression orExpr = new OrExpression(andExpr, opExpr2);
 
-        String expressionString = AdvisorySearchUtil.expression2Json(andExpr);
-        assertThat(expressionString, equalToCompressingWhiteSpace("{" +
-                "  \"type\" : \"AND\"," +
-                "  \"expressions\" : [ {" +
-                "    \"type\" : \"Operator\"," +
-                "    \"selector\" : [ \"document\" ]," +
-                "    \"operatorType\" : \"Equal\"," +
-                "    \"value\" : \"123.45\"," +
-                "    \"valueType\" : \"Decimal\"" +
-                "  } ]\n" +
-                "}"));
+        String expressionString = AdvisorySearchUtil.expression2Json(orExpr);
+        assertThat(expressionString, equalToCompressingWhiteSpace("""
+                {
+                  "type" : "OR",
+                  "expressions" : [ {
+                    "type" : "AND",
+                    "expressions" : [ {
+                      "type" : "Operator",
+                      "selector" : [ "document" ],
+                      "operatorType" : "Equal",
+                      "value" : "123.45",
+                      "valueType" : "Decimal"
+                    } ]
+                  }, {
+                    "type" : "Operator",
+                    "selector" : [ "document" ],
+                    "operatorType" : "Greater",
+                    "value" : "123.45",
+                    "valueType" : "Decimal"
+                  } ]
+                }
+            """));
     }
 
     @Test
     public void json2Expression() throws JsonProcessingException {
 
-        String expressionString = "{" +
-                "  \"type\" : \"AND\"," +
-                "  \"expressions\" : [ {" +
-                "    \"type\" : \"Operator\"," +
-                "    \"selector\" : [ \"document\", \"version\" ]," +
-                "    \"operatorType\" : \"Equal\"," +
-                "    \"value\" : \"123.45\"," +
-                "    \"valueType\" : \"Decimal\"" +
-                "  } ]\n" +
-                "}";
+        String expressionString = """
+                {
+                  "type" : "OR",
+                  "expressions" : [ {
+                    "type" : "AND",
+                    "expressions" : [ {
+                      "type" : "Operator",
+                      "selector" : [ "document", "version" ],
+                      "operatorType" : "Equal",
+                      "value" : "123.45",
+                      "valueType" : "Decimal"
+                    } ]
+                  }, {
+                    "type" : "Operator",
+                    "selector" : [ "document" ],
+                    "operatorType" : "Greater",
+                    "value" : "123.45",
+                    "valueType" : "Decimal"
+                  } ]
+                }
+            """;
 
         Expression expression = AdvisorySearchUtil.json2Expression(expressionString);
 
-        assertThat(expression, instanceOf(AndExpression.class));
-        assertThat(((AndExpression) expression).getExpressions().size(), equalTo(1));
-        Expression expr2 = ((AndExpression) expression).getExpressions().get(0);
+        assertThat(expression, instanceOf(OrExpression.class));
+        assertThat(((OrExpression) expression).getExpressions().size(), equalTo(2));
+        Expression exprAnd = ((OrExpression) expression).getExpressions().get(0);
+        assertThat(exprAnd, instanceOf(AndExpression.class));
+        Expression expr2 = ((AndExpression) exprAnd).getExpressions().get(0);
         assertThat(expr2, instanceOf(OperatorExpression.class));
         OperatorExpression operatorExpr = (OperatorExpression) expr2;
         assertThat(operatorExpr.getOperatorType(), equalTo(TypeOfOperator.Equal));

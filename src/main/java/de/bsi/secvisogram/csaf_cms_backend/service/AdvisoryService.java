@@ -1,5 +1,43 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
+import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField.DOCUMENT_TRACKING_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Interim;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
+import static java.util.Collections.emptyList;
+import static org.springframework.http.HttpStatus.*;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
+import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
+import de.bsi.secvisogram.csaf_cms_backend.json.*;
+import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
+import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
+import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -156,41 +194,50 @@ public class AdvisoryService {
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression) throws IOException, CsafException {
 
         Authentication credentials = getAuthentication();
-        List<AdvisoryInformationResponse> allAdvisories = readAllAdvisories(expression, ObjectType.Advisory);
+
+        Expression visibilityExpr = AdvisoryWorkflowUtil.buildVisibilityExpression(credentials);
+        // Visibility filtering is now pushed into the DB query via buildAdvisoryExpression(credentials).
+        List<AdvisoryInformationResponse> allAdvisories = readAllAdvisories(expression, ObjectType.Advisory, visibilityExpr);
         // set calculated fields in response
         for (AdvisoryInformationResponse response : allAdvisories) {
-            response.setDeletable(canDeleteAdvisory(response, credentials));
-            response.setChangeable(canChangeAdvisory(response, credentials));
-            response.setAllowedStateChanges(getAllowedStates(response, credentials));
-            response.setCanCreateVersion(canCreateNewVersion(response, credentials));
+            enrichAdvisory(response, credentials);
         }
-        List<AdvisoryInformationResponse> allResponses
-                = new ArrayList<>(allAdvisories
-                .stream()
-                .filter(response -> canViewAdvisory(response, credentials))
-                .toList());
+        List<AdvisoryInformationResponse> allResponses = new ArrayList<>(allAdvisories);
 
         if (hasRole(AUDITOR, credentials)) {
-            List<AdvisoryInformationResponse> allAdvisoryVersions = readAllAdvisories(expression, ObjectType.AdvisoryVersion);
+            List<AdvisoryInformationResponse> allAdvisoryVersions = readAllAdvisories(expression, ObjectType.AdvisoryVersion, null);
             for (AdvisoryInformationResponse response : allAdvisoryVersions) {
-                response.setDeletable(false);
-                response.setChangeable(false);
-                response.setAllowedStateChanges(emptyList());
-                response.setCanCreateVersion(false);
+                enrichAdvisoryVersion(response);
             }
             allResponses.addAll(allAdvisoryVersions);
         }
         return allResponses;
     }
 
-    private List<AdvisoryInformationResponse> readAllAdvisories(String expression, ObjectType objectType) throws CsafException, IOException {
+    private List<AdvisoryInformationResponse> readAllAdvisories(String expression, ObjectType objectType,
+                                                                Expression visibilityExpr)
+            throws CsafException, IOException {
 
         Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
-        Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression, objectType);
+        Map<String, Object> selector = AdvisorySearchUtil.buildAdvisoryExpression(expression, objectType, visibilityExpr);
         List<JsonNode> docList = this.findDocuments(selector, new ArrayList<>(infoFields.keySet()));
         return docList.stream()
                 .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
                 .toList();
+    }
+
+    private void enrichAdvisory(AdvisoryInformationResponse response, Authentication credentials) {
+        response.setDeletable(canDeleteAdvisory(response, credentials));
+        response.setChangeable(canChangeAdvisory(response, credentials));
+        response.setAllowedStateChanges(getAllowedStates(response, credentials));
+        response.setCanCreateVersion(canCreateNewVersion(response, credentials));
+    }
+
+    private void enrichAdvisoryVersion(AdvisoryInformationResponse response) {
+        response.setDeletable(false);
+        response.setChangeable(false);
+        response.setAllowedStateChanges(emptyList());
+        response.setCanCreateVersion(false);
     }
 
     private List<WorkflowState> getAllowedStates(AdvisoryInformationResponse response, Authentication credentials) {

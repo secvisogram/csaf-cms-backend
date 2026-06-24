@@ -5,6 +5,8 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.e
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.less;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.notEqual;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +19,9 @@ import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -138,19 +142,6 @@ public class AdvisoryWorkflowUtil {
 
         return canViewAdvisory(advisory.getOwner(), advisory.getWorkflowState(), credentials,
                 advisory.getDocumentTrackingCurrentReleaseDate());
-    }
-
-
-    /**
-     * Check whether the given advisory info can be viewed with the given credentials
-     * @param response the advisory info to check
-     * @param credentials the credentials for the check
-     * @return true - info can be changed
-     */
-    public static boolean canViewAdvisory(AdvisoryInformationResponse response, Authentication credentials) {
-
-        return canViewAdvisory(response.getOwner(), response.getWorkflowState(), credentials,
-                response.getCurrentReleaseDate());
     }
 
     /**
@@ -515,6 +506,66 @@ public class AdvisoryWorkflowUtil {
         LocalDateTime t1 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp1));
         LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
         return t1.compareTo(t2) < 0;
+    }
+
+    /**
+     * Build a CouchDB filter expression that corresponds to the visibility rules of
+     * {@link #canViewAdvisory(String, WorkflowState, Authentication, String)}.
+     * <p>
+     * Returns {@code null} when the user can see every advisory (AUDITOR or EDITOR roles),
+     * so callers can skip adding the filter altogether.
+     * <p>
+     * The "published" condition is: {@code workflowState = "Published"} AND
+     * {@code currentReleaseDate < now} (lexicographic ISO-8601 comparison).
+     *
+     * @param credentials the credentials of the logged-in user
+     * @return an {@link Expression} representing the visibility constraint, or {@code null}
+     *         if no constraint is needed
+     */
+    public static Expression buildVisibilityExpression(Authentication credentials) {
+
+        // AUDITOR and EDITOR can see everything – no DB-side filter required.
+        if (hasRole(AUDITOR, credentials) || hasRole(EDITOR, credentials)) {
+            return null;
+        }
+
+        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+
+        // "published" sub-expression: workflowState = Published AND currentReleaseDate < now
+        Expression publishedExpr = new AndExpression(
+                equal(WorkflowState.Published.name(), AdvisoryField.WORKFLOW_STATE.getDbName()),
+                less(now, AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE.getFieldPath())
+        );
+
+        List<Expression> orTerms = new ArrayList<>();
+        orTerms.add(publishedExpr);
+
+        if (hasRole(AUTHOR, credentials)) {
+            // Own advisory OR published
+            orTerms.add(equal(credentials.getName(), AdvisoryField.OWNER.getDbName()));
+        }
+
+        if (hasRole(PUBLISHER, credentials)) {
+            // Draft, Approved, RfPublication OR published
+            orTerms.add(equal(WorkflowState.Draft.name(), AdvisoryField.WORKFLOW_STATE.getDbName()));
+            orTerms.add(equal(WorkflowState.Approved.name(), AdvisoryField.WORKFLOW_STATE.getDbName()));
+            orTerms.add(equal(WorkflowState.RfPublication.name(), AdvisoryField.WORKFLOW_STATE.getDbName()));
+        }
+
+        if (hasRole(REVIEWER, credentials)) {
+            // Non-own advisories in Review state OR published
+            orTerms.add(new AndExpression(
+                    equal(WorkflowState.Review.name(), AdvisoryField.WORKFLOW_STATE.getDbName()),
+                    notEqual(credentials.getName(), AdvisoryField.OWNER.getDbName())
+            ));
+        }
+
+        if (orTerms.size() == 1) {
+            // Only the publishedExpr applies – return it directly without wrapping in OR.
+            return publishedExpr;
+        }
+
+        return new OrExpression(orTerms.toArray(new Expression[0]));
     }
 
 

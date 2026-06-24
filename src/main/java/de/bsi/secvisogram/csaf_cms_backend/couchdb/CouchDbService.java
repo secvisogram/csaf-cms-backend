@@ -224,6 +224,7 @@ public class CouchDbService {
                 .db(this.dbName)
                 .selector(selector)
                 .fields(fields.stream().map(DbField::getDbName).collect(Collectors.toList()))
+                .limit((long) Integer.MAX_VALUE)
                 .build();
 
         FindResult findDocumentResult = client
@@ -249,6 +250,7 @@ public class CouchDbService {
                 .db(this.dbName)
                 .selector(selector)
                 .fields(fields.stream().map(DbField::getDbName).collect(Collectors.toList()))
+                .limit((long) Integer.MAX_VALUE)
                 .build();
 
         return client

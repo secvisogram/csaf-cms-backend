@@ -1394,5 +1394,18 @@ public class AdvisoryServiceTest {
         }
     }
 
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "Ok for test")
+    public void getMultipleAdvisoryIdsTest() throws IOException, CsafException {
+
+        for (int i = 0; i < 300; i++) {
+            this.advisoryService.addAdvisory(csafToRequest(csafJson));
+        }
+
+
+        List<AdvisoryInformationResponse> infos = this.advisoryService.getAdvisoryInformations(null);
+        assertEquals(300, infos.size());
+    }
 
 }

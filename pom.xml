@@ -18,18 +18,18 @@
 		<plugin.version.cyclonedx>2.9.1</plugin.version.cyclonedx>
 		<plugin.version.enforcer>3.3.9</plugin.version.enforcer>
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
-		<plugin.version.spotbugs>4.9.8.1</plugin.version.spotbugs>
+		<plugin.version.spotbugs>4.9.8.3</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
-		<plugin.version.jacoco>0.8.14</plugin.version.jacoco>
-		<dependency.version.cloudant>0.10.12</dependency.version.cloudant>
+		<plugin.version.jacoco>0.8.15</plugin.version.jacoco>
+		<dependency.version.cloudant>0.10.19</dependency.version.cloudant>
 		<dependency.version.swagger-annotations>2.2.40</dependency.version.swagger-annotations>
-		<dependency.version.swagger-models>2.2.40</dependency.version.swagger-models>
+		<dependency.version.swagger-models>2.2.50</dependency.version.swagger-models>
 		<dependency.version.commons-text>1.14.0</dependency.version.commons-text>
 		<dependency.version.springdoc-openapi>2.5.0</dependency.version.springdoc-openapi>
 		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
 		<dependency.version.zjsonpatch>0.4.16</dependency.version.zjsonpatch>
-		<dependency.version.org.graalvm.js>25.0.1</dependency.version.org.graalvm.js>
-		<dependency.version.org.graalvm.js-scriptengine>25.0.1</dependency.version.org.graalvm.js-scriptengine>
+		<dependency.version.org.graalvm.js>25.0.3</dependency.version.org.graalvm.js>
+		<dependency.version.org.graalvm.js-scriptengine>25.0.3</dependency.version.org.graalvm.js-scriptengine>
 		<dependency.version.spotbugs-annotations>4.9.8</dependency.version.spotbugs-annotations> 
 	</properties>
 
