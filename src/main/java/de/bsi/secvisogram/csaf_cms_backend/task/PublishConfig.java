@@ -1,9 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.task;
 
-import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import java.util.Collection;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +21,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 
 @Configuration
 @EnableScheduling
@@ -44,7 +46,7 @@ public class PublishConfig implements SchedulingConfigurer {
 	
     private SecurityContext createSchedulerSecurityContext() {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_publisher", "ROLE_auditor", "ROLE_registred");
+        Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_publisher", "ROLE_auditor", "ROLE_registered");
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 "PublisherTask",
                 "Publisher",
