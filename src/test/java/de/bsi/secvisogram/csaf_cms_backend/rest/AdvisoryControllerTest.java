@@ -15,11 +15,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
@@ -51,13 +50,14 @@ import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.core.JacksonException;
 
 @WebMvcTest(AdvisoryController.class)
 @SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
@@ -75,7 +75,7 @@ public class AdvisoryControllerTest {
     @Autowired
     AdvisoryController advisoryController;
 
-    private static final ObjectMapper jacksonMapper = new ObjectMapper();
+    private static final ObjectMapper jacksonMapper = new JsonMapper();
 
     private static final String advisoryRoute = "/api/v1/advisories";
 
@@ -89,12 +89,14 @@ public class AdvisoryControllerTest {
     private static final String advisoryId = UUID.randomUUID().toString();
     private static final String fullAdvisoryJsonString = String.format(
             """
+                    {
                             "owner": "Musterfrau",
                             "type": "Advisory",
                             "workflowState": "Draft",
                             "csaf": %s,
                             "_rev": "revision",
                             "_id": "%s"
+                    }
                     """, csafJsonString, advisoryId);
 
     private static final String revision = "2-efaa5db9409b2d4300535c70aaf6a66b";
@@ -227,9 +229,9 @@ public class AdvisoryControllerTest {
     @WithMockUser()
     void createCsafDocumentTest_invalidCsaf() throws Exception {
 
-        when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
+        when(advisoryService.addAdvisory(any())).thenThrow(JacksonException.class);
         String invalidCsaf = "{}";
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(
                         post(advisoryRoute).content(writer.writeValueAsString(csafToRequest(invalidCsaf)))
                                 .contentType(MediaType.APPLICATION_JSON).with(csrf()))
@@ -240,7 +242,7 @@ public class AdvisoryControllerTest {
     @WithMockUser()
     void createCsafDocumentTest_invalidJson() throws Exception {
 
-        when(advisoryService.addAdvisory(any())).thenThrow(JsonProcessingException.class);
+        when(advisoryService.addAdvisory(any())).thenThrow(JacksonException.class);
         String invalidJson = "invalid JSON";
         this.mockMvc.perform(
                         post(advisoryRoute).content(invalidJson)
@@ -255,7 +257,7 @@ public class AdvisoryControllerTest {
         IdAndRevision idRev = new IdAndRevision(advisoryId, revision);
         when(advisoryService.addAdvisory(any())).thenReturn(idRev);
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf())
                                 .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
@@ -294,7 +296,7 @@ public class AdvisoryControllerTest {
 
         doThrow(IdNotFoundException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -308,7 +310,7 @@ public class AdvisoryControllerTest {
 
         doThrow(AccessDeniedException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -322,7 +324,7 @@ public class AdvisoryControllerTest {
 
         doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(revision), any());
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -349,13 +351,14 @@ public class AdvisoryControllerTest {
     void changeCsafDocumentTest_invalidRevision() throws Exception {
 
         String invalidRevision = "invalid";
-        doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(advisoryId, invalidRevision, csafToRequest(fullAdvisoryJsonString));
+        doThrow(DatabaseException.class).when(advisoryService).updateAdvisory(eq(advisoryId), eq(invalidRevision), any());
 
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
-                        .content(fullAdvisoryJsonString)
+                        .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", invalidRevision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
     }
 
@@ -379,7 +382,7 @@ public class AdvisoryControllerTest {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.updateAdvisory(eq(advisoryId), eq(revision), any())).thenReturn(newRevision);
 
-        ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = new JsonMapper().writerWithDefaultPrettyPrinter();
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId).with(csrf())
                         .content(writer.writeValueAsString(csafToRequest(fullAdvisoryJsonString)))
                         .contentType(MediaType.APPLICATION_JSON)

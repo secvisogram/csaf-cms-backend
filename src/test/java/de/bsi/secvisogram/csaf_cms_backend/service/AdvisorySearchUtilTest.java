@@ -1,47 +1,41 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+
+import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
-import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafAcknowledgmentsNames;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonRevisionHistorySummary;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafJsonTitle;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafProductTreeBranchesCategory;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafProductTreeFullProductNamesProductId;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafVulnerabilitiesCve;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
+
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(properties = {
         "csaf.workflow.allowOwnDocumentsApproved=true",
 })
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
-@ContextConfiguration
+@SpringJUnitConfig
 public class AdvisorySearchUtilTest {
 
     @Autowired

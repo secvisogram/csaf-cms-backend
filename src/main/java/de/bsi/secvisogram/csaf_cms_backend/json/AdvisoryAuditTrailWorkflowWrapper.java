@@ -1,10 +1,10 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wrapper around JsonNode to read and write audit trail objects for advisory workflow changes from/to the CouchDB
@@ -20,7 +20,7 @@ public class AdvisoryAuditTrailWorkflowWrapper extends AdvisoryAuditTrailWrapper
      */
     public static AdvisoryAuditTrailWorkflowWrapper createNewFrom(WorkflowState newWorkflowState, WorkflowState oldWorkflowState) {
 
-        ObjectNode rootNode = new ObjectMapper().createObjectNode();
+        ObjectNode rootNode = new JsonMapper().createObjectNode();
 
         AdvisoryAuditTrailWorkflowWrapper wrapper = new AdvisoryAuditTrailWorkflowWrapper(rootNode)
                 .setNewWorkflowState(newWorkflowState)
@@ -38,12 +38,12 @@ public class AdvisoryAuditTrailWorkflowWrapper extends AdvisoryAuditTrailWrapper
 
     public String getOldWorkflowState() {
 
-        return this.getAuditTrailNode().get(AdvisoryAuditTrailField.OLD_WORKFLOW_STATE.getDbName()).asText();
+        return this.getAuditTrailNode().get(AdvisoryAuditTrailField.OLD_WORKFLOW_STATE.getDbName()).asString();
     }
 
     public String getNewWorkflowState() {
 
-        return this.getAuditTrailNode().get(AdvisoryAuditTrailField.NEW_WORKFLOW_STATE.getDbName()).asText();
+        return this.getAuditTrailNode().get(AdvisoryAuditTrailField.NEW_WORKFLOW_STATE.getDbName()).asString();
     }
 
     public AdvisoryAuditTrailWorkflowWrapper setOldWorkflowState(WorkflowState newValue) {

@@ -8,9 +8,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpressio
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.less;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.notEqual;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -37,6 +34,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 
 /**
  * Helper Methods for workflow and permissions
@@ -433,7 +434,7 @@ public class AdvisoryWorkflowUtil {
             throws IOException {
 
         InputStream inputStream = couchDbService.findDocumentsAsStream(selector, fields);
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode couchDbResultNode = mapper.readValue(inputStream, JsonNode.class);
         ArrayNode couchDbDocs = (ArrayNode) couchDbResultNode.get("docs");
         List<JsonNode> docNodes = new ArrayList<>();
@@ -457,8 +458,8 @@ public class AdvisoryWorkflowUtil {
 
         for (JsonNode jsonNode : diffPatch) {
 
-            String operation = jsonNode.get("op").asText();
-            String path = jsonNode.get("path").asText();
+            String operation = jsonNode.get("op").asString();
+            String path = jsonNode.get("path").asString();
             if (path.startsWith("/product_tree")) {
                 result = PatchType.MAJOR;
                 break;
@@ -480,8 +481,8 @@ public class AdvisoryWorkflowUtil {
                 result = PatchType.MINOR;
             }
             if ("replace".equals(operation)) {
-                String value = jsonNode.get("value").asText();
-                String oldValue = oldCsaf.at(path).asText();
+                String value = jsonNode.get("value").asString();
+                String oldValue = oldCsaf.at(path).asString();
                 if (!isSpellingMistake(oldValue, value, maxLevenshteinDistance)) {
                     result = PatchType.MINOR;
                 }

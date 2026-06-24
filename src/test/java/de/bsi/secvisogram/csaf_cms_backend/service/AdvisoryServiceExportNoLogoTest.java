@@ -16,9 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -31,7 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @SpringBootTest(properties = "csaf.document.templates.companyLogoPath=")
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
-@ContextConfiguration
+@SpringJUnitConfig
 @SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryServiceExportNoLogoTest {
 

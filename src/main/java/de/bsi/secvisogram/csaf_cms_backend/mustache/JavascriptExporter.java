@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.mustache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,7 +8,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import javax.annotation.Nonnull;
 import org.apache.commons.codec.binary.Base64;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
@@ -20,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Create Html String from a mustache template file and Json Input File
@@ -97,7 +97,7 @@ public class JavascriptExporter {
         final MediaType logoMediaType = determineMediaTypeOfLogo(logoPath);
         final byte[] encoded = Base64.encodeBase64(Files.readAllBytes(logoPath));
         final String data = new String(encoded, StandardCharsets.US_ASCII);
-        final ObjectNode node = new ObjectMapper().createObjectNode();
+        final ObjectNode node = new JsonMapper().createObjectNode();
         node.put("mediaType", logoMediaType.toString());
         node.put("data", data);
         return node.toString();

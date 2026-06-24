@@ -1,7 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.ibm.cloud.cloudant.v1.model.Document;
+import tools.jackson.databind.JsonNode;
 
 public interface DbField {
 
@@ -17,7 +17,7 @@ public interface DbField {
     }
 
     default String stringVal(JsonNode couchDbDoc) {
-        return couchDbDoc.get(this.getDbName()).asText();
+        return couchDbDoc.get(this.getDbName()).asString();
     }
 
 }

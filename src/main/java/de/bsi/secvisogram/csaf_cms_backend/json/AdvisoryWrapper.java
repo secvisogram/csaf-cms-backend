@@ -8,12 +8,8 @@ import static java.time.LocalDateTime.from;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.flipkart.zjsonpatch.JsonDiff;
-import com.flipkart.zjsonpatch.JsonPatch;
+import com.flipkart.zjsonpatch.Jackson3JsonDiff;
+import com.flipkart.zjsonpatch.Jackson3JsonPatch;
 import com.vdurmont.semver4j.Semver;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -37,6 +33,11 @@ import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
@@ -60,7 +61,7 @@ public class AdvisoryWrapper {
      */
     public static AdvisoryWrapper createFromCouchDb(InputStream advisoryStream) throws IOException, CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         AdvisoryWrapper advisoryFromDb = new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
         if (advisoryFromDb.getType() != ObjectType.Advisory) {
             throw new CsafException("Object for id is not of type Advisory", InvalidObjectType, BAD_REQUEST);
@@ -78,7 +79,7 @@ public class AdvisoryWrapper {
      */
     public static AdvisoryWrapper createVersionFrom(AdvisoryWrapper advisoryToClone) throws IOException {
 
-        final ObjectMapper objMapper = new ObjectMapper();
+        final ObjectMapper objMapper = new JsonMapper();
         String jsonStr = objMapper.writeValueAsString(advisoryToClone.advisoryNode);
 
         AdvisoryWrapper newAdvisory = new AdvisoryWrapper(objMapper.readValue(jsonStr, ObjectNode.class))
@@ -99,14 +100,14 @@ public class AdvisoryWrapper {
      * @throws IOException error in processing the input stream
      */
     public static AdvisoryWrapper createCopy(AdvisoryWrapper advisoryToClone) throws IOException {
-        final ObjectMapper objMapper = new ObjectMapper();
+        final ObjectMapper objMapper = new JsonMapper();
         String jsonStr = objMapper.writeValueAsString(advisoryToClone.advisoryNode);
         return new AdvisoryWrapper(objMapper.readValue(jsonStr, ObjectNode.class));
     }
 
     private static ObjectNode createAdvisoryNodeFromRequest(CreateAdvisoryRequest csafJson) throws CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         JsonNode csafRootNode = csafJson.getCsaf();
         if (csafRootNode == null || !csafRootNode.has("document")) {
             throw new CsafException("Csaf contains no document entry", CsafExceptionKey.CsafHasNoDocumentNode,
@@ -120,7 +121,7 @@ public class AdvisoryWrapper {
 
     private static ObjectNode createAdvisoryNodeFromRequest(JsonNode csafJson) throws CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         if (csafJson == null || !csafJson.has("document")) {
             throw new CsafException("Csaf contains no document entry", CsafExceptionKey.CsafHasNoDocumentNode,
                     HttpStatus.BAD_REQUEST);
@@ -134,7 +135,7 @@ public class AdvisoryWrapper {
 
     private static ObjectNode createAdvisoryNodeFromString(String csafJson) throws IOException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
             JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
             if (!csafRootNode.has("document")) {
@@ -417,7 +418,7 @@ public class AdvisoryWrapper {
 
     String getTextFor(DbField dbField) {
 
-        return (advisoryNode.has(dbField.getDbName())) ? advisoryNode.get(dbField.getDbName()).asText() : null;
+        return (advisoryNode.has(dbField.getDbName())) ? advisoryNode.get(dbField.getDbName()).asString() : null;
     }
 
 
@@ -453,56 +454,56 @@ public class AdvisoryWrapper {
     public String getDocumentTitle() {
 
         JsonNode titleNode = this.at(AdvisorySearchField.DOCUMENT_TITLE);
-        return (titleNode.isMissingNode()) ? "" : titleNode.asText();
+        return (titleNode.isMissingNode()) ? "" : titleNode.asString();
     }
 
     public String getDocumentTrackingId() {
 
         JsonNode idNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_ID);
-        return (idNode.isMissingNode()) ? "" : idNode.asText();
+        return (idNode.isMissingNode()) ? "" : idNode.asString();
     }
 
     public String getDocumentTrackingVersion() {
 
         JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_VERSION);
-        return (versionNode.isMissingNode()) ? "" : versionNode.asText();
+        return (versionNode.isMissingNode()) ? "" : versionNode.asString();
     }
 
     public String getDocumentTrackingStatus() {
 
         JsonNode statusNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_STATUS);
-        return (statusNode.isMissingNode()) ? "" : statusNode.asText();
+        return (statusNode.isMissingNode()) ? "" : statusNode.asString();
     }
 
     public String getDocumentTrackingGeneratorEngineName() {
 
         JsonNode nameNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_GENERATOR_ENGINE_NAME);
-        return (nameNode.isMissingNode()) ? "" : nameNode.asText();
+        return (nameNode.isMissingNode()) ? "" : nameNode.asString();
     }
 
 
     public String getDocumentTrackingGeneratorEngineVersion() {
 
         JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_GENERATOR_ENGINE_VERSION);
-        return (versionNode.isMissingNode()) ? "" : versionNode.asText();
+        return (versionNode.isMissingNode()) ? "" : versionNode.asString();
     }
 
     public String getDocumentTrackingCurrentReleaseDate() {
 
         JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE);
-        return (versionNode.isMissingNode()) ? null : versionNode.asText();
+        return (versionNode.isMissingNode()) ? null : versionNode.asString();
     }
 
     public String getDocumentTrackingInitialReleaseDate() {
 
         JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_INITIAL_RELEASE_DATE);
-        return (versionNode.isMissingNode()) ? null : versionNode.asText();
+        return (versionNode.isMissingNode()) ? null : versionNode.asString();
     }
 
     public String getDocumentPublisherName() {
 
         JsonNode publisherNameNode = this.at("/csaf/document/publisher/name");
-        return (publisherNameNode.isMissingNode()) ? null : publisherNameNode.asText();
+        return (publisherNameNode.isMissingNode()) ? null : publisherNameNode.asString();
     }
 
     /**
@@ -512,7 +513,7 @@ public class AdvisoryWrapper {
     public String getDocumentDistributionTlp() {
 
         JsonNode tlpNode = this.at("/csaf/document/distribution/tlp/label");
-        return (tlpNode.isMissingNode()) ? null : tlpNode.asText();
+        return (tlpNode.isMissingNode()) ? null : tlpNode.asString();
     }
 
     /**
@@ -594,7 +595,7 @@ public class AdvisoryWrapper {
         if (ptr.isEmpty()) {
             return node;
         }
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ObjectNode nextNode = (ObjectNode) node.get(ptr.get(0));
         if (nextNode == null) {
             nextNode = jacksonMapper.createObjectNode();
@@ -636,7 +637,7 @@ public class AdvisoryWrapper {
 
     public String getLastRevisionHistoryElementSummary() {
         ObjectNode lastHistoryNode = getLastHistoryElementByDate();
-        return lastHistoryNode.get("summary").asText();
+        return lastHistoryNode.get("summary").asString();
     }
 
     public AdvisoryWrapper setLastRevisionHistoryElementNumberAndDate(String newNumber, String newDate) {
@@ -653,7 +654,7 @@ public class AdvisoryWrapper {
         ObjectNode[] lastNode = {null};
         String[] lastDate = {null};
         historyNode.forEach(jsonNode -> {
-            String nodeDate = jsonNode.get("date").asText();
+            String nodeDate = jsonNode.get("date").asString();
             if (lastDate[0] == null || timestampIsBefore(lastDate[0], nodeDate)) {
                 lastNode[0] = (ObjectNode) jsonNode;
                 lastDate[0] = nodeDate;
@@ -672,19 +673,19 @@ public class AdvisoryWrapper {
 
     public void removeAllPrereleaseVersions() {
         ArrayNode historyNode = getOrCreateHistoryNode();
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ArrayNode newHistoryNode = jacksonMapper.createArrayNode();
 
         if (usesSemanticVersioning()) {
             historyNode.forEach(historyItem -> {
-                Semver historyItemVersion = new Semver(historyItem.get("number").asText());
+                Semver historyItemVersion = new Semver(historyItem.get("number").asString());
                 if (!SemanticVersioning.getDefault().isPrerelease(historyItemVersion)) {
                     newHistoryNode.add(historyItem);
                 }
             });
         } else {
             historyNode.forEach(historyItem -> {
-                String historyItemVersion = historyItem.get("number").asText();
+                String historyItemVersion = historyItem.get("number").asString();
                 if (!("0".equals(historyItemVersion))) {
                     newHistoryNode.add(historyItem);
                 }
@@ -720,7 +721,7 @@ public class AdvisoryWrapper {
         ObjectNode trackingNode = getOrCreateTrackingNode();
         ArrayNode historyNode = (ArrayNode) trackingNode.get(revHistory);
         if (historyNode == null) {
-            final ObjectMapper jacksonMapper = new ObjectMapper();
+            final ObjectMapper jacksonMapper = new JsonMapper();
             historyNode = jacksonMapper.createArrayNode();
             trackingNode.set(revHistory, historyNode);
         }
@@ -761,7 +762,7 @@ public class AdvisoryWrapper {
 
     public static AdvisoryInformationResponse convertToAdvisoryInfo(JsonNode doc, Map<DbField,
             BiConsumer<AdvisoryInformationResponse, String>> infoFields) {
-        String advisoryId = doc.get(ID_FIELD.getDbName()).asText();
+        String advisoryId = doc.get(ID_FIELD.getDbName()).asString();
         final AdvisoryInformationResponse response = new AdvisoryInformationResponse(advisoryId);
         infoFields.forEach((key, value) -> setValueInResponse(response, key, doc, value));
 
@@ -772,12 +773,12 @@ public class AdvisoryWrapper {
 
         String value;
         if (field.equals(ID_FIELD)) {
-            value = doc.get(ID_FIELD.getDbName()).asText();
+            value = doc.get(ID_FIELD.getDbName()).asString();
         } else if (field.equals(REVISION_FIELD)) {
-            value = doc.get(REVISION_FIELD.getDbName()).asText();
+            value = doc.get(REVISION_FIELD.getDbName()).asString();
         } else {
             String jsonPtrExpr = String.join("/", field.getFieldPath());
-            value = doc.at("/" + jsonPtrExpr).asText();
+            value = doc.at("/" + jsonPtrExpr).asString();
         }
         advisorySetter.accept(response, value);
     }
@@ -827,7 +828,7 @@ public class AdvisoryWrapper {
      */
     public static JsonNode calculateJsonDiff(JsonNode source, JsonNode target) {
 
-        return JsonDiff.asJson(source, target);
+        return Jackson3JsonDiff.asJson(source, target);
     }
 
     /**
@@ -839,7 +840,7 @@ public class AdvisoryWrapper {
      */
     public static JsonNode applyJsonPatchToNode(JsonNode patch, JsonNode source) {
 
-        return JsonPatch.apply(patch, source);
+        return Jackson3JsonPatch.apply(patch, source);
     }
 
     /**
@@ -867,7 +868,7 @@ public class AdvisoryWrapper {
         ObjectNode documentNode = getOrCreateObjectNode(this.advisoryNode, List.of("csaf", "document"));
         ArrayNode referencesNode = (ArrayNode) documentNode.get("references");
         if (referencesNode == null) {
-            final ObjectMapper jacksonMapper = new ObjectMapper();
+            final ObjectMapper jacksonMapper = new JsonMapper();
             referencesNode = jacksonMapper.createArrayNode();
             documentNode.set("references", referencesNode);
         }

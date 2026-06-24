@@ -1,9 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wrapper around JsonNode to read and write audit trail objects for CSAF document changes from/to the CouchDB
@@ -20,7 +20,7 @@ public class AdvisoryAuditTrailDiffWrapper extends AdvisoryAuditTrailWrapper {
     public static AdvisoryAuditTrailDiffWrapper createNewFromAdvisories(AdvisoryWrapper oldAdvisory, AdvisoryWrapper newAdvisory) {
 
         JsonNode diffPatch = oldAdvisory.calculateDiffTo(newAdvisory);
-        ObjectNode rootNode = new ObjectMapper().createObjectNode();
+        ObjectNode rootNode = new JsonMapper().createObjectNode();
 
         AdvisoryAuditTrailDiffWrapper wrapper =  new AdvisoryAuditTrailDiffWrapper(rootNode)
                 .setDiffPatch(diffPatch);

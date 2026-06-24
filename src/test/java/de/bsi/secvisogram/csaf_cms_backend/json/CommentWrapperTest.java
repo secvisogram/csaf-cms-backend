@@ -4,8 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
@@ -180,7 +180,7 @@ public class CommentWrapperTest {
         String commentId = UUID.randomUUID().toString();
         String advisoryId = UUID.randomUUID().toString();
 
-        ObjectNode commentNode = new ObjectMapper().createObjectNode();
+        ObjectNode commentNode = new JsonMapper().createObjectNode();
         commentNode.put("owner", owner);
         commentNode.put("text", commentText);
         commentNode.put("csafNodeId", "field123");
@@ -204,7 +204,7 @@ public class CommentWrapperTest {
         String answerId = UUID.randomUUID().toString();
         String commentId = UUID.randomUUID().toString();
 
-        ObjectNode commentNode = new ObjectMapper().createObjectNode();
+        ObjectNode commentNode = new JsonMapper().createObjectNode();
         commentNode.put("owner", owner);
         commentNode.put("text", commentText);
         commentNode.put("answerTo", commentId);

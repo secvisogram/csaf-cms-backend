@@ -1,7 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.fixture;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import java.io.ByteArrayInputStream;
@@ -18,7 +19,7 @@ public class CsafDocumentJsonCreator {
 
   public static CreateAdvisoryRequest csafToRequest(String csafJson) throws IOException {
 
-    final ObjectMapper jacksonMapper = new ObjectMapper();
+    final ObjectMapper jacksonMapper = new JsonMapper();
     var request = new CreateAdvisoryRequest();
     request.setSummary("Test Summary");
     try (final InputStream csafStream = csafToInputstream(csafJson)) {
