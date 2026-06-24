@@ -37,6 +37,8 @@ public class CsafConfiguration {
 
     public void setAutoPublish(CsafAutoPublishConfiguration autoPublish) {
       this.autoPublish = autoPublish;
+    }
+    
     public CsafWorkflowConfiguration getWorkflow() {
         return workflow;
     }
