@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.task;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -63,14 +64,14 @@ public class PublishJob implements Runnable {
       if (advisory.getWorkflowState() == WorkflowState.AutoPublish) {
         if (AdvisoryWrapper.timestampIsBefore(advisory.getCurrentReleaseDate(),
             DateTimeFormatter.ISO_INSTANT.format(Instant.now()))) {
-          Path p = this.advisoryService.exportAdvisory(advisory.getAdvisoryId(), ExportFormat.JSON);
+          Path temporaryAdvisoryFilePath = this.advisoryService.exportAdvisory(advisory.getAdvisoryId(), ExportFormat.JSON);
           String trackingId = advisory.getDocumentTrackingId().toLowerCase();
           
           final WebClient webClient = createWebClient();
           try {
             webClient.post().uri(this.configuration.getAutoPublish().getUrl())
                 .contentType(MediaType.MULTIPART_FORM_DATA).header("X-Csaf-Provider-Auth", getAuthenticationCode())
-                .body(BodyInserters.fromMultipartData(fromFile(p, trackingId))).retrieve()
+                .body(BodyInserters.fromMultipartData(fromFile(temporaryAdvisoryFilePath, trackingId))).retrieve()
                 .bodyToMono(String.class).onErrorMap(throwable -> {
                 	if (WebClientResponseException.class.isInstance(throwable)) {
                 		WebClientResponseException wcre = (WebClientResponseException) throwable;
@@ -82,6 +83,8 @@ public class PublishJob implements Runnable {
             LOG.error(pe.getMessage());
             // Skip workflow state change.
             continue;
+          } finally {
+            Files.deleteIfExists(temporaryAdvisoryFilePath);
           }
           
           this.advisoryService.changeAdvisoryWorkflowState(advisory.getAdvisoryId(), advisory.getRevision(),
