@@ -1,0 +1,3 @@
+#!/bin/sh
+
+spawn-fcgi -s /var/run/fcgiwrap.socket -M 766 -u $PUID -g $PGID /usr/bin/fcgiwrap 
