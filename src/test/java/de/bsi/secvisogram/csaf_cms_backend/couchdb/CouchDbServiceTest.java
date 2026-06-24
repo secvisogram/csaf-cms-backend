@@ -12,12 +12,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.ibm.cloud.cloudant.v1.model.Document;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import tools.jackson.core.JacksonException;
 
 /**
  * Test for the CouchDB service. The required CouchDB container is started in the CouchDBExtension.
@@ -388,7 +388,7 @@ public class CouchDbServiceTest {
 
     private ObjectNode toAdvisoryJson(InputStream csafJsonStream, String owner) throws IOException {
 
-        ObjectMapper jacksonMapper = new ObjectMapper();
+        ObjectMapper jacksonMapper = new JsonMapper();
 
         JsonNode csafRootNode = jacksonMapper.readValue(csafJsonStream, JsonNode.class);
 
@@ -401,9 +401,9 @@ public class CouchDbServiceTest {
         return rootNode;
     }
 
-    public void writeToDb(Object objectToWrite) throws JsonProcessingException {
-      final ObjectMapper jacksonMapper = new ObjectMapper();
-      ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+    public void writeToDb(Object objectToWrite) throws JacksonException {
+      final ObjectMapper jacksonMapper = new JsonMapper();
+      ObjectWriter writer = jacksonMapper.writerWithDefaultPrettyPrinter();
       String createString = writer.writeValueAsString(objectToWrite);
       this.couchDbService.writeDocument(UUID.randomUUID(), createString);
     }

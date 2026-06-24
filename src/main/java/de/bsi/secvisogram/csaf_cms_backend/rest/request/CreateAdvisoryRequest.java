@@ -1,7 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.rest.request;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.media.Schema;
+import tools.jackson.databind.JsonNode;
 
 @Schema(name = "CreateAdvisoryRequest")
 public class CreateAdvisoryRequest {

@@ -1,7 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.model.template;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +9,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Service to load all templates or the content of a specific template
@@ -66,7 +67,7 @@ public class DocumentTemplateService {
                 throw new IOException("Could not find directory containing templates!");
             }
             Path templatePath = parentPath.resolve(relativeFileName.get());
-            final ObjectMapper jacksonMapper = new ObjectMapper();
+            final ObjectMapper jacksonMapper = new JsonMapper();
             return Optional.of(jacksonMapper.readValue(Files.readAllBytes(templatePath), JsonNode.class));
         }
         return Optional.empty();

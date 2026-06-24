@@ -1,9 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentAuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 public class CommentAuditTrailWrapper extends AuditTrailWrapper {
 
@@ -14,7 +14,7 @@ public class CommentAuditTrailWrapper extends AuditTrailWrapper {
 
     public String getCommentId() {
 
-        return this.getAuditTrailNode().get(CommentAuditTrailField.COMMENT_ID.getDbName()).asText();
+        return this.getAuditTrailNode().get(CommentAuditTrailField.COMMENT_ID.getDbName()).asString();
     }
 
     public CommentAuditTrailWrapper setCommentId(String newValue) {
@@ -25,7 +25,7 @@ public class CommentAuditTrailWrapper extends AuditTrailWrapper {
 
     public String getCommentText() {
 
-        return this.getAuditTrailNode().get(CommentAuditTrailField.COMMENT_TEXT.getDbName()).asText();
+        return this.getAuditTrailNode().get(CommentAuditTrailField.COMMENT_TEXT.getDbName()).asString();
     }
 
     public CommentAuditTrailWrapper setCommentText(String newValue) {
@@ -42,7 +42,7 @@ public class CommentAuditTrailWrapper extends AuditTrailWrapper {
      */
     public static CommentAuditTrailWrapper createNew(CommentWrapper comment) {
 
-        ObjectNode rootNode = new ObjectMapper().createObjectNode();
+        ObjectNode rootNode = new JsonMapper().createObjectNode();
 
         CommentAuditTrailWrapper wrapper = new CommentAuditTrailWrapper(rootNode)
                 .setCommentId(comment.getCommentId())

@@ -21,9 +21,9 @@ public class AdvisoryAuditTrailDiffWrapperTest {
         var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonCategoryTitleId("Category1", "NewTitle", "Id2")), "John", Semantic.name());
 
         AdvisoryAuditTrailDiffWrapper wrapper = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
-        assertThat(wrapper.getDiffPatch().at("/0/op").asText(), equalTo("replace"));
-        assertThat(wrapper.getDiffPatch().at("/0/path").asText(), equalTo("/csaf/document/title"));
-        assertThat(wrapper.getDiffPatch().at("/0/value").asText(), equalTo("NewTitle"));
+        assertThat(wrapper.getDiffPatch().at("/0/op").asString(), equalTo("replace"));
+        assertThat(wrapper.getDiffPatch().at("/0/path").asString(), equalTo("/csaf/document/title"));
+        assertThat(wrapper.getDiffPatch().at("/0/value").asString(), equalTo("NewTitle"));
         assertThat(wrapper.getType(), equalTo(ObjectType.AuditTrailDocument.name()));
         assertThat(wrapper.getDocVersion(), equalTo("0.0.1"));
         assertThat(wrapper.getOldDocVersion(), equalTo("0.0.1"));
@@ -37,9 +37,9 @@ public class AdvisoryAuditTrailDiffWrapperTest {
         var newWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonCategoryTitleId("Category1", "NewTitle", "ID01")), "John", Semantic.name());
 
         AdvisoryAuditTrailDiffWrapper wrapper = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldWrapper, newWrapper);
-        assertThat(wrapper.getDiffPatch().at("/0/op").asText(), equalTo("add"));
-        assertThat(wrapper.getDiffPatch().at("/0/path").asText(), equalTo("/csaf/document/category"));
-        assertThat(wrapper.getDiffPatch().at("/0/value").asText(), equalTo("Category1"));
+        assertThat(wrapper.getDiffPatch().at("/0/op").asString(), equalTo("add"));
+        assertThat(wrapper.getDiffPatch().at("/0/path").asString(), equalTo("/csaf/document/category"));
+        assertThat(wrapper.getDiffPatch().at("/0/value").asString(), equalTo("Category1"));
         assertThat(wrapper.getType(), equalTo(ObjectType.AuditTrailDocument.name()));
         assertThat(wrapper.getDocVersion(), equalTo("0.0.1"));
         assertThat(wrapper.getOldDocVersion(), is(""));

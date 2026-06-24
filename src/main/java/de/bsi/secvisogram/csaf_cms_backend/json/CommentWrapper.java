@@ -5,9 +5,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_
 import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.InvalidObjectType;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
@@ -21,6 +18,10 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wrapper around JsonNode to read and write comment/answer objects from/to the CouchDB
@@ -37,7 +38,7 @@ public class CommentWrapper {
      */
     public static CommentWrapper createFromCouchDb(InputStream commentStream) throws IOException, CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         CommentWrapper wrapperFomDb = new CommentWrapper(jacksonMapper.readValue(commentStream, ObjectNode.class));
         if (wrapperFomDb.getType() != ObjectType.Comment) {
             throw new CsafException("Object for id is not of type Comment", InvalidObjectType, BAD_REQUEST);
@@ -56,7 +57,7 @@ public class CommentWrapper {
      */
     public static CommentWrapper createNew(String advisoryId, CreateCommentRequest newComment) {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         CommentWrapper wrapper =  new CommentWrapper(jacksonMapper.createObjectNode());
         wrapper.setAdvisoryId(advisoryId);
         wrapper.setType(ObjectType.Comment);
@@ -90,7 +91,7 @@ public class CommentWrapper {
      */
     public static CommentWrapper createNewAnswerFromJson(String advisoryId, String commentId, String commentText) {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
 
         if (commentText == null) {
             throw new IllegalArgumentException("commentText must be provided!");
@@ -123,7 +124,7 @@ public class CommentWrapper {
 
     public String getCommentId() {
 
-        return (commentNode.has(ID_FIELD.getDbName())) ? commentNode.get(ID_FIELD.getDbName()).asText() : null;
+        return (commentNode.has(ID_FIELD.getDbName())) ? commentNode.get(ID_FIELD.getDbName()).asString() : null;
     }
 
     private CommentWrapper setCommentId(String newValue) {
@@ -222,7 +223,7 @@ public class CommentWrapper {
 
     String getTextFor(DbField dbField) {
 
-        return (this.commentNode.has(dbField.getDbName())) ? this.commentNode.get(dbField.getDbName()).asText() : null;
+        return (this.commentNode.has(dbField.getDbName())) ? this.commentNode.get(dbField.getDbName()).asString() : null;
     }
 
 
@@ -246,20 +247,20 @@ public class CommentWrapper {
 
     public static CommentInformationResponse convertToCommentInfo(JsonNode commentJson) {
 
-        String commentId = commentJson.get(ID_FIELD.getDbName()).asText();
-        String advisoryId = commentJson.get(CommentField.ADVISORY_ID.getDbName()).asText();
-        String csafNodeId = commentJson.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentJson.get(CommentField.CSAF_NODE_ID.getDbName()).asText() : null;
-        String owner = commentJson.has(CommentField.OWNER.getDbName()) ? commentJson.get(CommentField.OWNER.getDbName()).asText() : null;
-        String answerTo = commentJson.has(CommentField.ANSWER_TO.getDbName()) ? commentJson.get(CommentField.ANSWER_TO.getDbName()).asText() : null;
+        String commentId = commentJson.get(ID_FIELD.getDbName()).asString();
+        String advisoryId = commentJson.get(CommentField.ADVISORY_ID.getDbName()).asString();
+        String csafNodeId = commentJson.has(CommentField.CSAF_NODE_ID.getDbName()) ? commentJson.get(CommentField.CSAF_NODE_ID.getDbName()).asString() : null;
+        String owner = commentJson.has(CommentField.OWNER.getDbName()) ? commentJson.get(CommentField.OWNER.getDbName()).asString() : null;
+        String answerTo = commentJson.has(CommentField.ANSWER_TO.getDbName()) ? commentJson.get(CommentField.ANSWER_TO.getDbName()).asString() : null;
         CommentInformationResponse response = new CommentInformationResponse(commentId, advisoryId, csafNodeId, owner);
         response.setAnswerTo(answerTo);
         return response;
     }
 
     public static AnswerInformationResponse convertToAnswerInfo(JsonNode answerJson) {
-        String answerId = answerJson.get(ID_FIELD.getDbName()).asText();
-        String answerTo = answerJson.get(CommentField.ANSWER_TO.getDbName()).asText();
-        String owner = answerJson.has(CommentField.OWNER.getDbName()) ? answerJson.get(CommentField.OWNER.getDbName()).asText() : null;
+        String answerId = answerJson.get(ID_FIELD.getDbName()).asString();
+        String answerTo = answerJson.get(CommentField.ANSWER_TO.getDbName()).asString();
+        String owner = answerJson.has(CommentField.OWNER.getDbName()) ? answerJson.get(CommentField.OWNER.getDbName()).asString() : null;
         return new AnswerInformationResponse(answerId, answerTo, owner);
     }
 

@@ -1,11 +1,11 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Superclass for all audit trail entries
@@ -29,7 +29,7 @@ public abstract class AuditTrailWrapper {
 
     public String getType() {
 
-        return this.auditTrailNode.get(CouchDbField.TYPE_FIELD.getDbName()).asText();
+        return this.auditTrailNode.get(CouchDbField.TYPE_FIELD.getDbName()).asString();
     }
 
     AuditTrailWrapper setType(ObjectType newValue) {
@@ -40,17 +40,17 @@ public abstract class AuditTrailWrapper {
 
     public String getUser() {
 
-        return this.auditTrailNode.get(AuditTrailField.USER.getDbName()).asText();
+        return this.auditTrailNode.get(AuditTrailField.USER.getDbName()).asString();
     }
 
     public String getCreatedAt() {
 
-        return this.auditTrailNode.get(AuditTrailField.CREATED_AT.getDbName()).asText();
+        return this.auditTrailNode.get(AuditTrailField.CREATED_AT.getDbName()).asString();
     }
 
     public ChangeType getChangeType() {
 
-        return ChangeType.valueOf(this.auditTrailNode.get(AuditTrailField.CHANGE_TYPE.getDbName()).asText());
+        return ChangeType.valueOf(this.auditTrailNode.get(AuditTrailField.CHANGE_TYPE.getDbName()).asString());
     }
 
     public AuditTrailWrapper setUser(String newValue) {

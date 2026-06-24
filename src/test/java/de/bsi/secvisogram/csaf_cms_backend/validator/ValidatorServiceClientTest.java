@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
 
 @ExtendWith(MockitoExtension.class)
 public class ValidatorServiceClientTest {
@@ -58,14 +59,14 @@ public class ValidatorServiceClientTest {
             """;
 
     @Test
-    void validatorRequestJsonTest_minimalResponse() throws JsonProcessingException {
+    void validatorRequestJsonTest_minimalResponse() throws JacksonException {
 
         var resultText = """
                 { "isValid":true,
                   "tests":[
                     {"errors":[],"infos":[],"warnings":[],"isValid":true,"name":"csaf_2_0"}]}
                 """;
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ValidatorResponse response = jacksonMapper.readValue(resultText, ValidatorResponse.class);
         assertTrue(response.isValid());
         assertTrue(response.getTests()[0].isValid());
@@ -73,7 +74,7 @@ public class ValidatorServiceClientTest {
     }
 
     @Test
-    void validatorRequestJsonTest() throws JsonProcessingException {
+    void validatorRequestJsonTest() throws JacksonException {
 
         var resultText = """
                 { "isValid":false,
@@ -84,7 +85,7 @@ public class ValidatorServiceClientTest {
                     ,"isValid":false
                     ,"name":"csaf_2_0"}]}
                 """;
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ValidatorResponse response = jacksonMapper.readValue(resultText, ValidatorResponse.class);
         assertFalse(response.isValid());
         assertFalse(response.getTests()[0].isValid());
@@ -101,7 +102,7 @@ public class ValidatorServiceClientTest {
     public void successTest() throws IOException, CsafException {
         final ValidatorResponse response = new ValidatorResponse()
                 .setTests(new ValidatorResponseTest[0]);
-        final com.fasterxml.jackson.databind.ObjectMapper jacksonMapper = new ObjectMapper();
+        final tools.jackson.databind.ObjectMapper jacksonMapper = new JsonMapper();
         final String jsonStr = jacksonMapper.writeValueAsString(response);
 
         try (final MockedStatic<WebClient> staticWebClient = Mockito.mockStatic(WebClient.class)) {

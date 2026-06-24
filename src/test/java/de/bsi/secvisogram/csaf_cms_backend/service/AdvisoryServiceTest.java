@@ -59,13 +59,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
@@ -103,7 +103,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 })
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
-@ContextConfiguration
+@SpringJUnitConfig
 @SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
 public class AdvisoryServiceTest {
 
@@ -202,7 +202,7 @@ public class AdvisoryServiceTest {
     public void addAdvisoryTest_invalidJson() {
         String invalidJson = "no json string";
 
-        assertThrows(JsonProcessingException.class, () -> this.advisoryService.addAdvisory(csafToRequest(invalidJson)));
+        assertThrows(JacksonException.class, () -> this.advisoryService.addAdvisory(csafToRequest(invalidJson)));
     }
 
     @Test
@@ -278,8 +278,8 @@ public class AdvisoryServiceTest {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(idRev.getId(), advisory.getAdvisoryId());
-        assertEquals(advisory.getCsaf().at("/document/tracking/generator/engine/name").asText(), testEngineName);
-        assertEquals(advisory.getCsaf().at("/document/tracking/generator/engine/version").asText(), testEngineVersion);
+        assertEquals(advisory.getCsaf().at("/document/tracking/generator/engine/name").asString(), testEngineName);
+        assertEquals(advisory.getCsaf().at("/document/tracking/generator/engine/version").asString(), testEngineVersion);
     }
 
     @Test
@@ -374,12 +374,12 @@ public class AdvisoryServiceTest {
         // an advisory, 1 counter and 2 audit trails are created
         assertEquals(4, advisoryService.getDocumentCount());
         AdvisoryResponse updatedAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asText());
-        assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText());
+        assertEquals("UpdatedTitle", updatedAdvisory.getCsaf().at("/document/title").asString());
+        assertEquals("UpdateSummary", updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asString());
 
 
-        String lastRevisionHistoryElementDate = updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/date").asText();
-        String currentReleaseDate = updatedAdvisory.getCsaf().at("/document/tracking/current_release_date").asText();
+        String lastRevisionHistoryElementDate = updatedAdvisory.getCsaf().at("/document/tracking/revision_history/1/date").asString();
+        String currentReleaseDate = updatedAdvisory.getCsaf().at("/document/tracking/current_release_date").asString();
 
         assertEquals(lastRevisionHistoryElementDate, currentReleaseDate, "the last revision history element should conform to the current release date");
 
@@ -407,13 +407,13 @@ public class AdvisoryServiceTest {
         AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(AdvisoryWrapper.emptyCsafDocument), "", Semantic.name());
         JsonNode patch0 = auditTrails.get(0).get(DIFF.getDbName());
         AdvisoryWrapper node1 = rootWrapper.applyJsonPatch(patch0);
-        assertThat(node1.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title1"));
+        assertThat(node1.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title1"));
         AdvisoryWrapper node2 = node1.applyJsonPatch(auditTrails.get(1).get(DIFF.getDbName()));
-        assertThat(node2.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title2"));
+        assertThat(node2.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title2"));
         AdvisoryWrapper node3 = node2.applyJsonPatch(auditTrails.get(2).get(DIFF.getDbName()));
-        assertThat(node3.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title3"));
+        assertThat(node3.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title3"));
         AdvisoryWrapper node4 = node2.applyJsonPatch(auditTrails.get(3).get(DIFF.getDbName()));
-        assertThat(node4.at(AdvisorySearchField.DOCUMENT_TITLE).asText(), equalTo("Title4"));
+        assertThat(node4.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title4"));
     }
 
     private List<JsonNode> readAllAuditTrailDocumentsFromDb() throws IOException {
@@ -541,7 +541,7 @@ public class AdvisoryServiceTest {
 
             String timestampNowMinutes = DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
             assertThat(advisory.getCurrentReleaseDate(), startsWith(timestampNowMinutes));
-            assertThat(advisory.getCsaf().at("/document/tracking/revision_history/0/date").asText(), startsWith(timestampNowMinutes));
+            assertThat(advisory.getCsaf().at("/document/tracking/revision_history/0/date").asString(), startsWith(timestampNowMinutes));
         }
     }
 
@@ -565,7 +565,7 @@ public class AdvisoryServiceTest {
             AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
             assertEquals(timestampFuture, advisory.getCurrentReleaseDate(),
                     "the given release date given for the workflow state change should be set");
-            assertEquals(timestampFuture, advisory.getCsaf().at("/document/tracking/revision_history/0/date").asText(),
+            assertEquals(timestampFuture, advisory.getCsaf().at("/document/tracking/revision_history/0/date").asString(),
                     "the last revision history element should have the current_release_date as date");
         }
     }
@@ -597,7 +597,7 @@ public class AdvisoryServiceTest {
 
             AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
             assertEquals(timestampFuture, advisory.getCurrentReleaseDate(), "the current_release_date should not be altered");
-            assertEquals(timestampFuture, advisory.getCsaf().at("/document/tracking/revision_history/0/date").asText(),
+            assertEquals(timestampFuture, advisory.getCsaf().at("/document/tracking/revision_history/0/date").asString(),
                     "the last revision history element should have the current_release_date as date");
         }
     }
@@ -621,15 +621,15 @@ public class AdvisoryServiceTest {
         Map<String, Object> toApprovedSelector = expr2CouchDBFilter(equal(WorkflowState.Approved.name(), NEW_WORKFLOW_STATE.getDbName()));
         JsonNode toApprovedWorkflowAuditTrail = advisoryService.findDocuments(toApprovedSelector, auditTrailFields).get(0);
 
-        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asText());
-        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asText());
-        assertEquals("Draft", toReviewWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asText());
-        assertEquals("Review", toReviewWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asText());
+        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asString());
+        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asString());
+        assertEquals("Draft", toReviewWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asString());
+        assertEquals("Review", toReviewWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asString());
 
-        assertEquals("0.0.1", toApprovedWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asText());
-        assertEquals("1.0.0-1.0", toApprovedWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asText());
-        assertEquals("Review", toApprovedWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asText());
-        assertEquals("Approved", toApprovedWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asText());
+        assertEquals("0.0.1", toApprovedWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asString());
+        assertEquals("1.0.0-1.0", toApprovedWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asString());
+        assertEquals("Review", toApprovedWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asString());
+        assertEquals("Approved", toApprovedWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asString());
 
     }
 
@@ -747,7 +747,7 @@ public class AdvisoryServiceTest {
             advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
 
-            assertEquals("testPublishMessage", advisory.getCsaf().at("/document/tracking/revision_history/0/summary").asText());
+            assertEquals("testPublishMessage", advisory.getCsaf().at("/document/tracking/revision_history/0/summary").asString());
 
         }
     }
@@ -1223,8 +1223,8 @@ public class AdvisoryServiceTest {
         AdvisoryResponse advisory1 = advisoryService.getAdvisory(idRev1.getId());
         AdvisoryResponse advisory2 = advisoryService.getAdvisory(idRev2.getId());
 
-        assertEquals("-TEMP-0000001", advisory1.getCsaf().at("/document/tracking/id").asText());
-        assertEquals(publisherPrefix + "-TEMP-0000002", advisory2.getCsaf().at("/document/tracking/id").asText());
+        assertEquals("-TEMP-0000001", advisory1.getCsaf().at("/document/tracking/id").asString());
+        assertEquals(publisherPrefix + "-TEMP-0000002", advisory2.getCsaf().at("/document/tracking/id").asString());
     }
 
     @Test
@@ -1245,7 +1245,7 @@ public class AdvisoryServiceTest {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
             try (final InputStream csafStream = csafToInputstream(csafWithTrackingFinal)) {
-                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final ObjectMapper jacksonMapper = new JsonMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 IdAndRevision idRev = advisoryService.importAdvisory(csafRootNode);
                 Assertions.assertNotNull(idRev);
@@ -1271,7 +1271,7 @@ public class AdvisoryServiceTest {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.FALSE);
             try (final InputStream csafStream = csafToInputstream(csafWithTrackingFinal)) {
-                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final ObjectMapper jacksonMapper = new JsonMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 CsafException expectedException = assertThrows(CsafException.class,
                         () -> advisoryService.importAdvisory(csafRootNode));
@@ -1288,7 +1288,7 @@ public class AdvisoryServiceTest {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
             try (final InputStream csafStream = csafToInputstream(csafJson)) {
-                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final ObjectMapper jacksonMapper = new JsonMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 CsafException expectedException = assertThrows(CsafException.class,
                         () -> advisoryService.importAdvisory(csafRootNode));
@@ -1316,7 +1316,7 @@ public class AdvisoryServiceTest {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
             try (final InputStream csafStream = csafToInputstream(csafWithTrackingId)) {
-                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final ObjectMapper jacksonMapper = new JsonMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 advisoryService.importAdvisory(csafRootNode);
                 CsafException expectedException = assertThrows(CsafException.class,
@@ -1334,7 +1334,7 @@ public class AdvisoryServiceTest {
 
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.FALSE);
             try (final InputStream csafStream = new ByteArrayInputStream(csafJson.getBytes(StandardCharsets.UTF_8))) {
-                final ObjectMapper jacksonMapper = new ObjectMapper();
+                final ObjectMapper jacksonMapper = new JsonMapper();
                 final JsonNode csafRootNode = jacksonMapper.readValue(csafStream, JsonNode.class);
                 CsafException expectedException = assertThrows(CsafException.class,
                         () -> advisoryService.importAdvisory(csafRootNode));
