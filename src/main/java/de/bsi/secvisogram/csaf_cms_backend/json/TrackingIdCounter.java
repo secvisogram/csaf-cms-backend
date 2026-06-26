@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,6 +27,7 @@ public class TrackingIdCounter {
         return new TrackingIdCounter(id);
     }
 
+    @JsonCreator
     private TrackingIdCounter(String id) {
         this.id = id;
         this.rev = null;

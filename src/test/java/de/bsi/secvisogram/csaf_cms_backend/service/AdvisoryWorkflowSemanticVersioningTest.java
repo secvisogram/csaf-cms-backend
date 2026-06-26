@@ -10,9 +10,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
@@ -46,7 +47,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Test for the workflow in the Advisory service. The required CouchDB container is started in the CouchDBExtension.
@@ -54,7 +55,7 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootTest(properties = { "csaf.workflow.allowOwnDocumentsApproved=true"} )
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
-@ContextConfiguration
+@SpringJUnitConfig
 public class AdvisoryWorkflowSemanticVersioningTest {
 
     private static final String EMPTY_PASSWD = "";
@@ -71,9 +72,9 @@ public class AdvisoryWorkflowSemanticVersioningTest {
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
 
         String dateNowMinutes = DateTimeFormatter.ISO_INSTANT.format(Instant.now()).substring(0, 16);
-        assertThat(advisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0.0.1"));
-        assertThat(advisory.getCsaf().at("/document/tracking/status").asText(), equalTo("draft"));
-        assertThat(advisory.getCsaf().at("/document/tracking/current_release_date").asText(), startsWith(dateNowMinutes));
+        assertThat(advisory.getCsaf().at("/document/tracking/version").asString(), equalTo("0.0.1"));
+        assertThat(advisory.getCsaf().at("/document/tracking/status").asString(), equalTo("draft"));
+        assertThat(advisory.getCsaf().at("/document/tracking/current_release_date").asString(), startsWith(dateNowMinutes));
     }
 
     @Test
@@ -184,7 +185,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Draft, null, null);
 
         readAdvisory = advisoryService.getAdvisory(idRev.getId());
-        assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.1"));
+        assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.0-1.1"));
         assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(4));
     }
 
@@ -199,8 +200,8 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             final String csafJson = csafJsonCategoryTitleId("Category1", "Title1", "TrackingOne");
             IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
             var readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0.0.1"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("0.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("0.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("0.0.1"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             //update advisory
@@ -208,26 +209,26 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             request.setSummary("UpdateSummary");
             String revision = advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0.0.2"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("0.0.2"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("0.0.1"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asText(), equalTo("0.0.2"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("0.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asString(), equalTo("0.0.2"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to review
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("0.0.2"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("0.0.2"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to approved
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.0-1.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("0.0.1"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/2/number").asText(), equalTo("1.0.0-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("0.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/2/number").asString(), equalTo("1.0.0-1.0"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
@@ -235,25 +236,25 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             // workflow to RfPublication
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.0-1.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to Published
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(1));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("1.0.0"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow new Version
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.1-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.1-1.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("1.0.0"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asText(), equalTo("1.0.1-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asString(), equalTo("1.0.1-1.0"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             //update advisory 2
@@ -262,52 +263,52 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             request.setSummary("UpdateSummary");
             revision = advisoryService.updateAdvisory(idRev.getId(), readAdvisory.getRevision(), request);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.1-1.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.1-1.1"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("1.0.0"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asText(), equalTo("1.0.1-1.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asString(), equalTo("1.0.1-1.1"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to review 2
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Review, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.1-1.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.1-1.1"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to approved 2
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.1-2.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.1-2.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("1.0.0"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asText(), equalTo("1.0.1-2.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asString(), equalTo("1.0.1-2.0"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to RfPublication 2
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.1-2.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.1-2.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow to Published 2
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.1"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(2));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("1.0.0"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asText(), equalTo("1.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asString(), equalTo("1.0.1"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
             // workflow new Version
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
             readAdvisory = advisoryService.getAdvisory(idRev.getId());
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asText(), equalTo("1.0.2-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/version").asString(), equalTo("1.0.2-1.0"));
             assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history").size(), equalTo(3));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asText(), equalTo("1.0.0"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asText(), equalTo("1.0.1"));
-            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/2/number").asText(), equalTo("1.0.2-1.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/0/number").asString(), equalTo("1.0.0"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/1/number").asString(), equalTo("1.0.1"));
+            assertThat(readAdvisory.getCsaf().at("/document/tracking/revision_history/2/number").asString(), equalTo("1.0.2-1.0"));
             assertRevisionHistorySummariesNonEmpty(readAdvisory);
 
         }
@@ -320,7 +321,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void workflowTest_revisionHistory_allStateChanges() throws IOException, DatabaseException, CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
             validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
@@ -437,7 +438,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
                     "publishing the advisory should remove the pre-release part");
 
             assertEquals("removed product_tree",
-                    readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asText(),
+                    readAdvisory.getCsaf().at("/document/tracking/revision_history/1/summary").asString(),
                     "The last revision history element's summary should be copied/kept since the last change. " +
                     "Workflow state changes should not edit the summary after initial publication");
 
@@ -451,7 +452,7 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void workflowTest_importCsafDocument() throws IOException, DatabaseException, CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
             validatorMock.when(() -> ValidatorServiceClient.isCsafValid(any(), any())).thenReturn(Boolean.TRUE);
 
@@ -475,14 +476,14 @@ public class AdvisoryWorkflowSemanticVersioningTest {
     private List<String> getRevisionHistoryVersions(AdvisoryResponse advisory) {
         List<String> versionNumbers = new ArrayList<>();
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistElem -> versionNumbers.add(revHistElem.at("/number").asText())
+                revHistElem -> versionNumbers.add(revHistElem.at("/number").asString())
             );
         return versionNumbers;
     }
 
     private void assertRevisionHistorySummariesNonEmpty(AdvisoryResponse advisory) {
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistoryNode -> assertNotEquals("", revHistoryNode.get("summary").asText(),
+                revHistoryNode -> assertNotEquals("", revHistoryNode.get("summary").asString(),
                         "summary must not be empty!")
         );
     }

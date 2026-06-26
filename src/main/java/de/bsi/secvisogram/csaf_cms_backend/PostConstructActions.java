@@ -1,8 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import jakarta.annotation.PostConstruct;
@@ -14,6 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Actions to do after startup of the application
@@ -57,7 +59,7 @@ public class PostConstructActions {
             LOG.info("Importing files from directory {}.", importDirectory);
             File[] directoryListing = dir.listFiles();
             if (directoryListing != null) {
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = new JsonMapper();
                 for (File child : directoryListing) {
                     String advisoryPath = child.getPath();
                     LOG.warn("Importing advisory from {}.", advisoryPath);
@@ -65,10 +67,10 @@ public class PostConstructActions {
                         try {
                             JsonNode csafJson = mapper.readTree(child);
                             advisoryService.importAdvisoryForSystem(csafJson);
-                        } catch (JsonParseException e) {
+                        } catch (StreamReadException e) {
                             LOG.error("Error parsing JSON from file {}.", advisoryPath);
                             LOG.error(e.getMessage());
-                        } catch (IOException e) {
+                        } catch (JacksonException | IOException e) {
                             LOG.error("Error reading file {}.", advisoryPath);
                             LOG.error(e.getMessage());
                         } catch (CsafException e) {

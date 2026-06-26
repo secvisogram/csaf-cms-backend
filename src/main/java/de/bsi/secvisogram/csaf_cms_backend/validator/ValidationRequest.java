@@ -1,6 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.validator;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Request to the csaf validation service
@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public class ValidationRequest {
 
-    private ValidationRequestTest[] tests;
+    private final ValidationRequestTest[] tests;
     /** CSAF document */
-    private JsonNode document;
+    private final JsonNode document;
 
     public ValidationRequest(JsonNode document, ValidationRequestTest... tests) {
         this.tests = tests;
