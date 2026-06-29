@@ -25,6 +25,7 @@ services:
         aliases:
           - "couchdb.csaf.internal"
 
+
   keycloak-db:
     image: postgres:17-alpine
     hostname: keycloak-db.csaf.internal
@@ -108,6 +109,11 @@ services:
       CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
       CSAF_REALM: ${CSAF_REALM}
       CSAF_KEYCLOAK_HOSTNAME_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
+      CSAF_KEYCLOAK_ADMIN_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
+      CSAF_KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
+      CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
+      CSAF_REALM: ${CSAF_REALM}
+      CSAF_KEYCLOAK_HOSTNAME_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
     volumes:
       - ./config/keycloak/init.sh:/opt/keycloak/init.sh
     depends_on:
@@ -163,6 +169,8 @@ services:
       OAUTH2_PROXY_EMAIL_DOMAINS: "*"
     ports:
       - "${CSAF_APP_EXTERNAL_PORT}:4180"
+#    Remove comments it there are issues with host.docker.internal on Linux
+#    On Linux you have to enable the host-gateway feature in docker daemon
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
@@ -207,7 +215,6 @@ services:
       default: 
         aliases:
           - "secvisogram.csaf.internal"        
-     
 
   reverse-proxy:
     image:  nginx:1.27-alpine
@@ -231,3 +238,42 @@ services:
         condition: service_started
       validator:
         condition: service_healthy
+
+  trusted-provider:
+    build:
+      context: ./container/trustedprovider
+      dockerfile: Dockerfile
+    hostname: provider.csaf.internal
+    env_file: 
+      - .env
+    environment:
+      - PUID=1000
+      - PGID=1001
+      - TZ=Europe/Berlin
+    volumes:
+      - ./config/trustedprovider/provider-config.toml:/config/provider-config.toml:ro
+      - ./config/trustedprovider/private.asc:/config/private.asc:ro
+      - ./config/trustedprovider/public.asc:/config/public.asc:ro
+      - ./data/trustedprovider/:/data/
+    healthcheck:
+        test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
+        interval: 10s
+        timeout: 10s
+        retries: 10
+
+  trusted-provider-setup:
+    build:
+      context: ./container/uploader
+      dockerfile: Dockerfile
+    container_name: "trusted-provider-setup"
+    restart: "no"
+    profiles: [ "run_manually" ]
+    volumes:
+      - ./config/uploader/config-create.toml:/config/config.toml:ro
+    environment:
+      - OPTIONS=--config=/config/config.toml
+    entrypoint: ["/opt/csaf_uploader", "--config=/config/config.toml"]
+    depends_on:
+      trusted-provider:
+        condition: service_healthy
+    

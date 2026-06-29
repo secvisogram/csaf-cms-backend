@@ -33,6 +33,7 @@
 		<dependency.version.spotbugs-annotations>4.9.8</dependency.version.spotbugs-annotations> 
 	</properties>
 
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -73,7 +74,6 @@
 			    <plugin>
     				<groupId>org.cyclonedx</groupId>
     				<artifactId>cyclonedx-maven-plugin</artifactId>
-    				<version>${plugin.version.cyclonedx}</version>
     				<executions>
     					<execution>
     						<phase>package</phase>
@@ -152,7 +152,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
-
 		<!-- Database -->
 		<dependency>
 			<groupId>com.ibm.cloud</groupId>
@@ -318,9 +317,6 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>${plugin.version.spotbugs}</version>
 				<configuration>
-					<effort>Max</effort>
-					<threshold>High</threshold><!-- Target: low -->
-					<xmlOutput>true</xmlOutput>
 				</configuration>
 				<executions>
 					<execution>
@@ -373,6 +369,57 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.spdx</groupId>
+				<artifactId>spdx-maven-plugin</artifactId>
+				<!-- please check for updates on
+				https://search.maven.org/search?q=a:spdx-maven-plugin -->
+				<version>0.7.0</version>
+				<executions>
+					<execution>
+						<id>build-spdx</id>
+						<phase>package</phase>
+						<goals>
+							<goal>createSPDX</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- See documentation below for additional configuration -->
+					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>makeAggregateBom</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputName>{project.groupId}_${project.artifactId}-${project.version}.cyclonedx.json</outputName>
+					<outputFormat>json</outputFormat>
+					<outputDirectory>sbom/</outputDirectory>
+				</configuration>
+			</plugin>
+			<!-- very slow because of ndv database download 
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>9.0.4</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			-->
 		</plugins>
 	</build>
 </project>

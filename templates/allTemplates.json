@@ -1,0 +1,10 @@
+[
+  { "id": "min",
+    "description":"Minimal template",
+    "file":"doc-min.json"
+  },
+  { "id": "max",
+    "description":"Maximal template",
+    "file":"doc-max.json"
+  }
+]

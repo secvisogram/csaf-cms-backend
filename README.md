@@ -111,10 +111,13 @@ only and should not be used in production.
                 ContainerDb(backend-db, "CouchDB", "CMS-Backend-Database")
             }
         }
+        
+        Container(trustedprovider, "Trusted Provider", "nginx + go", "Trusted CSAF provider")
     }
 
     Rel(user, reverseproxy,"","HTTPS")
     Rel(reverseproxy, secvisogram,"/")
+    Rel(reverseproxy, trustedprovider,"/.well-known/csaf")
     Rel(reverseproxy, oauth,"/api/*")
     Rel(reverseproxy, keycloak,"/realm/csaf/")
     Rel(oauth, validator, "/api/v1/test")
@@ -123,6 +126,7 @@ only and should not be used in production.
     Rel(backend, backend-db,"")
     Rel(backend, keycloak,"")
     Rel(keycloak, keycloak-db,"")
+    Rel(backend, trustedprovider,"/cgi-bin/csaf_provider.go/api/upload")
    
 
 ```
@@ -141,6 +145,9 @@ only and should not be used in production.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
   and paste it in `CSAF_COOKIE_SECRET`.
 - restart `docker compose down` and `docker compose up -d`
+- The trusted CSAF provider can be initialized with `docker compose up trusted-provider-setup` 
+  	- The folder `docker/config/trustedprovider` contains example / development PGP keys.
+  	- More details on configuring the trusted provider can be found [GoCSAF](https://github.com/gocsaf/csaf)
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
@@ -175,6 +182,31 @@ Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.s
 
 `/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keyloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
 When hostnames are changed, this has to adapted.
+
+You should now be able to access Secvisogram, navigate to `http://localhost/`.
+There are the following default users:
+|User       |Password   |Roles                                                        |
+|-----      |--------   |-----                                                        |
+|registered |registered |**registered**                                               |
+|author     |author     |registered, editor, **author**                               |
+|editor     |editor     |registered, **editor**                                       |
+|publisher  |publisher  |registered, editor, **publisher**                            |
+|reviewer   |reviewer   |registered, **reviewer**                                     |
+|auditor    |auditor    |**auditor**                                                  |
+|all        |all        |**auditor, reviewer, publisher, editor, author, registred**  |
+|none       |none       |                                                             |
+
+### Login & Logout in combination with Secvisogram
+
+Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
+
+``` 
+"logoutUrl": "/oauth2/sign_out?rd=http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram", 
+```
+
+`/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out the session on keyloak. Then there is a redirect back to Secvisogram (`localhost`).
+
+When changes hostnames this has to adopted. 
 
 ### build and execute tests
 
@@ -307,10 +339,3 @@ The following guides illustrate how to use some features concretely:
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
-#### diagrams.net (formerly known as draw.io)
-
-- [diagrams.net](https://www.diagrams.net/)
-
-- [Intellij Integration](https://plugins.jetbrains.com/plugin/15635-diagrams-net-integration)
-
-[(back to top)](#bsi-secvisogram-csaf-backend)
