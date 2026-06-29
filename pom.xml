@@ -22,7 +22,7 @@
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
 		<plugin.version.jacoco>0.8.15</plugin.version.jacoco>
 		<dependency.version.cloudant>0.10.19</dependency.version.cloudant>
-		<dependency.version.swagger-annotations>2.2.40</dependency.version.swagger-annotations>
+		<dependency.version.swagger-annotations>2.2.52</dependency.version.swagger-annotations>
 		<dependency.version.swagger-models>2.2.50</dependency.version.swagger-models>
 		<dependency.version.commons-text>1.14.0</dependency.version.commons-text>
 		<dependency.version.springdoc-openapi>3.0.3</dependency.version.springdoc-openapi>
