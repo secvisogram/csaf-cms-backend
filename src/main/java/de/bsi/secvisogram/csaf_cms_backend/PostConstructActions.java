@@ -50,6 +50,8 @@ public class PostConstructActions {
         }
         if (this.trackingidCompany == null || this.trackingidCompany.isBlank()) {
             LOG.warn("csaf.trackingid.company is not configured");
+        } else {
+            LOG.info("csaf.trackingid.company is configured to {}", this.trackingidCompany);
         }
     }
 
