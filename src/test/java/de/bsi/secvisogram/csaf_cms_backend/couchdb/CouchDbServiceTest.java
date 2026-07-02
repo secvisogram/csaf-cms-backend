@@ -1,61 +1,15 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import static java.util.stream.Collectors.toList;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import org.junit.jupiter.api.Assertions;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.ObjectWriter;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.ibm.cloud.cloudant.v1.model.Document;
-
 import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelArray.ENTRY_VALUE;
 import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelField;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelFirstLevel.SECOND_LEVEL;
 import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.ARRAY_VALUES;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.BOOLEAN_VALUE;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.DECIMAL_VALUE;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.FIRST_LEVEL;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.FIRST_STRING;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.SECOND_STRING;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelSecondLevel.LEVEL_2_VALUE;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.greater;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.greaterOrEqual;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.less;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.lessOrEqual;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.notEqual;
 import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,6 +17,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelArray.ENTRY_VALUE;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelFirstLevel.SECOND_LEVEL;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot.*;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelSecondLevel.LEVEL_2_VALUE;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.*;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test for the CouchDB service. The required CouchDB container is started in the CouchDBExtension.
@@ -85,14 +60,7 @@ public class CouchDbServiceTest {
         Assertions.assertEquals(CouchDBExtension.couchDbVersion, this.couchDbService.getServerVersion());
     }
 
-    
-    @Test
-    public void envTest() throws IOException {
-    	
-        Assertions.assertEquals("localhost", System.getProperty("csaf.couchdb.host"));
-        Assertions.assertEquals("5936", System.getProperty("csaf.couchdb.port"));
-    }
-    
+
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
     public void writeDocumentTest() throws IOException {

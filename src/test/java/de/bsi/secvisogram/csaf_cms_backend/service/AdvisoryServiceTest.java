@@ -1,39 +1,25 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import static java.util.Comparator.comparing;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.startsWith;
+import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
+import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
+import de.bsi.secvisogram.csaf_cms_backend.json.TrackingIdCounter;
+import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
+import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
+import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
+import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Assertions;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,43 +40,33 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
-import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.DIFF;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.DOC_VERSION;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.NEW_WORKFLOW_STATE;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.OLD_DOC_VERSION;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.OLD_WORKFLOW_STATE;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.*;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE_TYPE;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
-import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToInputstream;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
-import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
-import de.bsi.secvisogram.csaf_cms_backend.json.TrackingIdCounter;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
-import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
-import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
-import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentResponse;
-import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import static java.util.Comparator.comparing;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
@@ -121,7 +97,13 @@ public class AdvisoryServiceTest {
     private static final String csafJson = """
             {
                 "document": {
-                    "category": "CSAF_BASE"
+                    "category": "CSAF_BASE",
+                    "distribution": {
+                      	"tlp": {
+                      		"label": "WHITE"
+                      	}
+                    },
+                    "id": "a-1"
                 }
             }""";
 
@@ -674,30 +656,6 @@ public class AdvisoryServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
-    public void changeAdvisoryWorkflowStateTest_AutoPublish() throws IOException, DatabaseException, CsafException {
-
-        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
-
-            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
-
-            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
-            
-            SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
-            String publishTime = sdf.format(new Date());
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, publishTime, null);
-
-            assertEquals(WorkflowState.AutoPublish, advisoryService.getAdvisory(idRev.getId()).getWorkflowState());
-
-        }
-    }
-    
-    @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
@@ -711,13 +669,17 @@ public class AdvisoryServiceTest {
             String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
-            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, null, null);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z'");
+            String publishTime = sdf.format(new Date());
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, publishTime, null);
 
             assertEquals(WorkflowState.AutoPublish, advisoryService.getAdvisory(idRev.getId()).getWorkflowState());
 
         }
     }
-    
+
+
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
@@ -732,7 +694,8 @@ public class AdvisoryServiceTest {
             String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
-            
+
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z'");
             String publishTime = sdf.format(new Date());
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.AutoPublish, publishTime, null);
@@ -741,7 +704,7 @@ public class AdvisoryServiceTest {
 
         }
     }
-    
+
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
@@ -888,8 +851,8 @@ public class AdvisoryServiceTest {
         List<String> expectedIDs = List.of(idRevComment1.getId(), idRevComment2.getId());
         List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
         assertTrue(ids.size() == expectedIDs.size()
-                   && ids.containsAll(expectedIDs)
-                   && expectedIDs.containsAll(ids));
+                && ids.containsAll(expectedIDs)
+                && expectedIDs.containsAll(ids));
 
     }
 
@@ -1302,14 +1265,14 @@ public class AdvisoryServiceTest {
     public void importAdvisoryTest() throws IOException, CsafException {
 
         final String csafWithTrackingFinal = """
-            {
-                "document": {
-                    "category": "CSAF_BASE",
-                    "tracking": {
-                        "status": "final"
+                {
+                    "document": {
+                        "category": "CSAF_BASE",
+                        "tracking": {
+                            "status": "final"
+                        }
                     }
-                }
-            }""";
+                }""";
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
@@ -1328,14 +1291,14 @@ public class AdvisoryServiceTest {
     public void importAdvisoryTest_invalidDoc() throws IOException {
 
         final String csafWithTrackingFinal = """
-            {
-                "document": {
-                    "category": "CSAF_BASE",
-                    "tracking": {
-                        "status": "final"
+                {
+                    "document": {
+                        "category": "CSAF_BASE",
+                        "tracking": {
+                            "status": "final"
+                        }
                     }
-                }
-            }""";
+                }""";
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
@@ -1372,15 +1335,15 @@ public class AdvisoryServiceTest {
     public void importAdvisoryTest_importDuplicate() throws IOException, CsafException {
 
         final String csafWithTrackingId = """
-            {
-                "document": {
-                    "category": "CSAF_BASE",
-                    "tracking": {
-                        "status": "final",
-                        "id": "duplicateDoc"
+                {
+                    "document": {
+                        "category": "CSAF_BASE",
+                        "tracking": {
+                            "status": "final",
+                            "id": "duplicateDoc"
+                        }
                     }
-                }
-            }""";
+                }""";
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
 
