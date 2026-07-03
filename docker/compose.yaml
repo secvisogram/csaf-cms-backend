@@ -41,7 +41,7 @@ services:
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -109,11 +109,6 @@ services:
       CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
       CSAF_REALM: ${CSAF_REALM}
       CSAF_KEYCLOAK_HOSTNAME_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
-      CSAF_KEYCLOAK_ADMIN_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
-      CSAF_KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-      CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
-      CSAF_REALM: ${CSAF_REALM}
-      CSAF_KEYCLOAK_HOSTNAME_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
     volumes:
       - ./config/keycloak/init.sh:/opt/keycloak/init.sh
     depends_on:
@@ -167,12 +162,19 @@ services:
 
       # Built-in authorization checks (disabled)
       OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -O /dev/null http://127.0.0.1:4180/ping || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     ports:
       - "${CSAF_APP_EXTERNAL_PORT}:4180"
-#    Remove comments it there are issues with host.docker.internal on Linux
-#    On Linux you have to enable the host-gateway feature in docker daemon
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    #    Remove comments for the next two line if there are issues with connections between the containers and the host
+    #    This is a Linux Docker Engine pattern — on Linux there's no VM, so host.docker.internal doesn't exist by default
+    #    and you need host-gateway to create it. On Docker Desktop (Windows/macOS) it's unnecessary and can break things.
+    #    extra_hosts:
+    #      - "host.docker.internal:host-gateway"
     restart: on-failure
     depends_on:
       keycloak:
@@ -184,7 +186,8 @@ services:
     
   validator:
     build:
-      context: https://github.com/secvisogram/csaf-validator-service.git#main
+      context: ./container/validator
+      dockerfile: Dockerfile
     hostname: validator.csaf.internal
     env_file: .env
     ports:
@@ -235,7 +238,7 @@ services:
       keycloak: 
         condition: service_healthy
       oauth2-proxy:
-        condition: service_started
+        condition: service_healthy
       validator:
         condition: service_healthy
 
@@ -256,7 +259,9 @@ services:
       - ./config/trustedprovider/public.asc:/config/public.asc:ro
       - ./data/trustedprovider/:/data/
     healthcheck:
-        test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1 || exit 1"]
+        # Check that nginx is listening — use nc to test TCP port only,
+        # since the root URL returns 404 before trusted-provider-setup has run.
+        test: ["CMD-SHELL", "nc -z 127.0.0.1 80 || exit 1"]
         interval: 10s
         timeout: 10s
         retries: 10

@@ -1,6 +1,12 @@
 # Set the authentication password for accessing the CSAF provider.
-# It is essential that you set a secure password between the quotation marks.
-# The default being no password set.
+#
+#  for the gocsaf/csaf_provider :
+#   - This field must contain the PLAINTEXT password.
+#   - The client (csaf-cms-backend) sends a BCrypt hash of the password
+#     in the X-Csaf-Provider-Auth header.
+#
+# Update csaf.autoPublish.password in application.properties if you change the password.
+# The corresponding BCrypt hash for "secretpassword" must be set in application.properties.
 password = "secretpassword"
 
 # Set the path to the public OpenPGP key.

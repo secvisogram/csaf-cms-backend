@@ -17,6 +17,7 @@ COPY --from=base /app/csaf_distribution/bin-linux-amd64/csaf_provider /usr/lib/c
 COPY --from=base /version /version
 COPY trustedprovider-nginx.conf /etc/nginx/conf.d/default.conf
 COPY fcgiwarp /docker-entrypoint.d/40-fcgiwrap.sh
+RUN chmod +x /docker-entrypoint.d/40-fcgiwrap.sh
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 
