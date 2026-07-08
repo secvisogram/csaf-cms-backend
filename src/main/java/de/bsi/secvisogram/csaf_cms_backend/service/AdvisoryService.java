@@ -681,7 +681,7 @@ public class AdvisoryService {
                 }
                 
                 if (existingAdvisoryNode.getDocumentDistributionTlp() == null) {
-                	throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError);
+                	throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError, BAD_REQUEST);
                 }
                 //TODO: Check, if further checks for upload are needed
                 

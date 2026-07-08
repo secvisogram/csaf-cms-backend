@@ -800,7 +800,7 @@ public class AdvisoryController {
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return ResponseEntity.status(ex.getRecommendedHttpState()).body(ex.getMessage());
         }
     }
 

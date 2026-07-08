@@ -1,5 +1,5 @@
 # Declare files that will always have LF line endings on checkout.
 # mainly shell scripts in docker 
 *.sh text eol=lf
-docker/container/trustedprovider/fcgiwrap text eol=lf
+docker/container/trustedprovider/fcgiwarp text eol=lf
 docker/container/trustedprovider/root/etc/init.d/40-fcgiwarp  text eol=lf
