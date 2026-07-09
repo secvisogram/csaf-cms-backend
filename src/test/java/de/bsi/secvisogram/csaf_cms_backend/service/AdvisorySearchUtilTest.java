@@ -25,16 +25,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 
 import static org.mockito.ArgumentMatchers.any;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "csaf.workflow.allowOwnDocumentsApproved=true",
+})
 @ExtendWith(CouchDBExtension.class)
 @DirtiesContext
-@ContextConfiguration
+@SpringJUnitConfig
 public class AdvisorySearchUtilTest {
 
     @Autowired

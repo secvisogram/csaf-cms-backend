@@ -11,15 +11,12 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.StringUtils;
 
 @SpringBootTest(properties = "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png")
-@ExtendWith(SpringExtension.class)
 class JavascriptExporterTest {
 
     private static final String json = """

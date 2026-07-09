@@ -4,21 +4,21 @@ import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.e
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
+import jakarta.annotation.Nullable;
 import java.util.Map;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
 
 public class AdvisorySearchUtil {
 
@@ -93,7 +93,7 @@ public class AdvisorySearchUtil {
                 }
             }
             return resulSelector;
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             LOG.debug("Invalid expression", ex);
             throw new CsafException("Invalid filter expression", CsafExceptionKey.InvalidFilterExpression,
                     HttpStatus.BAD_REQUEST);
@@ -106,12 +106,12 @@ public class AdvisorySearchUtil {
      *
      * @param expression2Convert the expression to convert
      * @return the converted expression
-     * @throws JsonProcessingException a conversion problem has occurred
+     * @throws JacksonException a conversion problem has occurred
      */
-    public static String expression2Json(Expression expression2Convert) throws JsonProcessingException {
+    public static String expression2Json(Expression expression2Convert) throws JacksonException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
-        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+        final ObjectMapper jacksonMapper = new JsonMapper();
+        ObjectWriter writer = jacksonMapper.writerWithDefaultPrettyPrinter();
 
         return writer.writeValueAsString(expression2Convert);
     }
@@ -121,11 +121,11 @@ public class AdvisorySearchUtil {
      *
      * @param jsonString the String to convert
      * @return the converted expression
-     * @throws JsonProcessingException error in json
+     * @throws JacksonException error in json
      */
-    public static Expression json2Expression(String jsonString) throws JsonProcessingException {
+    public static Expression json2Expression(String jsonString) throws JacksonException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         return jacksonMapper.readValue(jsonString, Expression.class);
 
     }

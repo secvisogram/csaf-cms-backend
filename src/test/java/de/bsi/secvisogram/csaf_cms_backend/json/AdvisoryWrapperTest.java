@@ -14,9 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
@@ -57,7 +58,7 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getOwner(), equalTo("Mustermann"));
         assertThat(advisory.getRevision(), is(nullValue()));
         assertThat(advisory.getAdvisoryId(), is(nullValue()));
-        assertThat(advisory.at("/csaf/document/category").asText(), equalTo("CSAF_BASE"));
+        assertThat(advisory.at("/csaf/document/category").asString(), equalTo("CSAF_BASE"));
     }
 
     @Test
@@ -85,7 +86,7 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getOwner(), equalTo("Musterfrau"));
         assertThat(advisory.getRevision(), equalTo(revision));
         assertThat(advisory.getAdvisoryId(), equalTo(id));
-        assertThat(advisory.at("/csaf/document/category").asText(), equalTo("CSAF_BASE"));
+        assertThat(advisory.at("/csaf/document/category").asString(), equalTo("CSAF_BASE"));
     }
 
     @Test
@@ -169,8 +170,8 @@ public class AdvisoryWrapperTest {
         assertThat(updatedWrapper.getOwner(), equalTo("Musterfrau"));
         assertThat(updatedWrapper.getRevision(), is(nullValue()));
         assertThat(updatedWrapper.getAdvisoryId(), equalTo(id));
-        assertThat(updatedWrapper.at("/csaf/document/category").asText(), equalTo("CHANGED"));
-        assertThat(updatedWrapper.at("/csaf/document/title").asText(), equalTo("New Title"));
+        assertThat(updatedWrapper.at("/csaf/document/category").asString(), equalTo("CHANGED"));
+        assertThat(updatedWrapper.at("/csaf/document/title").asString(), equalTo("New Title"));
     }
 
     @Test
@@ -385,11 +386,11 @@ public class AdvisoryWrapperTest {
 
     private String getRevisionAt(AdvisoryWrapper advisory, int pos, String field) {
 
-        return advisory.getCsaf().at("/document/tracking/revision_history/" + pos).get(field).asText();
+        return advisory.getCsaf().at("/document/tracking/revision_history/" + pos).get(field).asString();
     }
 
     private void addArtificialHistory(AdvisoryWrapper advisory, List<String> revisions) {
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ArrayNode historyNode = jacksonMapper.createArrayNode();
 
         revisions.forEach(rev -> {
@@ -407,7 +408,7 @@ public class AdvisoryWrapperTest {
     private List<String> getRevisionHistoryVersions(AdvisoryWrapper advisory) {
         List<String> versionNumbers = new ArrayList<>();
         advisory.getCsaf().at("/document/tracking/revision_history").forEach(
-                revHistElem -> versionNumbers.add(revHistElem.at("/number").asText())
+                revHistElem -> versionNumbers.add(revHistElem.at("/number").asString())
         );
         return versionNumbers;
     }
@@ -465,7 +466,7 @@ public class AdvisoryWrapperTest {
     @Test
     public void getLastHistoryNodeByDateTest() throws IOException, CsafException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ArrayNode historyNode = jacksonMapper.createArrayNode();
 
         AdvisoryWrapper advisory = AdvisoryWrapper.createNewFromCsaf(csafToRequest(csafJsonTitle("Title1")),
@@ -494,9 +495,9 @@ public class AdvisoryWrapperTest {
 
         advisory.setLastRevisionHistoryElementNumberAndDate(editVersion, editDate);
 
-        assertEquals(editVersion, hist2.at("/number").asText(),
+        assertEquals(editVersion, hist2.at("/number").asString(),
                 "history element with most recent date should have been edited");
-        assertEquals(editDate, hist2.at("/date").asText(),
+        assertEquals(editDate, hist2.at("/date").asString(),
                 "history element with most recent date should have been edited");
 
         ObjectNode hist4 = historyNode.addObject();

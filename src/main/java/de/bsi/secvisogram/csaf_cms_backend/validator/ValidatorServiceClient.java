@@ -1,11 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.validator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
@@ -21,6 +15,12 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 @Configuration
 public class ValidatorServiceClient {
@@ -57,7 +57,7 @@ public class ValidatorServiceClient {
         try {
             ValidatorResponse response = executeRequest(baseUrl, advisoryToRequest(advisory));
             return isValid(response);
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             LOG.error("Error creating request to validation server", ex);
             throw new CsafException("Error creating request to validation server",
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -77,7 +77,7 @@ public class ValidatorServiceClient {
         try {
             ValidatorResponse response = executeRequest(baseUrl, advisoryToRequest(csaf));
             return isValid(response);
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             LOG.error("Error creating request to validation server", ex);
             throw new CsafException("Error creating request to validation server",
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -118,13 +118,13 @@ public class ValidatorServiceClient {
                     .bodyToMono(String.class)
                     .block();
 
-            final ObjectMapper jacksonMapper = new ObjectMapper();
+            final ObjectMapper jacksonMapper = new JsonMapper();
             return jacksonMapper.readValue(resultText, ValidatorResponse.class);
         } catch (WebClientResponseException | WebClientRequestException ex) {
             LOG.error("Error in access to validation server", ex);
             throw new CsafException("Error in call to validation server",
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.SERVICE_UNAVAILABLE);
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             LOG.error("Error creating request to validation server", ex);
             throw new CsafException("Error creating request to validation server",
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -136,11 +136,11 @@ public class ValidatorServiceClient {
      *
      * @param advisory the advisory to convert
      * @return the request
-     * @throws JsonProcessingException error in creating request
+     * @throws JacksonException error in creating request
      */
-    String advisoryToRequest(AdvisoryWrapper advisory) throws JsonProcessingException {
+    String advisoryToRequest(AdvisoryWrapper advisory) throws JacksonException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         String jsonStr = jacksonMapper.writeValueAsString(advisory.getCsaf());
         ObjectNode csafNode = jacksonMapper.readValue(jsonStr, ObjectNode.class);
         return advisoryToRequest(csafNode);
@@ -151,13 +151,13 @@ public class ValidatorServiceClient {
      *
      * @param csafNode the CSAF node to convert
      * @return the request
-     * @throws JsonProcessingException error in creating request
+     * @throws JacksonException error in creating request
      */
-    String advisoryToRequest(JsonNode csafNode) throws JsonProcessingException {
+    String advisoryToRequest(JsonNode csafNode) throws JacksonException {
 
-        final ObjectMapper jacksonMapper = new ObjectMapper();
+        final ObjectMapper jacksonMapper = new JsonMapper();
         ValidationRequest request = new ValidationRequest(csafNode, allValidationTests);
-        ObjectWriter writer = jacksonMapper.writer(new DefaultPrettyPrinter());
+        ObjectWriter writer = jacksonMapper.writerWithDefaultPrettyPrinter();
         return writer.writeValueAsString(request);
     }
 

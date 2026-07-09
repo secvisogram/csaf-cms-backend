@@ -15,10 +15,6 @@ import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*
 import static java.util.Collections.emptyList;
 import static org.springframework.http.HttpStatus.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
@@ -38,6 +34,8 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -47,8 +45,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +56,10 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 public class AdvisoryService {
@@ -187,7 +187,7 @@ public class AdvisoryService {
      *
      * @param newCsafJson the advisory as JSON String
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
-     * @throws JsonProcessingException if the given JSON string is not valid
+     * @throws JacksonException if the given JSON string is not valid
      */
     @Secured({CsafRoles.ROLE_AUTHOR})
     public IdAndRevision addAdvisory(CreateAdvisoryRequest newCsafJson) throws IOException, CsafException {
@@ -236,7 +236,7 @@ public class AdvisoryService {
      *
      * @param newCsafJson the advisory as JSON
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
-     * @throws JsonProcessingException if the given JSON string is not valid
+     * @throws JacksonException if the given JSON string is not valid
      */
     @Secured({CsafRoles.ROLE_PUBLISHER})
     public IdAndRevision importAdvisory(JsonNode newCsafJson) throws IOException, CsafException {
@@ -327,21 +327,21 @@ public class AdvisoryService {
             List<JsonNode> docList = findDocuments(selector, List.of(ID_FIELD));
             if (docList.isEmpty()) {
                 final TrackingIdCounter counter = TrackingIdCounter.createInitialCounter(counterId);
-                final String result = new ObjectMapper().writeValueAsString(counter);
+                final String result = new JsonMapper().writeValueAsString(counter);
                 this.couchDbService.writeDocument(counterId, result);
             }
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new CsafException("Error create new counter for tracking Id", ErrorCreatingTrackingIdCounter, INTERNAL_SERVER_ERROR);
         }
 
         try (InputStream counterStream = couchDbService.readDocumentAsStream(counterId)) {
-            MappingIterator<TrackingIdCounter> counterIter = new ObjectMapper().readerFor(TrackingIdCounter.class).readValues(counterStream);
+            MappingIterator<TrackingIdCounter> counterIter = new JsonMapper().readerFor(TrackingIdCounter.class).readValues(counterStream);
             TrackingIdCounter counter = counterIter.next();
             counter.increaseCount();
-            final String result = new ObjectMapper().writeValueAsString(counter);
+            final String result = new JsonMapper().writeValueAsString(counter);
             this.couchDbService.updateDocument(result);
             return counter.getCount();
-        } catch (IOException | DatabaseException ex) {
+        } catch (JacksonException | DatabaseException | IOException ex) {
             throw new CsafException("Error create new counter for tracking Id", ErrorCreatingTrackingIdCounter, INTERNAL_SERVER_ERROR);
         }
     }
@@ -449,7 +449,7 @@ public class AdvisoryService {
      * @param revision        the revision for concurrent control
      * @param changedCsafJson the updated csaf json
      * @return the new revision of the updated csaf document
-     * @throws JsonProcessingException if the given JSON string is not valid
+     * @throws JacksonException if the given JSON string is not valid
      * @throws DatabaseException       if there was an error updating the advisory in the DB
      */
     public String updateAdvisory(String advisoryId, String revision, CreateAdvisoryRequest changedCsafJson) throws IOException, DatabaseException, CsafException {

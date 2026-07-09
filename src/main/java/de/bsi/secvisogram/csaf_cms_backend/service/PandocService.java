@@ -2,9 +2,9 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
-import javax.annotation.Nonnull;
 import org.springframework.stereotype.Service;
 
 /**
