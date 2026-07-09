@@ -1,37 +1,49 @@
 {
+  "realm": "csaf",
+  "displayName": "CSAF Realm",
+  "enabled": true,
+  "registrationAllowed": false,
+  "verifyEmail": false,
+  "attributes": {
+    "frontendUrl": "http://localhost/"
+  },
   "clients": [
     {
-      #"adminUrl": "http://localhost",
-      -"bearerOnly": false,
-      -"clientAuthenticatorType": "client-secret",
-      -"secret": {
-      -  "type": "password",
-      -  "value": "mDmZiwDL814MCTHJwySSiECRwcncIuHu"
-      -},
-      #"clientId": "secvisogram",
-      #"consentRequired": false,
-      *"directAccessGrantsEnabled": false,
-      #"enabled": true,
-      #"protocol": "openid-connect",
-      *"standardFlowEnabled": true,
-      *"publicClient": false,
-      #"redirectUris": [
-      #  "http://localhost*"
-      #],
-      #"rootUrl": "http://localhost",
-      #"webOrigins": [
-      #  "http://localhost"
-      #],
+      "adminUrl": "http://localhost/",
+      "bearerOnly": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "__CSAF_CLIENT_SECRET__",
+      "clientId": "secvisogram",
+      "consentRequired": false,
+      "directAccessGrantsEnabled": true,
+      "enabled": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "publicClient": false,
+      "redirectUris": [ "http://localhost/*" ],
+      "rootUrl": "http://localhost",
+      "webOrigins": [ "*" ],
+      "name": "secvisogram",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
       "protocolMappers": [
         {
-          "name": "client roles",
+          "name": "client_roles",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
           "config": {
+            "introspection.token.claim": "true",
             "multivalued": "true",
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "id.token.claim": "true",
-            "access.token.claim": "false",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
             "claim.name": "groups",
             "jsonType.label": "String",
             "usermodel.clientRoleMapping.clientId": "secvisogram"
@@ -40,24 +52,19 @@
       ]
     }
   ],
-  "displayName": "CSAF Realm",
-  "realm": "csaf",
-  "enabled": true,
-  "registrationAllowed": false,
-  "verifyEmail": false,
-  "attributes" : {
-    "frontendUrl": "http://localhost/"
-  },
   "roles": {
     "client": {
       "secvisogram": [
         {
+          "name": "registered",
+          "description": "Registered user",
           "attributes": {},
           "clientRole": true,
-          "composite": false,
-          "name": "registered"
+          "composite": false
         },
         {
+          "name": "author",
+          "description": "author",
           "attributes": {},
           "clientRole": true,
           "composite": true,
@@ -67,10 +74,11 @@
                 "registered"
               ]
             }
-          },
-          "name": "author"
+          }
         },
         {
+          "name": "editor",
+          "description": "editor",
           "attributes": {},
           "clientRole": true,
           "composite": true,
@@ -80,10 +88,11 @@
                 "author"
               ]
             }
-          },
-          "name": "editor"
+          }
         },
         {
+          "name": "publisher",
+          "description": "publisher",
           "attributes": {},
           "clientRole": true,
           "composite": true,
@@ -93,10 +102,11 @@
                 "editor"
               ]
             }
-          },
-          "name": "publisher"
+          }
         },
         {
+          "name": "reviewer",
+          "description": "reviewer",
           "attributes": {},
           "clientRole": true,
           "composite": true,
@@ -106,14 +116,14 @@
                 "registered"
               ]
             }
-          },
-          "name": "reviewer"
+          }
         },
         {
+          "name": "auditor",
+          "description": "auditor",
           "attributes": {},
           "clientRole": true,
-          "composite": false,
-          "name": "auditor"
+          "composite": false
         }
       ]
     }
@@ -124,8 +134,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "registered",
-      "emailVerified" : true,
-      "email" : "registered@example.com",
+      "emailVerified": true,
+      "email": "registered@example.com",
       "credentials": [
         {
           "type": "password",
@@ -148,8 +158,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "author",
-      "emailVerified" : true,
-      "email" : "author@example.com",
+      "emailVerified": true,
+      "email": "author@example.com",
       "credentials": [
         {
           "type": "password",
@@ -172,8 +182,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "editor",
-      "emailVerified" : true,
-      "email" : "editor@example.com",
+      "emailVerified": true,
+      "email": "editor@example.com",
       "credentials": [
         {
           "type": "password",
@@ -196,8 +206,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "publisher",
-      "emailVerified" : true,
-      "email" : "publisher@example.com",
+      "emailVerified": true,
+      "email": "publisher@example.com",
       "credentials": [
         {
           "type": "password",
@@ -220,8 +230,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "reviewer",
-      "emailVerified" : true,
-      "email" : "reviewer@example.com",
+      "emailVerified": true,
+      "email": "reviewer@example.com",
       "credentials": [
         {
           "type": "password",
@@ -244,8 +254,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "auditor",
-      "emailVerified" : true,
-      "email" : "auditor@example.com",
+      "emailVerified": true,
+      "email": "auditor@example.com",
       "credentials": [
         {
           "type": "password",
@@ -268,8 +278,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "all",
-      "emailVerified" : true,
-      "email" : "all@example.com",
+      "emailVerified": true,
+      "email": "all@example.com",
       "credentials": [
         {
           "type": "password",
@@ -292,8 +302,8 @@
       "enabled": true,
       "firstName": "",
       "lastName": "none",
-      "emailVerified" : true,
-      "email" : "none@example.com",
+      "emailVerified": true,
+      "email": "none@example.com",
       "credentials": [
         {
           "type": "password",
