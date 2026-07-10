@@ -70,9 +70,9 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${CSAF_KEYCLOAK_ADMIN_USER}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
 
-      KC_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
-      KC_HOSTNAME_ADMIN_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
-      
+      KC_HOSTNAME: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME}
+      KC_HOSTNAME_ADMIN: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME}
+
     healthcheck:
       start_period: 120s
       test:
@@ -87,33 +87,22 @@ services:
     restart: on-failure
     ports:
       - "${CSAF_KEYCLOAK_PORT}:8080"
-    command: 
-      - start-dev # https://www.keycloak.org/server/configuration#_starting_keycloak_in_production_mode
-      - --verbose
+    volumes:
+      - ./config/keycloak/csaf-realm.json:/opt/keycloak/import-template/csaf-realm.json:ro
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -e
+        : "$${CSAF_CLIENT_SECRET:?CSAF_CLIENT_SECRET must be set}"
+        mkdir -p /opt/keycloak/data/import
+        tpl=$$(cat /opt/keycloak/import-template/csaf-realm.json)
+        printf '%s' "$${tpl//__CSAF_CLIENT_SECRET__/$${CSAF_CLIENT_SECRET}}" > /opt/keycloak/data/import/csaf-realm.json
+        exec /opt/keycloak/bin/kc.sh start-dev --verbose --import-realm
     networks:
       default:
         aliases:
           - "keycloak.csaf.internal"
-
-  keycloak-setup:
-    image: quay.io/keycloak/keycloak:26.4
-    container_name: "keycloak-setup"
-    restart: "no"
-    profiles: [ "run_manually" ]
-    env_file:
-      - .env
-    entrypoint: ["bash", "/opt/keycloak/init.sh"]
-    environment:
-      CSAF_KEYCLOAK_ADMIN_USER: ${CSAF_KEYCLOAK_ADMIN_USER}
-      CSAF_KEYCLOAK_ADMIN_PASSWORD: ${CSAF_KEYCLOAK_ADMIN_PASSWORD}
-      CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME_URL}
-      CSAF_REALM: ${CSAF_REALM}
-      CSAF_KEYCLOAK_HOSTNAME_URL: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME_URL}
-    volumes:
-      - ./config/keycloak/init.sh:/opt/keycloak/init.sh
-    depends_on:
-      keycloak:
-        condition: service_healthy
 
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0-alpine
@@ -151,6 +140,7 @@ services:
 
       # Client credentials
       OAUTH2_PROXY_CLIENT_ID: ${CSAF_CLIENT_ID}
+      # Fixed dev secret, shared with the Keycloak realm import (see CSAF_CLIENT_SECRET in .env).
       OAUTH2_PROXY_CLIENT_SECRET: ${CSAF_CLIENT_SECRET}
       OAUTH2_PROXY_COOKIE_SECRET: ${CSAF_COOKIE_SECRET}
       OAUTH2_PROXY_INSECURE_OIDC_ALLOW_UNVERIFIED_EMAIL: "true"

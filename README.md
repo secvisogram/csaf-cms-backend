@@ -135,16 +135,20 @@ only and should not be used in production.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from docker/.env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
-- run `docker compose up keycloak-setup` to initialize Keycloak.
-- Open `http://localhost:9000/` and log in with the admin user, that is specified in `CSAF_KEYCLOAK_ADMIN_USER` and `CSAF_KEYCLOAK_ADMIN_PASSWORD`.
-    - The port is defined in docker/.env - CSAF_KEYCLOAK_PORT, default 9000.
-    - Select `CSAF`-Realm
-    - On the left side, navigate to "Clients" and select the Secvisogram client.
-    - Select the **Credentials** tab and copy the Secret. This is our
-      `CSAF_CLIENT_SECRET` environment variable.
+- Keycloak is initialized automatically: on startup it imports the `csaf` realm,
+  the `secvisogram` client, all client roles and the development test users from
+  `docker/config/keycloak/csaf-realm.json` (via `--import-realm`). There is no manual
+  setup step and no need to copy the client secret out of the Keycloak UI.
+    - `CSAF_CLIENT_SECRET` in `docker/.env` is a **fixed, development-only value**
+      (see `docker/.env.example`). Keycloak imports the realm with this secret and
+      oauth2-proxy is configured with the same value, so both sides always match.
+      If you change it after the first start, delete the Keycloak database volume
+      (`docker/data/keycloak-db`) so the realm gets re-imported with the new secret.
+    - Note: `--import-realm` only imports the realm if it does not already exist. If you
+      change the realm file later and want it re-imported, remove the Keycloak database
+      volume first: `docker compose down` and delete `docker/data/keycloak-db`.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
-  and paste it in `CSAF_COOKIE_SECRET`.
-- restart `docker compose down` and `docker compose up -d`
+  and paste it into `CSAF_COOKIE_SECRET` in `docker/.env` (also before the first `up -d`).
 - The trusted CSAF provider can be initialized with `docker compose up trusted-provider-setup` 
   	- The folder `docker/config/trustedprovider` contains example / development PGP keys.
   	- More details on configuring the trusted provider can be found [GoCSAF](https://github.com/gocsaf/csaf)
