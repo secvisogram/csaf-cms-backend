@@ -25,6 +25,7 @@ services:
         aliases:
           - "couchdb.csaf.internal"
 
+
   keycloak-db:
     image: postgres:17-alpine
     hostname: keycloak-db.csaf.internal
@@ -40,7 +41,7 @@ services:
     ports:
       - "${CSAF_KEYCLOAK_DATABASE_PORT}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${CSAF_KEYCLOAK_DATABASE_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -161,10 +162,19 @@ services:
 
       # Built-in authorization checks (disabled)
       OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -O /dev/null http://127.0.0.1:4180/ping || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     ports:
       - "${CSAF_APP_EXTERNAL_PORT}:4180"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    #    Remove comments for the next two line if there are issues with connections between the containers and the host
+    #    This is a Linux Docker Engine pattern — on Linux there's no VM, so host.docker.internal doesn't exist by default
+    #    and you need host-gateway to create it. On Docker Desktop (Windows/macOS) it's unnecessary and can break things.
+    #    extra_hosts:
+    #      - "host.docker.internal:host-gateway"
     restart: on-failure
     depends_on:
       keycloak:
@@ -176,7 +186,8 @@ services:
     
   validator:
     build:
-      context: https://github.com/secvisogram/csaf-validator-service.git#main
+      context: ./container/validator
+      dockerfile: Dockerfile
     hostname: validator.csaf.internal
     env_file: .env
     ports:
@@ -207,7 +218,6 @@ services:
       default: 
         aliases:
           - "secvisogram.csaf.internal"        
-     
 
   reverse-proxy:
     image:  nginx:1.27-alpine
@@ -228,6 +238,47 @@ services:
       keycloak: 
         condition: service_healthy
       oauth2-proxy:
-        condition: service_started
+        condition: service_healthy
       validator:
         condition: service_healthy
+
+  trusted-provider:
+    build:
+      context: ./container/trustedprovider
+      dockerfile: Dockerfile
+    hostname: provider.csaf.internal
+    env_file: 
+      - .env
+    environment:
+      - PUID=1000
+      - PGID=1001
+      - TZ=Europe/Berlin
+    volumes:
+      - ./config/trustedprovider/provider-config.toml:/config/provider-config.toml:ro
+      - ./config/trustedprovider/private.asc:/config/private.asc:ro
+      - ./config/trustedprovider/public.asc:/config/public.asc:ro
+      - ./data/trustedprovider/:/data/
+    healthcheck:
+        # Check that nginx is listening — use nc to test TCP port only,
+        # since the root URL returns 404 before trusted-provider-setup has run.
+        test: ["CMD-SHELL", "nc -z 127.0.0.1 80 || exit 1"]
+        interval: 10s
+        timeout: 10s
+        retries: 10
+
+  trusted-provider-setup:
+    build:
+      context: ./container/uploader
+      dockerfile: Dockerfile
+    container_name: "trusted-provider-setup"
+    restart: "no"
+    profiles: [ "run_manually" ]
+    volumes:
+      - ./config/uploader/config-create.toml:/config/config.toml:ro
+    environment:
+      - OPTIONS=--config=/config/config.toml
+    entrypoint: ["/opt/csaf_uploader", "--config=/config/config.toml"]
+    depends_on:
+      trusted-provider:
+        condition: service_healthy
+    

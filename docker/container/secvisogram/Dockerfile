@@ -1,12 +1,12 @@
 # Build Stage 1
 # This build created a staging docker image
 #
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /usr/src
-RUN apk add git; \
-    git clone https://github.com/secvisogram/secvisogram.git; \
-    cd secvisogram; \
-    npm ci; \
+RUN apk add git && \
+    git clone https://github.com/secvisogram/secvisogram.git && \
+    cd secvisogram && \
+    npm ci && \
     npm run build
 
 # Build Stage 2

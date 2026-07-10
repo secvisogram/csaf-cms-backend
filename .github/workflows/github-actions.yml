@@ -1,10 +1,10 @@
 name: Build and Test
 on:
   pull_request:
-    branches:    
+    branches:
       - main
 jobs:
-  build: 
+  build:
     runs-on: ubuntu-latest
     permissions:
       checks: write
@@ -21,7 +21,7 @@ jobs:
           cache: maven
       - name: Build with maven
         run: mvn -Pgithub-action clean verify
-        
+
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         #if: always() # clause guarantees that this action always runs, even if earlier steps (e.g., the unit test step) in your workflow fail.

@@ -18,6 +18,13 @@ public class SemanticVersioning implements Versioning {
         return DEFAULT_INSTANCE;
     }
 
+    /**
+     * using singleton design pattern needs non-private constructor (SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR)
+     */
+    private SemanticVersioning() {
+
+    }
+
     @Override
     public VersioningType getVersioningType() {
         return VersioningType.Semantic;
@@ -112,7 +119,6 @@ public class SemanticVersioning implements Versioning {
         return result.toString();
     }
 
-    @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "Suffix index is fix")
     private String increaseSuffixMinorVersion(Semver currentVersion) {
 
         String newSuffix = "1.0";
@@ -124,7 +130,6 @@ public class SemanticVersioning implements Versioning {
         return newSuffix;
     }
 
-    @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "Suffix index is fix")
     private String increaseSuffixMajorVersion(Semver currentVersion) {
 
         String newSuffix = "1.0";
