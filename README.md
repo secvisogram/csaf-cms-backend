@@ -71,7 +71,7 @@ See **.env.example** for an example configuration.
 ### Management of engine data
 
 When creating or updating an advisory, the information for `document/tracking/engine` is updated.
-The `name` and `version` are set according to the corresponding values of the backend's build. 
+The `name` and `version` are set according to the corresponding values of the backend's build.
 
 ### Importing
 
@@ -131,7 +131,7 @@ only and should not be used in production.
 
 ```
 
-- run `docker compose up -d` in folder `docker`
+- run `docker compose up -d --build` in folder `docker`
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from docker/.env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
@@ -149,9 +149,9 @@ only and should not be used in production.
       volume first: `docker compose down` and delete `docker/data/keycloak-db`.
 - [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
   and paste it into `CSAF_COOKIE_SECRET` in `docker/.env` (also before the first `up -d`).
-- The trusted CSAF provider can be initialized with `docker compose up trusted-provider-setup` 
-  	- The folder `docker/config/trustedprovider` contains example / development PGP keys.
-  	- More details on configuring the trusted provider can be found [GoCSAF](https://github.com/gocsaf/csaf)
+- The trusted CSAF provider can be initialized with `docker compose up trusted-provider-setup`
+  - The folder `docker/config/trustedprovider` contains example / development PGP keys.
+  - More details on configuring the trusted provider can be found [GoCSAF](https://github.com/gocsaf/csaf)
 - (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
@@ -178,13 +178,13 @@ There are the following default users:
 
 ### Login & Logout in combination with Secvisogram
 
-Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
+Some explanation on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
 
 ``` 
 "logoutUrl": "/oauth2/sign_out?rd=http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram", 
 ```
 
-`/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keyloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
+`/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keycloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
 When hostnames are changed, this has to adapted.
 
 You should now be able to access Secvisogram, navigate to `http://localhost/`.
@@ -202,7 +202,7 @@ There are the following default users:
 
 ### Login & Logout in combination with Secvisogram
 
-Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
+Some explanation on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
 
 ``` 
 "logoutUrl": "/oauth2/sign_out?rd=http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram", 
@@ -210,7 +210,7 @@ Some explantion on the logoutUrl configured in `.well-known/appspecific/de.bsi.s
 
 `/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out the session on keyloak. Then there is a redirect back to Secvisogram (`localhost`).
 
-When changes hostnames this has to adopted. 
+When changes hostnames this has to adopted.
 
 ### build and execute tests
 
@@ -257,7 +257,7 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 
 ### Check for Maven Plugin update
 
-`` ./mvnw versions:display-plugin-updates `` 
+`` ./mvnw versions:display-plugin-updates ``
 
 ## Check for dependency update
 `` ./mvnw versions:display-dependency-updates ``
