@@ -132,7 +132,7 @@
     {
       "username": "registered",
       "enabled": true,
-      "firstName": "",
+      "firstName": "registered",
       "lastName": "registered",
       "emailVerified": true,
       "email": "registered@example.com",
@@ -143,8 +143,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "registered" ],
-        "validator": []
+        "secvisogram": [ "registered" ]
       },
       "groups": [],
       "attributes": {
@@ -156,7 +155,7 @@
     {
       "username": "author",
       "enabled": true,
-      "firstName": "",
+      "firstName": "author",
       "lastName": "author",
       "emailVerified": true,
       "email": "author@example.com",
@@ -167,8 +166,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "author" ],
-        "validator": []
+        "secvisogram": [ "author" ]
       },
       "groups": [],
       "attributes": {
@@ -180,7 +178,7 @@
     {
       "username": "editor",
       "enabled": true,
-      "firstName": "",
+      "firstName": "editor",
       "lastName": "editor",
       "emailVerified": true,
       "email": "editor@example.com",
@@ -191,8 +189,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "editor" ],
-        "validator": []
+        "secvisogram": [ "editor" ]
       },
       "groups": [],
       "attributes": {
@@ -204,7 +201,7 @@
     {
       "username": "publisher",
       "enabled": true,
-      "firstName": "",
+      "firstName": "publisher",
       "lastName": "publisher",
       "emailVerified": true,
       "email": "publisher@example.com",
@@ -215,8 +212,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "publisher" ],
-        "validator": []
+        "secvisogram": [ "publisher" ]
       },
       "groups": [],
       "attributes": {
@@ -228,7 +224,7 @@
     {
       "username": "reviewer",
       "enabled": true,
-      "firstName": "",
+      "firstName": "reviewer",
       "lastName": "reviewer",
       "emailVerified": true,
       "email": "reviewer@example.com",
@@ -239,8 +235,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "reviewer" ],
-        "validator": []
+        "secvisogram": [ "reviewer" ]
       },
       "groups": [],
       "attributes": {
@@ -252,7 +247,7 @@
     {
       "username": "auditor",
       "enabled": true,
-      "firstName": "",
+      "firstName": "auditor",
       "lastName": "auditor",
       "emailVerified": true,
       "email": "auditor@example.com",
@@ -263,8 +258,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "auditor" ],
-        "validator": []
+        "secvisogram": [ "auditor" ]
       },
       "groups": [],
       "attributes": {
@@ -276,7 +270,7 @@
     {
       "username": "all",
       "enabled": true,
-      "firstName": "",
+      "firstName": "all",
       "lastName": "all",
       "emailVerified": true,
       "email": "all@example.com",
@@ -287,8 +281,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [ "registered", "author", "editor", "publisher", "reviewer", "auditor" ],
-        "validator": []
+        "secvisogram": [ "registered", "author", "editor", "publisher", "reviewer", "auditor" ]
       },
       "groups": [],
       "attributes": {
@@ -300,7 +293,7 @@
     {
       "username": "none",
       "enabled": true,
-      "firstName": "",
+      "firstName": "none",
       "lastName": "none",
       "emailVerified": true,
       "email": "none@example.com",
@@ -311,8 +304,7 @@
         }
       ],
       "clientRoles": {
-        "secvisogram": [],
-        "validator": []
+        "secvisogram": []
       },
       "groups": [],
       "attributes": {
