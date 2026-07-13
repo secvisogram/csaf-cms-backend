@@ -1,0 +1,317 @@
+{
+  "realm": "csaf",
+  "displayName": "CSAF Realm",
+  "enabled": true,
+  "registrationAllowed": false,
+  "verifyEmail": false,
+  "attributes": {
+    "frontendUrl": "http://localhost/"
+  },
+  "clients": [
+    {
+      "adminUrl": "http://localhost/",
+      "bearerOnly": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "__CSAF_CLIENT_SECRET__",
+      "clientId": "secvisogram",
+      "consentRequired": false,
+      "directAccessGrantsEnabled": true,
+      "enabled": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "publicClient": false,
+      "redirectUris": [ "http://localhost/*" ],
+      "rootUrl": "http://localhost",
+      "webOrigins": [ "*" ],
+      "name": "secvisogram",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "client_roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "jsonType.label": "String",
+            "usermodel.clientRoleMapping.clientId": "secvisogram"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "client": {
+      "secvisogram": [
+        {
+          "name": "registered",
+          "description": "Registered user",
+          "attributes": {},
+          "clientRole": true,
+          "composite": false
+        },
+        {
+          "name": "author",
+          "description": "author",
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "secvisogram": [
+                "registered"
+              ]
+            }
+          }
+        },
+        {
+          "name": "editor",
+          "description": "editor",
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "secvisogram": [
+                "author"
+              ]
+            }
+          }
+        },
+        {
+          "name": "publisher",
+          "description": "publisher",
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "secvisogram": [
+                "editor"
+              ]
+            }
+          }
+        },
+        {
+          "name": "reviewer",
+          "description": "reviewer",
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "secvisogram": [
+                "registered"
+              ]
+            }
+          }
+        },
+        {
+          "name": "auditor",
+          "description": "auditor",
+          "attributes": {},
+          "clientRole": true,
+          "composite": false
+        }
+      ]
+    }
+  },
+  "users": [
+    {
+      "username": "registered",
+      "enabled": true,
+      "firstName": "registered",
+      "lastName": "registered",
+      "emailVerified": true,
+      "email": "registered@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "registered"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "registered" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "author",
+      "enabled": true,
+      "firstName": "author",
+      "lastName": "author",
+      "emailVerified": true,
+      "email": "author@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "author"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "author" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "editor",
+      "enabled": true,
+      "firstName": "editor",
+      "lastName": "editor",
+      "emailVerified": true,
+      "email": "editor@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "editor"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "editor" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "publisher",
+      "enabled": true,
+      "firstName": "publisher",
+      "lastName": "publisher",
+      "emailVerified": true,
+      "email": "publisher@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "publisher"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "publisher" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "reviewer",
+      "enabled": true,
+      "firstName": "reviewer",
+      "lastName": "reviewer",
+      "emailVerified": true,
+      "email": "reviewer@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "reviewer"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "reviewer" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "auditor",
+      "enabled": true,
+      "firstName": "auditor",
+      "lastName": "auditor",
+      "emailVerified": true,
+      "email": "auditor@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "auditor"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "auditor" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "all",
+      "enabled": true,
+      "firstName": "all",
+      "lastName": "all",
+      "emailVerified": true,
+      "email": "all@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "all"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": [ "registered", "author", "editor", "publisher", "reviewer", "auditor" ]
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    },
+    {
+      "username": "none",
+      "enabled": true,
+      "firstName": "none",
+      "lastName": "none",
+      "emailVerified": true,
+      "email": "none@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "none"
+        }
+      ],
+      "clientRoles": {
+        "secvisogram": []
+      },
+      "groups": [],
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      }
+    }
+  ]
+}

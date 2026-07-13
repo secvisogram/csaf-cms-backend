@@ -2,9 +2,12 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,9 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 
 /**
  * Abstract base class for cli tools.
@@ -58,7 +58,6 @@ public abstract class AbstractCliToolService {
      * @throws IOException on any error with the call of the cli tool
      * @throws CsafException for other errors (see details in the exception for information of what happened)
      */
-    @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "We have to call a process here")
     public boolean call(final String... args)
         throws IOException, CsafException {
         // prepare the command to call the cli tool with

@@ -1,20 +1,5 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField.DOCUMENT_TRACKING_ID;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
-import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
-import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Interim;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
-import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
-import static java.util.Collections.emptyList;
-import static org.springframework.http.HttpStatus.*;
-
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
@@ -34,17 +19,6 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +34,35 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.MappingIterator;
 import tools.jackson.databind.json.JsonMapper;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
+import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField.DOCUMENT_TRACKING_ID;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Interim;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.containsIgnoreCase;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
+import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
+import static java.util.Collections.emptyList;
+import static org.springframework.http.HttpStatus.*;
+
 
 @Service
 public class AdvisoryService {
@@ -524,27 +527,28 @@ public class AdvisoryService {
             final JsonNode csaf = advisoryNode.getCsaf();
             RemoveIdHelper.removeCommentIds(csaf);
             final String csafDocument = csaf.toString();
-
+            final String filename = advisoryNode.getDocumentTrackingId() == null ? "advisory__" : advisoryNode.getDocumentTrackingId(); 
+            
             // if format is JSON - write it to temporary file and return the path
             if (format == ExportFormat.JSON || format == null) {
-                final Path jsonFile = Files.createTempFile("advisory__", ".json");
+                final Path jsonFile = Files.createTempFile(filename, ".json");
                 Files.writeString(jsonFile, csafDocument);
                 return jsonFile;
             } else {
                 // other formats have to start with an HTML export first
                 final String htmlExport = javascriptExporter.createHtml(csafDocument);
-                final Path htmlFile = Files.createTempFile("advisory__", ".html");
+                final Path htmlFile = Files.createTempFile(filename, ".html");
                 Files.writeString(htmlFile, htmlExport);
                 if (format == ExportFormat.HTML) {
                     // we already have an HTML file - done!
                     return htmlFile;
                 } else if (format == ExportFormat.Markdown && pandocService.isReady()) {
-                    final Path markdownFile = Files.createTempFile("advisory__", ".md");
+                    final Path markdownFile = Files.createTempFile(filename, ".md");
                     pandocService.convert(htmlFile, markdownFile);
                     Files.delete(htmlFile);
                     return markdownFile;
                 } else if (format == ExportFormat.PDF && weasyprintService.isReady()) {
-                    final Path pdfFile = Files.createTempFile("advisory__", ".pdf");
+                    final Path pdfFile = Files.createTempFile(filename, ".pdf");
                     weasyprintService.convert(htmlFile, pdfFile);
                     Files.delete(htmlFile);
                     return pdfFile;
@@ -556,7 +560,42 @@ public class AdvisoryService {
                     CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
         }
     }
+    
+    /**
+     * Export the Advisory with the given advisoryId and perform release activities on the document
+     * The export will be written to a temporary file and the path to the file will be returned.
+     *
+     * @param advisoryId the id of the advisory that should be exported
+     * @return the path to the temporary file that contains the export
+     * @throws CsafException        if the advisory with the given id does not exist or the export format is unknown
+     * @throws IOException          on any error regarding writing/reading from disk
+     * @throws InterruptedException if the export did take too long and thus timed out
+     */
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    public Path exportAdvisoryForAutoPublish(
+            @Nonnull final String advisoryId)
+            throws IOException, CsafException {
+        // read the advisory form the database
+        try {
+            final InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId);
+            final AdvisoryWrapper finalAdvisory = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            
+            //final AdvisoryWrapper finalAdvisory = createReleaseReadyAdvisoryAndValidate(draftAdvisory, draftAdvisory.getDocumentTrackingCurrentReleaseDate());
+            
+            final JsonNode csaf = finalAdvisory.getCsaf();
+            RemoveIdHelper.removeCommentIds(csaf);
+            final String csafDocument = csaf.toString();
 
+            // if format is JSON - write it to temporary file and return the path
+            final Path jsonFile = Files.createTempFile(finalAdvisory.getDocumentTrackingId(), ".json");
+            Files.writeString(jsonFile, csafDocument);
+            return jsonFile;
+        } catch (IdNotFoundException e) {
+            throw new CsafException("Can not find advisory with ID " + advisoryId,
+                    CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
+        }
+    }
+    
     /**
      * Changes the workflow state of the advisory to the given new WorkflowState
      *
@@ -627,8 +666,33 @@ public class AdvisoryService {
                 // In this step we only want to check if the document would be valid if published but not change it yet.
                 createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
-
-            if (newWorkflowState == WorkflowState.Published) {
+          
+            if (newWorkflowState == WorkflowState.AutoPublish) {
+                if (proposedTime == null) {
+                	proposedTime = existingAdvisoryNode.getDocumentTrackingCurrentReleaseDate();
+                	if (proposedTime == null) {
+                		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
+                		proposedTime = sdf.format(new Date());  
+                	}
+                }
+                
+                if (documentTrackingStatus == null) {
+                	existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Final);
+                }
+                
+                if (existingAdvisoryNode.getDocumentDistributionTlp() == null) {
+                	throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError, BAD_REQUEST);
+                }
+                //TODO: Check, if further checks for upload are needed
+                
+                existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
+                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
+                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
+                }
+            }
+            
+            if (newWorkflowState == WorkflowState.Published && (previousWorkflowState != WorkflowState.AutoPublish)) {
+            	
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
                 if (existingAdvisoryNode.getLastMajorVersion() < 1) {
                     setFinalTrackingIdAndUrl(existingAdvisoryNode);

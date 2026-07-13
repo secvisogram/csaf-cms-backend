@@ -1,5 +1,32 @@
 package de.bsi.secvisogram.csaf_cms_backend.couchdb;
 
+import com.google.gson.internal.LazilyParsedNumber;
+import com.ibm.cloud.cloudant.v1.model.Document;
+import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelField;
+import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
+import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
+import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+
 import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelArray.ENTRY_VALUE;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelFirstLevel.SECOND_LEVEL;
@@ -11,32 +38,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.ObjectWriter;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
-import com.google.gson.internal.LazilyParsedNumber;
-import com.ibm.cloud.cloudant.v1.model.Document;
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
-import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelField;
-import de.bsi.secvisogram.csaf_cms_backend.fixture.TestModelRoot;
-import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
-import de.bsi.secvisogram.csaf_cms_backend.service.IdAndRevision;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import tools.jackson.core.JacksonException;
 
 /**
  * Test for the CouchDB service. The required CouchDB container is started in the CouchDBExtension.
@@ -59,7 +60,7 @@ public class CouchDbServiceTest {
         Assertions.assertEquals(CouchDBExtension.couchDbVersion, this.couchDbService.getServerVersion());
     }
 
-    
+
     @Test
     @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification = "document count should increase")
     public void writeDocumentTest() throws IOException {

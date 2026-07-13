@@ -14,24 +14,25 @@
 		<java.version>25</java.version>
 		<exclude.tests>nothing-to-exclude</exclude.tests>
 		<version.maven>3.6.3</version.maven>
-		<plugin.version.spdx>1.0.3</plugin.version.spdx>
+		<plugin.version.spdx>1.0.4</plugin.version.spdx>
 		<plugin.version.cyclonedx>2.9.2</plugin.version.cyclonedx>
 		<plugin.version.enforcer>3.3.9</plugin.version.enforcer>
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
-		<plugin.version.spotbugs>4.9.8.5</plugin.version.spotbugs>
+		<plugin.version.spotbugs>4.10.2.0</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
 		<plugin.version.jacoco>0.8.15</plugin.version.jacoco>
 		<dependency.version.cloudant>0.10.19</dependency.version.cloudant>
-		<dependency.version.swagger-annotations>2.2.40</dependency.version.swagger-annotations>
-		<dependency.version.swagger-models>2.2.50</dependency.version.swagger-models>
+		<dependency.version.swagger-annotations>2.2.52</dependency.version.swagger-annotations>
+		<dependency.version.swagger-models>2.2.52</dependency.version.swagger-models>
 		<dependency.version.commons-text>1.14.0</dependency.version.commons-text>
 		<dependency.version.springdoc-openapi>3.0.3</dependency.version.springdoc-openapi>
 		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
 		<dependency.version.zjsonpatch>0.6.2</dependency.version.zjsonpatch>
 		<dependency.version.org.graalvm.js>25.0.3</dependency.version.org.graalvm.js>
 		<dependency.version.org.graalvm.js-scriptengine>25.0.3</dependency.version.org.graalvm.js-scriptengine>
-		<dependency.version.spotbugs-annotations>4.9.8</dependency.version.spotbugs-annotations> 
+		<dependency.version.spotbugs-annotations>4.10.2</dependency.version.spotbugs-annotations> 
 	</properties>
+
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -73,7 +74,6 @@
 			    <plugin>
     				<groupId>org.cyclonedx</groupId>
     				<artifactId>cyclonedx-maven-plugin</artifactId>
-    				<version>${plugin.version.cyclonedx}</version>
     				<executions>
     					<execution>
     						<phase>package</phase>
@@ -145,14 +145,9 @@
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-oauth2-resource-server</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-oauth2-jose</artifactId>
-		</dependency>
-
 		<!-- Database -->
 		<dependency>
 			<groupId>com.ibm.cloud</groupId>
@@ -318,9 +313,6 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>${plugin.version.spotbugs}</version>
 				<configuration>
-					<effort>Max</effort>
-					<threshold>High</threshold><!-- Target: low -->
-					<xmlOutput>true</xmlOutput>
 				</configuration>
 				<executions>
 					<execution>
@@ -373,6 +365,57 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.spdx</groupId>
+				<artifactId>spdx-maven-plugin</artifactId>
+				<!-- please check for updates on
+				https://search.maven.org/search?q=a:spdx-maven-plugin -->
+				<version>0.7.0</version>
+				<executions>
+					<execution>
+						<id>build-spdx</id>
+						<phase>package</phase>
+						<goals>
+							<goal>createSPDX</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- See documentation below for additional configuration -->
+					<spdxFile>sbom/${project.groupId}_${project.artifactId}-${project.version}.spdx</spdxFile>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>makeAggregateBom</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputName>{project.groupId}_${project.artifactId}-${project.version}.cyclonedx.json</outputName>
+					<outputFormat>json</outputFormat>
+					<outputDirectory>sbom/</outputDirectory>
+				</configuration>
+			</plugin>
+			<!-- very slow because of ndv database download 
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>9.0.4</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			-->
 		</plugins>
 	</build>
 </project>

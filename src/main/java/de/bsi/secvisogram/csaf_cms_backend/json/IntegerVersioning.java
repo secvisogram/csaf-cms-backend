@@ -12,6 +12,13 @@ public class IntegerVersioning implements Versioning {
         return DEFAULT_INSTANCE;
     }
 
+    /**
+     * using singleton design pattern needs non-private constructor (SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR)
+     */
+    private IntegerVersioning() {
+
+    }
+
     @Override
     public VersioningType getVersioningType() {
         return VersioningType.Integer;
@@ -50,10 +57,10 @@ public class IntegerVersioning implements Versioning {
     }
 
     @Override
-    /**
-     * Get next version string
-     * @param currentVersionString
-     * @return current version + 1 or "1" if currentVersionString is not a number. 
+    /*
+      Get next version string
+      @param currentVersionString
+     * @return current version + 1 or "1" if currentVersionString is not a number.
      */
     public String getNewDocumentVersion(String currentVersionString) {
 
