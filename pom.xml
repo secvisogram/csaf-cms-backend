@@ -14,7 +14,7 @@
 		<java.version>25</java.version>
 		<exclude.tests>nothing-to-exclude</exclude.tests>
 		<version.maven>3.6.3</version.maven>
-		<plugin.version.spdx>1.0.3</plugin.version.spdx>
+		<plugin.version.spdx>1.0.4</plugin.version.spdx>
 		<plugin.version.cyclonedx>2.9.2</plugin.version.cyclonedx>
 		<plugin.version.enforcer>3.3.9</plugin.version.enforcer>
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
