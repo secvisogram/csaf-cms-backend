@@ -25,7 +25,7 @@ To run the CSAF CMS server you need the following:
 - [CouchDB](https://couchdb.apache.org/)
 
 You can find an example setup for local development in the 'compose.yaml' and
-an example configuration for Keycloak in 'keycloak/csaf-realm.json'. You can
+an example configuration for Keycloak in 'docker/config/keycloak/csaf-realm.json'. You can
 take this as a starting point, but please check the documentation of the
 individual projects for a proper production setup. We also recommend
 running everything behind some kind of reverse proxy. Please take a look at our
@@ -48,6 +48,11 @@ To build the application run:
 The resulting jar file in the `target` folder can then be run with
 `java -jar filename.jar`. To manage the process you can use Docker or an init
 system of your choice.
+
+Alternatively, a ready-to-run container image is published to
+[`ghcr.io/secvisogram/csaf-cms-backend`](https://github.com/secvisogram/csaf-cms-backend/pkgs/container/csaf-cms-backend)
+(built from `alpine.Dockerfile` by [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)
+on every release), configured entirely through environment variables (see `.env.example`).
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
@@ -81,10 +86,19 @@ Duplicates are identified by their tracking ID and not imported again.
 
 ## Developing
 
-The configuration of the application as well as the compose file is done in
-a local **.env** file. To start, simply copy the **.env.example** file to **.env**.
-If you want different passwords, database names or ports you can change them
-in that file. Please note that the following setup is for development purposes
+Configuration is split across two **.env** files, each with its own **.env.example** template:
+
+- **`.env`** (repo root): configuration for the backend application itself (CouchDB connection,
+  OIDC issuer, document templates, versioning, tracking IDs, workflow flags, ...). This is read
+  both when running the backend on the host (`./mvnw spring-boot:run`) and by the containerized
+  `csaf-cms-backend` compose service.
+- **`docker/.env`**: configuration needed only to orchestrate the local docker compose stack
+  itself (Keycloak, oauth2-proxy, CouchDB container credentials, ports, ...).
+
+To start, copy **both** `.env.example` files to `.env` (`cp .env.example .env` in the repo root,
+and `cp docker/.env.example docker/.env`). A few values (e.g. CouchDB credentials, the backend
+port) intentionally appear in both files, with comments cross-referencing each other — keep them
+in sync if you change them. Please note that the following setup is for development purposes
 only and should not be used in production.
 
 ```mermaid
@@ -135,7 +149,7 @@ only and should not be used in production.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from docker/.env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
-- Keycloak is initialized automatically: on startup it imports the `csaf` realm,
+- Keycloak is initialized automatically: on startup it imports the `csaf-realm`,
   the `secvisogram` client, all client roles and the development test users from
   `docker/config/keycloak/csaf-realm.json` (via `--import-realm`). There is no manual
   setup step and no need to copy the client secret out of the Keycloak UI.
@@ -156,11 +170,27 @@ only and should not be used in production.
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
 - (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
-- start CSAF-CMS-Backend with `./mvnw spring-boot:run`
+- CSAF-CMS-Backend itself is started as part of `docker compose up -d` (service `csaf-cms-backend`).
+  This uses the image published to `ghcr.io/secvisogram/csaf-cms-backend` (built and pushed by
+  [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml) from
+  `alpine.Dockerfile`) if already present/pulled; run `docker compose build csaf-cms-backend` to
+  build it locally from source instead (e.g. while working on backend changes). No separate
+  `./mvnw spring-boot:run` step is needed for normal development.
 
-You should now be able to start the spring boot application, navigate to
-`http://localhost/api/v1/about`, log in with one of the users and get a
-response from the server.
+You should now be able to navigate to `http://localhost/api/v1/about`, log in with one of the
+users and get a response from the server.
+
+#### Debugging the backend
+
+To run/debug the backend on the host (e.g. from an IDE) instead of in its container:
+
+1. Stop the container: `docker compose stop csaf-cms-backend`
+2. In `docker/.env`, set `CSAF_CMS_BACKEND_HOST=host.docker.internal`
+3. Restart oauth2-proxy so it picks up the change: `docker compose up -d oauth2-proxy`
+4. Start the backend on the host: `./mvnw spring-boot:run`
+
+To switch back to the containerized backend, set `CSAF_CMS_BACKEND_HOST` back to
+`csaf-cms-backend.csaf.internal` and run `docker compose up -d` again.
 
 You should now be able to access Secvisogram, navigate to `http://localhost/`.
 There are the following default users:
@@ -187,37 +217,18 @@ Some explanation on the logoutUrl configured in `.well-known/appspecific/de.bsi.
 `/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keycloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
 When hostnames are changed, this has to adapted.
 
-You should now be able to access Secvisogram, navigate to `http://localhost/`.
-There are the following default users:
-|User       |Password   |Roles                                                        |
-|-----      |--------   |-----                                                        |
-|registered |registered |**registered**                                               |
-|author     |author     |registered, editor, **author**                               |
-|editor     |editor     |registered, **editor**                                       |
-|publisher  |publisher  |registered, editor, **publisher**                            |
-|reviewer   |reviewer   |registered, **reviewer**                                     |
-|auditor    |auditor    |**auditor**                                                  |
-|all        |all        |**auditor, reviewer, publisher, editor, author, registred**  |
-|none       |none       |                                                             |
-
-### Login & Logout in combination with Secvisogram
-
-Some explanation on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
-
-``` 
-"logoutUrl": "/oauth2/sign_out?rd=http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram", 
-```
-
-`/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out the session on keyloak. Then there is a redirect back to Secvisogram (`localhost`).
-
-When changes hostnames this has to adopted.
-
 ### build and execute tests
 
 `` ./mvnw clean verify``
 
 
 ### start application
+
+By default, the backend is started as the `csaf-cms-backend` service in `docker compose up -d`
+(see `docker/compose.yaml`, built from `alpine.Dockerfile`).
+
+To run/debug it on the host instead, see [Debugging the backend](#debugging-the-backend);
+in short:
 
 `` ./mvnw spring-boot:run``
 
@@ -239,11 +250,11 @@ http://localhost:8081/api-docs
 
 ### access couchDB
 
-The port is defined in .env - CSAF_CMS_BACKEND_PORT, default 5984.
+The port is defined in docker/.env - CSAF_COUCHDB_PORT, default 5984.
 
 [http://localhost:5984/_utils/#login](http://localhost:5984/_utils/#login)
 
-CouchDb Info (port is defined in .env):
+CouchDb Info (port is defined in docker/.env):
 
 [http://localhost:5984/](http://localhost:5984/)
 

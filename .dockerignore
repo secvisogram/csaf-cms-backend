@@ -2,3 +2,5 @@
 .git
 .github
 .gitignore
+docker/data
+target

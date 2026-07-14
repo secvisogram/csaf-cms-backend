@@ -3,6 +3,8 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 COPY . /build
 WORKDIR /build
 
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+
 RUN ./mvnw dependency:copy-dependencies -DoutputDirectory=./target/dependency
 RUN ./mvnw package -DskipTests
 

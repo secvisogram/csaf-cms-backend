@@ -112,7 +112,9 @@ services:
     environment:
       # listening address and proxy target
       OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
-      OAUTH2_PROXY_UPSTREAMS: "http://host.docker.internal:${CSAF_CMS_BACKEND_PORT}/api/v1/"
+      # Points at the csaf-cms-backend container by default. For debugging, stop that container,
+      # set CSAF_CMS_BACKEND_HOST=host.docker.internal in .env, and restart this service.
+      OAUTH2_PROXY_UPSTREAMS: "http://${CSAF_CMS_BACKEND_HOST}:${CSAF_CMS_BACKEND_PORT}/api/v1/"
       
       OAUTH2_PROXY_REVERSE_PROXY: "true"
       
@@ -192,6 +194,44 @@ services:
         aliases:
           - "validator.csaf.internal"
 
+  backend-cms:
+    image: ghcr.io/secvisogram/csaf-cms-backend:latest
+    build:
+      context: ..
+      dockerfile: alpine.Dockerfile
+    hostname: backend-cms.csaf.internal
+    env_file: ../.env
+    environment:
+      # Internal hostnames, only reachable from inside this container. The values in ../.env
+      # (localhost-based) remain correct for running the backend on the host via
+      # "./mvnw spring-boot:run" during debugging.
+      CSAF_COUCHDB_HOST: couchdb.csaf.internal
+      CSAF_VALIDATION_BASE_URL: "http://validator.csaf.internal:8082/api/v1"
+      CSAF_OIDC_JWKS_URL: "http://keycloak.csaf.internal:8080/realms/${CSAF_REALM}/protocol/openid-connect/certs"
+      CSAF_AUTOPUBLISH_URL: "http://reverseproxy.csaf.internal/cgi-bin/csaf_provider.go/api/upload"
+    volumes:
+      # Dev fixture files referenced by CSAF_TEMPLATES_FILE / CSAF_COMPANY_LOGO_PATH; mounted at
+      # the same relative path so the default .env values keep working unmodified.
+      - "../src/test/resources:/app/src/test/resources:ro"
+    ports:
+      - "${CSAF_CMS_BACKEND_PORT}:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1:8081/api/v1/about || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      cms-couchdb:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      default:
+        aliases:
+          - "backend-cms.csaf.internal"
+
   secvisogram:
     build:
       context: ./container/secvisogram
@@ -230,6 +270,8 @@ services:
       oauth2-proxy:
         condition: service_healthy
       validator:
+        condition: service_healthy
+      backend-cms:
         condition: service_healthy
 
   trusted-provider:
