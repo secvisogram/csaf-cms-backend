@@ -177,9 +177,7 @@ services:
           - "oauth2.csaf.internal"
     
   validator:
-    build:
-      context: ./container/validator
-      dockerfile: Dockerfile
+    image: ghcr.io/secvisogram/csaf-validator-service:sha-369e837
     hostname: validator.csaf.internal
     env_file: .env
     ports:
@@ -233,9 +231,7 @@ services:
           - "backend-cms.csaf.internal"
 
   secvisogram:
-    build:
-      context: ./container/secvisogram
-      dockerfile: Dockerfile
+    image: ghcr.io/secvisogram/secvisogram:sha-2dac158
     hostname: secvisogram.csaf.internal
     volumes:
       - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
