@@ -5,7 +5,6 @@
 services:
   cms-couchdb:
     image: couchdb:3.4
-    hostname: couchdb.csaf.internal
     restart: on-failure
     env_file: .env
     environment:
@@ -20,15 +19,10 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-    networks:
-      default:
-        aliases:
-          - "couchdb.csaf.internal"
 
 
   keycloak-db:
     image: postgres:17-alpine
-    hostname: keycloak-db.csaf.internal
     container_name: keycloak-db
     volumes:
       - ./data/keycloak-db:/var/lib/postgresql/data
@@ -45,14 +39,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-    networks:
-      default:
-        aliases:
-          - "keycloak-db.csaf.internal"
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4
-    hostname: keycloak.csaf.internal
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
@@ -60,7 +49,7 @@ services:
       KC_DB: postgres
       KC_DB_SCHEMA: public
 
-      KC_DB_URL_HOST: keycloak-db.csaf.internal
+      KC_DB_URL_HOST: keycloak-db
       KC_DB_URL_PORT: 5432
       KC_DB_URL_DATABASE: ${CSAF_KEYCLOAK_DATABASE_NAME}
       
@@ -99,14 +88,9 @@ services:
         tpl=$$(cat /opt/keycloak/import-template/csaf-realm.json)
         printf '%s' "$${tpl//__CSAF_CLIENT_SECRET__/$${CSAF_CLIENT_SECRET}}" > /opt/keycloak/data/import/csaf-realm.json
         exec /opt/keycloak/bin/kc.sh start-dev --verbose --import-realm
-    networks:
-      default:
-        aliases:
-          - "keycloak.csaf.internal"
 
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0-alpine
-    hostname: oauth2.csaf.internal
     container_name: oauth2-proxy
     env_file: .env
     environment:
@@ -132,10 +116,10 @@ services:
       # If you don't want to use autodiscovery, you have to set all urls by hand (login-url, oidc-jwks-url, redeem-url, ...)
       
       OAUTH2_PROXY_SKIP_OIDC_DISCOVERY: "true"
-      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://keycloak.csaf.internal:8080/realms/${CSAF_REALM}"
+      OAUTH2_PROXY_OIDC_ISSUER_URL: "http://keycloak:8080/realms/${CSAF_REALM}"
       OAUTH2_PROXY_LOGIN_URL: "http://localhost/realms/csaf/protocol/openid-connect/auth"
-      OAUTH2_PROXY_REDEEM_URL: "http://keycloak.csaf.internal:8080/realms/csaf/protocol/openid-connect/token"
-      OAUTH2_PROXY_OIDC_JWKS_URL: http://keycloak.csaf.internal:8080/realms/csaf/protocol/openid-connect/certs
+      OAUTH2_PROXY_REDEEM_URL: "http://keycloak:8080/realms/csaf/protocol/openid-connect/token"
+      OAUTH2_PROXY_OIDC_JWKS_URL: http://keycloak:8080/realms/csaf/protocol/openid-connect/certs
       OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: "true"
       
       OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost:4180,localhost:8080,localhost,localhost:80"
@@ -171,14 +155,9 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-    networks:
-      default:
-        aliases:
-          - "oauth2.csaf.internal"
     
   validator:
     image: ghcr.io/secvisogram/csaf-validator-service:sha-369e837
-    hostname: validator.csaf.internal
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
@@ -187,26 +166,21 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10 
-    networks:
-      default:
-        aliases:
-          - "validator.csaf.internal"
 
   backend-cms:
     image: ghcr.io/secvisogram/csaf-cms-backend:latest
     build:
       context: ..
       dockerfile: alpine.Dockerfile
-    hostname: backend-cms.csaf.internal
     env_file: ../.env
     environment:
-      # Internal hostnames, only reachable from inside this container. The values in ../.env
+      # Internal service names, only reachable from inside this container. The values in ../.env
       # (localhost-based) remain correct for running the backend on the host via
       # "./mvnw spring-boot:run" during debugging.
-      CSAF_COUCHDB_HOST: couchdb.csaf.internal
-      CSAF_VALIDATION_BASE_URL: "http://validator.csaf.internal:8082/api/v1"
-      CSAF_OIDC_JWKS_URL: "http://keycloak.csaf.internal:8080/realms/${CSAF_REALM}/protocol/openid-connect/certs"
-      CSAF_AUTOPUBLISH_URL: "http://reverseproxy.csaf.internal/cgi-bin/csaf_provider.go/api/upload"
+      CSAF_COUCHDB_HOST: cms-couchdb
+      CSAF_VALIDATION_BASE_URL: "http://validator:8082/api/v1"
+      CSAF_OIDC_JWKS_URL: "http://keycloak:8080/realms/${CSAF_REALM}/protocol/openid-connect/certs"
+      CSAF_AUTOPUBLISH_URL: "http://reverse-proxy/cgi-bin/csaf_provider.go/api/upload"
     volumes:
       # Dev fixture files referenced by CSAF_TEMPLATES_FILE / CSAF_COMPANY_LOGO_PATH; mounted at
       # the same relative path so the default .env values keep working unmodified.
@@ -225,14 +199,9 @@ services:
       keycloak:
         condition: service_healthy
     restart: on-failure
-    networks:
-      default:
-        aliases:
-          - "backend-cms.csaf.internal"
 
   secvisogram:
     image: ghcr.io/secvisogram/secvisogram:sha-2dac158
-    hostname: secvisogram.csaf.internal
     volumes:
       - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
     healthcheck:
@@ -240,14 +209,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-    networks:
-      default: 
-        aliases:
-          - "secvisogram.csaf.internal"        
 
   reverse-proxy:
     image:  nginx:1.27-alpine
-    hostname: "reverseproxy.csaf.internal"
     restart: on-failure
     ports:
       - "80:80" 
@@ -274,7 +238,6 @@ services:
     build:
       context: ./container/trustedprovider
       dockerfile: Dockerfile
-    hostname: provider.csaf.internal
     env_file: 
       - .env
     environment:
