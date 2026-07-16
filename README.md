@@ -65,7 +65,8 @@ The revision history is managed as described in the [architecture decisions docu
 The tracking ID is automatically set to a temporary ID when creating a new advisory and updated to a final ID when the document is published.
 For generating the tracking IDs, a company name should be set in the environment variable `CSAF_TRACKINGID_COMPANY`.
 The variable `CSAF_TRACKINGID_DIGITS` defines the number of digits used in the tracking ID. It defaults to 5 if nothing is set.
-If `CSAF_REFERENCES_BASE_URL` is defined, a reference in `document/references` with the set URL is added when publishing the document.
+If `CSAF_REFERENCES_BASE_URL` is defined, a JSON reference in `document/references` with the set URL is added when publishing the document.
+To also add an HTML reference (`.html` variant), set `CSAF_WORKFLOW_CREATE_HTML_REFERENCE=true` (default: `false`).
 See **.env.example** for an example configuration.
 
 ### Management of engine data
