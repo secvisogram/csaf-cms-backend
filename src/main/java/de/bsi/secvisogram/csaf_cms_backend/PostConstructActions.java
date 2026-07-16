@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend;
 
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import jakarta.annotation.PostConstruct;
@@ -34,6 +35,9 @@ public class PostConstructActions {
     @Autowired
     private AdvisoryService advisoryService;
 
+    @Autowired
+    private CsafConfiguration configuration;
+
     @PostConstruct
     private void postConstruct() {
         checkConfiguration();
@@ -50,7 +54,12 @@ public class PostConstructActions {
         }
         if (this.trackingidCompany == null || this.trackingidCompany.isBlank()) {
             LOG.warn("csaf.trackingid.company is not configured");
+        } else {
+            LOG.info("csaf.trackingid.company is configured to {}", this.trackingidCompany);
         }
+
+        LOG.info("Is Allowed to Approved Own Documents:  {}.", configuration.getWorkflow().isAllowOwnDocumentsApproved());
+        LOG.info("Creates an Html Reference on Publish:  {}.", configuration.getWorkflow().isCreateHtmlReference());
     }
 
     private void importAdvisories(String importDirectory) {
