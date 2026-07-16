@@ -157,7 +157,7 @@ services:
         condition: service_healthy
     
   validator:
-    image: ghcr.io/secvisogram/csaf-validator-service:sha-369e837
+    image: ghcr.io/secvisogram/csaf-validator-service:sha-119ec6f
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
@@ -201,7 +201,7 @@ services:
     restart: on-failure
 
   secvisogram:
-    image: ghcr.io/secvisogram/secvisogram:sha-2dac158
+    image: ghcr.io/secvisogram/secvisogram:sha-047abf8
     volumes:
       - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
     healthcheck:
