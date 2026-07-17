@@ -6,7 +6,7 @@
 	<groupId>de.bsi.csaf</groupId>
 	<artifactId>csaf-cms-backend</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<name>csaf-cms-backend</name>
 	<url>https://github.com/secvisogram/csaf-cms-backend</url>
 
