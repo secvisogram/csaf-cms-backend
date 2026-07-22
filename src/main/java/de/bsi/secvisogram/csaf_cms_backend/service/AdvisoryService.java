@@ -723,7 +723,9 @@ public class AdvisoryService {
     void setFinalTrackingIdAndUrl(AdvisoryWrapper advisoryNode) throws CsafException {
 
         final long sequentialNumber = getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID);
-        advisoryNode.setFinalTrackingIdAndUrl(this.referencesBaseUrl, this.trackingidCompany, this.trackingidDigits, sequentialNumber);
+        final boolean createHtmlReference = this.configuration.getWorkflow() != null
+                && this.configuration.getWorkflow().isCreateHtmlReference();
+        advisoryNode.setFinalTrackingIdAndUrl(this.referencesBaseUrl, this.trackingidCompany, this.trackingidDigits, sequentialNumber, createHtmlReference);
     }
 
 

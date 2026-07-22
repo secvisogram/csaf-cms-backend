@@ -13,12 +13,30 @@ public class CsafWorkflowConfiguration {
      */
     private boolean allowOwnDocumentsApproved = false;
 
+    /**
+     * Controls whether an HTML reference is automatically added to {@code document/references}
+     * when a CSAF advisory is published for the first time.
+     * When {@code false} (the default), only the JSON reference is added.
+     * Set to {@code true} to also add an HTML reference pointing to the {@code .html} variant of
+     * the published document.
+     */
+    private boolean createHtmlReference = false;
+
     public boolean isAllowOwnDocumentsApproved() {
         return allowOwnDocumentsApproved;
     }
 
     public CsafWorkflowConfiguration setAllowOwnDocumentsApproved(boolean allowOwnDocumentsApproved) {
         this.allowOwnDocumentsApproved = allowOwnDocumentsApproved;
+        return this;
+    }
+
+    public boolean isCreateHtmlReference() {
+        return createHtmlReference;
+    }
+
+    public CsafWorkflowConfiguration setCreateHtmlReference(boolean createHtmlReference) {
+        this.createHtmlReference = createHtmlReference;
         return this;
     }
 }

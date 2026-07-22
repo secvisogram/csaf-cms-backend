@@ -6,7 +6,7 @@
 	<groupId>de.bsi.csaf</groupId>
 	<artifactId>csaf-cms-backend</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<name>csaf-cms-backend</name>
 	<url>https://github.com/secvisogram/csaf-cms-backend</url>
 
@@ -18,19 +18,19 @@
 		<plugin.version.cyclonedx>2.9.2</plugin.version.cyclonedx>
 		<plugin.version.enforcer>3.3.9</plugin.version.enforcer>
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
-		<plugin.version.spotbugs>4.10.2.0</plugin.version.spotbugs>
+		<plugin.version.spotbugs>4.10.3.0</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
 		<plugin.version.jacoco>0.8.15</plugin.version.jacoco>
-		<dependency.version.cloudant>0.10.19</dependency.version.cloudant>
+		<dependency.version.cloudant>0.10.20</dependency.version.cloudant>
 		<dependency.version.swagger-annotations>2.2.52</dependency.version.swagger-annotations>
 		<dependency.version.swagger-models>2.2.52</dependency.version.swagger-models>
-		<dependency.version.commons-text>1.14.0</dependency.version.commons-text>
+		<dependency.version.commons-text>1.15.0</dependency.version.commons-text>
 		<dependency.version.springdoc-openapi>3.0.3</dependency.version.springdoc-openapi>
 		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
 		<dependency.version.zjsonpatch>0.6.2</dependency.version.zjsonpatch>
-		<dependency.version.org.graalvm.js>25.0.3</dependency.version.org.graalvm.js>
-		<dependency.version.org.graalvm.js-scriptengine>25.0.3</dependency.version.org.graalvm.js-scriptengine>
-		<dependency.version.spotbugs-annotations>4.10.2</dependency.version.spotbugs-annotations> 
+		<dependency.version.org.graalvm.js>25.1.3</dependency.version.org.graalvm.js>
+		<dependency.version.org.graalvm.js-scriptengine>25.1.3</dependency.version.org.graalvm.js-scriptengine>
+		<dependency.version.spotbugs-annotations>4.10.3</dependency.version.spotbugs-annotations>
 	</properties>
 
 
@@ -370,7 +370,7 @@
 				<artifactId>spdx-maven-plugin</artifactId>
 				<!-- please check for updates on
 				https://search.maven.org/search?q=a:spdx-maven-plugin -->
-				<version>0.7.0</version>
+				<version>${plugin.version.spdx}</version>
 				<executions>
 					<execution>
 						<id>build-spdx</id>
