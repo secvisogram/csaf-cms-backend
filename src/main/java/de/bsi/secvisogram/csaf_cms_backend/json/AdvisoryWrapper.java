@@ -655,7 +655,7 @@ public class AdvisoryWrapper {
         String[] lastDate = {null};
         historyNode.forEach(jsonNode -> {
             String nodeDate = jsonNode.get("date").asString();
-            if (lastDate[0] == null || timestampIsBefore(lastDate[0], nodeDate)) {
+            if (lastDate[0] == null || !timestampIsBefore(nodeDate, lastDate[0])) {
                 lastNode[0] = (ObjectNode) jsonNode;
                 lastDate[0] = nodeDate;
             }

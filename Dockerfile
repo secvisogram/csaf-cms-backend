@@ -3,6 +3,9 @@ FROM eclipse-temurin:25-jdk AS build
 COPY . /build
 WORKDIR /build
 
+# Normalize potential CRLF line endings (e.g. from a Windows checkout) so the mvnw shebang works.
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+
 RUN ./mvnw dependency:copy-dependencies -DoutputDirectory=./target/dependency
 RUN ./mvnw package -DskipTests
 
