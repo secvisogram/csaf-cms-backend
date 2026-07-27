@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import tools.jackson.databind.JsonNode;
@@ -152,7 +153,8 @@ public class AdvisoryControllerTest {
                 .thenThrow(csafExcp);
 
         this.mockMvc.perform(get(advisoryRoute))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
@@ -207,7 +209,8 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAdvisory(any())).thenThrow(csafExcp);
 
         this.mockMvc.perform(get(advisoryRoute + "/" + UUID.randomUUID()))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
 
     }
 
@@ -275,7 +278,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(advisoryRoute).with(csrf()).content(csafJsonString).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
@@ -343,7 +347,8 @@ public class AdvisoryControllerTest {
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("revision", revision))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
@@ -436,7 +441,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(delete(advisoryRoute + "/" + advisoryId).with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("wrong id"));
 
     }
 
@@ -603,7 +609,8 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("access denied"));
     }
 
     @Test
@@ -631,7 +638,8 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().string("Invalid Advisory"));
     }
 
     @Test
@@ -645,7 +653,8 @@ public class AdvisoryControllerTest {
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andExpect(status().isServiceUnavailable());
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(content().string("Validation Service not Available"));
     }
 
     @Test
@@ -670,7 +679,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/createNewVersion").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("access denied"));
     }
 
     @Test
@@ -742,7 +752,8 @@ public class AdvisoryControllerTest {
                         get(advisoryRoute + "/" + advisoryId + "/csaf")
                                 .with(csrf()).content(csafJsonString).contentType(MediaType.TEXT_HTML)
                                 .param("format", ExportFormat.HTML.name()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("wrong id"));
     }
 
     @Test
@@ -850,7 +861,8 @@ public class AdvisoryControllerTest {
         when(advisoryService.getComments(advisoryId)).thenThrow(csafExcp);
 
         this.mockMvc.perform(get(commentRoute))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
@@ -950,7 +962,8 @@ public class AdvisoryControllerTest {
                 """;
         this.mockMvc.perform(
                         post(commentRoute).with(csrf()).content(commentJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
@@ -1076,7 +1089,8 @@ public class AdvisoryControllerTest {
                         .content(commentText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("wrong id"));
     }
 
     @Test
@@ -1149,7 +1163,8 @@ public class AdvisoryControllerTest {
         when(advisoryService.getAnswers(advisoryId, commentId)).thenThrow(csafExcp);
 
         this.mockMvc.perform(get(answerRoute))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
@@ -1162,7 +1177,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(
                         post(answerRoute).content(invalidJson).contentType(MediaType.APPLICATION_JSON).with(csrf()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Advisory not found"));
     }
 
     @Test
@@ -1285,7 +1301,8 @@ public class AdvisoryControllerTest {
                         .content(answerText)
                         .contentType(MediaType.TEXT_PLAIN)
                         .param("revision", revision))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("wrong id"));
     }
 
     @Test
@@ -1376,7 +1393,8 @@ public class AdvisoryControllerTest {
         this.mockMvc.perform(post(advisoryRoute + "/import").with(csrf())
                         .content(CsafDocumentJsonCreator.csafMinimalValidDoc(Draft, "0.0.1"))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()));
+                .andExpect(status().is(csafExcp.getRecommendedHttpState().value()))
+                .andExpect(jsonPath("$.message").value(csafExcp.getMessage()));
     }
 
     @Test
