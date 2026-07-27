@@ -212,11 +212,17 @@ There are the following default users:
 Some explanation on the logoutUrl configured in `.well-known/appspecific/de.bsi.secvisogram.json` for Secvisogram
 
 ``` 
-"logoutUrl": "/oauth2/sign_out?rd=http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram", 
+"logoutUrl": "/oauth2/sign_out?rd=http%3A%2F%2Flocalhost%2Frealms%2Fcsaf%2Fprotocol%2Fopenid-connect%2Flogout%3Fpost_logout_redirect_uri%3Dhttp%3A%2F%2Flocalhost%26client_id%3Dsecvisogram", 
 ```
 
 `/oauth2/sign_out` is the logout URI from the OAUTH-Proxy. This will invalidate the session on the proxy. Then, a redirect to Keycloak (`http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost&client_id=secvisogram`) is necessary to log out from the session on Keycloak. Subsequently, there is a redirect back to Secvisogram (`localhost`).
 When hostnames are changed, this has to adapted.
+
+This has to be correctly encoded in the logoutUrl. The following code snippet shows how to do this:
+```js
+var postLogoutUrl = "http://localhost/realms/csaf/protocol/openid-connect/logout?post_logout_redirect_uri=http://localhost&client_id=secvisogram"
+var logoutUrl = "/oauth2/sign_out?rd=" + encodeURIComponent(postLogoutUrl) 
+``` 
 
 ### build and execute tests
 
