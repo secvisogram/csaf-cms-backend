@@ -51,7 +51,7 @@ system of your choice.
 
 Alternatively, a ready-to-run container image is published to
 [`ghcr.io/secvisogram/csaf-cms-backend`](https://github.com/secvisogram/csaf-cms-backend/pkgs/container/csaf-cms-backend)
-(built from `alpine.Dockerfile` by [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)
+(built from `Dockerfile` by [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)
 on every release), configured entirely through environment variables (see `.env.example`).
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
@@ -92,7 +92,7 @@ Configuration is split across two **.env** files, each with its own **.env.examp
 - **`.env`** (repo root): configuration for the backend application itself (CouchDB connection,
   OIDC issuer, document templates, versioning, tracking IDs, workflow flags, ...). This is read
   both when running the backend on the host (`./mvnw spring-boot:run`) and by the containerized
-  `csaf-cms-backend` compose service.
+  `backend-cms` compose service.
 - **`docker/.env`**: configuration needed only to orchestrate the local docker compose stack
   itself (Keycloak, oauth2-proxy, CouchDB container credentials, ports, ...).
 
@@ -150,7 +150,7 @@ only and should not be used in production.
 - To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
   and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from docker/.env)
 - Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
-- Keycloak is initialized automatically: on startup it imports the `csaf-realm`,
+- Keycloak is initialized automatically: on startup it imports the `csaf` realm,
   the `secvisogram` client, all client roles and the development test users from
   `docker/config/keycloak/csaf-realm.json` (via `--import-realm`). There is no manual
   setup step and no need to copy the client secret out of the Keycloak UI.
@@ -171,10 +171,10 @@ only and should not be used in production.
   as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
   your PATH
 - (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
-- CSAF-CMS-Backend itself is started as part of `docker compose up -d` (service `csaf-cms-backend`).
+- CSAF-CMS-Backend itself is started as part of `docker compose up -d` (service `backend-cms`).
   This uses the image published to `ghcr.io/secvisogram/csaf-cms-backend` (built and pushed by
   [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml) from
-  `alpine.Dockerfile`) if already present/pulled; run `docker compose build csaf-cms-backend` to
+  `Dockerfile`) if already present/pulled; run `docker compose build backend-cms` to
   build it locally from source instead (e.g. while working on backend changes). No separate
   `./mvnw spring-boot:run` step is needed for normal development.
 
@@ -185,13 +185,13 @@ users and get a response from the server.
 
 To run/debug the backend on the host (e.g. from an IDE) instead of in its container:
 
-1. Stop the container: `docker compose stop csaf-cms-backend`
+1. Stop the container: `docker compose stop backend-cms`
 2. In `docker/.env`, set `CSAF_CMS_BACKEND_HOST=host.docker.internal`
 3. Restart oauth2-proxy so it picks up the change: `docker compose up -d oauth2-proxy`
 4. Start the backend on the host: `./mvnw spring-boot:run`
 
 To switch back to the containerized backend, set `CSAF_CMS_BACKEND_HOST` back to
-`csaf-cms-backend.csaf.internal` and run `docker compose up -d` again.
+`backend-cms` and run `docker compose up -d` again.
 
 You should now be able to access Secvisogram, navigate to `http://localhost/`.
 There are the following default users:
@@ -225,8 +225,8 @@ When hostnames are changed, this has to adapted.
 
 ### start application
 
-By default, the backend is started as the `csaf-cms-backend` service in `docker compose up -d`
-(see `docker/compose.yaml`, built from `alpine.Dockerfile`).
+By default, the backend is started as the `backend-cms` service in `docker compose up -d`
+(see `docker/compose.yaml`, built from `Dockerfile`).
 
 To run/debug it on the host instead, see [Debugging the backend](#debugging-the-backend);
 in short:
