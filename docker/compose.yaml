@@ -168,7 +168,6 @@ services:
       retries: 10 
 
   backend-cms:
-    image: ghcr.io/secvisogram/csaf-cms-backend:sha-907fa5c
     build:
       context: ..
       dockerfile: Dockerfile
