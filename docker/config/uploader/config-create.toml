@@ -1,5 +1,5 @@
 action                 = "create"
-url                    = "http://provider.csaf.internal/cgi-bin/csaf_provider.go"
+url                    = "http://trusted-provider/cgi-bin/csaf_provider.go"
 tlp                    = "csaf"
 external_signed        = false
 no_schema_check        = false
