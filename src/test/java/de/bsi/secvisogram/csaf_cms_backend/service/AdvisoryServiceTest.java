@@ -804,6 +804,52 @@ public class AdvisoryServiceTest {
                 () -> advisoryService.createNewCsafDocumentVersion("Invalid Id", idRev.getRevision()));
     }
 
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void assignTrackingIdTest() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+
+        String newRevision = advisoryService.assignTrackingId(idRev.getId(), idRev.getRevision());
+
+        assertNotEquals(idRev.getRevision(), newRevision);
+        AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+        assertNotNull(advisory.getDocumentTrackingId());
+        assertFalse(advisory.getDocumentTrackingId().contains("-TEMP-"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void assignTrackingIdTest_alreadyAssigned() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        String assignedRevision = advisoryService.assignTrackingId(idRev.getId(), idRev.getRevision());
+
+        Exception expectedException = assertThrows(CsafException.class,
+                () -> advisoryService.assignTrackingId(idRev.getId(), assignedRevision));
+        assertThat(expectedException.getMessage(), containsString("already"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void assignTrackingIdTest_accessDenied() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+        Exception expectedException = assertThrows(CsafException.class,
+                () -> advisoryService.assignTrackingId(idRev.getId(), revision));
+        assertThat(expectedException.getMessage(), containsString("no permission"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void assignTrackingIdTest_invalidId() throws IOException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        assertThrows(DatabaseException.class,
+                () -> advisoryService.assignTrackingId("Invalid Id", idRev.getRevision()));
+    }
+
     private String csafDocumentJson(String documentCategory, String documentTitle) {
 
         return """

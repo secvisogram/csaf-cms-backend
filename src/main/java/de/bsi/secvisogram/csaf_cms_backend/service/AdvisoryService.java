@@ -528,6 +528,51 @@ public class AdvisoryService {
     }
 
     /**
+     * Manually assign the final tracking id for an advisory, if none has been assigned yet.
+     *
+     * @param advisoryId the ID of the advisory to assign the tracking id for
+     * @param revision   the revision for concurrent control
+     * @return the new revision of the updated csaf document
+     * @throws IOException       if there was an error reading the advisory from the DB
+     * @throws DatabaseException if the advisory with the given id does not exist
+     * @throws CsafException     if the user has no permission to edit the advisory or if the advisory already has a final tracking id assigned
+     */
+    public String assignTrackingId(String advisoryId, String revision) throws IOException, DatabaseException, CsafException {
+
+        LOG.debug("assignTrackingId");
+        try (InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId)) {
+
+            if (existingAdvisoryStream == null) {
+                throw new DatabaseException("Invalid advisory ID!");
+            }
+            AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            Authentication credentials = getAuthentication();
+            if (!canChangeAdvisory(existingAdvisoryNode, credentials)) {
+                throw new CsafException("User has no permission to edit the advisory", NoPermissionForAdvisory, UNAUTHORIZED);
+            }
+
+            if (existingAdvisoryNode.isFinalTrackingIdAssigned()) {
+                throw new CsafException("Advisory already has a final tracking id assigned",
+                        TrackingIdAlreadyAssigned, CONFLICT);
+            }
+
+            AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createCopy(existingAdvisoryNode);
+            setFinalTrackingIdAndUrl(existingAdvisoryNode);
+            existingAdvisoryNode.setRevision(revision);
+
+            String newRevision = this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, existingAdvisoryNode)
+                    .setAdvisoryId(advisoryId)
+                    .setChangeType(ChangeType.Update)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+            return newRevision;
+        }
+    }
+
+    /**
      * Export the Advisory with the given advisoryId in the given format. The export will be written to a
      * temporary file and the path to the file will be returned.
      *

@@ -484,6 +484,77 @@ public class AdvisoryController {
 
 
     /**
+     * Manually assign the final tracking id of a CSAF document, if none has been assigned yet.
+     *
+     * @param advisoryId ID of the CSAF document to assign the tracking id for
+     * @param revision   optimistic locking revision
+     * @return response with the new optimistic locking revision
+     */
+    @PatchMapping("/{advisoryId}/trackingid")
+    @Operation(
+            summary = "Assign the tracking id of an advisory.",
+            description = "Manually assign the final tracking id of an advisory, if none has been assigned yet.",
+            tags = {"Advisory"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+          responseCode = "200",
+          description = "New revision of the advisory.",
+          content = {
+              @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)
+          }
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "No valid UUID."
+          ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized access."
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Advisory not found."
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Advisory already has a final tracking id assigned."
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error storing or reading database."
+        )
+      })
+    public ResponseEntity<String> assignTrackingId(
+            @PathVariable
+            @Parameter(in = ParameterIn.PATH, description = "The ID of the advisory to assign the tracking id for.")
+            String advisoryId,
+            @RequestParam
+            @Parameter(description = "The optimistic locking revision.")
+            String revision
+    ) {
+
+        LOG.debug("assignTrackingId");
+        checkValidUuid(advisoryId);
+
+        try {
+            String newRevision = advisoryService.assignTrackingId(advisoryId, revision);
+            return ResponseEntity.ok(newRevision);
+        } catch (IOException ex) {
+            return ResponseEntity.internalServerError().build();
+        } catch (IdNotFoundException idNfEx) {
+            return ResponseEntity.notFound().build();
+        } catch (DatabaseException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (AccessDeniedException adEx) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (CsafException ex) {
+            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+        }
+    }
+
+
+    /**
      * Delete a CSAF document
      *
      * @param advisoryId advisoryId id of the CSAF document to delete
