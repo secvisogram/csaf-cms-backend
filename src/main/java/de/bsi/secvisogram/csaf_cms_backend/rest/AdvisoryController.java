@@ -16,6 +16,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResp
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryTemplateInfoResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.error.ApiError;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.EntityCreateResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.EntityUpdateResponse;
@@ -158,7 +159,7 @@ public class AdvisoryController {
             LOG.info("Error reading Advisory");
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
     }
 
@@ -224,9 +225,9 @@ public class AdvisoryController {
             LOG.info("Error reading Advisory");
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } catch (AccessDeniedException ex) {
-          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+          return apiError(HttpStatus.UNAUTHORIZED, ex.getMessage());
         }
     }
 
@@ -280,9 +281,9 @@ public class AdvisoryController {
         } catch (JacksonException | IOException jpEx) {
             return ResponseEntity.badRequest().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
     }
 
@@ -333,9 +334,9 @@ public class AdvisoryController {
         } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
     }
 
@@ -409,9 +410,9 @@ public class AdvisoryController {
         } catch (DatabaseException dbEx) {
             return ResponseEntity.notFound().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
 
     }
@@ -476,9 +477,9 @@ public class AdvisoryController {
         } catch (DatabaseException ex) {
             return ResponseEntity.notFound().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
     }
 
@@ -615,10 +616,10 @@ public class AdvisoryController {
         } catch (IOException ioEx) {
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } catch (AccessDeniedException adEx) {
-          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } 
+          return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
+        }
     }
 
     /**
@@ -702,7 +703,8 @@ public class AdvisoryController {
         LOG.debug("readTemplate");
         try {
             Optional<JsonNode> templateJson = this.templateService.getTemplate(templateId);
-            return templateJson.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            return templateJson.map(ResponseEntity::ok)
+                    .orElseGet(() -> apiError(HttpStatus.NOT_FOUND, "Template not found"));
         } catch (IOException ex) {
             LOG.error(String.format("Error loading template with id: %s", sanitize(templateId)), ex);
             return ResponseEntity.internalServerError().build();
@@ -783,7 +785,7 @@ public class AdvisoryController {
             LOG.error("Error happened when creating the export: ", e);
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } finally {
             if (filePath != null) {
                 LOG.info(String.format("Deleting file: %s", filePath));
@@ -1188,9 +1190,9 @@ public class AdvisoryController {
         try {
             return ResponseEntity.ok(advisoryService.getComments(advisoryId));
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         }
     }
 
@@ -1256,14 +1258,14 @@ public class AdvisoryController {
             EntityCreateResponse createResponse = new EntityCreateResponse(idRev.getId(), idRev.getRevision());
             return ResponseEntity.created(commentLocation).body(createResponse);
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
         } catch (DatabaseException dbEx) {
             LOG.error("Error creating comment");
             return ResponseEntity.internalServerError().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         }
     }
 
@@ -1323,9 +1325,9 @@ public class AdvisoryController {
         try {
             return ResponseEntity.ok(advisoryService.getAnswers(advisoryId, commentId));
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         }
     }
 
@@ -1391,9 +1393,9 @@ public class AdvisoryController {
             LOG.error("Error creating answer");
             return ResponseEntity.internalServerError().build();
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         }
     }
 
@@ -1471,9 +1473,9 @@ public class AdvisoryController {
         } catch (IOException ioEx) {
             return ResponseEntity.internalServerError().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
     }
 
@@ -1548,10 +1550,18 @@ public class AdvisoryController {
         } catch (IOException ioEx) {
             return ResponseEntity.internalServerError().build();
         } catch (AccessDeniedException adEx) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
-            return ResponseEntity.status(ex.getRecommendedHttpState()).build();
+            return apiError(ex.getRecommendedHttpState(), ex.getMessage());
         }
+    }
+
+    /**
+     * Build an error response body.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> ResponseEntity<T> apiError(HttpStatus status, String message) {
+        return (ResponseEntity<T>) ResponseEntity.status(status).body(new ApiError(message));
     }
 
     /**
