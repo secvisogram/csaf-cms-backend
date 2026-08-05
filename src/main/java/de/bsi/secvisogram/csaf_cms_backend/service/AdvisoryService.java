@@ -8,11 +8,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
-import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
-import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
-import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
-import de.bsi.secvisogram.csaf_cms_backend.model.TrackingIdAssignmentPhase;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
@@ -20,6 +16,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +28,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import jakarta.annotation.PostConstruct;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.MappingIterator;
@@ -97,7 +93,7 @@ public class AdvisoryService {
     @Value("${csaf.trackingid.digits}")
     private String trackingidDigits;
 
-    @Value("${csaf.trackingid.assignment-phase}")
+    @Value("${csaf.trackingid.assignment.phase}")
     private String trackingIdAssignmentPhaseValue;
 
     private TrackingIdAssignmentPhase trackingIdAssignmentPhase;
@@ -111,10 +107,21 @@ public class AdvisoryService {
             this.trackingIdAssignmentPhase = TrackingIdAssignmentPhase.valueOf(
                     this.trackingIdAssignmentPhaseValue.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException("Invalid value '" + this.trackingIdAssignmentPhaseValue
-                    + "' for property csaf.trackingid.assignment-phase. Allowed values are: "
-                    + Arrays.toString(TrackingIdAssignmentPhase.values()));
+            LOG.error("Invalid value '{}' for property csaf.trackingid.assignment.phase. "
+                            + "Allowed values are: {}. Falling back to default value '{}'.",
+                    this.trackingIdAssignmentPhaseValue, Arrays.toString(TrackingIdAssignmentPhase.values()),
+                    TrackingIdAssignmentPhase.RELEASE);
+            this.trackingIdAssignmentPhase = TrackingIdAssignmentPhase.RELEASE;
         }
+    }
+
+    /**
+     * get the tracking id assignment phase
+     *
+     * @return the tracking id assignment phase
+     */
+    public TrackingIdAssignmentPhase getTrackingIdAssignmentPhase() {
+        return this.trackingIdAssignmentPhase;
     }
 
     @Autowired

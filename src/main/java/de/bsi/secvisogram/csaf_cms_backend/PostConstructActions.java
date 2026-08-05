@@ -4,8 +4,6 @@ import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import jakarta.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,9 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Actions to do after startup of the application
@@ -44,7 +45,12 @@ public class PostConstructActions {
         importAdvisories("import");
     }
 
+    private static final String CONFIG_LOG_SEPARATOR = "----------------------------------------------------------------------";
+
     private void checkConfiguration() {
+        LOG.info(CONFIG_LOG_SEPARATOR);
+        LOG.info("Configuration:");
+
         if (this.referencesBaseUrl == null || this.referencesBaseUrl.isBlank()) {
             LOG.warn("csaf.references.baseurl is not configured");
         } else {
@@ -60,6 +66,9 @@ public class PostConstructActions {
 
         LOG.info("Is Allowed to Approved Own Documents:  {}.", configuration.getWorkflow().isAllowOwnDocumentsApproved());
         LOG.info("Creates an Html Reference on Publish:  {}.", configuration.getWorkflow().isCreateHtmlReference());
+        LOG.info("csaf.trackingid.assignment.phase is configured to {}.", advisoryService.getTrackingIdAssignmentPhase());
+
+        LOG.info(CONFIG_LOG_SEPARATOR);
     }
 
     private void importAdvisories(String importDirectory) {
