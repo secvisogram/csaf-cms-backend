@@ -25,7 +25,7 @@
 		<dependency.version.swagger-annotations>2.2.53</dependency.version.swagger-annotations>
 		<dependency.version.swagger-models>2.2.53</dependency.version.swagger-models>
 		<dependency.version.commons-text>1.15.0</dependency.version.commons-text>
-		<dependency.version.springdoc-openapi>3.0.3</dependency.version.springdoc-openapi>
+		<dependency.version.springdoc-openapi>3.1.0</dependency.version.springdoc-openapi>
 		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
 		<dependency.version.zjsonpatch>0.6.3</dependency.version.zjsonpatch>
 		<dependency.version.org.graalvm.js>25.2.4</dependency.version.org.graalvm.js>
