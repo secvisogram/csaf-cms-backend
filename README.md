@@ -5,7 +5,7 @@
 - [About The Project](#about-the-project)
 - [Getting started](#getting-started)
 - [How to use](#how-to-use)
-- [Developing](#developing)
+- [Developing](#developing) — see [docker/README.md](docker/README.md) for the full local Docker guide
 - [Contributing](#contributing)
 - [Dependencies](#dependencies)
 
@@ -17,6 +17,12 @@ It offers a REST service for listing, searching, deleting, creating, commenting 
 [(back to top)](#bsi-secvisogram-csaf-backend)
 
 ## Getting started
+
+> **Just want to run/try the backend locally?** This section describes a manual/production
+> setup (building the jar yourself, providing your own Keycloak/CouchDB/proxy infrastructure).
+> If you just want to develop against or try out the backend locally with Docker, you don't
+> need any of the steps below — skip straight to [Developing](#developing) and follow
+> [docker/README.md](docker/README.md) instead.
 
 To run the CSAF CMS server you need the following:
 
@@ -87,125 +93,12 @@ Duplicates are identified by their tracking ID and not imported again.
 
 ## Developing
 
-Configuration is split across two **.env** files, each with its own **.env.example** template:
+For the full, step-by-step guide to running the whole stack (CouchDB, Keycloak, oauth2-proxy,
+validator service, Secvisogram and the backend) locally with Docker Compose — including the
+required `.env` setup, cookie secret generation, default users and how to debug the backend
+on the host — see **[docker/README.md](docker/README.md)**.
 
-- **`.env`** (repo root): configuration for the backend application itself (CouchDB connection,
-  OIDC issuer, document templates, versioning, tracking IDs, workflow flags, ...). This is read
-  both when running the backend on the host (`./mvnw spring-boot:run`) and by the containerized
-  `backend-cms` compose service.
-- **`docker/.env`**: configuration needed only to orchestrate the local docker compose stack
-  itself (Keycloak, oauth2-proxy, CouchDB container credentials, ports, ...).
-
-To start, copy **both** `.env.example` files to `.env` (`cp .env.example .env` in the repo root,
-and `cp docker/.env.example docker/.env`). A few values (e.g. CouchDB credentials, the backend
-port) intentionally appear in both files, with comments cross-referencing each other — keep them
-in sync if you change them. Please note that the following setup is for development purposes
-only and should not be used in production.
-
-```mermaid
-   C4Component
-    title Component diagram for CSAF CMS Backend
-
-    Person(user,"User")
-    Container(reverseproxy, "Reverse-Proxy", "nginx")
-    
-    Container_Boundary(c4, "Internal") {
-        Container(secvisogram, "Secvisogram", "nginx + javascript", "Provides secvisogramm via their web browser.")
-
-        Container_Boundary(c2, "Keycloak") {
-            Container(keycloak, "Keycloak", "keycloak")
-            ContainerDb(keycloak-db, "PostGreSQL", "Keycloak-Database")
-        }
-
-        Container_Boundary(c3, "Oauth") {
-            Container(oauth, "OAuth2-Proxy", "Authentication for REST-API")
-            Container(validator, "CSAF validator service", "node")
-
-            Container_Boundary(c1, "Backend") {
-                Container(backend, "CSAF-CMS-Backend", "Spring Boot")
-                ContainerDb(backend-db, "CouchDB", "CMS-Backend-Database")
-            }
-        }
-        
-        Container(trustedprovider, "Trusted Provider", "nginx + go", "Trusted CSAF provider")
-    }
-
-    Rel(user, reverseproxy,"","HTTPS")
-    Rel(reverseproxy, secvisogram,"/")
-    Rel(reverseproxy, trustedprovider,"/.well-known/csaf")
-    Rel(reverseproxy, oauth,"/api/*")
-    Rel(reverseproxy, keycloak,"/realm/csaf/")
-    Rel(oauth, validator, "/api/v1/test")
-    Rel(oauth, validator, "/api/v1/validate")
-    Rel(oauth, backend, "/api/v1/advisories/*")
-    Rel(backend, backend-db,"")
-    Rel(backend, keycloak,"")
-    Rel(keycloak, keycloak-db,"")
-    Rel(backend, trustedprovider,"/cgi-bin/csaf_provider.go/api/upload")
-   
-
-```
-
-- run `docker compose up -d --build` in folder `docker`
-- To set up our CouchDB server open `http://127.0.0.1:5984/_utils/#/setup`
-  and run the [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html). This creates databases like **_users** and stops CouchDB from spamming our logs (Admin credentials from docker/.env)
-- Create a database in CouchDB with the name specified in `CSAF_COUCHDB_DBNAME`
-- Keycloak is initialized automatically: on startup it imports the `csaf` realm,
-  the `secvisogram` client, all client roles and the development test users from
-  `docker/config/keycloak/csaf-realm.json` (via `--import-realm`). There is no manual
-  setup step and no need to copy the client secret out of the Keycloak UI.
-    - `CSAF_CLIENT_SECRET` in `docker/.env` is a **fixed, development-only value**
-      (see `docker/.env.example`). Keycloak imports the realm with this secret and
-      oauth2-proxy is configured with the same value, so both sides always match.
-      If you change it after the first start, delete the Keycloak database volume
-      (`docker/data/keycloak-db`) so the realm gets re-imported with the new secret.
-    - Note: `--import-realm` only imports the realm if it does not already exist. If you
-      change the realm file later and want it re-imported, remove the Keycloak database
-      volume first: `docker compose down` and delete `docker/data/keycloak-db`.
-- [Generate a cookie secret](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#generating-a-cookie-secret)
-  and paste it into `CSAF_COOKIE_SECRET` in `docker/.env` (also before the first `up -d`).
-- The trusted CSAF provider can be initialized with `docker compose up trusted-provider-setup`
-  - The folder `docker/config/trustedprovider` contains example / development PGP keys.
-  - More details on configuring the trusted provider can be found [GoCSAF](https://github.com/gocsaf/csaf)
-- (required for exports) install [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
-  as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/) and make sure both are in
-  your PATH
-- (optional for exports) define the path to a company logo that should be used in the exports through the environment variable `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project root or absolute. See .env.example file for an example.
-- CSAF-CMS-Backend itself is started as part of `docker compose up -d` (service `backend-cms`).
-  This uses the image published to `ghcr.io/secvisogram/csaf-cms-backend` (built and pushed by
-  [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml) from
-  `Dockerfile`) if already present/pulled; run `docker compose build backend-cms` to
-  build it locally from source instead (e.g. while working on backend changes). No separate
-  `./mvnw spring-boot:run` step is needed for normal development.
-
-You should now be able to navigate to `http://localhost/api/v1/about`, log in with one of the
-users and get a response from the server.
-
-#### Debugging the backend
-
-To run/debug the backend on the host (e.g. from an IDE) instead of in its container:
-
-1. Stop the container: `docker compose stop backend-cms`
-2. In `docker/.env`, set `CSAF_CMS_BACKEND_HOST=host.docker.internal`
-3. Restart oauth2-proxy so it picks up the change: `docker compose up -d oauth2-proxy`
-4. Start the backend on the host: `./mvnw spring-boot:run`
-
-To switch back to the containerized backend, set `CSAF_CMS_BACKEND_HOST` back to
-`backend-cms` and run `docker compose up -d` again.
-
-You should now be able to access Secvisogram, navigate to `http://localhost/`.
-There are the following default users:
-
-|User       |Password   |Roles                                                        |
-|-----      |--------   |-----                                                        |
-|registered |registered |**registered**                                               |
-|author     |author     |registered, editor, **author**                               |
-|editor     |editor     |registered, **editor**                                       |
-|publisher  |publisher  |registered, editor, **publisher**                            |
-|reviewer   |reviewer   |registered, **reviewer**                                     |
-|auditor    |auditor    |**auditor**                                                  |
-|all        |all        |**auditor, reviewer, publisher, editor, author, registred**  |
-|none       |none       |                                                             |
+The sections below cover topics that are relevant regardless of how you run the backend.
 
 ### Login & Logout in combination with Secvisogram
 
@@ -231,11 +124,7 @@ var logoutUrl = "/oauth2/sign_out?rd=" + encodeURIComponent(postLogoutUrl)
 
 ### start application
 
-By default, the backend is started as the `backend-cms` service in `docker compose up -d`
-(see `docker/compose.yaml`, built from `Dockerfile`).
-
-To run/debug it on the host instead, see [Debugging the backend](#debugging-the-backend);
-in short:
+To run/debug the backend on the host:
 
 `` ./mvnw spring-boot:run``
 
@@ -255,15 +144,8 @@ OpenAPI specification
 
 http://localhost:8081/api-docs
 
-### access couchDB
-
-The port is defined in docker/.env - CSAF_COUCHDB_PORT, default 5984.
-
-[http://localhost:5984/_utils/#login](http://localhost:5984/_utils/#login)
-
-CouchDb Info (port is defined in docker/.env):
-
-[http://localhost:5984/](http://localhost:5984/)
+For accessing CouchDB when running the local Docker setup, see
+[Accessing CouchDB](docker/README.md#accessing-couchdb) in `docker/README.md`.
 
 ## Contributing
 
