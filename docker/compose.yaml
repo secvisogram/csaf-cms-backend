@@ -168,9 +168,7 @@ services:
       retries: 10 
 
   backend-cms:
-    build:
-      context: ..
-      dockerfile: Dockerfile
+    image: ghcr.io/secvisogram/csaf-cms-backend:sha-29f65b8
     env_file: ../.env
     environment:
       # Internal service names, only reachable from inside this container. The values in ../.env
