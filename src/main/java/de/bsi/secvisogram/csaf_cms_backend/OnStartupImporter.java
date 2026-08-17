@@ -4,6 +4,7 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.slf4j.Logger;
@@ -25,6 +26,9 @@ import tools.jackson.databind.json.JsonMapper;
 public class OnStartupImporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(OnStartupImporter.class);
+    private static final String PROCESSED_DIRECTORY_NAME = "processed";
+    private static final String FAILED_DIRECTORY_NAME = "failed";
+    private static final String ERROR_LOG_SUFFIX = ".err";
 
     @Autowired
     private AdvisoryService advisoryService;
@@ -38,14 +42,16 @@ public class OnStartupImporter {
                 ObjectMapper mapper = new JsonMapper();
                 for (File child : directoryListing) {
                     String advisoryPath = child.getPath();
-                    LOG.warn("Importing advisory from {}.", advisoryPath);
                     if (child.isFile()) {
+                        LOG.info("Importing advisory from {}.", advisoryPath);
                         try {
                             JsonNode csafJson = mapper.readTree(child);
                             advisoryService.importAdvisoryForSystem(csafJson);
+                            moveToProcessedDirectory(child, importDirectory);
                         } catch (StreamReadException e) {
                             LOG.error("Error parsing JSON from file {}.", advisoryPath);
                             LOG.error(e.getMessage());
+                            moveToFailedSubdirectory(child, importDirectory, e);
                         } catch (JacksonException | IOException e) {
                             LOG.error("Error reading file {}.", advisoryPath);
                             LOG.error(e.getMessage());
@@ -57,6 +63,7 @@ public class OnStartupImporter {
                                 );
                             } else {
                                 LOG.error("CSAF Error importing file {}.", advisoryPath);
+                                moveToFailedSubdirectory(child, importDirectory, e);
                             }
                             LOG.error(e.getMessage());
                         }
@@ -67,9 +74,50 @@ public class OnStartupImporter {
             } else {
                 LOG.warn("Error accessing directory {}.", importDirectory);
             }
+            LOG.info("Importing finished.");
         } else {
-            LOG.info("No directory {} found, nothing to import.", importDirectory);
+            LOG.warn("No directory {} found, nothing to import.", importDirectory.toAbsolutePath());
         }
+    }
+
+    private void moveToProcessedDirectory(File file, Path importDirectory) {
+        Path targetDirectory = importDirectory.resolve(PROCESSED_DIRECTORY_NAME);
+        try {
+            Files.createDirectories(targetDirectory);
+            Files.move(file.toPath(), uniqueNamedTarget(targetDirectory, file.getName()));
+        } catch (IOException e) {
+            LOG.error("Could not move file {} to {}: {}", file.getPath(), targetDirectory, e.getMessage());
+        }
+    }
+
+    private void moveToFailedSubdirectory(File file, Path importDirectory, Exception cause) {
+        Path targetDirectory = importDirectory.resolve(FAILED_DIRECTORY_NAME);
+        try {
+            Files.createDirectories(targetDirectory);
+            Path target = uniqueNamedTarget(targetDirectory, file.getName());
+            Files.move(file.toPath(), target);
+            writeErrorLog(target, cause);
+        } catch (IOException e) {
+            LOG.error("Could not move file {} to {}: {}", file.getPath(), targetDirectory, e.getMessage());
+        }
+    }
+
+    private void writeErrorLog(Path movedFile, Exception cause) {
+        Path errorLogFile = movedFile.resolveSibling(movedFile.getFileName() + ERROR_LOG_SUFFIX);
+        try {
+            Files.writeString(errorLogFile, cause.getMessage());
+        } catch (IOException e) {
+            LOG.error("Could not write error log file {}: {}", errorLogFile, e.getMessage());
+        }
+    }
+
+    // append numeric suffixes to name if necessary in order to avoid using the name of an existing file.
+    private Path uniqueNamedTarget(Path targetDirectory, String fileName) {
+        Path target = targetDirectory.resolve(fileName);
+        for (int suffix = 1; Files.exists(target); suffix++) {
+            target = targetDirectory.resolve(fileName + "." + suffix);
+        }
+        return target;
     }
 
 }
