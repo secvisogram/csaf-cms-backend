@@ -121,6 +121,13 @@ public class ValidatorServiceClient {
             final ObjectMapper jacksonMapper = new JsonMapper();
             return jacksonMapper.readValue(resultText, ValidatorResponse.class);
         } catch (WebClientResponseException | WebClientRequestException ex) {
+            if (ex instanceof WebClientResponseException webClientResponseException
+                    && webClientResponseException.getStatusCode().is4xxClientError()) {
+                LOG.error("Error creating request to validation server: ", webClientResponseException.getMessage());
+                throw new CsafException("Error creating request to validation server: " + webClientResponseException.getMessage(),
+                        CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.BAD_REQUEST);
+            }
+
             LOG.error("Error in access to validation server", ex);
             throw new CsafException("Error in call to validation server",
                     CsafExceptionKey.ErrorAccessingValidationServer, HttpStatus.SERVICE_UNAVAILABLE);
