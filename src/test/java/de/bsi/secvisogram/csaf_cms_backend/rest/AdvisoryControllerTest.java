@@ -806,6 +806,68 @@ public class AdvisoryControllerTest {
 
     @Test
     @WithMockUser()
+    void assignTrackingIdTest() throws Exception {
+
+        String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
+        when(advisoryService.assignTrackingId(advisoryId, revision))
+                .thenReturn(newRevision);
+
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/trackingid").with(csrf())
+                        .param("revision", revision))
+                .andExpect(status().isOk())
+                .andExpect(content().string(newRevision));
+    }
+
+    @Test
+    @WithMockUser()
+    void assignTrackingIdTest_unauthorized() throws Exception {
+
+        when(advisoryService.assignTrackingId(advisoryId, revision))
+                .thenThrow(new CsafException("access denied", CsafExceptionKey.NoPermissionForAdvisory, HttpStatus.UNAUTHORIZED));
+
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/trackingid").with(csrf())
+                        .param("revision", revision))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser()
+    void assignTrackingIdTest_accessDeniedException() throws Exception {
+
+        when(advisoryService.assignTrackingId(advisoryId, revision))
+                .thenThrow(AccessDeniedException.class);
+
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/trackingid").with(csrf())
+                        .param("revision", revision))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser()
+    void assignTrackingIdTest_idNotFoundException() throws Exception {
+
+        when(advisoryService.assignTrackingId(advisoryId, revision))
+                .thenThrow(IdNotFoundException.class);
+
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/trackingid").with(csrf())
+                        .param("revision", revision))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser()
+    void assignTrackingIdTest_iOException() throws Exception {
+
+        when(advisoryService.assignTrackingId(advisoryId, revision))
+                .thenThrow(IOException.class);
+
+        this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/trackingid").with(csrf())
+                        .param("revision", revision))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser()
     void listCommentsTest_empty() throws Exception {
 
         this.mockMvc.perform(get(commentRoute))
