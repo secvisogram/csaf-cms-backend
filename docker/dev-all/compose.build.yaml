@@ -1,0 +1,17 @@
+# All paths are relative to ../compose.yaml.
+
+services:
+  backend-cms:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+
+  secvisogram:
+    build:
+      context: ../../secvisogram
+      dockerfile: Dockerfile
+
+  validator:
+    build:
+      context: ../../csaf-validator-service
+      dockerfile: Dockerfile
