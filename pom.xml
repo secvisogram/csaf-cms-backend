@@ -30,7 +30,7 @@
 		<dependency.version.zjsonpatch>0.6.3</dependency.version.zjsonpatch>
 		<dependency.version.org.graalvm.js>25.2.4</dependency.version.org.graalvm.js>
 		<dependency.version.org.graalvm.js-scriptengine>25.2.4</dependency.version.org.graalvm.js-scriptengine>
-		<dependency.version.spotbugs-annotations>4.10.3</dependency.version.spotbugs-annotations>
+		<dependency.version.spotbugs-annotations>4.10.4</dependency.version.spotbugs-annotations>
 	</properties>
 
 
