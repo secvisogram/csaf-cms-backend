@@ -13,5 +13,6 @@ public enum CsafExceptionKey {
     ErrorAccessingValidationServer,
     SummaryInHistoryEmpty,
     ErrorCreatingTrackingIdCounter,
-    DuplicateImport;
+    DuplicateImport,
+    TrackingIdAlreadyAssigned;
 }
