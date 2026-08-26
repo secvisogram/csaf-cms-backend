@@ -73,9 +73,13 @@ Please have a look at the [API documentation](https://secvisogram.github.io/csaf
 The system automatically manages information under `document/tracking` of CSAF documents.
 The revision history is managed as described in the [architecture decisions document](documents/architecture-decisions.md).
 
-The tracking ID is automatically set to a temporary ID when creating a new advisory and updated to a final ID when the document is published.
+The tracking ID is automatically set to a temporary ID when creating a new advisory and updated to a final ID at a configurable point in the workflow.
 For generating the tracking IDs, a company name should be set in the environment variable `CSAF_TRACKINGID_COMPANY`.
 The variable `CSAF_TRACKINGID_DIGITS` defines the number of digits used in the tracking ID. It defaults to 5 if nothing is set.
+The variable `CSAF_TRACKINGID_ASSIGNMENT_PHASE` controls when the final tracking ID is assigned: `draft` (on
+creation), `review` (on transition to `Review`) or `release` (on `AutoPublish`/`Published`, the default,
+preserving the historic behavior). Once assigned, the final tracking ID never changes again, regardless of
+further workflow transitions.
 If `CSAF_REFERENCES_BASE_URL` is defined, a JSON reference in `document/references` with the set URL is added when publishing the document.
 To also add an HTML reference (`.html` variant), set `CSAF_WORKFLOW_CREATE_HTML_REFERENCE=true` (default: `false`).
 See **.env.example** for an example configuration.

@@ -8,10 +8,7 @@ import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
-import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
-import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
-import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
-import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
@@ -19,6 +16,7 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,8 +93,36 @@ public class AdvisoryService {
     @Value("${csaf.trackingid.digits}")
     private String trackingidDigits;
 
+    @Value("${csaf.trackingid.assignment.phase}")
+    private String trackingIdAssignmentPhaseValue;
+
+    private TrackingIdAssignmentPhase trackingIdAssignmentPhase;
+
     @Autowired
     private CsafConfiguration configuration;
+
+    @PostConstruct
+    void validateTrackingIdAssignmentPhase() {
+        try {
+            this.trackingIdAssignmentPhase = TrackingIdAssignmentPhase.valueOf(
+                    this.trackingIdAssignmentPhaseValue.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            LOG.error("Invalid value '{}' for property csaf.trackingid.assignment.phase. "
+                            + "Allowed values are: {}. Falling back to default value '{}'.",
+                    this.trackingIdAssignmentPhaseValue, Arrays.toString(TrackingIdAssignmentPhase.values()),
+                    TrackingIdAssignmentPhase.RELEASE);
+            this.trackingIdAssignmentPhase = TrackingIdAssignmentPhase.RELEASE;
+        }
+    }
+
+    /**
+     * get the tracking id assignment phase
+     *
+     * @return the tracking id assignment phase
+     */
+    public TrackingIdAssignmentPhase getTrackingIdAssignmentPhase() {
+        return this.trackingIdAssignmentPhase;
+    }
 
     @Autowired
     private BuildProperties buildProperties;
@@ -226,7 +252,11 @@ public class AdvisoryService {
             newAdvisoryNode.setDocumentTrackingCurrentReleaseDate(timestampNow);
         }
 
-        addTemporaryTrackingId(newAdvisoryNode);
+        if (this.trackingIdAssignmentPhase == TrackingIdAssignmentPhase.DRAFT) {
+            setFinalTrackingIdAndUrl(newAdvisoryNode);
+        } else {
+            addTemporaryTrackingId(newAdvisoryNode);
+        }
 
         String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
@@ -505,6 +535,51 @@ public class AdvisoryService {
     }
 
     /**
+     * Manually assign the final tracking id for an advisory, if none has been assigned yet.
+     *
+     * @param advisoryId the ID of the advisory to assign the tracking id for
+     * @param revision   the revision for concurrent control
+     * @return the new revision of the updated csaf document
+     * @throws IOException       if there was an error reading the advisory from the DB
+     * @throws DatabaseException if the advisory with the given id does not exist
+     * @throws CsafException     if the user has no permission to edit the advisory or if the advisory already has a final tracking id assigned
+     */
+    public String assignTrackingId(String advisoryId, String revision) throws IOException, DatabaseException, CsafException {
+
+        LOG.debug("assignTrackingId");
+        try (InputStream existingAdvisoryStream = this.couchDbService.readDocumentAsStream(advisoryId)) {
+
+            if (existingAdvisoryStream == null) {
+                throw new DatabaseException("Invalid advisory ID!");
+            }
+            AdvisoryWrapper existingAdvisoryNode = AdvisoryWrapper.createFromCouchDb(existingAdvisoryStream);
+            Authentication credentials = getAuthentication();
+            if (!canChangeAdvisory(existingAdvisoryNode, credentials)) {
+                throw new CsafException("User has no permission to edit the advisory", NoPermissionForAdvisory, UNAUTHORIZED);
+            }
+
+            if (existingAdvisoryNode.isFinalTrackingIdAssigned()) {
+                throw new CsafException("Advisory already has a final tracking id assigned",
+                        TrackingIdAlreadyAssigned, CONFLICT);
+            }
+
+            AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createCopy(existingAdvisoryNode);
+            setFinalTrackingIdAndUrl(existingAdvisoryNode);
+            existingAdvisoryNode.setRevision(revision);
+
+            String newRevision = this.couchDbService.updateDocument(existingAdvisoryNode.advisoryAsString());
+
+            AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(oldAdvisoryNode, existingAdvisoryNode)
+                    .setAdvisoryId(advisoryId)
+                    .setChangeType(ChangeType.Update)
+                    .setUser(credentials.getName());
+            this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+
+            return newRevision;
+        }
+    }
+
+    /**
      * Export the Advisory with the given advisoryId in the given format. The export will be written to a
      * temporary file and the path to the file will be returned.
      *
@@ -662,11 +737,16 @@ public class AdvisoryService {
                 }
             }
 
+            if (newWorkflowState == WorkflowState.Review
+                    && this.trackingIdAssignmentPhase == TrackingIdAssignmentPhase.REVIEW) {
+                setFinalTrackingIdAndUrl(existingAdvisoryNode);
+            }
+
             if (newWorkflowState == WorkflowState.RfPublication) {
                 // In this step we only want to check if the document would be valid if published but not change it yet.
                 createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
             }
-          
+
             if (newWorkflowState == WorkflowState.AutoPublish) {
                 if (proposedTime == null) {
                 	proposedTime = existingAdvisoryNode.getDocumentTrackingCurrentReleaseDate();
@@ -686,17 +766,13 @@ public class AdvisoryService {
                 //TODO: Check, if further checks for upload are needed
                 
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
-                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
-                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
-                }
+                setFinalTrackingIdAndUrl(existingAdvisoryNode);
             }
             
             if (newWorkflowState == WorkflowState.Published && (previousWorkflowState != WorkflowState.AutoPublish)) {
             	
                 existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
-                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
-                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
-                }
+                setFinalTrackingIdAndUrl(existingAdvisoryNode);
             }
 
             AuditTrailWrapper auditTrail = AdvisoryAuditTrailWorkflowWrapper.createNewFrom(newWorkflowState, previousWorkflowState)
@@ -721,6 +797,10 @@ public class AdvisoryService {
      * @throws CsafException error creating counter
      */
     void setFinalTrackingIdAndUrl(AdvisoryWrapper advisoryNode) throws CsafException {
+
+        if (advisoryNode.isFinalTrackingIdAssigned()) {
+            return;
+        }
 
         final long sequentialNumber = getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID);
         final boolean createHtmlReference = this.configuration.getWorkflow() != null

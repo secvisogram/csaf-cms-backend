@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Actions to do after startup of the application
  */
@@ -36,7 +39,12 @@ public class PostConstructActions {
         onStartupImporter.importAdvisories(Path.of("import"));
     }
 
+    private static final String CONFIG_LOG_SEPARATOR = "----------------------------------------------------------------------";
+
     private void checkConfiguration() {
+        LOG.info(CONFIG_LOG_SEPARATOR);
+        LOG.info("Configuration:");
+
         if (this.referencesBaseUrl == null || this.referencesBaseUrl.isBlank()) {
             LOG.warn("csaf.references.baseurl is not configured");
         } else {
@@ -52,6 +60,9 @@ public class PostConstructActions {
 
         LOG.info("Is Allowed to Approved Own Documents:  {}.", configuration.getWorkflow().isAllowOwnDocumentsApproved());
         LOG.info("Creates an Html Reference on Publish:  {}.", configuration.getWorkflow().isCreateHtmlReference());
+        LOG.info("csaf.trackingid.assignment.phase is configured to {}.", advisoryService.getTrackingIdAssignmentPhase());
+
+        LOG.info(CONFIG_LOG_SEPARATOR);
     }
 
 }
