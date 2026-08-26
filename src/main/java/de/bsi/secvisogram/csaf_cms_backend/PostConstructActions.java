@@ -2,6 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import jakarta.annotation.PostConstruct;
+import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +31,21 @@ public class PostConstructActions {
     @Autowired
     private CsafConfiguration configuration;
 
+    @Autowired
+    private AdvisoryService advisoryService;
+
     @PostConstruct
     private void postConstruct() {
         checkConfiguration();
         onStartupImporter.importAdvisories(Path.of("import"));
     }
 
+    private static final String CONFIG_LOG_SEPARATOR = "----------------------------------------------------------------------";
+
     private void checkConfiguration() {
+        LOG.info(CONFIG_LOG_SEPARATOR);
+        LOG.info("Configuration:");
+
         if (this.referencesBaseUrl == null || this.referencesBaseUrl.isBlank()) {
             LOG.warn("csaf.references.baseurl is not configured");
         } else {
@@ -52,6 +61,9 @@ public class PostConstructActions {
 
         LOG.info("Is Allowed to Approved Own Documents:  {}.", configuration.getWorkflow().isAllowOwnDocumentsApproved());
         LOG.info("Creates an Html Reference on Publish:  {}.", configuration.getWorkflow().isCreateHtmlReference());
+        LOG.info("csaf.trackingid.assignment.phase is configured to {}.", advisoryService.getTrackingIdAssignmentPhase());
+
+        LOG.info(CONFIG_LOG_SEPARATOR);
     }
 
 }
