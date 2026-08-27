@@ -463,6 +463,18 @@ public class AdvisoryWrapper {
         return (idNode.isMissingNode()) ? "" : idNode.asString();
     }
 
+    /**
+     * Check if the final tracking id is assigned to the document.
+     * A final tracking id is assigned if the tracking id is not blank and does not contain "-TEMP-".
+     *
+     * @return true if the final tracking id is assigned, false otherwise
+     */
+    public boolean isFinalTrackingIdAssigned() {
+
+        String trackingId = getDocumentTrackingId();
+        return !trackingId.isBlank() && !trackingId.contains("-TEMP-");
+    }
+
     public String getDocumentTrackingVersion() {
 
         JsonNode versionNode = this.at(AdvisorySearchField.DOCUMENT_TRACKING_VERSION);
