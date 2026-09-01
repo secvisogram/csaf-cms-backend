@@ -19,7 +19,7 @@ It offers a REST service for listing, searching, deleting, creating, commenting 
 ## Getting started
 
 > **Just want to run/try the backend locally?** This section describes a manual/production
-> setup (building the jar yourself, providing your own Keycloak/CouchDB/proxy infrastructure).
+> setup (building the jar yourself, providing your own Keycloak/PostgreSQL/proxy infrastructure).
 > If you just want to develop against or try out the backend locally with Docker, you don't
 > need any of the steps below — skip straight to [Developing](#developing) and follow
 > [docker/README.md](docker/README.md) instead.
@@ -28,7 +28,7 @@ To run the CSAF CMS server you need the following:
 
 - [Keycloak](https://www.keycloak.org/)
 - A proxy like [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)
-- [CouchDB](https://couchdb.apache.org/)
+- [PostgreSQL](https://www.postgresql.org/)
 
 You can find an example setup for local development in the 'compose.yaml' and
 an example configuration for Keycloak in 'docker/config/keycloak/csaf-realm.json'. You can
@@ -97,7 +97,7 @@ Duplicates are identified by their tracking ID and not imported again.
 
 ## Developing
 
-For the full, step-by-step guide to running the whole stack (CouchDB, Keycloak, oauth2-proxy,
+For the full, step-by-step guide to running the whole stack (PostgreSQL, Keycloak, oauth2-proxy,
 validator service, Secvisogram and the backend) locally with Docker Compose — including the
 required `.env` setup, cookie secret generation, default users and how to debug the backend
 on the host — see **[docker/README.md](docker/README.md)**.
@@ -148,8 +148,8 @@ OpenAPI specification
 
 http://localhost:8081/api-docs
 
-For accessing CouchDB when running the local Docker setup, see
-[Accessing CouchDB](docker/README.md#accessing-couchdb) in `docker/README.md`.
+For accessing PostgreSQL when running the local Docker setup, see
+[Accessing PostgreSQL](docker/README.md#accessing-postgresql) in `docker/README.md`.
 
 ## Contributing
 
@@ -173,7 +173,7 @@ You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogra
 For further reference, please consider the following sections:
 
 * [Mustache](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-spring-mvc-template-engines)
-* [Spring Data Couchbase](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-couchbase)
+* [Spring Data JPA](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-jpa-and-spring-data)
 * [Spring Web](https://docs.spring.io/spring-boot/docs/2.6.2/reference/htmlsingle/#boot-features-developing-web-applications)
 
 [(back to top)](#bsi-secvisogram-csaf-backend)
