@@ -18,17 +18,17 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
- * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
+ * Test for the Advisory service. The required PostgreSQL container is started in the PostgreSQLExtension.
  */
 @SpringBootTest(properties = "csaf.document.templates.companyLogoPath=")
-@ExtendWith(CouchDBExtension.class)
+@ExtendWith(PostgreSQLExtension.class)
 @DirtiesContext
 @SpringJUnitConfig
 @SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")

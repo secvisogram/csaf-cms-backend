@@ -1,6 +1,6 @@
 # Local development with Docker
 
-This guide describes how to run the whole CSAF CMS Backend stack (CouchDB,
+This guide describes how to run the whole CSAF CMS Backend stack (PostgreSQL,
 Keycloak, oauth2-proxy, the validator service, Secvisogram and the backend
 itself) locally with Docker Compose. **This is the only guide you need if you
 just want to try out or develop against the backend locally** — you do not
@@ -31,7 +31,7 @@ should not be used in production.
 
             Container_Boundary(c1, "Backend") {
                 Container(backend, "CSAF-CMS-Backend", "Spring Boot")
-                ContainerDb(backend-db, "CouchDB", "CMS-Backend-Database")
+                ContainerDb(backend-db, "PostgreSQL", "CMS-Backend-Database")
             }
         }
 
@@ -60,12 +60,12 @@ Configuration is split across two **.env** files, each with its own
 **.env.example** template:
 
 - **`.env`** (repo root): configuration for the backend application itself
-  (CouchDB connection, OIDC issuer, document templates, versioning, tracking
+  (PostgreSQL connection, OIDC issuer, document templates, versioning, tracking
   IDs, workflow flags, ...). This is read both when running the backend on
   the host (`./mvnw spring-boot:run`) and by the containerized
   `backend-cms` compose service.
 - **`docker/.env`**: configuration needed only to orchestrate the local
-  docker compose stack itself (Keycloak, oauth2-proxy, CouchDB container
+  docker compose stack itself (Keycloak, oauth2-proxy, PostgreSQL container
   credentials, ports, ...).
 
 Follow these steps **in order**:
@@ -77,7 +77,7 @@ Follow these steps **in order**:
    cp docker/.env.example docker/.env
    ```
 
-   A few values (e.g. CouchDB credentials, the backend port) intentionally
+   A few values (e.g. PostgreSQL credentials, the backend port) intentionally
    appear in both files, with comments cross-referencing each other — keep
    them in sync if you change them.
 
@@ -87,17 +87,13 @@ Follow these steps **in order**:
 
 3. Start the stack: run `docker compose up -d --build` in folder `docker`.
 
-4. Set up your CouchDB server: open `http://127.0.0.1:5984/_utils/#/setup`
-   log in with the credentials from `docker/.env` (CSAF_COUCHDB_USER /
-   CSAF_COUCHDB_PASSWORD) and run the
-   [Single Node Setup](https://docs.couchdb.org/en/stable/setup/single-node.html).
-   This creates databases like **_users** and stops CouchDB from spamming
-   our logs (admin credentials from `docker/.env`).
+   The `cms-db` PostgreSQL container creates its database, user and password
+   from `CSAF_DB_NAME` / `CSAF_DB_USER` / `CSAF_DB_PASSWORD` in `docker/.env`
+   on first start — no manual setup step is needed. The backend then applies
+   its schema automatically via Flyway migrations on startup (see
+   [documents/couchdb-to-postgres-migration.md](../documents/couchdb-to-postgres-migration.md)).
 
-5. Create a database in CouchDB with the name specified in
-   `CSAF_COUCHDB_DBNAME`.
-
-6. Keycloak is initialized automatically: on startup it imports the `csaf`
+4. Keycloak is initialized automatically: on startup it imports the `csaf`
    realm, the `secvisogram` client, all client roles and the development
    test users from `docker/config/keycloak/csaf-realm.json` (via
    `--import-realm`). There is no manual setup step and no need to copy the
@@ -113,26 +109,26 @@ Follow these steps **in order**:
       remove the Keycloak database volume first: `docker compose down` and
       delete `docker/data/keycloak-db`.
 
-7. (optional) Initialize the trusted CSAF provider:
+5. (optional) Initialize the trusted CSAF provider:
    `docker compose up trusted-provider-setup`.
     - The folder `docker/config/trustedprovider` contains example /
       development PGP keys.
     - More details on configuring the trusted provider can be found at
       [GoCSAF](https://github.com/gocsaf/csaf).
 
-8. (required for exports) Install
+6. (required for exports) Install
    [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
    as well as [weasyprint (tested with version 56.0)](https://weasyprint.org/)
    and make sure both are in your PATH.
 
-9. (optional for exports) Define the path to a company logo that should be
+7. (optional for exports) Define the path to a company logo that should be
    used in the exports through the environment variable
    `CSAF_COMPANY_LOGO_PATH`. The path can either be relative to the project
    root or absolute. See `.env.example` for an example.
 
-10. `backend-cms` is now running. If you are actively working on backend
-    code, see [Debugging the backend](#debugging-the-backend) below for the
-    faster host-based workflow with IDE debugging.
+8. `backend-cms` is now running. If you are actively working on backend
+   code, see [Debugging the backend](#debugging-the-backend) below for the
+   faster host-based workflow with IDE debugging.
 
 You should now be able to navigate to `http://localhost/api/v1/about`, log in
 with one of the users below and get a response from the server.
@@ -164,11 +160,14 @@ To run/debug the backend on the host (e.g. from an IDE) instead of in its contai
 To switch back to the containerized backend, set `CSAF_CMS_BACKEND_HOST` back to
 `backend-cms` and run `docker compose up -d` again.
 
-## Accessing CouchDB
+## Accessing PostgreSQL
 
-The port is defined in `docker/.env` (`CSAF_COUCHDB_PORT`, default 5984).
+The port is defined in `docker/.env` (`CSAF_DB_PORT`, default 5432). Connect
+with `psql` or any PostgreSQL client using the host/port and the credentials
+from `docker/.env` (`CSAF_DB_USER` / `CSAF_DB_PASSWORD` / `CSAF_DB_NAME`), e.g.:
 
-- CouchDB admin UI: [http://localhost:5984/_utils/#login](http://localhost:5984/_utils/#login)
-- CouchDB info: [http://localhost:5984/](http://localhost:5984/)
+```shell
+psql -h localhost -p 5432 -U csaf -d csaf
+```
 
 [(back to top)](#local-development-with-docker)

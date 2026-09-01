@@ -14,7 +14,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -50,10 +50,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
- * Test for the workflow in the Advisory service. The required CouchDB container is started in the CouchDBExtension.
+ * Test for the workflow in the Advisory service. The required PostgreSQL container is started in the PostgreSQLExtension.
  */
 @SpringBootTest(properties = { "csaf.workflow.allowOwnDocumentsApproved=true"} )
-@ExtendWith(CouchDBExtension.class)
+@ExtendWith(PostgreSQLExtension.class)
 @DirtiesContext
 @SpringJUnitConfig
 public class AdvisoryWorkflowSemanticVersioningTest {

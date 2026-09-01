@@ -3,19 +3,20 @@
 ###############################################################################
 
 services:
-  cms-couchdb:
-    image: couchdb:3.4
+  cms-db:
+    image: postgres:17-alpine
     restart: on-failure
     env_file: .env
     environment:
-      COUCHDB_USER: ${CSAF_COUCHDB_USER}
-      COUCHDB_PASSWORD: ${CSAF_COUCHDB_PASSWORD}
+      POSTGRES_DB: ${CSAF_DB_NAME}
+      POSTGRES_USER: ${CSAF_DB_USER}
+      POSTGRES_PASSWORD: ${CSAF_DB_PASSWORD}
     volumes:
-      - ./data/cms-db:/opt/couchdb/data
+      - cms-db-data:/var/lib/postgresql/data
     ports:
-      - "${CSAF_COUCHDB_PORT}:5984"
+      - "${CSAF_DB_PORT}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${CSAF_DB_USER}"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -25,7 +26,7 @@ services:
     image: postgres:17-alpine
     container_name: keycloak-db
     volumes:
-      - ./data/keycloak-db:/var/lib/postgresql/data
+      - keycloak-db-data:/var/lib/postgresql/data
     env_file: .env
     environment:
       POSTGRES_DB: ${CSAF_KEYCLOAK_DATABASE_NAME}
@@ -165,7 +166,7 @@ services:
       test: ["CMD-SHELL", "wget -O /dev/null http://127.0.0.1:8082/health || exit 1"]
       interval: 10s
       timeout: 10s
-      retries: 10 
+      retries: 10
 
   backend-cms:
     image: ghcr.io/secvisogram/csaf-cms-backend:sha-829eb0d
@@ -174,7 +175,7 @@ services:
       # Internal service names, only reachable from inside this container. The values in ../.env
       # (localhost-based) remain correct for running the backend on the host via
       # "./mvnw spring-boot:run" during debugging.
-      CSAF_COUCHDB_HOST: cms-couchdb
+      CSAF_DB_HOST: cms-db
       CSAF_VALIDATION_BASE_URL: "http://validator:8082/api/v1"
       CSAF_OIDC_JWKS_URL: "http://keycloak:8080/realms/${CSAF_REALM}/protocol/openid-connect/certs"
       CSAF_AUTOPUBLISH_URL: "http://reverse-proxy/cgi-bin/csaf_provider.go/api/upload"
@@ -191,7 +192,7 @@ services:
       retries: 10
       start_period: 30s
     depends_on:
-      cms-couchdb:
+      cms-db:
         condition: service_healthy
       keycloak:
         condition: service_healthy
@@ -235,7 +236,7 @@ services:
     build:
       context: ./container/trustedprovider
       dockerfile: Dockerfile
-    env_file: 
+    env_file:
       - .env
     environment:
       - PUID=1000
@@ -269,4 +270,10 @@ services:
     depends_on:
       trusted-provider:
         condition: service_healthy
-    
+
+volumes:
+  # Named (Docker-managed) volumes rather than host bind-mounts: Postgres's initdb
+  # hard-requires chmod 0700 on its data directory. Named volumes live in Docker's own Linux-side
+  # filesystem instead, avoiding any issues with Windows.
+  cms-db-data:
+  keycloak-db-data:

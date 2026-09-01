@@ -5,7 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 @SpringBootTest(properties = {
         "csaf.workflow.allowOwnDocumentsApproved=true",
 })
-@ExtendWith(CouchDBExtension.class)
+@ExtendWith(PostgreSQLExtension.class)
 @DirtiesContext
 @SpringJUnitConfig
 public class AdvisorySearchUtilTest {

@@ -1,15 +1,20 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailDocumentEntity;
+import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailWorkflowEntity;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
+import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.json.TrackingIdCounter;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.repository.AuditTrailDocumentRepository;
+import de.bsi.secvisogram.csaf_cms_backend.repository.AuditTrailWorkflowRepository;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.*;
@@ -25,6 +30,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,15 +57,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.*;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE_TYPE;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToInputstream;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToRequest;
 import static de.bsi.secvisogram.csaf_cms_backend.json.VersioningType.Semantic;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static java.util.Comparator.comparing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -69,7 +69,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 /**
- * Test for the Advisory service. The required CouchDB container is started in the CouchDBExtension.
+ * Test for the Advisory service. The required PostgreSQL container is started in the PostgreSQLExtension.
  */
 @SpringBootTest(properties = {
         "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png",
@@ -78,7 +78,7 @@ import static org.mockito.Mockito.when;
         "csaf.trackingid.digits=7",
         "csaf.workflow.allowOwnDocumentsApproved=true",
 })
-@ExtendWith(CouchDBExtension.class)
+@ExtendWith(PostgreSQLExtension.class)
 @DirtiesContext
 @SpringJUnitConfig
 @SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE", justification = "False positives on multiline format strings")
@@ -86,6 +86,12 @@ public class AdvisoryServiceTest {
 
     @Autowired
     private AdvisoryService advisoryService;
+
+    @Autowired
+    private AuditTrailDocumentRepository auditTrailDocumentRepository;
+
+    @Autowired
+    private AuditTrailWorkflowRepository auditTrailWorkflowRepository;
 
     @MockitoBean
     private PandocService pandocService;
@@ -157,6 +163,28 @@ public class AdvisoryServiceTest {
     public void getAdvisoryIdsTest_empty() throws IOException, CsafException {
         List<AdvisoryInformationResponse> ids = this.advisoryService.getAdvisoryInformations(null);
         assertEquals(0, ids.size());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_accessDenied() {
+        // Neither ROLE_REGISTERED nor ROLE_AUDITOR: @Secured must reject this.
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> this.advisoryService.getAdvisoryInformations(null));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_invalidExpression() throws IOException, CsafException {
+        this.advisoryService.addAdvisory(csafToRequest(csafJson));
+
+        // Not valid Expression JSON: json2Expression must throw here. Matches the pre-migration
+        // (CouchDB-era) AdvisorySearchUtil.buildAdvisoryExpression behavior -- a malformed filter
+        // is a client error (400)
+        CsafException ex = assertThrows(CsafException.class,
+                () -> this.advisoryService.getAdvisoryInformations("not valid expression json"));
+        assertEquals(CsafExceptionKey.InvalidFilterExpression, ex.getExceptionKey());
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getRecommendedHttpState());
     }
 
     @Test
@@ -274,12 +302,22 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisoryTest_badRevision() throws IOException, CsafException {
+    public void deleteAdvisoryTest_notFound() {
+        // In PostgreSQL, deleting a non-existent advisory throws IdNotFoundException
+        UUID noAdvisoryId = UUID.randomUUID();
+        assertThrows(IdNotFoundException.class,
+                () -> this.advisoryService.deleteAdvisory(noAdvisoryId.toString(), "any-revision"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void deleteAdvisoryTest_badRevision() throws IOException, DatabaseException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
-        // creates advisory, 1 counter and 1 audit trail
+        CsafException ex = assertThrows(CsafException.class,
+                () -> advisoryService.deleteAdvisory(idRev.getId(), "not-the-real-revision"));
+        assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+        // the advisory must still be there:
         assertEquals(3, advisoryService.getDocumentCount());
-        String revision = "bad revision";
-        assertThrows(DatabaseException.class, () -> this.advisoryService.deleteAdvisory(idRev.getId(), revision));
     }
 
     @Test
@@ -370,6 +408,21 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void updateAdvisoryTest_badRevision() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateAdvisoryRequest request = csafToRequest(csafJson);
+        request.setSummary("An update with a stale revision");
+
+        CsafException ex = assertThrows(CsafException.class,
+                () -> advisoryService.updateAdvisory(idRev.getId(), "not-the-real-revision", request));
+        assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+        // an advisory, 1 counter and 1 audit trail: the rejected update must not have changed anything
+        assertEquals(3, advisoryService.getDocumentCount());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
     public void updateAdvisoryTest_auditTrail() throws IOException, DatabaseException, CsafException {
 
         var idRev = advisoryService.addAdvisory(csafToRequest(csafDocumentJson("Category1", "Title1")));
@@ -380,39 +433,32 @@ public class AdvisoryServiceTest {
         assertEquals(6, advisoryService.getDocumentCount());
         advisoryService.getAdvisory(idRev.getId());
 
-        List<JsonNode> auditTrails = readAllAuditTrailDocumentsFromDb();
+        List<AuditTrailDocumentEntity> auditTrails =
+                auditTrailDocumentRepository.findByAdvisoryId(UUID.fromString(idRev.getId()));
 
         assertEquals(4, auditTrails.size());
-        auditTrails.sort(comparing(CREATED_AT::stringVal));
-        assertThat(CHANGE_TYPE.stringVal(auditTrails.get(0)), equalTo(ChangeType.Create.name()));
-        assertThat(CHANGE_TYPE.stringVal(auditTrails.get(1)), equalTo(ChangeType.Update.name()));
+        auditTrails.sort(comparing(AuditTrailDocumentEntity::getCreatedAt));
+        assertThat(auditTrails.get(0).getChangeType(), equalTo(ChangeType.Create.name()));
+        assertThat(auditTrails.get(1).getChangeType(), equalTo(ChangeType.Update.name()));
+
         // recreate Advisory from diffs
         AdvisoryWrapper rootWrapper = AdvisoryWrapper.createNewFromCsaf(csafToRequest(AdvisoryWrapper.emptyCsafDocument), "", Semantic.name());
-        JsonNode patch0 = auditTrails.get(0).get(DIFF.getDbName());
-        AdvisoryWrapper node1 = rootWrapper.applyJsonPatch(patch0);
-        assertThat(node1.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title1"));
-        AdvisoryWrapper node2 = node1.applyJsonPatch(auditTrails.get(1).get(DIFF.getDbName()));
-        assertThat(node2.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title2"));
-        AdvisoryWrapper node3 = node2.applyJsonPatch(auditTrails.get(2).get(DIFF.getDbName()));
-        assertThat(node3.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title3"));
-        AdvisoryWrapper node4 = node2.applyJsonPatch(auditTrails.get(3).get(DIFF.getDbName()));
-        assertThat(node4.at(AdvisorySearchField.DOCUMENT_TITLE).asString(), equalTo("Title4"));
-    }
-
-    private List<JsonNode> readAllAuditTrailDocumentsFromDb() throws IOException {
-
-        Collection<DbField> fields = Arrays.asList(CouchDbField.ID_FIELD, ADVISORY_ID, CREATED_AT,
-                CHANGE_TYPE, DIFF, DOC_VERSION);
-        Map<String, Object> selector = expr2CouchDBFilter(equal(ObjectType.AuditTrailDocument.name(), TYPE_FIELD.getDbName()));
-        return advisoryService.findDocuments(selector, fields);
+        AdvisoryWrapper node1 = rootWrapper.applyJsonPatch(auditTrails.get(0).getDiff());
+        assertThat(node1.at("/csaf/document/title").asString(), equalTo("Title1"));
+        AdvisoryWrapper node2 = node1.applyJsonPatch(auditTrails.get(1).getDiff());
+        assertThat(node2.at("/csaf/document/title").asString(), equalTo("Title2"));
+        AdvisoryWrapper node3 = node2.applyJsonPatch(auditTrails.get(2).getDiff());
+        assertThat(node3.at("/csaf/document/title").asString(), equalTo("Title3"));
+        AdvisoryWrapper node4 = node3.applyJsonPatch(auditTrails.get(3).getDiff());
+        assertThat(node4.at("/csaf/document/title").asString(), equalTo("Title4"));
     }
 
     @Test
     public void updateAdvisoryTest_badData() {
         UUID noAdvisoryId = UUID.randomUUID();
-        Exception expectedException = assertThrows(DatabaseException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(),
+        Exception expectedException = assertThrows(IdNotFoundException.class, () -> advisoryService.updateAdvisory(noAdvisoryId.toString(),
                 "redundant", csafToRequest(advisoryJsonString)));
-        assertThat(expectedException.getMessage(), containsString("No element with such an ID"));
+        assertThat(expectedException.getMessage(), containsString("not found"));
     }
 
     @Test
@@ -442,9 +488,10 @@ public class AdvisoryServiceTest {
         ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
         CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
         request.setSummary("UpdateSummary");
+        String nonExistentId = UUID.randomUUID().toString();
         Exception expectedException = assertThrows(IdNotFoundException.class,
-                () -> advisoryService.updateAdvisory("InvalidId", idRev.getRevision(), request));
-        assertThat(expectedException.getMessage(), containsString("No element with such an ID"));
+                () -> advisoryService.updateAdvisory(nonExistentId, idRev.getRevision(), request));
+        assertThat(expectedException.getMessage(), containsString("not found"));
     }
 
     @Test
@@ -489,9 +536,11 @@ public class AdvisoryServiceTest {
         CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
         request.setSummary("UpdateSummary");
 
-        Exception expectedException = assertThrows(CsafException.class,
+        // In PostgreSQL, advisories and comments are in separate tables, so trying to
+        // update a comment ID as an advisory simply results in IdNotFoundException
+        Exception expectedException = assertThrows(IdNotFoundException.class,
                 () -> advisoryService.updateAdvisory(idRevComment.getId(), idRevComment.getRevision(), request));
-        assertThat(expectedException.getMessage(), containsString("not of type Advisory"));
+        assertThat(expectedException.getMessage(), containsString("not found"));
     }
 
     @Test
@@ -503,6 +552,19 @@ public class AdvisoryServiceTest {
         assertEquals(4, advisoryService.getDocumentCount());
         AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
         assertEquals(WorkflowState.Review, advisory.getWorkflowState());
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
+    public void changeAdvisoryWorkflowStateTest_badRevision() throws IOException, DatabaseException, CsafException {
+        IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CsafException ex = assertThrows(CsafException.class,
+                () -> advisoryService.changeAdvisoryWorkflowState(
+                        idRev.getId(), "not-the-real-revision", WorkflowState.Review, null, null));
+        assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+        AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+        assertEquals(WorkflowState.Draft, advisory.getWorkflowState(),
+                "the rejected state change with a stale revision must not have taken effect");
     }
 
     @Test
@@ -592,28 +654,27 @@ public class AdvisoryServiceTest {
         String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
         advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
 
-        Collection<DbField> auditTrailFields = Arrays.asList(CouchDbField.ID_FIELD, DOC_VERSION, OLD_DOC_VERSION, NEW_WORKFLOW_STATE, OLD_WORKFLOW_STATE);
-
-        Map<String, Object> workflowAuditTrailsSelector = expr2CouchDBFilter(equal(ObjectType.AuditTrailWorkflow.name(), TYPE_FIELD.getDbName()));
-        List<JsonNode> workflowAuditTrails = advisoryService.findDocuments(workflowAuditTrailsSelector, auditTrailFields);
+        List<AuditTrailWorkflowEntity> workflowAuditTrails =
+                auditTrailWorkflowRepository.findByAdvisoryId(UUID.fromString(idRev.getId()));
 
         assertEquals(2, workflowAuditTrails.size(), "There should be one audit trail for each workflow state change");
 
-        Map<String, Object> toReviewSelector = expr2CouchDBFilter(equal(WorkflowState.Review.name(), NEW_WORKFLOW_STATE.getDbName()));
-        JsonNode toReviewWorkflowAuditTrail = advisoryService.findDocuments(toReviewSelector, auditTrailFields).get(0);
-        Map<String, Object> toApprovedSelector = expr2CouchDBFilter(equal(WorkflowState.Approved.name(), NEW_WORKFLOW_STATE.getDbName()));
-        JsonNode toApprovedWorkflowAuditTrail = advisoryService.findDocuments(toApprovedSelector, auditTrailFields).get(0);
+        AuditTrailWorkflowEntity toReview = workflowAuditTrails.stream()
+                .filter(e -> WorkflowState.Review.name().equals(e.getNewState()))
+                .findFirst().orElseThrow();
+        AuditTrailWorkflowEntity toApproved = workflowAuditTrails.stream()
+                .filter(e -> WorkflowState.Approved.name().equals(e.getNewState()))
+                .findFirst().orElseThrow();
 
-        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asString());
-        assertEquals("0.0.1", toReviewWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asString());
-        assertEquals("Draft", toReviewWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asString());
-        assertEquals("Review", toReviewWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asString());
+        assertEquals("0.0.1", toReview.getOldDocVersion());
+        assertEquals("0.0.1", toReview.getDocVersion());
+        assertEquals("Draft", toReview.getOldState());
+        assertEquals("Review", toReview.getNewState());
 
-        assertEquals("0.0.1", toApprovedWorkflowAuditTrail.get(OLD_DOC_VERSION.getDbName()).asString());
-        assertEquals("1.0.0-1.0", toApprovedWorkflowAuditTrail.get(DOC_VERSION.getDbName()).asString());
-        assertEquals("Review", toApprovedWorkflowAuditTrail.get(OLD_WORKFLOW_STATE.getDbName()).asString());
-        assertEquals("Approved", toApprovedWorkflowAuditTrail.get(NEW_WORKFLOW_STATE.getDbName()).asString());
-
+        assertEquals("0.0.1", toApproved.getOldDocVersion());
+        assertEquals("1.0.0-1.0", toApproved.getDocVersion());
+        assertEquals("Review", toApproved.getOldState());
+        assertEquals("Approved", toApproved.getNewState());
     }
 
     @Test
@@ -732,6 +793,31 @@ public class AdvisoryServiceTest {
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
+    public void createNewCsafDocumentVersionTest_badRevision() throws IOException, DatabaseException, CsafException {
+
+        try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
+
+            validatorMock.when(() -> ValidatorServiceClient.isAdvisoryValid(any(), any())).thenReturn(Boolean.TRUE);
+
+            IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+            String revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), idRev.getRevision(), WorkflowState.Review, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Approved, null, null);
+            revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
+            advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+
+            CsafException ex = assertThrows(CsafException.class,
+                    () -> advisoryService.createNewCsafDocumentVersion(idRev.getId(), "not-the-real-revision"));
+            assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+            AdvisoryResponse advisory = advisoryService.getAdvisory(idRev.getId());
+            assertEquals(WorkflowState.Published, advisory.getWorkflowState(),
+                    "the rejected version-creation with a stale revision must not have taken effect");
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_PUBLISHER})
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            justification = "Bug in SpotBugs: https://github.com/spotbugs/spotbugs/issues/1338")
     public void createNewCsafDocumentVersionKeepTrackingIdTest() throws IOException, DatabaseException, CsafException {
 
         try (final MockedStatic<ValidatorServiceClient> validatorMock = Mockito.mockStatic(ValidatorServiceClient.class)) {
@@ -800,8 +886,9 @@ public class AdvisoryServiceTest {
     public void createNewCsafDocumentVersionTest_invalidId() throws IOException, CsafException {
 
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
+        String nonExistentId = UUID.randomUUID().toString();
         assertThrows(DatabaseException.class,
-                () -> advisoryService.createNewCsafDocumentVersion("Invalid Id", idRev.getRevision()));
+                () -> advisoryService.createNewCsafDocumentVersion(nonExistentId, idRev.getRevision()));
     }
 
     @Test
@@ -904,6 +991,22 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    void getCommentsTest_includesAnswers() throws IOException, DatabaseException, CsafException {
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+        IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
+
+        List<CommentInformationResponse> commentInfos = this.advisoryService.getComments(idRevAdvisory.getId());
+
+        List<String> ids = commentInfos.stream().map(CommentInformationResponse::getCommentId).toList();
+        assertTrue(ids.contains(idRevComment.getId()), "the top-level comment must be included");
+        assertTrue(ids.contains(idRevAnswer.getId()), "answers must be included too, not just top-level comments");
+        assertEquals(2, commentInfos.size());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
     public void addCommentTest_oneComment() throws DatabaseException, IOException, CsafException {
 
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
@@ -984,21 +1087,33 @@ public class AdvisoryServiceTest {
 
     @Test
     public void deleteComment_notPresent() {
+        UUID noCommentId = UUID.randomUUID();
         assertThrows(IdNotFoundException.class,
-                () -> advisoryService.deleteComment("not present", "no revision"));
+                () -> advisoryService.deleteComment(noCommentId.toString(), "no revision"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void deleteComment_notFound() {
+        // In PostgreSQL, deleting a non-existent comment throws IdNotFoundException
+        UUID noCommentId = UUID.randomUUID();
+        assertThrows(IdNotFoundException.class,
+                () -> advisoryService.deleteComment(noCommentId.toString(), "any-revision"));
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
     public void deleteComment_badRevision() throws IOException, DatabaseException, CsafException {
+
         IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
-
         CreateCommentRequest comment = new CreateCommentRequest("a comment", UUID.randomUUID().toString());
-
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
 
-        assertThrows(DatabaseException.class,
-                () -> advisoryService.deleteComment(idRevComment.getId(), "bad revision"));
+        CsafException ex = assertThrows(CsafException.class,
+                () -> advisoryService.deleteComment(idRevComment.getId(), "not-the-real-revision"));
+        assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+        // advisory, counter, comment and their audit trails must still all be there
+        assertEquals(5, advisoryService.getDocumentCount());
     }
 
     @Test
@@ -1034,11 +1149,11 @@ public class AdvisoryServiceTest {
         Assertions.assertEquals(7, advisoryService.getDocumentCount(),
                 "There should be 1 advisory, 1 counter, 1 comment, 1 answer and an audit trail entry for each before deletion");
 
+        // Deleting the parent comment cascades to the answer (ON DELETE CASCADE in schema)
         advisoryService.deleteComment(idRevComment.getId(), idRevComment.getRevision());
-        advisoryService.deleteComment(idRevAnswer.getId(), idRevAnswer.getRevision());
 
         Assertions.assertEquals(3, advisoryService.getDocumentCount(),
-                "There should be 1 advisory and 1 audit trail entry left after deletion");
+                "There should be 1 advisory and 1 audit trail entry left after deletion (answer cascade-deleted)");
 
     }
 
@@ -1063,6 +1178,24 @@ public class AdvisoryServiceTest {
 
         CommentResponse newComment = advisoryService.getComment(idRevComment.getId());
         Assertions.assertEquals("updated comment text", newComment.getCommentText());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    void updateCommentTest_badRevision() throws IOException, DatabaseException, CsafException {
+
+        IdAndRevision idRevAdvisory = advisoryService.addAdvisory(csafToRequest(csafJson));
+        CreateCommentRequest comment = new CreateCommentRequest("comment text", UUID.randomUUID().toString());
+        IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
+
+        CsafException ex = assertThrows(CsafException.class,
+                () -> advisoryService.updateComment(idRevAdvisory.getId(), idRevComment.getId(),
+                        "not-the-real-revision", "attempted update"));
+        assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+
+        CommentResponse unchanged = advisoryService.getComment(idRevComment.getId());
+        assertEquals("comment text", unchanged.getCommentText(),
+                "the rejected update with a stale revision must not have taken effect");
     }
 
     @Test
@@ -1211,8 +1344,18 @@ public class AdvisoryServiceTest {
 
     @Test
     public void deleteAnswer_notPresent() {
+        UUID noAnswerId = UUID.randomUUID();
         assertThrows(IdNotFoundException.class,
-                () -> advisoryService.deleteAnswer("not present", "no revision"));
+                () -> advisoryService.deleteAnswer(noAnswerId.toString(), "no revision"));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
+    public void deleteAnswer_notFound() {
+        // In PostgreSQL, deleting a non-existent answer throws IdNotFoundException
+        UUID noAnswerId = UUID.randomUUID();
+        assertThrows(IdNotFoundException.class,
+                () -> advisoryService.deleteAnswer(noAnswerId.toString(), "any-revision"));
     }
 
     @Test
@@ -1224,8 +1367,11 @@ public class AdvisoryServiceTest {
         IdAndRevision idRevComment = advisoryService.addComment(idRevAdvisory.getId(), comment);
         IdAndRevision idRevAnswer = advisoryService.addAnswer(idRevAdvisory.getId(), idRevComment.getId(), answerText);
 
-        assertThrows(DatabaseException.class,
-                () -> advisoryService.deleteAnswer(idRevAnswer.getId(), "bad revision"));
+        CsafException ex = assertThrows(CsafException.class,
+                () -> advisoryService.deleteAnswer(idRevAnswer.getId(), "not-the-real-revision"));
+        assertEquals(CsafExceptionKey.CsafHasWrongRevision, ex.getExceptionKey());
+        Assertions.assertEquals(7, advisoryService.getDocumentCount(),
+                "the rejected delete with a stale revision must not have taken effect");
     }
 
     @Test
