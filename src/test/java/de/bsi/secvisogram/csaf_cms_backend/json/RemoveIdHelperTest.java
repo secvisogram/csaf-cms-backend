@@ -370,7 +370,7 @@ public class RemoveIdHelperTest {
                     "_id": "id124214"}""".formatted(csafWithIds);
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
-        var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        var advisory = AdvisoryWrapper.createFromStream(advisoryStream);
         RemoveIdHelper.removeIds(advisory.getCsaf(), "nodeId");
         assertThat(advisory.getCsaf().toString().replaceAll("\\s+", ""), is(csafWithoutIds.replaceAll("\\s+", "")));
     }

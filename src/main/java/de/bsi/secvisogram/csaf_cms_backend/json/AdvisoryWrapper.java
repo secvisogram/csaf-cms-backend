@@ -59,7 +59,7 @@ public class AdvisoryWrapper {
      * @return the wrapper
      * @throws IOException error in processing the input stream
      */
-    public static AdvisoryWrapper createFromCouchDb(InputStream advisoryStream) throws IOException, CsafException {
+    public static AdvisoryWrapper createFromStream(InputStream advisoryStream) throws IOException, CsafException {
 
         final ObjectMapper jacksonMapper = new JsonMapper();
         AdvisoryWrapper advisoryFromDb = new AdvisoryWrapper(jacksonMapper.readValue(advisoryStream, ObjectNode.class));
