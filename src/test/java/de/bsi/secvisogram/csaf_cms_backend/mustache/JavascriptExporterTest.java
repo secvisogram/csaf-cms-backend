@@ -14,10 +14,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.StringUtils;
 
-@SpringBootTest(properties = "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png")
+import de.bsi.secvisogram.csaf_cms_backend.service.PostgresRepositoryService;
+
+@SpringBootTest(properties = {
+        "csaf.document.templates.companyLogoPath=./src/test/resources/eXXcellent_solutions.png"
+})
 class JavascriptExporterTest {
+
+    @MockitoBean
+    private PostgresRepositoryService postgresRepositoryService;
 
     private static final String json = """
             {

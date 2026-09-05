@@ -14,5 +14,6 @@ public enum CsafExceptionKey {
     SummaryInHistoryEmpty,
     ErrorCreatingTrackingIdCounter,
     DuplicateImport,
-    TrackingIdAlreadyAssigned;
+    TrackingIdAlreadyAssigned,
+    CsafHasWrongRevision;
 }
