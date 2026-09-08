@@ -171,4 +171,40 @@ The port is defined in `docker/.env` (`CSAF_COUCHDB_PORT`, default 5984).
 - CouchDB admin UI: [http://localhost:5984/_utils/#login](http://localhost:5984/_utils/#login)
 - CouchDB info: [http://localhost:5984/](http://localhost:5984/)
 
+## Building images and running from local source
+
+Running `docker compose` from `docker/` (as above) is the quick-look path: every
+service pulls a pinned/published image and nothing builds. (If you just want to
+iterate on backend code without building a container at all, see
+[Debugging the backend](#debugging-the-backend) above — it runs the backend
+directly on the host instead.) Two subdirectories give you a build-from-source
+stack instead, without touching the base setup — same `docker/.env`, `docker/data`,
+and `docker/config`, just built rather than pulled:
+
+- **`docker/dev`** — builds `backend-cms` from this repo's own source. Use this
+  when you're only working on the backend:
+
+  ```shell
+  cd docker/dev
+  docker compose up -d --build
+  ```
+
+- **`docker/dev-all`** — builds `backend-cms`, `secvisogram`, and the validator
+  service, all from local source. Requires
+  [`secvisogram`](https://github.com/secvisogram/secvisogram) and
+  [`csaf-validator-service`](https://github.com/secvisogram/csaf-validator-service)
+  checked out as sibling directories next to this repo (i.e. `../secvisogram` and
+  `../csaf-validator-service` relative to this repo's root):
+
+  ```shell
+  cd docker/dev-all
+  docker compose up -d --build
+  ```
+
+Each subdirectory's `.env` sets Compose's `COMPOSE_FILE` so that running from there
+merges in that subdirectory's own `compose.build.yaml`.
+You can freely switch between `docker/`, `docker/dev/`, and `docker/dev-all/` for
+the same containers and volumes; it's not a separate environment, just a different
+set of compose files layered on top of the same one.
+
 [(back to top)](#local-development-with-docker)

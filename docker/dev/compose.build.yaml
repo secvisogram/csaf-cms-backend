@@ -1,0 +1,7 @@
+# Context is relative to ../compose.yaml.
+
+services:
+  backend-cms:
+    build:
+      context: ..
+      dockerfile: Dockerfile

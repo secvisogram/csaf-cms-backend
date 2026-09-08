@@ -1,2 +1,4 @@
 .env
+!dev/.env
+!dev-all/.env
 data/
