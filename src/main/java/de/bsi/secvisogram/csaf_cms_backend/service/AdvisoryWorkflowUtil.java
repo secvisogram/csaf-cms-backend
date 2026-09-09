@@ -1,27 +1,22 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.less;
 import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.notEqual;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
-import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
-import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
+import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,13 +26,9 @@ import org.apache.commons.text.similarity.LevenshteinDetailedDistance;
 import org.apache.commons.text.similarity.LevenshteinResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ArrayNode;
 
 /**
  * Helper Methods for workflow and permissions
@@ -401,46 +392,6 @@ public class AdvisoryWorkflowUtil {
         );
     }
 
-    public static AdvisoryInformationResponse getAdvisoryForId(String advisoryId, CouchDbService couchDbService) throws CsafException {
-
-        Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> infoFields = AdvisoryWorkflowUtil.advisoryReadFields();
-        OperatorExpression typeIsAdvisory = equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName());
-        OperatorExpression advisoryIdIsEqual = equal(advisoryId, ID_FIELD.getDbName());
-        Map<String, Object> selector = expr2CouchDBFilter(new AndExpression(typeIsAdvisory, advisoryIdIsEqual));
-        try {
-            List<JsonNode> docList = findDocuments(couchDbService, selector, new ArrayList<>(infoFields.keySet()));
-            List<AdvisoryInformationResponse> allResposes =  docList.stream()
-                    .map(couchDbDoc -> AdvisoryWrapper.convertToAdvisoryInfo(couchDbDoc, infoFields))
-                    .toList();
-            if (allResposes.size() == 1) {
-                return allResposes.get(0);
-            } else {
-                throw new CsafException("Advisory not found", CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
-            }
-        } catch (IOException ex) {
-            LOG.error("Could not create Advisory", ex);
-            throw new CsafException(ex, CsafExceptionKey.AdvisoryNotFound, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * read from {@link CouchDbService#findDocumentsAsStream(Map, Collection)} and convert it to a list of JsonNode
-     *
-     * @param selector the selector to search for
-     * @param fields   the fields of information to select
-     * @return the result nodes of the search
-     */
-    public static List<JsonNode> findDocuments(CouchDbService couchDbService, Map<String, Object> selector, Collection<DbField> fields)
-            throws IOException {
-
-        InputStream inputStream = couchDbService.findDocumentsAsStream(selector, fields);
-        ObjectMapper mapper = new JsonMapper();
-        JsonNode couchDbResultNode = mapper.readValue(inputStream, JsonNode.class);
-        ArrayNode couchDbDocs = (ArrayNode) couchDbResultNode.get("docs");
-        List<JsonNode> docNodes = new ArrayList<>();
-        couchDbDocs.forEach(docNodes::add);
-        return docNodes;
-    }
 
     public static PatchType getChangeType(AdvisoryWrapper oldAdvisoryNode, AdvisoryWrapper newAdvisory, int maxLevenshteinDistance) {
 

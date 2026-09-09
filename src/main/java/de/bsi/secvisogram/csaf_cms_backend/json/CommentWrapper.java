@@ -36,7 +36,7 @@ public class CommentWrapper {
      * @return the wrapper
      * @throws IOException error in processing the input stream
      */
-    public static CommentWrapper createFromCouchDb(InputStream commentStream) throws IOException, CsafException {
+    public static CommentWrapper createFromStream(InputStream commentStream) throws IOException, CsafException {
 
         final ObjectMapper jacksonMapper = new JsonMapper();
         CommentWrapper wrapperFomDb = new CommentWrapper(jacksonMapper.readValue(commentStream, ObjectNode.class));
