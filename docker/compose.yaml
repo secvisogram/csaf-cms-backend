@@ -157,7 +157,7 @@ services:
         condition: service_healthy
     
   validator:
-    image: ghcr.io/secvisogram/csaf-validator-service:sha-8b4919b
+    image: ghcr.io/secvisogram/csaf-validator-service:2.0.36
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
@@ -168,7 +168,7 @@ services:
       retries: 10 
 
   backend-cms:
-    image: ghcr.io/secvisogram/csaf-cms-backend:sha-829eb0d
+    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.4
     env_file: ../.env
     environment:
       # Internal service names, only reachable from inside this container. The values in ../.env
@@ -198,7 +198,7 @@ services:
     restart: on-failure
 
   secvisogram:
-    image: ghcr.io/secvisogram/secvisogram:sha-7553171
+    image: ghcr.io/secvisogram/secvisogram:2.6.12
     volumes:
       - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
     healthcheck:
