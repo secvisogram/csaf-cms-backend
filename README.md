@@ -81,7 +81,11 @@ creation), `review` (on transition to `Review`) or `release` (on `AutoPublish`/`
 preserving the historic behavior). Once assigned, the final tracking ID never changes again, regardless of
 further workflow transitions.
 If `CSAF_REFERENCES_BASE_URL` is defined, a JSON reference in `document/references` with the set URL is added when publishing the document.
+This self-reference URL includes the document's TLP label (`{baseUrl}/{tlp}/{year}/{trackingId}.json`).
 To also add an HTML reference (`.html` variant), set `CSAF_WORKFLOW_CREATE_HTML_REFERENCE=true` (default: `false`).
+The variable `CSAF_REFERENCES_REGENERATION` controls when this self-reference is (re)created: `always` (recomputed
+at every publish, and also on every advisory update, so a later TLP change is kept in sync, `initial` (default, generated once, 
+at the first publish, and never updated again), or `never` (auto-generation is skipped entirely).
 See **.env.example** for an example configuration.
 
 ### Management of engine data
