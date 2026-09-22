@@ -71,4 +71,10 @@ public class IntegerVersioning implements Versioning {
         }
         return "" + (oldVersion + 1);
     }
+
+    @Override
+    public int compareVersions(String version1, String version2) {
+
+        return Integer.compare(Integer.parseInt(version1.trim()), Integer.parseInt(version2.trim()));
+    }
 }

@@ -1308,7 +1308,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
-    public void importAdvisoryTest() throws IOException, CsafException {
+    public void importAdvisoryTest() throws IOException, DatabaseException, CsafException {
 
         final String csafWithTrackingFinal = """
                 {
@@ -1378,7 +1378,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "publisher", authorities = {CsafRoles.ROLE_PUBLISHER})
-    public void importAdvisoryTest_importDuplicate() throws IOException, CsafException {
+    public void importAdvisoryTest_importDuplicateMissingVersion() throws IOException, DatabaseException, CsafException {
 
         final String csafWithTrackingId = """
                 {
@@ -1400,7 +1400,8 @@ public class AdvisoryServiceTest {
                 advisoryService.importAdvisory(csafRootNode);
                 CsafException expectedException = assertThrows(CsafException.class,
                         () -> advisoryService.importAdvisory(csafRootNode));
-                assertEquals("Trying to import a duplicate advisory (identical tracking ID)", expectedException.getMessage());
+                assertEquals("Trying to import a duplicate advisory (identical tracking ID duplicateDoc), the advisory in the system or the document to import has no tracking version",
+                        expectedException.getMessage());
             }
         }
     }

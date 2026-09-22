@@ -119,6 +119,17 @@ public class SemanticVersioning implements Versioning {
         return result.toString();
     }
 
+    @Override
+    public int compareVersions(String version1, String version2) {
+
+        Semver semver1 = new Semver(version1);
+        Semver semver2 = new Semver(version2);
+        if (semver1.isGreaterThan(semver2)) {
+            return 1;
+        }
+        return semver1.isLowerThan(semver2) ? -1 : 0;
+    }
+
     private String increaseSuffixMinorVersion(Semver currentVersion) {
 
         String newSuffix = "1.0";

@@ -52,4 +52,15 @@ public class IntegerVersioningTest {
         assertThat(IntegerVersioning.getDefault().getNextDraftVersion("1"), is("1"));
         assertThat(IntegerVersioning.getDefault().getNextDraftVersion("2"), is("2"));
     }
+
+    @Test
+    public void compareVersionsTest() {
+        assertThat(IntegerVersioning.getDefault().compareVersions("2", "1"), is(1));
+        assertThat(IntegerVersioning.getDefault().compareVersions("1", "2"), is(-1));
+        assertThat(IntegerVersioning.getDefault().compareVersions("1", "1"), is(0));
+
+        // versions must be compared numerically, not as strings
+        assertThat(IntegerVersioning.getDefault().compareVersions("10", "9"), is(1));
+        assertThat(IntegerVersioning.getDefault().compareVersions("9", "10"), is(-1));
+    }
 }

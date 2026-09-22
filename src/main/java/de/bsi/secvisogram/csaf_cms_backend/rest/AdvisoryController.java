@@ -316,6 +316,9 @@ public class AdvisoryController {
             return ResponseEntity.created(advisoryLocation).body(createResponse);
         } catch (IOException jpEx) {
             return ResponseEntity.badRequest().build();
+        } catch (DatabaseException dbEx) {
+            LOG.error("Error storing the imported advisory");
+            return ResponseEntity.internalServerError().build();
         } catch (AccessDeniedException adEx) {
             return apiError(HttpStatus.UNAUTHORIZED, adEx.getMessage());
         } catch (CsafException ex) {
