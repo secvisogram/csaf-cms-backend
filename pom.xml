@@ -9,6 +9,13 @@
 	<version>1.1.7-SNAPSHOT</version>
 	<name>csaf-cms-backend</name>
 	<url>https://github.com/secvisogram/csaf-cms-backend</url>
+	<licenses>
+		<license>
+			<name>Apache-2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<properties>
 		<java.version>25</java.version>
