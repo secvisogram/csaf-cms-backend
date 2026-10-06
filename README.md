@@ -93,7 +93,13 @@ The `name` and `version` are set according to the corresponding values of the ba
 
 Existing valid and published advisories can be imported on startup of the application.
 The advisories to be imported must be stored in JSON format in a directory called `import` in the root directory.
-Duplicates are identified by their tracking ID and not imported again.
+
+Importing an advisory whose tracking ID is already in the system replaces that advisory with the newer version.
+
+If the import directory holds several versions of one advisory at once, they are imported oldest version first,
+
+Successfully imported files are moved to the `processed` subdirectory, rejected ones to the `failed` subdirectory
+together with a `.err` file describing the reason.
 
 ## Developing
 

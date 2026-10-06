@@ -81,4 +81,14 @@ public interface Versioning {
     String getNextVersion(PatchType changeType, String currentVersionString, String lastReleaseVersion);
 
     public String getNewDocumentVersion(String currentVersionString);
+
+    /**
+     * Compare two document tracking versions of this versioning scheme.
+     *
+     * @param version1 the first version
+     * @param version2 the second version
+     * @return a negative number, zero or a positive number if version1 is older than, the same as or newer than
+     *         version2
+     */
+    int compareVersions(String version1, String version2);
 }

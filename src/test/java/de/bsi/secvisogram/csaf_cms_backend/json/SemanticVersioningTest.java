@@ -94,4 +94,15 @@ public class SemanticVersioningTest {
         assertThat(SemanticVersioning.getDefault().getNewDocumentVersion("2.0.0"), is("2.0.1-1.0"));
     }
 
+    @Test
+    public void compareVersionsTest() {
+        assertThat(SemanticVersioning.getDefault().compareVersions("1.1.0", "1.0.0"), is(1));
+        assertThat(SemanticVersioning.getDefault().compareVersions("1.0.0", "1.1.0"), is(-1));
+        assertThat(SemanticVersioning.getDefault().compareVersions("1.0.0", "1.0.0"), is(0));
+
+        // a pre-release (draft) version is lower than the release it leads up to
+        assertThat(SemanticVersioning.getDefault().compareVersions("1.0.1-1.0", "1.0.1"), is(-1));
+        assertThat(SemanticVersioning.getDefault().compareVersions("1.0.1", "1.0.1-1.0"), is(1));
+    }
+
 }

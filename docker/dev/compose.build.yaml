@@ -5,3 +5,6 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+    volumes:
+      # Advisories placed here are imported once, on startup.
+      - "./dev/import:/app/import"
