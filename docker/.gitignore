@@ -1,4 +1,5 @@
 .env
 !dev/.env
 !dev-all/.env
+!migrate/.env
 data/
