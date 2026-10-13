@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.StringUtils;
 
+import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryListQueryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.PostgresRepositoryService;
 
 @SpringBootTest(properties = {
@@ -26,6 +27,9 @@ class JavascriptExporterTest {
 
     @MockitoBean
     private PostgresRepositoryService postgresRepositoryService;
+
+    @MockitoBean
+    private AdvisoryListQueryService advisoryListQueryService;
 
     private static final String json = """
             {

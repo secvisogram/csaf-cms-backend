@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +28,6 @@ import java.util.UUID;
 public class PostgresRepositoryService {
 
     private static final Sort BY_ID = Sort.by("id");
-
     private final AdvisoryRepository advisoryRepository;
     private final AdvisoryVersionRepository advisoryVersionRepository;
     private final AuditTrailDocumentRepository auditTrailDocumentRepository;
@@ -73,7 +73,25 @@ public class PostgresRepositoryService {
      * @return the saved entity (with generated ID if new), with an up-to-date {@code version}
      */
     public AdvisoryEntity saveAdvisory(AdvisoryEntity entity) {
+        updateAdvisoryListColumns(entity);
         return advisoryRepository.saveAndFlush(entity);
+    }
+
+    private void updateAdvisoryListColumns(AdvisoryEntity entity) {
+        JsonNode csaf = entity.getCsaf();
+        entity.setTrackingId(textAt(csaf, "/document/tracking/id"));
+        entity.setDocumentTitle(textAt(csaf, "/document/title"));
+
+        String releaseDate = textAt(csaf, "/document/tracking/current_release_date");
+        entity.setCurrentReleaseDate(releaseDate == null ? null : Instant.parse(releaseDate));
+    }
+
+    private String textAt(JsonNode node, String path) {
+        if (node == null) {
+            return null;
+        }
+        JsonNode value = node.at(path);
+        return value.isMissingNode() || value.isNull() ? null : value.asString();
     }
 
     /**

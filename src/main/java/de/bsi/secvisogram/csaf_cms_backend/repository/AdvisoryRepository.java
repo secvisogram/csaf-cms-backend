@@ -19,17 +19,11 @@ public interface AdvisoryRepository extends JpaRepository<AdvisoryEntity, UUID>,
 
     List<AdvisoryEntity> findByOwner(String owner);
 
-    /**
-     * Find an advisory by CSAF tracking ID (inside JSONB).
-     */
-    @Query(value = "SELECT * FROM advisories WHERE csaf -> 'document' -> 'tracking' ->> 'id' = :trackingId",
-            nativeQuery = true)
+    /** Find an advisory by its denormalized CSAF tracking ID. */
+    @Query(value = "SELECT * FROM advisories WHERE tracking_id = :trackingId", nativeQuery = true)
     Optional<AdvisoryEntity> findByTrackingId(@Param("trackingId") String trackingId);
 
-    /**
-     * Check if an advisory with a given CSAF tracking ID exists.
-     */
-    @Query(value = "SELECT EXISTS(SELECT 1 FROM advisories WHERE csaf -> 'document' -> 'tracking' ->> 'id' = :trackingId)",
-            nativeQuery = true)
+    /** Check if an advisory with a given denormalized CSAF tracking ID exists. */
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM advisories WHERE tracking_id = :trackingId)", nativeQuery = true)
     boolean existsByTrackingId(@Param("trackingId") String trackingId);
 }
