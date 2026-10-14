@@ -25,7 +25,9 @@ public class AdvisoryListQueryService {
     public List<AdvisoryListProjection> findAdvisories(Expression filter, Authentication credentials) {
         LOG.info("Start getAdvisoryInformations");
         SqlExpressionCompiler compiler = new SqlExpressionCompiler();
-        String where = visibilityClause(credentials, compiler) + " AND " + compiler.compile(filter);
+        String compiledExpr = compiler.compile(filter);
+        LOG.info("Compiled expression: {}", compiledExpr);
+        String where = visibilityClause(credentials, compiler) + " AND " + compiledExpr;
         String sql = """
                 SELECT id, workflow_state, owner, version,
                        tracking_id,
@@ -46,6 +48,28 @@ public class AdvisoryListQueryService {
         return rows.stream().map(row -> new AdvisoryListProjection(
                 row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
                 (String) row[4], (String) row[5], row[6] == null ? null : row[6].toString())).toList();
+    }
+
+    /** Executes the advisory version list query without selecting the large {@code csaf} column. */
+    public List<AdvisoryVersionListProjection> findAdvisoryVersions(Expression filter) {
+        SqlExpressionCompiler compiler = new SqlExpressionCompiler();
+        String sql = """
+                SELECT advisory_id, workflow_state, owner,
+                       tracking_id,
+                       document_title,
+                       current_release_date
+                  FROM advisory_versions
+                 WHERE""" + " " + compiler.compile(filter) + "\n" + """
+                 ORDER BY id
+                 """;
+
+        var query = entityManager.createNativeQuery(sql);
+        compiler.bind(query);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        return rows.stream().map(row -> new AdvisoryVersionListProjection(
+                row[0].toString(), (String) row[1], (String) row[2],
+                (String) row[3], (String) row[4], row[5] == null ? null : row[5].toString())).toList();
     }
 
     private String visibilityClause(Authentication credentials, SqlExpressionCompiler compiler) {
@@ -110,12 +134,9 @@ public class AdvisoryListQueryService {
                 return "TRUE";
             }
             String path = jsonPath(selector, offset);
-            String exists = "jsonb_path_exists(csaf, CAST(" + bindText(path) + " AS jsonpath))";
             String comparisonPath = path + " ? (" + predicate(expression) + ")";
-            String matches = "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath)
+            return "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath)
                     + " AS jsonpath), jsonb_build_object('value', to_jsonb(" + bindValue(expression) + ")))";
-            // Existing Java semantics intentionally let missing paths pass through.
-            return "(NOT " + exists + " OR " + matches + ")";
         }
 
         private String columnComparison(String column, OperatorExpression expression) {

@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.hasItems;
 
 import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
@@ -88,6 +88,7 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException, CsafException {
 
+        this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
         this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44228")));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44999")));
         List<AdvisoryInformationResponse> infos =

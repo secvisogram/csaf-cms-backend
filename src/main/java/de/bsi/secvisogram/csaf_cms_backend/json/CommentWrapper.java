@@ -1,14 +1,13 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.json.LegacyDocumentField.ID_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.json.LegacyDocumentField.REVISION_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.InvalidObjectType;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CommentField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AuditTrailField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.CommentField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.DbField;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
@@ -24,13 +23,13 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Wrapper around JsonNode to read and write comment/answer objects from/to the CouchDB
+ * Wrapper around JsonNode to read and write comment/answer objects.
  */
 public class CommentWrapper {
 
 
     /**
-     * Convert an input stream from the couch db to a CommentWrapper
+     * Convert an input stream to a CommentWrapper.
      *
      * @param commentStream the stream
      * @return the wrapper
@@ -214,7 +213,7 @@ public class CommentWrapper {
     ObjectType getType() {
 
         try {
-            String typeText = getTextFor(CouchDbField.TYPE_FIELD);
+            String typeText = getTextFor(LegacyDocumentField.TYPE_FIELD);
             return (typeText != null) ? ObjectType.valueOf(typeText) : null;
         } catch (IllegalArgumentException ex) {
             return null; // unknown type
@@ -229,7 +228,7 @@ public class CommentWrapper {
 
     private CommentWrapper setType(ObjectType newValue) {
 
-        this.commentNode.put(CouchDbField.TYPE_FIELD.getDbName(), newValue.name());
+        this.commentNode.put(LegacyDocumentField.TYPE_FIELD.getDbName(), newValue.name());
         return this;
     }
 

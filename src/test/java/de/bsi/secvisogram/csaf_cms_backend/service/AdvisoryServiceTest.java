@@ -2,8 +2,8 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailDocumentEntity;
 import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailWorkflowEntity;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
@@ -328,7 +328,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
-    public void deleteAdvisoryTest_badRevision() throws IOException, DatabaseException, CsafException {
+    public void deleteAdvisoryTest_badRevision() throws IOException, CsafException {
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         CsafException ex = assertThrows(CsafException.class,
                 () -> advisoryService.deleteAdvisory(idRev.getId(), "not-the-real-revision"));
@@ -425,7 +425,7 @@ public class AdvisoryServiceTest {
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_AUTHOR})
-    public void updateAdvisoryTest_badRevision() throws IOException, DatabaseException, CsafException {
+    public void updateAdvisoryTest_badRevision() throws IOException, CsafException {
 
         IdAndRevision idRev = advisoryService.addAdvisory(csafToRequest(csafJson));
         CreateAdvisoryRequest request = csafToRequest(csafJson);

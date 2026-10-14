@@ -3,8 +3,8 @@ package de.bsi.secvisogram.csaf_cms_backend.rest;
 
 
 import de.bsi.secvisogram.csaf_cms_backend.SecvisogramApplication;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.ExportFormat;
