@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.entity.AdvisoryEntity;
+import de.bsi.secvisogram.csaf_cms_backend.entity.AdvisoryVersionEntity;
 import de.bsi.secvisogram.csaf_cms_backend.repository.*;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
@@ -52,7 +53,8 @@ class PostgresRepositoryServiceTest {
                   "document": {
                     "title": "Updated title",
                     "tracking": {
-                      "id": "CSAF-2026-0002"
+                      "id": "CSAF-2026-0002",
+                      "current_release_date": " "
                     }
                   }
                 }
@@ -62,6 +64,56 @@ class PostgresRepositoryServiceTest {
 
         assertEquals("CSAF-2026-0002", entity.getTrackingId());
         assertEquals("Updated title", entity.getDocumentTitle());
+        assertNull(entity.getCurrentReleaseDate());
+    }
+
+    @Test
+    void saveAdvisoryVersionUpdatesDenormalizedListColumns() {
+        AdvisoryVersionRepository advisoryVersionRepository = mock(AdvisoryVersionRepository.class);
+        when(advisoryVersionRepository.save(any(AdvisoryVersionEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        PostgresRepositoryService service = new PostgresRepositoryService(
+                mock(AdvisoryRepository.class),
+                advisoryVersionRepository,
+                mock(AuditTrailDocumentRepository.class),
+                mock(AuditTrailWorkflowRepository.class),
+                mock(CommentRepository.class),
+                mock(AuditTrailCommentRepository.class),
+                mock(CounterRepository.class));
+
+        AdvisoryVersionEntity entity = new AdvisoryVersionEntity();
+        entity.setCsaf(new JsonMapper().readTree("""
+                {
+                  "document": {
+                    "title": "Snapshot title",
+                    "tracking": {
+                      "id": "CSAF-2026-0003",
+                      "current_release_date": "2026-10-13T06:00:00Z"
+                    }
+                  }
+                }
+                """));
+
+        service.saveAdvisoryVersion(entity);
+
+        assertEquals("CSAF-2026-0003", entity.getTrackingId());
+        assertEquals("Snapshot title", entity.getDocumentTitle());
+        assertEquals(Instant.parse("2026-10-13T06:00:00Z"), entity.getCurrentReleaseDate());
+
+        entity.setCsaf(new JsonMapper().readTree("""
+                {
+                  "document": {
+                    "title": "Snapshot title",
+                    "tracking": {
+                      "id": "CSAF-2026-0003",
+                      "current_release_date": "not-a-date"
+                    }
+                  }
+                }
+                """));
+
+        service.saveAdvisoryVersion(entity);
+
         assertNull(entity.getCurrentReleaseDate());
     }
 }

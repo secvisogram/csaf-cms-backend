@@ -1,8 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField.CSAF;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.ID_FIELD;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.REVISION_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisoryField.CSAF;
+import static de.bsi.secvisogram.csaf_cms_backend.json.LegacyDocumentField.ID_FIELD;
+import static de.bsi.secvisogram.csaf_cms_backend.json.LegacyDocumentField.REVISION_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.InvalidObjectType;
 import static java.time.LocalDateTime.from;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
@@ -11,13 +11,15 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import com.flipkart.zjsonpatch.Jackson3JsonDiff;
 import com.flipkart.zjsonpatch.Jackson3JsonPatch;
 import com.vdurmont.semver4j.Semver;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.*;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisoryField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisorySearchField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AuditTrailField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.DbField;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Wrapper around JsonNode to read and write advisory objects from/to the CouchDB
+ * Wrapper around JsonNode to read and write advisory objects.
  */
 public class AdvisoryWrapper {
 
@@ -272,7 +272,7 @@ public class AdvisoryWrapper {
     public ObjectType getType() {
 
         try {
-            String typeText = getTextFor(CouchDbField.TYPE_FIELD);
+            String typeText = getTextFor(LegacyDocumentField.TYPE_FIELD);
             return (typeText != null) ? ObjectType.valueOf(typeText) : null;
         } catch (IllegalArgumentException ex) {
             return null; // unknown type
@@ -281,7 +281,7 @@ public class AdvisoryWrapper {
 
     private AdvisoryWrapper setType(ObjectType newValue) {
 
-        this.advisoryNode.put(CouchDbField.TYPE_FIELD.getDbName(), newValue.name());
+        this.advisoryNode.put(LegacyDocumentField.TYPE_FIELD.getDbName(), newValue.name());
         return this;
     }
 
@@ -770,29 +770,6 @@ public class AdvisoryWrapper {
     public String advisoryAsString() {
 
         return this.advisoryNode.toString();
-    }
-
-    public static AdvisoryInformationResponse convertToAdvisoryInfo(JsonNode doc, Map<DbField,
-            BiConsumer<AdvisoryInformationResponse, String>> infoFields) {
-        String advisoryId = doc.get(ID_FIELD.getDbName()).asString();
-        final AdvisoryInformationResponse response = new AdvisoryInformationResponse(advisoryId);
-        infoFields.forEach((key, value) -> setValueInResponse(response, key, doc, value));
-
-        return response;
-    }
-
-    private static void setValueInResponse(AdvisoryInformationResponse response, DbField field, JsonNode doc, BiConsumer<AdvisoryInformationResponse, String> advisorySetter) {
-
-        String value;
-        if (field.equals(ID_FIELD)) {
-            value = doc.get(ID_FIELD.getDbName()).asString();
-        } else if (field.equals(REVISION_FIELD)) {
-            value = doc.get(REVISION_FIELD.getDbName()).asString();
-        } else {
-            String jsonPtrExpr = String.join("/", field.getFieldPath());
-            value = doc.at("/" + jsonPtrExpr).asString();
-        }
-        advisorySetter.accept(response, value);
     }
 
     /**

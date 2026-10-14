@@ -1,6 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisoryAuditTrailField;
 import tools.jackson.databind.node.ObjectNode;
 
 public class AdvisoryAuditTrailWrapper extends AuditTrailWrapper {
