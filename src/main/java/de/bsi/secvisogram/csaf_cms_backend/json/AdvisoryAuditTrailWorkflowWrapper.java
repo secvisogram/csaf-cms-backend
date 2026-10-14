@@ -1,6 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisoryAuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import tools.jackson.databind.json.JsonMapper;

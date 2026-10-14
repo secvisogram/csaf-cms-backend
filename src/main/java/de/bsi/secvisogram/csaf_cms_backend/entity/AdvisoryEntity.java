@@ -34,12 +34,15 @@ public class AdvisoryEntity {
     @Column(columnDefinition = "jsonb", nullable = false)
     private JsonNode csaf;
 
+    // Set from csaf.document.tracking.id.
     @Column(name = "tracking_id")
     private String trackingId;
 
+    // Set from csaf.document.title.
     @Column(name = "document_title", columnDefinition = "text")
     private String documentTitle;
 
+    // Set from csaf.document.tracking.current_release_date.
     @Column(name = "current_release_date")
     private Instant currentReleaseDate;
 

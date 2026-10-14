@@ -1,15 +1,15 @@
-package de.bsi.secvisogram.csaf_cms_backend.couchdb;
+package de.bsi.secvisogram.csaf_cms_backend.json.field;
 
-public enum CouchDbField implements DbField {
+public enum AuditTrailField implements DbField {
 
-    TYPE_FIELD("type"),
-    REVISION_FIELD("_rev"),
-    ID_FIELD("_id");
+    CREATED_AT("createdAt"),
+    USER("user"),
+    CHANGE_TYPE("changeType");
 
     private final String dbName;
     private final String[] fieldPath;
 
-    CouchDbField(String dbName) {
+    AuditTrailField(String dbName) {
         this.dbName = dbName;
         this.fieldPath = new String[] {dbName};
     }

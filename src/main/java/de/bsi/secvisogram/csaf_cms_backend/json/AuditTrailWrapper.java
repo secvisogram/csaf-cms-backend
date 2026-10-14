@@ -1,7 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.json;
 
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AuditTrailField;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -29,12 +28,12 @@ public abstract class AuditTrailWrapper {
 
     public String getType() {
 
-        return this.auditTrailNode.get(CouchDbField.TYPE_FIELD.getDbName()).asString();
+        return this.auditTrailNode.get(LegacyDocumentField.TYPE_FIELD.getDbName()).asString();
     }
 
     AuditTrailWrapper setType(ObjectType newValue) {
 
-        this.auditTrailNode.put(CouchDbField.TYPE_FIELD.getDbName(), newValue.name());
+        this.auditTrailNode.put(LegacyDocumentField.TYPE_FIELD.getDbName(), newValue.name());
         return this;
     }
 

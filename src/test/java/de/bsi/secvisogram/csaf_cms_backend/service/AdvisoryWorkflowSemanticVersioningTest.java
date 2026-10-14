@@ -1,22 +1,8 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUTHOR;
-import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.*;
-import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Draft;
-import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
@@ -24,13 +10,6 @@ import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResp
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +27,29 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUTHOR;
+import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.*;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Draft;
+import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test for the workflow in the Advisory service. The required PostgreSQL container is started in the PostgreSQLExtension.
@@ -153,6 +155,10 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.RfPublication, null, null);
 
             revision = advisoryService.changeAdvisoryWorkflowState(idRev.getId(), revision, WorkflowState.Published, null, null);
+            AdvisoryResponse publishedAdvisory = advisoryService.getAdvisory(idRev.getId());
+            String publishedTrackingId = publishedAdvisory.getCsaf().at("/document/tracking/id").asString();
+            String publishedReleaseDate = publishedAdvisory.getCsaf()
+                    .at("/document/tracking/current_release_date").asString();
             advisoryService.createNewCsafDocumentVersion(idRev.getId(), revision);
             List<AdvisoryInformationResponse> advisories = advisoryService.getAdvisoryInformations(null);
             assertThat(advisories.size(), is(1));
@@ -166,6 +172,15 @@ public class AdvisoryWorkflowSemanticVersioningTest {
             // only auditor can see all versions
             List<AdvisoryInformationResponse> advisoriesAuditor = advisoryService.getAdvisoryInformations(null);
             assertThat(advisoriesAuditor.size(), is(2));
+            AdvisoryInformationResponse version = advisoriesAuditor.stream()
+                    .filter(advisory -> WorkflowState.Published == advisory.getWorkflowState())
+                    .filter(advisory -> publishedTrackingId.equals(advisory.getDocumentTrackingId()))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(version.getTitle(), is("UpdatedTitle"));
+            assertThat(version.getDocumentTrackingId(), is(publishedTrackingId));
+            assertThat(Instant.parse(version.getCurrentReleaseDate()).truncatedTo(MILLIS),
+                    is(Instant.parse(publishedReleaseDate).truncatedTo(MILLIS)));
         }
     }
 

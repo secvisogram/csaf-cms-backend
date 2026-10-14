@@ -43,6 +43,18 @@ public class AdvisoryVersionEntity {
     @Column(columnDefinition = "jsonb", nullable = false)
     private JsonNode csaf;
 
+    // Set from csaf.document.tracking.id.
+    @Column(name = "tracking_id")
+    private String trackingId;
+
+    // Set from csaf.document.title.
+    @Column(name = "document_title")
+    private String documentTitle;
+
+    // Set from csaf.document.tracking.current_release_date.
+    @Column(name = "current_release_date")
+    private Instant currentReleaseDate;
+
     @Column(name = "versioning_type", nullable = false)
     private String versioningType;
 
@@ -90,6 +102,30 @@ public class AdvisoryVersionEntity {
 
     public void setCsaf(JsonNode csaf) {
         this.csaf = csaf;
+    }
+
+    public String getTrackingId() {
+        return trackingId;
+    }
+
+    public void setTrackingId(String trackingId) {
+        this.trackingId = trackingId;
+    }
+
+    public String getDocumentTitle() {
+        return documentTitle;
+    }
+
+    public void setDocumentTitle(String documentTitle) {
+        this.documentTitle = documentTitle;
+    }
+
+    public Instant getCurrentReleaseDate() {
+        return currentReleaseDate;
+    }
+
+    public void setCurrentReleaseDate(Instant currentReleaseDate) {
+        this.currentReleaseDate = currentReleaseDate;
     }
 
     public String getVersioningType() {

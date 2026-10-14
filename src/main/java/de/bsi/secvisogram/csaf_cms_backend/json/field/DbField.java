@@ -1,10 +1,9 @@
-package de.bsi.secvisogram.csaf_cms_backend.couchdb;
+package de.bsi.secvisogram.csaf_cms_backend.json.field;
 
 import tools.jackson.databind.JsonNode;
 
 /**
- * Interface for database field metadata (field name and JSON path).
- * Retained from the CouchDB era for compatibility with wrapper classes.
+ * Metadata for a JSON field, including its serialized name and path.
  */
 public interface DbField {
 
