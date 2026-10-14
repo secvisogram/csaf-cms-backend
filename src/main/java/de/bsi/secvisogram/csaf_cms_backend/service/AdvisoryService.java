@@ -2,8 +2,8 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
@@ -156,7 +156,7 @@ public class AdvisoryService {
 
         if (hasRole(AUDITOR, credentials)) {
             List<AdvisoryInformationResponse> allAdvisoryVersions =
-                    readAllAdvisoryVersions(parsedExpr, credentials);
+                    readAllAdvisoryVersions(parsedExpr);
             for (AdvisoryInformationResponse response : allAdvisoryVersions) {
                 enrichAdvisoryVersion(response);
             }
@@ -201,16 +201,25 @@ public class AdvisoryService {
         return response;
     }
 
-    private List<AdvisoryInformationResponse> readAllAdvisoryVersions(
-            Expression parsedExpr,
-            Authentication credentials) {
+    private List<AdvisoryInformationResponse> readAllAdvisoryVersions(Expression parsedExpr) {
 
         // Advisory versions are immutable snapshots in the advisory_versions table,
         // created each time a new version cycle begins via createNewCsafDocumentVersion.
-        return postgresService.findAllAdvisoryVersions().stream()
-                .filter(entity -> matchesCsafExpression(entity.getCsaf(), parsedExpr))
-                .map(EntityConverter::toAdvisoryVersionInfo)
+        return advisoryListQueryService.findAdvisoryVersions(parsedExpr).stream()
+                .map(this::toAdvisoryVersionInformationResponse)
                 .toList();
+    }
+
+    private AdvisoryInformationResponse toAdvisoryVersionInformationResponse(
+            AdvisoryVersionListProjection projection) {
+
+        AdvisoryInformationResponse response = new AdvisoryInformationResponse(projection.advisoryId());
+        response.setWorkflowState(projection.workflowState());
+        response.setOwner(projection.owner());
+        response.setDocumentTrackingId(projection.documentTrackingId());
+        response.setTitle(projection.title());
+        response.setCurrentReleaseDate(projection.currentReleaseDate());
+        return response;
     }
 
     /**
@@ -299,8 +308,7 @@ public class AdvisoryService {
 
         List<String> values = collectJsonValues(csafJson, csafPath, 0);
         if (values.isEmpty()) {
-            // Path not found → cannot evaluate; pass through
-            return true;
+            return false;
         }
 
         return values.stream().anyMatch(value -> matchesOperator(opExpr.getOperatorType(), value, filterValue));

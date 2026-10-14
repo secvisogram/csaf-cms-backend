@@ -20,7 +20,7 @@ import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryListQueryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.PostgresRepositoryService;
 
 @SpringBootTest(properties = {
-        "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/allTemplates.json"
+        "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/db/model/template/allTemplates.json"
 })
 @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "for test it is ok")
 class DocumentTemplateServiceTest {
