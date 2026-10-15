@@ -135,20 +135,23 @@ public class AdvisoryListQueryService {
             }
             String path = jsonPath(selector, offset);
             String comparisonPath = path + " ? (" + predicate(expression) + ")";
-            return "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath)
-                    + " AS jsonpath), jsonb_build_object('value', to_jsonb(" + bindValue(expression) + ")))";
+            String jsonPath = "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath) + " AS jsonpath)";
+            if (expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
+                return jsonPath + ")";
+            }
+            return jsonPath + ", jsonb_build_object('value', to_jsonb(" + bindValue(expression) + ")))";
         }
 
         private String columnComparison(String column, OperatorExpression expression) {
-            String value = bindValue(expression);
             return switch (expression.getOperatorType()) {
-                case Equal -> column + " = " + value;
-                case NotEqual -> column + " <> " + value;
-                case Greater -> column + " > " + value;
-                case GreaterOrEqual -> column + " >= " + value;
-                case Less -> column + " < " + value;
-                case LessOrEqual -> column + " <= " + value;
-                case ContainsIgnoreCase -> "LOWER(" + column + ") LIKE '%' || LOWER(" + value + ") || '%'";
+                case Equal -> column + " = " + bindValue(expression);
+                case NotEqual -> column + " <> " + bindValue(expression);
+                case Greater -> column + " > " + bindValue(expression);
+                case GreaterOrEqual -> column + " >= " + bindValue(expression);
+                case Less -> column + " < " + bindValue(expression);
+                case LessOrEqual -> column + " <= " + bindValue(expression);
+                case ContainsIgnoreCase -> "LOWER(" + column + ") LIKE '%' || LOWER("
+                        + bindText(escapeLike(expression.getValue())) + ") || '%' ESCAPE E'\\\\'";
             };
         }
 
@@ -160,7 +163,8 @@ public class AdvisoryListQueryService {
                 case GreaterOrEqual -> "@ >= $value";
                 case Less -> "@ < $value";
                 case LessOrEqual -> "@ <= $value";
-                case ContainsIgnoreCase -> "@ like_regex $value flag \"i\"";
+                case ContainsIgnoreCase -> "@ like_regex " + jsonPathStringLiteral(
+                        ".*" + escapeRegex(expression.getValue()) + ".*") + " flag \"i\"";
             };
         }
 
@@ -176,10 +180,28 @@ public class AdvisoryListQueryService {
             return switch (expression.getValueType()) {
                 case Decimal -> bindText(expression.getValue()) + "::numeric";
                 case Boolean -> bindText(expression.getValue()) + "::boolean";
-                case Text -> bindText(expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase
-                        ? ".*" + expression.getValue().replace("\\", "\\\\").replace(".", "\\.") + ".*"
-                        : expression.getValue());
+                case Text -> bindText(expression.getValue());
             };
+        }
+
+        private String jsonPathStringLiteral(String value) {
+            return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+        }
+
+        private String escapeRegex(String value) {
+            StringBuilder escaped = new StringBuilder();
+            for (int index = 0; index < value.length(); index++) {
+                char character = value.charAt(index);
+                if ("\\\\.^$|?*+()[]{}".indexOf(character) >= 0) {
+                    escaped.append('\\');
+                }
+                escaped.append(character);
+            }
+            return escaped.toString();
+        }
+
+        private String escapeLike(String value) {
+            return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
         }
 
         private String bindText(Object value) {
