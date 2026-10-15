@@ -2,8 +2,8 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
@@ -61,6 +61,9 @@ public class AdvisoryService {
 
     @Autowired
     private PostgresRepositoryService postgresService;
+
+    @Autowired
+    private AdvisoryListQueryService advisoryListQueryService;
 
     @Autowired
     private JavascriptExporter javascriptExporter;
@@ -139,6 +142,7 @@ public class AdvisoryService {
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression)
             throws IOException, CsafException {
 
+        LOG.info("Start getAdvisoryInformations");
         Authentication credentials = getAuthentication();
         Expression parsedExpr = parseFilterExpression(expression);
 
@@ -152,12 +156,13 @@ public class AdvisoryService {
 
         if (hasRole(AUDITOR, credentials)) {
             List<AdvisoryInformationResponse> allAdvisoryVersions =
-                    readAllAdvisoryVersions(parsedExpr, credentials);
+                    readAllAdvisoryVersions(parsedExpr);
             for (AdvisoryInformationResponse response : allAdvisoryVersions) {
                 enrichAdvisoryVersion(response);
             }
             allResponses.addAll(allAdvisoryVersions);
         }
+        LOG.info("End getAdvisoryInformations - readAllAdvisories");
         return allResponses;
     }
 
@@ -178,24 +183,43 @@ public class AdvisoryService {
             Expression visibilityExpr,
             Authentication credentials) {
 
-        List<AdvisoryEntity> entities = postgresService.findAllAdvisories();
-        return entities.stream()
-                .filter(entity -> matchesCsafExpression(entity.getCsaf(), parsedExpr))
-                .map(EntityConverter::toAdvisoryInfo)
+        return advisoryListQueryService.findAdvisories(parsedExpr, credentials).stream()
+                .map(this::toAdvisoryInformationResponse)
                 .filter(info -> matchesVisibility(info, visibilityExpr, credentials))
+
                 .toList();
     }
 
-    private List<AdvisoryInformationResponse> readAllAdvisoryVersions(
-            Expression parsedExpr,
-            Authentication credentials) {
+    private AdvisoryInformationResponse toAdvisoryInformationResponse(AdvisoryListProjection projection) {
+        AdvisoryInformationResponse response = new AdvisoryInformationResponse(projection.advisoryId());
+        response.setWorkflowState(projection.workflowState());
+        response.setOwner(projection.owner());
+        response.setRevision(String.valueOf(projection.version()));
+        response.setDocumentTrackingId(projection.documentTrackingId());
+        response.setTitle(projection.title());
+        response.setCurrentReleaseDate(projection.currentReleaseDate());
+        return response;
+    }
+
+    private List<AdvisoryInformationResponse> readAllAdvisoryVersions(Expression parsedExpr) {
 
         // Advisory versions are immutable snapshots in the advisory_versions table,
         // created each time a new version cycle begins via createNewCsafDocumentVersion.
-        return postgresService.findAllAdvisoryVersions().stream()
-                .filter(entity -> matchesCsafExpression(entity.getCsaf(), parsedExpr))
-                .map(EntityConverter::toAdvisoryVersionInfo)
+        return advisoryListQueryService.findAdvisoryVersions(parsedExpr).stream()
+                .map(this::toAdvisoryVersionInformationResponse)
                 .toList();
+    }
+
+    private AdvisoryInformationResponse toAdvisoryVersionInformationResponse(
+            AdvisoryVersionListProjection projection) {
+
+        AdvisoryInformationResponse response = new AdvisoryInformationResponse(projection.advisoryId());
+        response.setWorkflowState(projection.workflowState());
+        response.setOwner(projection.owner());
+        response.setDocumentTrackingId(projection.documentTrackingId());
+        response.setTitle(projection.title());
+        response.setCurrentReleaseDate(projection.currentReleaseDate());
+        return response;
     }
 
     /**
@@ -217,7 +241,6 @@ public class AdvisoryService {
                 info.getCurrentReleaseDate()
         );
     }
-
     /**
      * Check whether the entity's full CSAF JSON matches an already-parsed filter expression.
      * This enables filtering by arbitrary deep paths (acknowledgments, vulnerabilities,
@@ -285,8 +308,7 @@ public class AdvisoryService {
 
         List<String> values = collectJsonValues(csafJson, csafPath, 0);
         if (values.isEmpty()) {
-            // Path not found → cannot evaluate; pass through
-            return true;
+            return false;
         }
 
         return values.stream().anyMatch(value -> matchesOperator(opExpr.getOperatorType(), value, filterValue));
@@ -365,7 +387,7 @@ public class AdvisoryService {
     }
 
     private List<WorkflowState> getAllowedStates(AdvisoryInformationResponse response,
-            Authentication credentials) {
+                                                 Authentication credentials) {
 
         final var allowOwnDocumentsApproved = configuration.getWorkflow().isAllowOwnDocumentsApproved();
         return Arrays.stream(WorkflowState.values())
@@ -826,8 +848,8 @@ public class AdvisoryService {
      */
     @Transactional
     public String changeAdvisoryWorkflowState(String advisoryId, String revision,
-            WorkflowState newWorkflowState, String proposedTime,
-            DocumentTrackingStatus documentTrackingStatus)
+                                              WorkflowState newWorkflowState, String proposedTime,
+                                              DocumentTrackingStatus documentTrackingStatus)
             throws IOException, DatabaseException, CsafException {
 
         Authentication credentials = getAuthentication();
@@ -894,19 +916,19 @@ public class AdvisoryService {
 
             if (newWorkflowState == WorkflowState.AutoPublish) {
                 if (proposedTime == null) {
-                	proposedTime = existingAdvisoryNode.getDocumentTrackingCurrentReleaseDate();
-                	if (proposedTime == null) {
-                		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
-                		proposedTime = sdf.format(new Date());
-                	}
+                    proposedTime = existingAdvisoryNode.getDocumentTrackingCurrentReleaseDate();
+                    if (proposedTime == null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000000000Z");
+                        proposedTime = sdf.format(new Date());
+                    }
                 }
 
                 if (documentTrackingStatus == null) {
-                	existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Final);
+                    existingAdvisoryNode.setDocumentTrackingStatus(DocumentTrackingStatus.Final);
                 }
 
                 if (existingAdvisoryNode.getDocumentDistributionTlp() == null) {
-                	throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError, BAD_REQUEST);
+                    throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError, BAD_REQUEST);
                 }
                 //TODO: Check, if further checks for upload are needed
 
@@ -965,7 +987,7 @@ public class AdvisoryService {
     }
 
     private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory,
-            String releaseDate) throws CsafException, IOException {
+                                                                  String releaseDate) throws CsafException, IOException {
 
         AdvisoryWrapper advisoryCopy = AdvisoryWrapper.createCopy(advisory);
 
@@ -1153,7 +1175,7 @@ public class AdvisoryService {
      * @return a list of information on all comments for the requested advisory
      */
     @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
-    public List<CommentInformationResponse> getComments(String advisoryId) throws IOException, CsafException {
+    public List<CommentInformationResponse> getComments(String advisoryId) throws CsafException {
 
         Authentication credentials = getAuthentication();
         AdvisoryInformationResponse advisoryInfo = getAdvisoryInfoForId(advisoryId);
@@ -1174,7 +1196,7 @@ public class AdvisoryService {
      * @param commentRevision the comment's revision for concurrent control
      */
     @Transactional
-    void deleteComment(String commentId, String commentRevision) throws DatabaseException, IOException, CsafException {
+    void deleteComment(String commentId, String commentRevision) throws DatabaseException, CsafException {
 
         CommentEntity entity = findCommentEntityOrThrow(commentId);
         checkCommentRevision(entity, commentRevision);
@@ -1262,7 +1284,7 @@ public class AdvisoryService {
      */
     @Secured({CsafRoles.ROLE_AUTHOR, CsafRoles.ROLE_REVIEWER, CsafRoles.ROLE_AUDITOR})
     public List<AnswerInformationResponse> getAnswers(String advisoryId, String commentId)
-            throws IOException, CsafException {
+            throws CsafException {
 
         Authentication credentials = getAuthentication();
         AdvisoryInformationResponse advisoryInfo = getAdvisoryInfoForId(advisoryId);
@@ -1283,7 +1305,7 @@ public class AdvisoryService {
      * @param answerRevision the comment's revision for concurrent control
      */
     @Transactional
-    void deleteAnswer(String answerId, String answerRevision) throws DatabaseException, IOException, CsafException {
+    void deleteAnswer(String answerId, String answerRevision) throws DatabaseException, CsafException {
 
         CommentEntity entity = findCommentEntityOrThrow(answerId);
         checkCommentRevision(entity, answerRevision);

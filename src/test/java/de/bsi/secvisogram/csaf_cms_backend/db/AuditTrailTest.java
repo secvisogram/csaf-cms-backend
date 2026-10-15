@@ -1,4 +1,4 @@
-package de.bsi.secvisogram.csaf_cms_backend.couchdb;
+package de.bsi.secvisogram.csaf_cms_backend.db;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

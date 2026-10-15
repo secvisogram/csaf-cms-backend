@@ -16,16 +16,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryListQueryService;
 import de.bsi.secvisogram.csaf_cms_backend.service.PostgresRepositoryService;
 
 @SpringBootTest(properties = {
-        "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/couchdb/model/template/allTemplates.json"
+        "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/db/model/template/allTemplates.json"
 })
 @SuppressFBWarnings(value = "CLI_CONSTANT_LIST_INDEX", justification = "for test it is ok")
 class DocumentTemplateServiceTest {
 
     @MockitoBean
     private PostgresRepositoryService postgresRepositoryService;
+
+    @MockitoBean
+    private AdvisoryListQueryService advisoryListQueryService;
 
     @Autowired
     private DocumentTemplateService templateService;

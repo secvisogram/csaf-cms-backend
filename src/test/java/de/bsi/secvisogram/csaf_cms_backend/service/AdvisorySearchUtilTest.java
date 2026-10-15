@@ -7,9 +7,10 @@ import static org.hamcrest.Matchers.hasItems;
 
 import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(properties = {
@@ -37,6 +39,8 @@ import static org.mockito.ArgumentMatchers.any;
 @DirtiesContext
 @SpringJUnitConfig
 public class AdvisorySearchUtilTest {
+
+    private static final String[] TITLE_SELECTOR = {"csaf", "document", "title"};
 
     @Autowired
     private AdvisoryService advisoryService;
@@ -88,6 +92,7 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_vulnerabilitiesCve() throws IOException, CsafException {
 
+        this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("title1")));
         this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44228")));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafVulnerabilitiesCve("CVE-2021-44999")));
         List<AdvisoryInformationResponse> infos =
@@ -123,6 +128,61 @@ public class AdvisorySearchUtilTest {
         assertThat(ids, hasItems(idRev2.getId()));
     }
 
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_equalOnCsafTitle() throws IOException, CsafException {
+        addAdvisoryWithTitle("Hello World");
+        addAdvisoryWithTitle("Other");
+
+        assertEquals(1, getAdvisoryInformationsForFilter(OperatorExpression.equal("Hello World", TITLE_SELECTOR)).size());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_equalOnOwnerColumn() throws IOException, CsafException {
+        addAdvisoryWithTitle("Hello World");
+
+        assertEquals(1, getAdvisoryInformationsForFilter(OperatorExpression.equal("author1", "owner")).size());
+    }
+
+    // ---- contains ignore case ------------------------------------------------------------------------------------
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_containsIgnoreCaseOnCsafTitle() throws IOException, CsafException {
+        addAdvisoryWithTitle("Hello World");
+        addAdvisoryWithTitle("Other");
+
+        assertEquals(1, getAdvisoryInformationsForFilter(OperatorExpression.containsIgnoreCase("hello", TITLE_SELECTOR)).size());
+    }
+
+    /** Regex metacharacters in the search text must be matched literally. */
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_containsIgnoreCaseOnCsafTitle_specialCharacters() throws IOException, CsafException {
+        addAdvisoryWithTitle("Fix (urgent) now");
+        addAdvisoryWithTitle("Fix urgent now");
+
+        assertEquals(1, getAdvisoryInformationsForFilter(OperatorExpression.containsIgnoreCase("(urgent)", TITLE_SELECTOR)).size());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_containsIgnoreCaseOnOwnerColumn() throws IOException, CsafException {
+        addAdvisoryWithTitle("Hello World");
+
+        assertEquals(1, getAdvisoryInformationsForFilter(OperatorExpression.containsIgnoreCase("THOR", "owner")).size());
+    }
+
+    private void addAdvisoryWithTitle(String title) throws IOException, CsafException {
+        advisoryService.addAdvisory(csafToRequest(csafJsonTitle(title)));
+    }
+
+    private List<AdvisoryInformationResponse> getAdvisoryInformationsForFilter(OperatorExpression filter) throws IOException, CsafException {
+        String json = filter == null ? null : AdvisorySearchUtil.expression2Json(filter);
+        return advisoryService.getAdvisoryInformations(json);
+    }
     // -----------------------------------------------------------------------
     // Role-visibility tests
     // -----------------------------------------------------------------------
@@ -134,7 +194,7 @@ public class AdvisorySearchUtilTest {
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR,
             CsafRoles.ROLE_EDITOR})
-    public void getAdvisoryInformationsTest_roleEditor_seesAll() throws IOException, CsafException, DatabaseException {
+    public void getAdvisoryInformationsTest_roleEditor_seesAll() throws IOException, CsafException {
 
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("editorTitle1")));
         IdAndRevision idRev2 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("editorTitle2")));
@@ -153,7 +213,7 @@ public class AdvisorySearchUtilTest {
     @Test
     @WithMockUser(username = "editor1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR,
             CsafRoles.ROLE_EDITOR})
-    public void getAdvisoryInformationsTest_roleEditor_filterByTitle() throws IOException, CsafException, DatabaseException {
+    public void getAdvisoryInformationsTest_roleEditor_filterByTitle() throws IOException, CsafException {
 
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("editorFilterTitle1")));
         this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("editorFilterTitle2")));
@@ -172,7 +232,7 @@ public class AdvisorySearchUtilTest {
      */
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_roleAuditor_seesAll() throws IOException, CsafException, DatabaseException {
+    public void getAdvisoryInformationsTest_roleAuditor_seesAll() throws IOException, CsafException {
 
         // Create advisories as an author
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("auditorTitle1")));
@@ -198,7 +258,7 @@ public class AdvisorySearchUtilTest {
      */
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
-    public void getAdvisoryInformationsTest_roleAuditor_filterByTitle() throws IOException, CsafException, DatabaseException {
+    public void getAdvisoryInformationsTest_roleAuditor_filterByTitle() throws IOException, CsafException {
 
         // Create advisories as an author
         IdAndRevision idRev1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("auditorFilterTitle1")));
@@ -228,7 +288,6 @@ public class AdvisorySearchUtilTest {
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void getAdvisoryInformationsTest_roleReviewer_seesOnlyReviewState() throws IOException, CsafException, DatabaseException {
 
-        IdAndRevision idRevDraft = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("reviewerDraftTitle")));
         IdAndRevision idRevReview = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("reviewerReviewTitle")));
         // Move the second advisory to Review state
         this.advisoryService.changeAdvisoryWorkflowState(
@@ -314,7 +373,7 @@ public class AdvisorySearchUtilTest {
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR,
             CsafRoles.ROLE_EDITOR, CsafRoles.ROLE_REVIEWER})
-    public void getAdvisoryInformationsTest_rolePublisher_filterByTitle() throws IOException, CsafException, DatabaseException {
+    public void getAdvisoryInformationsTest_rolePublisher_filterByTitle() throws IOException, CsafException {
 
         IdAndRevision idRevDraft1 = this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("publisherFilterTitle1")));
         this.advisoryService.addAdvisory(csafToRequest(csafJsonTitle("publisherFilterTitle2")));

@@ -1,27 +1,14 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.less;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.notEqual;
-
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisoryField;
+import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisorySearchField;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.BiConsumer;
 import org.apache.commons.text.similarity.LevenshteinDetailedDistance;
 import org.apache.commons.text.similarity.LevenshteinResults;
 import org.slf4j.Logger;
@@ -30,14 +17,22 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import tools.jackson.databind.JsonNode;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
+import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.*;
+
 /**
  * Helper Methods for workflow and permissions
  */
 public class AdvisoryWorkflowUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AdvisoryWorkflowUtil.class);
-
-    /**
+     /**
      * Check whether the given advisory info can be deleted with the given credentials
      * @param response the advisory info to check
      * @param credentials the credentials for the check
@@ -379,20 +374,6 @@ public class AdvisoryWorkflowUtil {
                 .anyMatch(state -> stateToCheck == state);
     }
 
-    public static Map<DbField, BiConsumer<AdvisoryInformationResponse, String>> advisoryReadFields() {
-
-        return Map.of(
-                AdvisoryField.WORKFLOW_STATE, AdvisoryInformationResponse::setWorkflowState,
-                AdvisoryField.OWNER, AdvisoryInformationResponse::setOwner,
-                AdvisorySearchField.DOCUMENT_TITLE, AdvisoryInformationResponse::setTitle,
-                AdvisorySearchField.DOCUMENT_TRACKING_ID, AdvisoryInformationResponse::setDocumentTrackingId,
-                CouchDbField.ID_FIELD, AdvisoryInformationResponse::setAdvisoryId,
-                CouchDbField.REVISION_FIELD, AdvisoryInformationResponse::setRevision,
-                AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE, AdvisoryInformationResponse::setCurrentReleaseDate
-        );
-    }
-
-
     public static PatchType getChangeType(AdvisoryWrapper oldAdvisoryNode, AdvisoryWrapper newAdvisory, int maxLevenshteinDistance) {
 
         PatchType result = PatchType.PATCH;
@@ -471,7 +452,7 @@ public class AdvisoryWorkflowUtil {
     }
 
     /**
-     * Build a CouchDB filter expression that corresponds to the visibility rules of
+     * Build a filter expression that corresponds to the visibility rules of
      * {@link #canViewAdvisory(String, WorkflowState, Authentication, String)}.
      * <p>
      * Returns {@code null} when the user can see every advisory (AUDITOR or EDITOR roles),

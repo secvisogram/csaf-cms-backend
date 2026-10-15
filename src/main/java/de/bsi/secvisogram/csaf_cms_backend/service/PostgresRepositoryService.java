@@ -1,6 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.repository.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +29,6 @@ import java.util.UUID;
 public class PostgresRepositoryService {
 
     private static final Sort BY_ID = Sort.by("id");
-
     private final AdvisoryRepository advisoryRepository;
     private final AdvisoryVersionRepository advisoryVersionRepository;
     private final AuditTrailDocumentRepository auditTrailDocumentRepository;
@@ -73,7 +74,38 @@ public class PostgresRepositoryService {
      * @return the saved entity (with generated ID if new), with an up-to-date {@code version}
      */
     public AdvisoryEntity saveAdvisory(AdvisoryEntity entity) {
+        updateAdvisoryListColumns(entity);
         return advisoryRepository.saveAndFlush(entity);
+    }
+
+    private void updateAdvisoryListColumns(AdvisoryEntity entity) {
+        JsonNode csaf = entity.getCsaf();
+        entity.setTrackingId(textAt(csaf, "/document/tracking/id"));
+        entity.setDocumentTitle(textAt(csaf, "/document/title"));
+
+        String releaseDate = textAt(csaf, "/document/tracking/current_release_date");
+        entity.setCurrentReleaseDate(parseReleaseDate(releaseDate));
+    }
+
+    private String textAt(JsonNode node, String path) {
+        if (node == null) {
+            return null;
+        }
+        JsonNode value = node.at(path);
+        return value.isMissingNode() || value.isNull() ? null : value.asString();
+    }
+
+    private Instant parseReleaseDate(String releaseDate) {
+
+        if (releaseDate == null || releaseDate.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Instant.parse(releaseDate);
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
     }
 
     /**
@@ -95,16 +127,6 @@ public class PostgresRepositoryService {
      */
     public List<AdvisoryEntity> findAllAdvisories() {
         return advisoryRepository.findAll(BY_ID);
-    }
-
-    /**
-     * Return all advisories that satisfy the given JPA Specification.
-     *
-     * @param spec the filtering specification
-     * @return matching advisory entities, ordered by id
-     */
-    public List<AdvisoryEntity> findAdvisories(Specification<AdvisoryEntity> spec) {
-        return advisoryRepository.findAll(spec, BY_ID);
     }
 
     /**
@@ -172,7 +194,17 @@ public class PostgresRepositoryService {
      * @return the saved entity
      */
     public AdvisoryVersionEntity saveAdvisoryVersion(AdvisoryVersionEntity entity) {
+        updateAdvisoryVersionListColumns(entity);
         return advisoryVersionRepository.save(entity);
+    }
+
+    private void updateAdvisoryVersionListColumns(AdvisoryVersionEntity entity) {
+        JsonNode csaf = entity.getCsaf();
+        entity.setTrackingId(textAt(csaf, "/document/tracking/id"));
+        entity.setDocumentTitle(textAt(csaf, "/document/title"));
+
+        String releaseDate = textAt(csaf, "/document/tracking/current_release_date");
+        entity.setCurrentReleaseDate(parseReleaseDate(releaseDate));
     }
 
     /**
