@@ -23,10 +23,9 @@ public class AdvisoryListQueryService {
     private EntityManager entityManager;
 
     public List<AdvisoryListProjection> findAdvisories(Expression filter, Authentication credentials) {
-        LOG.info("Start getAdvisoryInformations");
+        LOG.debug("Start getAdvisoryInformations");
         SqlExpressionCompiler compiler = new SqlExpressionCompiler();
         String compiledExpr = compiler.compile(filter);
-        LOG.info("Compiled expression: {}", compiledExpr);
         String where = visibilityClause(credentials, compiler) + " AND " + compiledExpr;
         String sql = """
                 SELECT id, workflow_state, owner, version,
@@ -38,13 +37,13 @@ public class AdvisoryListQueryService {
                  ORDER BY id
                  """;
 
-        LOG.info("Start getAdvisoryInformations - createNativeQuery");
+        LOG.debug("Start getAdvisoryInformations - createNativeQuery");
         var query = entityManager.createNativeQuery(sql);
         compiler.bind(query);
-        LOG.info("Start getAdvisoryInformations - getResultList");
+        LOG.debug("Start getAdvisoryInformations - getResultList");
         @SuppressWarnings("unchecked")
         List<Object[]> rows = query.getResultList();
-        LOG.info("Start getAdvisoryInformations - stream");
+        LOG.debug("Start getAdvisoryInformations - stream");
         return rows.stream().map(row -> new AdvisoryListProjection(
                 row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
                 (String) row[4], (String) row[5], row[6] == null ? null : row[6].toString())).toList();
