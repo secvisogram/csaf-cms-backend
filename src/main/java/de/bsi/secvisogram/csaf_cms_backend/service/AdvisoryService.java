@@ -142,7 +142,7 @@ public class AdvisoryService {
     public List<AdvisoryInformationResponse> getAdvisoryInformations(String expression)
             throws IOException, CsafException {
 
-        LOG.info("Start getAdvisoryInformations");
+        LOG.debug("Start getAdvisoryInformations");
         Authentication credentials = getAuthentication();
         Expression parsedExpr = parseFilterExpression(expression);
 
@@ -162,7 +162,7 @@ public class AdvisoryService {
             }
             allResponses.addAll(allAdvisoryVersions);
         }
-        LOG.info("End getAdvisoryInformations - readAllAdvisories");
+        LOG.debug("End getAdvisoryInformations - readAllAdvisories");
         return allResponses;
     }
 
