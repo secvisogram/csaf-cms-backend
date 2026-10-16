@@ -1,0 +1,90 @@
+# One-time migration of data from the CouchDB-based releases (<= 1.1.6).
+# See documents/couchdb-to-postgres-migration-guides/README.md (which guide to follow).
+# All paths are relative to ../compose.yaml.
+#
+# Layered on top of ../compose.yaml by docker/migrate/.env (COMPOSE_FILE). All services below
+# belong to the profile "migrate" ON PURPOSE: a plain "docker compose up" from this folder must not
+# start them, because db-migration would run the migration and replace the contents of cms-db.
+# Naming a service on the command line enables its profile, so no --profile flag is needed.
+#
+#   cd docker/migrate
+#   docker compose run --rm db-migration-dry-run   # validate only
+#   docker compose stop backend-cms
+#   docker compose run --rm db-migration           # the real migration
+
+services:
+  # Copies the old CouchDB data folder into a scratch volume, so the original is never opened
+  # (and therefore never modified) by CouchDB. Re-running replaces the scratch copy.
+  old-couchdb-copy:
+    image: busybox:1.37
+    profiles: ["migrate"]
+    restart: "no"
+    volumes:
+      # Folder with the old CouchDB data; adjust if yours lives elsewhere.
+      - "${CSAF_COUCHDB_DATA_DIR:-./data/cms-db}:/source:ro"
+      - old-couchdb-data:/data
+    command: ["sh", "-c", "rm -rf /data/* /data/.[!.]* 2>/dev/null; cp -a /source/. /data/"]
+
+  # Temporary CouchDB on the scratch copy. Not published to the host.
+  old-couchdb:
+    image: couchdb:3.4
+    profiles: ["migrate"]
+    restart: "no"
+    environment:
+      # The credentials of the OLD installation (CSAF_COUCHDB_USER / CSAF_COUCHDB_PASSWORD).
+      COUCHDB_USER: ${CSAF_COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${CSAF_COUCHDB_PASSWORD:-admin}
+    volumes:
+      - old-couchdb-data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://127.0.0.1:5984/_up || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      old-couchdb-copy:
+        condition: service_completed_successfully
+
+  # Step 1: read and validate only, never touches PostgreSQL.
+  db-migration-dry-run:
+    image: ${CSAF_MIGRATOR_IMAGE:-ghcr.io/secvisogram/cms-db-migration-tool:1.0.2}
+    profiles: ["migrate"]
+    restart: "no"
+    entrypoint:
+      - java
+      - -jar
+      - /app/migrator.jar
+      - --dry-run
+      - --couchdb-url=http://old-couchdb:5984/${CSAF_COUCHDB_DBNAME:-csaf}
+      - --couchdb-user=${CSAF_COUCHDB_USER:-admin}
+      - --couchdb-password=${CSAF_COUCHDB_PASSWORD:-admin}
+    depends_on:
+      old-couchdb:
+        condition: service_healthy
+
+  # Step 2: the real migration into the (empty, Flyway-initialised) cms-db. Stop backend-cms first.
+  # Extra options can be appended, e.g. "... run --rm db-migration --skip-malformed".
+  # Both migration steps also accept "--page-size=N" (documents read from CouchDB per request, default 500); lower it if memory is tight.
+  db-migration:
+    image: ${CSAF_MIGRATOR_IMAGE:-ghcr.io/secvisogram/cms-db-migration-tool:1.0.2}
+    profiles: ["migrate"]
+    restart: "no"
+    entrypoint:
+      - java
+      - -jar
+      - /app/migrator.jar
+      - --couchdb-url=http://old-couchdb:5984/${CSAF_COUCHDB_DBNAME:-csaf}
+      - --couchdb-user=${CSAF_COUCHDB_USER:-admin}
+      - --couchdb-password=${CSAF_COUCHDB_PASSWORD:-admin}
+      - --pg-url=jdbc:postgresql://cms-db:5432/${CSAF_DB_NAME}
+      - --pg-user=${CSAF_DB_USER}
+      - --pg-password=${CSAF_DB_PASSWORD}
+    depends_on:
+      old-couchdb:
+        condition: service_healthy
+      cms-db:
+        condition: service_healthy
+
+volumes:
+  # Scratch copy of the old CouchDB data.
+  old-couchdb-data:

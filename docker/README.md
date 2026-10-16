@@ -201,8 +201,12 @@ and `docker/config`, just built rather than pulled:
   docker compose up -d --build
   ```
 
+A third subdirectory is not for development: **`docker/migrate`** adds the one-time
+data migration from the CouchDB-based releases (profile `migrate`). See
+[documents/couchdb-to-postgres-migration-guides](../documents/couchdb-to-postgres-migration-guides/README.md).
+
 Each subdirectory's `.env` sets Compose's `COMPOSE_FILE` so that running from there
-merges in that subdirectory's own `compose.build.yaml`.
+merges in that subdirectory's own `compose.build.yaml` (`compose.migrate.yaml` for `migrate`).
 You can freely switch between `docker/`, `docker/dev/`, and `docker/dev-all/` for
 the same containers and volumes; it's not a separate environment, just a different
 set of compose files layered on top of the same one.
