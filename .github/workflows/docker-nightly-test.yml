@@ -1,0 +1,88 @@
+# Smoke-tests that the whole docker compose stack (see docker/compose.yaml) comes up and
+# every service reaches a healthy state.
+name: Nightly Docker Compose Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  docker-compose-up:
+    name: docker compose up --build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare .env files
+        run: |
+          cp .env.example .env
+          cp docker/.env.example docker/.env
+          # CSAF_COOKIE_SECRET is intentionally left empty in docker/.env.example and must be
+          # set before the first "docker compose up" (see docker/README.md).
+          cookie_secret=$(openssl rand -base64 32 | tr -- '+/' '-_')       
+          sed -i "s|^CSAF_COOKIE_SECRET=.*|CSAF_COOKIE_SECRET=${cookie_secret}|" docker/.env
+
+      - name: docker compose up --build
+        working-directory: docker
+        run: docker compose up -d --build
+
+      - name: Wait for all services to become healthy
+        working-directory: docker
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          interval=5
+          elapsed=0
+          # trusted-provider-setup is profile-gated (profiles: [run_manually]) and never
+          # starts as part of a plain "docker compose up", so it must not be expected here.
+          expected=$(docker compose config --services | grep -vc '^trusted-provider-setup$')
+
+          while true; do
+            ps_json=$(docker compose ps --all --format json)
+
+            bad=$(echo "$ps_json" | jq -s '[.[] | select(.State == "exited" or .State == "restarting" or .Health == "unhealthy")]')
+            bad_count=$(echo "$bad" | jq 'length')
+            if [ "$bad_count" -gt 0 ]; then
+              echo "::error::One or more containers failed to start correctly:"
+              echo "$bad" | jq -r '.[] | "  - \(.Service): state=\(.State) health=\(.Health) exitCode=\(.ExitCode)"'
+              docker compose ps --all
+              exit 1
+            fi
+
+            running=$(echo "$ps_json" | jq -s 'length')
+            pending=$(echo "$ps_json" | jq -s '[.[] | select(.Health != "" and .Health != "healthy")] | length')
+
+            if [ "$running" -ge "$expected" ] && [ "$pending" -eq 0 ]; then
+              echo "All $running services are up and healthy."
+              docker compose ps
+              break
+            fi
+
+            if [ "$elapsed" -ge $((10 * 60)) ]; then
+              echo "::error::Timed out waiting for all services to become healthy"
+              docker compose ps --all
+              exit 1
+            fi
+
+            sleep "$interval"
+            elapsed=$((elapsed + interval))
+          done
+
+      - name: Collect logs on failure
+        if: failure()
+        working-directory: docker
+        run: docker compose logs --no-color > compose-logs.txt
+
+      - name: Upload logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-compose-logs
+          path: docker/compose-logs.txt
+
+      - name: Tear down
+        if: always()
+        working-directory: docker
+        run: docker compose down -v
