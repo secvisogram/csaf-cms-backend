@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.25.3
+ARG GO_VERSION=1.26.4
 ARG ALPINE_VERSION=3.22
 
 FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS base
@@ -13,7 +13,7 @@ RUN bash /app/compile.sh
 FROM  nginx:alpine AS provider
 
 COPY --from=base /usr/local/go/ /usr/local/go/
-COPY --from=base /app/csaf_distribution/bin-linux-amd64/csaf_provider /usr/lib/cgi-bin/csaf_provider.go
+COPY --from=base /app/csaf/bin-linux-amd64/csaf_provider /usr/lib/cgi-bin/csaf_provider.go
 COPY --from=base /version /version
 COPY trustedprovider-nginx.conf /etc/nginx/conf.d/default.conf
 COPY fcgiwarp /docker-entrypoint.d/40-fcgiwrap.sh
