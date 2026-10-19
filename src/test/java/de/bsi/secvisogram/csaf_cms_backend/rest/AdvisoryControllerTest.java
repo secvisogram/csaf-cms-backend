@@ -544,7 +544,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Draft").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(newRevision));
     }
 
     @Test
@@ -556,7 +557,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Review").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(newRevision));
     }
 
     @Test
@@ -568,7 +570,8 @@ public class AdvisoryControllerTest {
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Approved").with(csrf())
                         .param("revision", revision))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(newRevision));
     }
 
     @Test
@@ -576,12 +579,13 @@ public class AdvisoryControllerTest {
     void changeWorkflowStateRfPublicationTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.RfPublication,
-                "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim)).thenReturn(newRevision);
+                "2022-07-15T05:50:21Z", null)).thenReturn(newRevision);
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/RfPublication").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(newRevision));
     }
 
     @Test
@@ -589,13 +593,14 @@ public class AdvisoryControllerTest {
     void changeWorkflowStatePublishedTest() throws Exception {
         String newRevision = "2-efaa5db9409b2d4300535c70aaf5ff62";
         when(advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, WorkflowState.Published,
-                "2022-07-15T05:50:21Z", null)).thenReturn(newRevision);
+                "2022-07-15T05:50:21Z", DocumentTrackingStatus.Interim)).thenReturn(newRevision);
 
         this.mockMvc.perform(patch(advisoryRoute + "/" + advisoryId + "/workflowstate/Published").with(csrf())
                         .param("revision", revision)
                         .param("proposedTime", "2022-07-15T05:50:21Z")
                         .param("documentTrackingStatus", "Interim"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(newRevision));
     }
 
     @Test

@@ -853,8 +853,9 @@ public class AdvisoryController {
     private ResponseEntity<String> changeWorkflowState(String advisoryId, String revision, WorkflowState state,
                                                        String proposedTime, DocumentTrackingStatus documentTrackingStatus) throws IOException {
         try {
-            advisoryService.changeAdvisoryWorkflowState(advisoryId, revision, state, proposedTime, documentTrackingStatus);
-            return ResponseEntity.ok().build();
+            String newRevision = advisoryService.changeAdvisoryWorkflowState(
+                    advisoryId, revision, state, proposedTime, documentTrackingStatus);
+            return ResponseEntity.ok(newRevision);
         } catch (DatabaseException dbEx) {
             return ResponseEntity.badRequest().build();
         } catch (CsafException ex) {
