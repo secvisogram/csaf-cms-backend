@@ -119,6 +119,15 @@ Follow these steps **in order**:
       development PGP keys.
     - More details on configuring the trusted provider can be found at
       [GoCSAF](https://github.com/gocsaf/csaf).
+    - **Security note:** the `trustedprovider` container combines signing and
+      serving. It mounts the OpenPGP private key (`/config/private.asc`) and
+      runs the nginx that publicly serves `/data/html` in the same image,
+      filesystem and process namespace. A compromise of the internet-facing
+      nginx would therefore expose the key used to sign advisories. This
+      setup is intended for development only. In production, split the two
+      roles: keep the key only in the provider's own config mount and serve
+      the generated static tree from a separate nginx service (with
+      `/data/html` mounted read-only) or from a separate host.
 
 8. (required for exports) Install
    [pandoc (tested with version 2.18)](https://pandoc.org/installing.html)
