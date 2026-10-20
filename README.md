@@ -151,6 +151,10 @@ http://localhost:8081/api-docs
 For accessing CouchDB when running the local Docker setup, see
 [Accessing CouchDB](docker/README.md#accessing-couchdb) in `docker/README.md`.
 
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
+
 ## Contributing
 
 You can find our guidelines here [CONTRIBUTING.md](https://github.com/secvisogram/secvisogram/blob/main/CONTRIBUTING.md)
