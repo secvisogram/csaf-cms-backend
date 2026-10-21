@@ -1,11 +1,11 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import de.bsi.secvisogram.csaf_cms_backend.entity.AdvisoryEntity;
-import de.bsi.secvisogram.csaf_cms_backend.entity.AdvisoryVersionEntity;
-import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailCommentEntity;
-import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailDocumentEntity;
-import de.bsi.secvisogram.csaf_cms_backend.entity.AuditTrailWorkflowEntity;
-import de.bsi.secvisogram.csaf_cms_backend.entity.CommentEntity;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryEntity;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryVersionEntity;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AuditTrailCommentEntity;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AuditTrailDocumentEntity;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AuditTrailWorkflowEntity;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.CommentEntity;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.CommentWrapper;
