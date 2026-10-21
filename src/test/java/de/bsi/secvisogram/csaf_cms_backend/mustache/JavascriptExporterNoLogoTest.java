@@ -9,8 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.StringUtils;
 
-import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryListQueryService;
-import de.bsi.secvisogram.csaf_cms_backend.service.PostgresRepositoryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryListQueryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
 
 @SpringBootTest(properties = {
         "csaf.document.templates.companyLogoPath="
