@@ -16,8 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryListQueryService;
-import de.bsi.secvisogram.csaf_cms_backend.service.PostgresRepositoryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryListQueryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
 
 @SpringBootTest(properties = {
         "csaf.document.templates.file=./src/test/resources/de/bsi/secvisogram/csaf_cms_backend/db/model/template/allTemplates.json"

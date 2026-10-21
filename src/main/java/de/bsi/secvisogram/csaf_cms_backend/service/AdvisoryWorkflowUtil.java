@@ -11,8 +11,6 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import org.apache.commons.text.similarity.LevenshteinDetailedDistance;
 import org.apache.commons.text.similarity.LevenshteinResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import tools.jackson.databind.JsonNode;
@@ -448,7 +446,7 @@ public class AdvisoryWorkflowUtil {
     public static boolean timestampIsBefore(String timestamp1, String timestamp2) {
         LocalDateTime t1 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp1));
         LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
-        return t1.compareTo(t2) < 0;
+        return t1.isBefore(t2);
     }
 
     /**
