@@ -117,6 +117,13 @@ Follow these steps **in order**:
    `docker compose up trusted-provider-setup`.
     - The folder `docker/config/trustedprovider` contains example /
       development PGP keys.
+    - Note: the `trusted-provider` service both holds the signing key and
+      runs the nginx that serves `/.well-known/csaf`. That is convenient
+      for development, but in production the two should be separated so
+      that the internet-facing component has no access to the key: serve
+      the published tree from a separate nginx with a read-only mount, or
+      copy it out to a separate host, keeping the key in the provider's
+      own config mount only.
     - More details on configuring the trusted provider can be found at
       [GoCSAF](https://github.com/gocsaf/csaf).
 
