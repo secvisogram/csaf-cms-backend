@@ -72,7 +72,7 @@ jobs:
 
       - name: docker compose up trusted-provider-setup
         working-directory: docker
-        run: docker compose up trusted-provider-setup
+        run: docker compose up --exit-code-from trusted-provider-setup trusted-provider-setup
 
       - name: Collect logs on failure
         if: failure()
