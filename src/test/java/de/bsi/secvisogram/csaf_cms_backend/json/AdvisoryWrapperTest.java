@@ -91,6 +91,28 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void createVersionFromTest_setsAdvisoryReference() throws IOException, CsafException {
+
+        var advisoryId = "id-aaa-bbb";
+        var advisoryDbString = """
+                {   "type": "Advisory",
+                    "csaf": { "document": {
+                                "category": "CSAF_BASE"
+                              }
+                            },
+                    "_rev": "rev-aa-12",
+                    "_id": "%s"}""".formatted(advisoryId);
+
+        var advisoryToClone = AdvisoryWrapper.createFromStream(
+                new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8)));
+
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.createVersionFrom(advisoryToClone);
+
+        assertEquals(advisoryToClone.getAdvisoryId(), newAdvisory.getAdvisoryReference());
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
     public void createFromStreamTest_noType() throws IOException, CsafException {
 
         var revision = "rev-aa-12";
