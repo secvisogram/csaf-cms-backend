@@ -298,6 +298,16 @@ public class AdvisoryWrapper {
     }
 
     /**
+     * Get the reference to the source advisory.
+     *
+     * @return the id of the referenced advisory, or {@code null} if no reference is set
+     */
+    public String getAdvisoryReference() {
+
+        return getTextFor(AdvisoryField.ADVISORY_REFERENCE);
+    }
+
+    /**
      * get the temporary tracking id from the metadata
      *
       * @return this
