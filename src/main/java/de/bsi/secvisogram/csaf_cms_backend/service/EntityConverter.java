@@ -70,6 +70,9 @@ public final class EntityConverter {
         if (entity.getTmpTrackingId() != null) {
             node.put("tmpTrackingId", entity.getTmpTrackingId());
         }
+        if (entity.getAdvisoryReference() != null) {
+            node.put("advisoryReference", entity.getAdvisoryReference().toString());
+        }
         if (entity.getCreatedAt() != null) {
             node.put("createdAt", entity.getCreatedAt().toString());
         }
@@ -139,6 +142,9 @@ public final class EntityConverter {
         entity.setVersioningType(wrapper.getVersioningType());
         entity.setLastMajorVersion(wrapper.getLastVersion());
         entity.setTmpTrackingId(wrapper.getTempTrackingIdInFromMeta());
+        String advisoryReference = wrapper.getAdvisoryReference();
+        entity.setAdvisoryReference(
+                advisoryReference != null ? UUID.fromString(advisoryReference) : null);
         if (entity.getCreatedAt() == null) {
             entity.setCreatedAt(Instant.now());
         }
