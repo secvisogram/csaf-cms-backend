@@ -215,6 +215,26 @@ public class AdvisoryWrapper {
     }
 
     /**
+     * Let a newly imported advisory take the place of the already imported advisory it is a newer version of.
+     * The imported advisory keeps its CSAF document - that is the content of the new version - and takes over id,
+     * revision and creation date of the advisory it replaces.
+     *
+     * @param existing    the already imported advisory that is replaced
+     * @param newAdvisory the newer version, as returned by {@link #importNewFromCsaf(JsonNode, String)}
+     * @return the newer version, now identified as the advisory it replaces
+     */
+    public static AdvisoryWrapper importNewVersionOf(AdvisoryWrapper existing, AdvisoryWrapper newAdvisory) {
+
+        newAdvisory.setAdvisoryId(existing.getAdvisoryId())
+                .setRevision(existing.getRevision());
+        // the advisory was created when its first version was imported
+        newAdvisory.advisoryNode.put(AuditTrailField.CREATED_AT.getDbName(),
+                existing.getTextFor(AuditTrailField.CREATED_AT));
+
+        return newAdvisory;
+    }
+
+    /**
      * Creates a new AdvisoryWrapper based on the given one and set its CSAF document to the changed CSAF document
      *
      * @param existing        the base AdvisoryWrapper
