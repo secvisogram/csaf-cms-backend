@@ -2,12 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
-import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisoryField;
-import de.bsi.secvisogram.csaf_cms_backend.json.field.AdvisorySearchField;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import org.apache.commons.text.similarity.LevenshteinDetailedDistance;
 import org.apache.commons.text.similarity.LevenshteinResults;
@@ -18,12 +13,9 @@ import tools.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.*;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.*;
 
 /**
  * Helper Methods for workflow and permissions
@@ -448,66 +440,5 @@ public class AdvisoryWorkflowUtil {
         LocalDateTime t2 = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(timestamp2));
         return t1.isBefore(t2);
     }
-
-    /**
-     * Build a filter expression that corresponds to the visibility rules of
-     * {@link #canViewAdvisory(String, WorkflowState, Authentication, String)}.
-     * <p>
-     * Returns {@code null} when the user can see every advisory (AUDITOR or EDITOR roles),
-     * so callers can skip adding the filter altogether.
-     * <p>
-     * The "published" condition is: {@code workflowState = "Published"} AND
-     * {@code currentReleaseDate < now} (lexicographic ISO-8601 comparison).
-     *
-     * @param credentials the credentials of the logged-in user
-     * @return an {@link Expression} representing the visibility constraint, or {@code null}
-     *         if no constraint is needed
-     */
-    public static Expression buildVisibilityExpression(Authentication credentials) {
-
-        // AUDITOR and EDITOR can see everything – no DB-side filter required.
-        if (hasRole(AUDITOR, credentials) || hasRole(EDITOR, credentials)) {
-            return null;
-        }
-
-        String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-
-        // "published" sub-expression: workflowState = Published AND currentReleaseDate < now
-        Expression publishedExpr = new AndExpression(
-                equal(WorkflowState.Published.name(), AdvisoryField.WORKFLOW_STATE.getDbName()),
-                less(now, AdvisorySearchField.DOCUMENT_TRACKING_CURRENT_RELEASE_DATE.getFieldPath())
-        );
-
-        List<Expression> orTerms = new ArrayList<>();
-        orTerms.add(publishedExpr);
-
-        if (hasRole(AUTHOR, credentials)) {
-            // Own advisory OR published
-            orTerms.add(equal(credentials.getName(), AdvisoryField.OWNER.getDbName()));
-        }
-
-        if (hasRole(PUBLISHER, credentials)) {
-            // Draft, Approved, RfPublication OR published
-            orTerms.add(equal(WorkflowState.Draft.name(), AdvisoryField.WORKFLOW_STATE.getDbName()));
-            orTerms.add(equal(WorkflowState.Approved.name(), AdvisoryField.WORKFLOW_STATE.getDbName()));
-            orTerms.add(equal(WorkflowState.RfPublication.name(), AdvisoryField.WORKFLOW_STATE.getDbName()));
-        }
-
-        if (hasRole(REVIEWER, credentials)) {
-            // Non-own advisories in Review state OR published
-            orTerms.add(new AndExpression(
-                    equal(WorkflowState.Review.name(), AdvisoryField.WORKFLOW_STATE.getDbName()),
-                    notEqual(credentials.getName(), AdvisoryField.OWNER.getDbName())
-            ));
-        }
-
-        if (orTerms.size() == 1) {
-            // Only the publishedExpr applies – return it directly without wrapping in OR.
-            return publishedExpr;
-        }
-
-        return new OrExpression(orTerms.toArray(new Expression[0]));
-    }
-
 
 }

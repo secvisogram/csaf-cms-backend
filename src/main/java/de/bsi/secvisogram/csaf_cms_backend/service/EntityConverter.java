@@ -83,41 +83,6 @@ public final class EntityConverter {
     }
 
     /**
-     * Build an {@link AdvisoryWrapper} from a persisted {@link AdvisoryVersionEntity}.
-     *
-     * @param entity the advisory version entity
-     * @return an AdvisoryWrapper backed by the version entity data
-     * @throws IOException   if the CSAF JSON cannot be serialised/parsed
-     * @throws CsafException if the resulting node is not of acceptable type
-     */
-    public static AdvisoryWrapper toWrapper(AdvisoryVersionEntity entity) throws IOException, CsafException {
-
-        ObjectMapper mapper = new JsonMapper();
-        ObjectNode node = mapper.createObjectNode();
-        node.put("_id", entity.getId().toString());
-        node.put("type", "AdvisoryVersion");
-        node.put("workflowState", entity.getWorkflowState());
-        node.put("owner", entity.getOwner());
-        if (entity.getCsaf() != null) {
-            node.set("csaf", entity.getCsaf());
-        }
-        node.put("versioningType", entity.getVersioningType());
-        if (entity.getLastMajorVersion() != null) {
-            node.put("lastMajorVersion", entity.getLastMajorVersion());
-        }
-        if (entity.getAdvisory() != null) {
-            node.put("advisoryReference", entity.getAdvisory().getId().toString());
-        }
-        if (entity.getCreatedAt() != null) {
-            node.put("createdAt", entity.getCreatedAt().toString());
-        }
-
-        String json = node.toString();
-        return AdvisoryWrapper.createFromStream(
-                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    /**
      * Populate an {@link AdvisoryEntity} from an {@link AdvisoryWrapper}.
      *
      * <p>When {@code existing} is non-null its identity and creation timestamp are
@@ -234,37 +199,6 @@ public final class EntityConverter {
         return response;
     }
 
-    /**
-     * Build an {@link AdvisoryInformationResponse} from an {@link AdvisoryVersionEntity}.
-     * Version snapshots have no optimistic-lock version field, so revision is left null.
-     *
-     * @param entity the advisory version entity
-     * @return a populated response
-     */
-    public static AdvisoryInformationResponse toAdvisoryVersionInfo(AdvisoryVersionEntity entity) {
-
-        String id = (entity.getAdvisory() != null)
-                ? entity.getAdvisory().getId().toString() : entity.getId().toString();
-        AdvisoryInformationResponse response = new AdvisoryInformationResponse(id);
-        response.setWorkflowState(entity.getWorkflowState());
-        response.setOwner(entity.getOwner());
-        JsonNode csafNode = entity.getCsaf();
-        if (csafNode != null) {
-            JsonNode titleNode = csafNode.at("/document/title");
-            if (!titleNode.isMissingNode()) {
-                response.setTitle(titleNode.asString());
-            }
-            JsonNode trackingIdNode = csafNode.at("/document/tracking/id");
-            if (!trackingIdNode.isMissingNode()) {
-                response.setDocumentTrackingId(trackingIdNode.asString());
-            }
-            JsonNode releaseDateNode = csafNode.at("/document/tracking/current_release_date");
-            if (!releaseDateNode.isMissingNode()) {
-                response.setCurrentReleaseDate(releaseDateNode.asString());
-            }
-        }
-        return response;
-    }
 
     /**
      * Build a {@link CommentInformationResponse} from a {@link CommentEntity}.
