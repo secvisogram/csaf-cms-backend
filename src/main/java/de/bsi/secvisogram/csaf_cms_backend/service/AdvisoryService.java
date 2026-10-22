@@ -150,9 +150,7 @@ public class AdvisoryService {
         Authentication credentials = getAuthentication();
         Expression parsedExpr = parseFilterExpression(expression);
 
-        Expression visibilityExpr = AdvisoryWorkflowUtil.buildVisibilityExpression(credentials);
-        List<AdvisoryInformationResponse> allAdvisories =
-                readAllAdvisories(parsedExpr, visibilityExpr, credentials);
+        List<AdvisoryInformationResponse> allAdvisories = readAllAdvisories(parsedExpr, credentials);
         for (AdvisoryInformationResponse response : allAdvisories) {
             enrichAdvisory(response, credentials);
         }
@@ -183,13 +181,10 @@ public class AdvisoryService {
 
     private List<AdvisoryInformationResponse> readAllAdvisories(
             Expression parsedExpr,
-            Expression visibilityExpr,
             Authentication credentials) {
 
         return advisoryListQueryService.findAdvisories(parsedExpr, credentials).stream()
                 .map(this::toAdvisoryInformationResponse)
-                .filter(info -> matchesVisibility(info, visibilityExpr, credentials))
-
                 .toList();
     }
 
@@ -223,46 +218,6 @@ public class AdvisoryService {
         response.setTitle(projection.title());
         response.setCurrentReleaseDate(projection.currentReleaseDate());
         return response;
-    }
-
-    /**
-     * Check whether an advisory info item passes the visibility expression filter.
-     * When visibilityExpr is null the caller can see everything.
-     */
-    private boolean matchesVisibility(AdvisoryInformationResponse info,
-            Expression visibilityExpr,
-            Authentication credentials) {
-
-        if (visibilityExpr == null) {
-            return true;
-        }
-        // Re-use the canViewAdvisory logic which already encodes all visibility rules
-        return AdvisoryWorkflowUtil.canViewAdvisory(
-                info.getOwner(),
-                info.getWorkflowState(),
-                credentials,
-                info.getCurrentReleaseDate()
-        );
-    }
-    /**
-     * Check whether the entity's full CSAF JSON matches an already-parsed filter expression.
-     * This enables filtering by arbitrary deep paths (acknowledgments, vulnerabilities,
-     * product_tree, etc.) that are not available in the flattened {@link AdvisoryInformationResponse}.
-     *
-     * <p>The expression is parsed once, up front, by {@link #parseFilterExpression} rather than
-     * per entity here: a malformed expression must be rejected with a proper error, and a
-     * checked {@link CsafException} cannot be thrown from inside a stream {@code Predicate}.</p>
-     *
-     * @param csafJson   the entity's CSAF JSON ({@code JsonNode})
-     * @param parsedExpr the already-parsed expression, or {@code null} when no filter was supplied
-     * @return {@code true} if the CSAF JSON matches the expression or no expression was supplied
-     */
-    private boolean matchesCsafExpression(JsonNode csafJson, Expression parsedExpr) {
-
-        if (parsedExpr == null) {
-            return true;
-        }
-        return evaluateCsafExpression(parsedExpr, csafJson);
     }
 
     /**
@@ -808,36 +763,6 @@ public class AdvisoryService {
         }
     }
 
-    /**
-     * Export the Advisory with the given advisoryId and perform release activities on the document
-     * The export will be written to a temporary file and the path to the file will be returned.
-     *
-     * @param advisoryId the id of the advisory that should be exported
-     * @return the path to the temporary file that contains the export
-     * @throws CsafException        if the advisory with the given id does not exist or the export format is unknown
-     * @throws IOException          on any error regarding writing/reading from disk
-     * @throws InterruptedException if the export did take too long and thus timed out
-     */
-    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
-    public Path exportAdvisoryForAutoPublish(
-            @Nonnull final String advisoryId)
-            throws IOException, CsafException {
-        // read the advisory form the database
-        try {
-            final JsonNode csaf = this.postgresService.readDocumentAsJsonNode(advisoryId);
-
-            RemoveIdHelper.removeCommentIds(csaf);
-            final String csafDocument = csaf.toString();
-
-            // if format is JSON - write it to temporary file and return the path
-            final Path jsonFile = Files.createTempFile(advisoryId, ".json");
-            Files.writeString(jsonFile, csafDocument);
-            return jsonFile;
-        } catch (IdNotFoundException e) {
-            throw new CsafException("Can not find advisory with ID " + advisoryId,
-                    CsafExceptionKey.AdvisoryNotFound, HttpStatus.NOT_FOUND);
-        }
-    }
 
     /**
      * Changes the workflow state of the advisory to the given new WorkflowState.
