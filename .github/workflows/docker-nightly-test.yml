@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Prepare .env files
         run: |
@@ -70,6 +70,10 @@ jobs:
             elapsed=$((elapsed + interval))
           done
 
+      - name: docker compose up trusted-provider-setup
+        working-directory: docker
+        run: docker compose up --exit-code-from trusted-provider-setup trusted-provider-setup
+
       - name: Collect logs on failure
         if: failure()
         working-directory: docker
@@ -77,7 +81,7 @@ jobs:
 
       - name: Upload logs artifact
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: docker-compose-logs
           path: docker/compose-logs.txt
