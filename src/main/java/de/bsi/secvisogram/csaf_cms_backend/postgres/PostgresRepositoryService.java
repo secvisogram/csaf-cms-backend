@@ -1,11 +1,9 @@
 package de.bsi.secvisogram.csaf_cms_backend.postgres;
 
-import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.repository.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +25,6 @@ import java.util.UUID;
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI")
 public class PostgresRepositoryService {
 
-    private static final Sort BY_ID = Sort.by("id");
     private final AdvisoryRepository advisoryRepository;
     private final AdvisoryVersionRepository advisoryVersionRepository;
     private final AuditTrailDocumentRepository auditTrailDocumentRepository;
@@ -138,15 +135,6 @@ public class PostgresRepositoryService {
     }
 
     /**
-     * Return the total number of advisories in the database.
-     *
-     * @return advisory count
-     */
-    public long getAdvisoryCount() {
-        return advisoryRepository.count();
-    }
-
-    /**
      * Return the total number of documents across all tables.
      * This is primarily used by integration tests to verify that the expected number of records
      * are created/deleted across all entity types (advisories, comments, audit trails, counters).
@@ -198,7 +186,7 @@ public class PostgresRepositoryService {
         return auditTrailDocumentRepository.save(entity);
     }
 
-      // --- Audit Trail Workflow operations ---
+    // --- Audit Trail Workflow operations ---
 
     /**
      * Persist a new workflow audit trail entry or update an existing one.
@@ -338,22 +326,4 @@ public class PostgresRepositoryService {
         return retried;
     }
 
-    /**
-     * Read a document from the database as JsonNode
-     *
-     * @param uuid id of the document to read
-     * @return the requested document as JsonNode
-     * @throws IdNotFoundException if the requested document was not found
-     */
-    public JsonNode readDocumentAsJsonNode(final String uuid) throws IdNotFoundException {
-
-        Optional<AdvisoryEntity> optionalEntity = this.findAdvisoryById(UUID.fromString(uuid));
-
-        if (optionalEntity.isEmpty()) {
-            throw new IdNotFoundException("Advisory not found");
-        } else {
-            return optionalEntity.get().getCsaf();
-        }
-
-    }
 }
