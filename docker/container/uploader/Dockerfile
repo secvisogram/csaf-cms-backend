@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.25.3
+ARG GO_VERSION=1.26.4
 ARG ALPINE_VERSION=3.22
 
 FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS base
@@ -12,5 +12,5 @@ RUN bash /app/compile.sh
 # Create provider image
 FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS csaf_uploader
 
-COPY --from=base /app/csaf_distribution/bin-linux-amd64/csaf_uploader /opt/csaf_uploader
+COPY --from=base /app/csaf/bin-linux-amd64/csaf_uploader /opt/csaf_uploader
 COPY --from=base /version /version

@@ -1,3 +1,5 @@
 #!/bin/sh
 echo "start fcgi"
+# The bind-mounted data dir may be owned by another host user (e.g. in CI)
+chown "$PUID:$PGID" /data
 spawn-fcgi -s /var/run/fcgiwrap.socket -M 766 -u $PUID -g $PGID /usr/bin/fcgiwrap > /fcgi.log

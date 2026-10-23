@@ -1,20 +1,21 @@
 #!/bin/bash
 
+set -eo pipefail
+
 if [ -z "$TAG" ]
 then
     echo "Cloning latest version"
-    git clone https://github.com/csaf-poc/csaf_distribution.git >/dev/null 2>&1
+    git clone https://github.com/gocsaf/csaf.git
 else
     echo "Cloning TAG $TAG"
-    git clone --branch $TAG https://github.com/csaf-poc/csaf_distribution.git >/dev/null 2>&1
-    if [ $? -ne 0 ]
-	then
+    if ! git clone --branch $TAG https://github.com/gocsaf/csaf.git
+    then
 		echo "TAG $TAG not found. Cloning latest version"
-		git clone https://github.com/csaf-poc/csaf_distribution.git >/dev/null 2>&1
+		git clone https://github.com/gocsaf/csaf.git
 	fi
 fi
 
-cd /app/csaf_distribution/
+cd /app/csaf/
 export PATH=$PATH:/usr/local/go/bin
 make build_linux
 
