@@ -101,7 +101,6 @@ CREATE INDEX idx_advisories_owner ON advisories (owner);
 CREATE UNIQUE INDEX idx_advisories_tracking_id ON advisories (tracking_id);
 CREATE INDEX idx_advisories_workflow_state_release_date
     ON advisories (workflow_state, current_release_date);
-CREATE INDEX idx_advisories_csaf ON advisories USING GIN (csaf jsonb_path_ops);
 CREATE INDEX idx_advisory_versions_advisory_id ON advisory_versions (advisory_id);
 CREATE INDEX idx_audit_trail_documents_advisory_id ON audit_trail_documents (advisory_id);
 CREATE INDEX idx_audit_trail_workflows_advisory_id ON audit_trail_workflows (advisory_id);

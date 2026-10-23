@@ -207,7 +207,7 @@ and `docker/config`, just built rather than pulled:
   cd docker/dev-all
   docker compose up -d --build
   ```
-
+  
 Each subdirectory's `.env` sets Compose's `COMPOSE_FILE` so that running from there
 merges in that subdirectory's own `compose.build.yaml`.
 You can freely switch between `docker/`, `docker/dev/`, and `docker/dev-all/` for
