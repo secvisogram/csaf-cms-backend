@@ -17,14 +17,10 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest()
 public class PandocServiceTest {
 
-    @Autowired
-    private PandocService pandocService;
+    private final PandocService pandocService = new PandocService();
 
     @Test
     public void convertTest() throws IOException, CsafException {

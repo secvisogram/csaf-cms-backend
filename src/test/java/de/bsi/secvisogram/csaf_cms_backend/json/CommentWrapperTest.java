@@ -93,7 +93,7 @@ public class CommentWrapperTest {
     }
 
     @Test
-    public void createFromCouchDbTest() throws IOException, CsafException {
+    public void createFromStreamTest() throws IOException, CsafException {
 
         String revision = "revision-abcd-1234";
         String commentId = UUID.randomUUID().toString();
@@ -112,7 +112,7 @@ public class CommentWrapperTest {
                 """, commentText, advisoryId, owner, revision, commentId);
 
         InputStream commentStream = new ByteArrayInputStream(commentDbString.getBytes(StandardCharsets.UTF_8));
-        CommentWrapper comment = CommentWrapper.createFromCouchDb(commentStream);
+        CommentWrapper comment = CommentWrapper.createFromStream(commentStream);
 
         Assertions.assertEquals(commentText, comment.getText());
         Assertions.assertEquals("nodeId123", comment.getCsafNodeId());
@@ -122,7 +122,7 @@ public class CommentWrapperTest {
     }
 
     @Test
-    public void createFromCouchDbTest_NoType() throws IOException, CsafException {
+    public void createFromStreamTest_NoType() throws IOException, CsafException {
 
         String revision = "revision-abcd-1234";
         String commentId = UUID.randomUUID().toString();
@@ -142,13 +142,13 @@ public class CommentWrapperTest {
         InputStream commentStream = new ByteArrayInputStream(commentDbString.getBytes(StandardCharsets.UTF_8));
 
         CsafException exception = assertThrows(CsafException.class,
-                () -> CommentWrapper.createFromCouchDb(commentStream));
+                () -> CommentWrapper.createFromStream(commentStream));
         assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
 
     }
 
     @Test
-    public void createFromCouchDbTest_WrongType() throws IOException, CsafException {
+    public void createFromStreamTest_WrongType() throws IOException, CsafException {
 
         String revision = "revision-abcd-1234";
         String commentId = UUID.randomUUID().toString();
@@ -169,7 +169,7 @@ public class CommentWrapperTest {
         InputStream commentStream = new ByteArrayInputStream(commentDbString.getBytes(StandardCharsets.UTF_8));
 
         CsafException exception = assertThrows(CsafException.class,
-                () -> CommentWrapper.createFromCouchDb(commentStream));
+                () -> CommentWrapper.createFromStream(commentStream));
         assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
 
     }

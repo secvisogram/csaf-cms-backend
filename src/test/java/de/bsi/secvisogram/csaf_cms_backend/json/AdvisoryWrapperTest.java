@@ -63,7 +63,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest() throws IOException, CsafException {
+    public void createFromStreamTest() throws IOException, CsafException {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -79,7 +79,7 @@ public class AdvisoryWrapperTest {
                     "_id": "%s"}""".formatted(revision, id);
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
-        var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        var advisory = AdvisoryWrapper.createFromStream(advisoryStream);
 
         assertThat(advisory.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(advisory.getWorkflowStateString(), equalTo("Draft"));
@@ -91,7 +91,29 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest_noType() throws IOException, CsafException {
+    public void createVersionFromTest_setsAdvisoryReference() throws IOException, CsafException {
+
+        var advisoryId = "id-aaa-bbb";
+        var advisoryDbString = """
+                {   "type": "Advisory",
+                    "csaf": { "document": {
+                                "category": "CSAF_BASE"
+                              }
+                            },
+                    "_rev": "rev-aa-12",
+                    "_id": "%s"}""".formatted(advisoryId);
+
+        var advisoryToClone = AdvisoryWrapper.createFromStream(
+                new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8)));
+
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.createVersionFrom(advisoryToClone);
+
+        assertEquals(advisoryToClone.getAdvisoryId(), newAdvisory.getAdvisoryReference());
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void createFromStreamTest_noType() throws IOException, CsafException {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -108,13 +130,13 @@ public class AdvisoryWrapperTest {
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
 
         CsafException exception = assertThrows(CsafException.class,
-                () -> AdvisoryWrapper.createFromCouchDb(advisoryStream));
+                () -> AdvisoryWrapper.createFromStream(advisoryStream));
         assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest_wrongType() {
+    public void createFromStreamTest_wrongType() {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -132,7 +154,7 @@ public class AdvisoryWrapperTest {
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
 
         CsafException exception = assertThrows(CsafException.class,
-                () -> AdvisoryWrapper.createFromCouchDb(advisoryStream));
+                () -> AdvisoryWrapper.createFromStream(advisoryStream));
         assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
     }
 
@@ -164,7 +186,7 @@ public class AdvisoryWrapperTest {
 
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
-        var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        var advisory = AdvisoryWrapper.createFromStream(advisoryStream);
         AdvisoryWrapper updatedWrapper = AdvisoryWrapper.updateFromExisting(advisory, csafToRequest(updateCsafJson));
         assertThat(updatedWrapper.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(updatedWrapper.getOwner(), equalTo("Musterfrau"));
