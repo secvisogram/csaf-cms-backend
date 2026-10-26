@@ -181,6 +181,9 @@ public final class EntityConverter {
         response.setRevision(String.valueOf(entity.getVersion()));
         response.setWorkflowState(entity.getWorkflowState());
         response.setOwner(entity.getOwner());
+        if (entity.getUpdatedAt() != null) {
+            response.setLastUpdated(entity.getUpdatedAt().toString());
+        }
         JsonNode csafNode = entity.getCsaf();
         if (csafNode != null) {
             JsonNode titleNode = csafNode.at("/document/title");

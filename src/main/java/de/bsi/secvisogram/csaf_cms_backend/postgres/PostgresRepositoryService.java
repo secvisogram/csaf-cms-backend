@@ -71,6 +71,7 @@ public class PostgresRepositoryService {
      */
     public AdvisoryEntity saveAdvisory(AdvisoryEntity entity) {
         updateAdvisoryListColumns(entity);
+        entity.setUpdatedAt(Instant.now());
         return advisoryRepository.saveAndFlush(entity);
     }
 

@@ -226,6 +226,26 @@ public class AdvisoryServiceTest {
     }
 
     @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void getAdvisoryInformationsTest_lastUpdatedIsSetAndAdvances() throws IOException, DatabaseException, CsafException {
+
+        Instant beforeCreate = Instant.now().minusSeconds(1);
+        IdAndRevision idRev = this.advisoryService.addAdvisory(csafToRequest(csafJson));
+
+        Instant created = Instant.parse(this.advisoryService.getAdvisoryInformations(null).get(0).getLastUpdated());
+        assertTrue(created.isAfter(beforeCreate), "lastUpdated is set when the advisory is created");
+
+        var readAdvisory = advisoryService.getAdvisory(idRev.getId());
+        ((ObjectNode) readAdvisory.getCsaf().at("/document")).put("title", "UpdatedTitle");
+        CreateAdvisoryRequest request = csafToRequest(readAdvisory.getCsaf().toPrettyString());
+        request.setSummary("UpdateSummary");
+        advisoryService.updateAdvisory(idRev.getId(), idRev.getRevision(), request);
+
+        Instant updated = Instant.parse(this.advisoryService.getAdvisoryInformations(null).get(0).getLastUpdated());
+        assertTrue(updated.isAfter(created), "lastUpdated moves forward when the advisory is updated");
+    }
+
+    @Test
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_AUTHOR})
     public void addAdvisoryTest_invalidJson() {
         String invalidJson = "no json string";
