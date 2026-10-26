@@ -24,6 +24,7 @@ public class AdvisoryInformationResponse {
     private List<WorkflowState> allowedStateChanges;
 
     private String currentReleaseDate;
+    private String lastUpdated;
 
     public AdvisoryInformationResponse() {
 
@@ -160,6 +161,20 @@ public class AdvisoryInformationResponse {
 
     public AdvisoryInformationResponse setCurrentReleaseDate(String currentReleaseDate) {
         this.currentReleaseDate = currentReleaseDate;
+        return this;
+    }
+
+    @Schema(
+            description = "When the advisory was last written (any change of the advisory, including workflow "
+                    + "state changes), set by the server. ISO-8601 instant.",
+            example = "2026-10-26T09:15:30.123456Z"
+    )
+    public String getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public AdvisoryInformationResponse setLastUpdated(String lastUpdated) {
+        this.lastUpdated = lastUpdated;
         return this;
     }
 

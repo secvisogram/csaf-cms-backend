@@ -31,7 +31,8 @@ public class AdvisoryListQueryService {
                 SELECT id, workflow_state, owner, version,
                        tracking_id,
                        document_title,
-                       current_release_date
+                       current_release_date,
+                       updated_at
                   FROM advisories
                  WHERE""" + " " + where + "\n" + """
                  ORDER BY id
@@ -46,7 +47,21 @@ public class AdvisoryListQueryService {
         LOG.debug("Start getAdvisoryInformations - stream");
         return rows.stream().map(row -> new AdvisoryListProjection(
                 row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
-                (String) row[4], (String) row[5], row[6] == null ? null : row[6].toString())).toList();
+                (String) row[4], (String) row[5], row[6] == null ? null : row[6].toString(),
+                toIsoInstant(row[7]))).toList();
+    }
+
+    private static String toIsoInstant(Object timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        if (timestamp instanceof java.sql.Timestamp sqlTimestamp) {
+            return sqlTimestamp.toInstant().toString();
+        }
+        if (timestamp instanceof java.time.OffsetDateTime offsetDateTime) {
+            return offsetDateTime.toInstant().toString();
+        }
+        return timestamp.toString();
     }
 
     /** Executes the advisory version list query without selecting the large {@code csaf} column. */

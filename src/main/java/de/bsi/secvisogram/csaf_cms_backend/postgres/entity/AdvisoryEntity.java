@@ -61,6 +61,10 @@ public class AdvisoryEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    // Time of the last write of this advisory, set by PostgresRepositoryService.saveAdvisory.
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
     @Version
     private Long version;
 
@@ -158,6 +162,14 @@ public class AdvisoryEntity {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public Long getVersion() {

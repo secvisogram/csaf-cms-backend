@@ -196,6 +196,7 @@ public class AdvisoryService {
         response.setDocumentTrackingId(projection.documentTrackingId());
         response.setTitle(projection.title());
         response.setCurrentReleaseDate(projection.currentReleaseDate());
+        response.setLastUpdated(projection.lastUpdated());
         return response;
     }
 
