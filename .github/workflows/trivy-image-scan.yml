@@ -1,0 +1,91 @@
+# Scans the published CMS backend image and every image referenced by docker/compose.yaml with
+# Trivy and reports the findings to the GitHub Security tab (code scanning).
+name: Trivy Image Scan
+
+on:
+  schedule:
+    - cron: '0 4 * * *' # 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  backend-and-config:
+    name: Trivy scan (latest backend image, compose config)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Scan latest CMS backend image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/secvisogram/csaf-cms-backend:latest
+          format: sarif
+          output: trivy-latest-results.sarif
+
+      - name: Upload latest CMS backend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-latest-results.sarif
+          category: trivy-latest-cms-backend
+
+      - name: Scan Docker Compose configuration with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: docker/compose.yaml
+          format: sarif
+          output: trivy-compose-config-results.sarif
+
+      - name: Upload Docker Compose configuration scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-compose-config-results.sarif
+          category: trivy-compose-configuration
+
+  compose-images:
+    name: List Docker Compose images
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.list.outputs.images }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: List images referenced by docker/compose.yaml
+        id: list
+        # Build-only services (no "image:") are skipped. Read with yq instead of
+        # "docker compose config" so no .env files are needed.
+        run: |
+          images=$(yq -o=json -I=0 '[.services[].image | select(.)] | unique' docker/compose.yaml)
+          test "$images" != "[]"
+          echo "images=${images}" >> "$GITHUB_OUTPUT"
+
+  compose-image-scan:
+    name: Trivy scan ${{ matrix.image }}
+    needs: compose-images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.compose-images.outputs.images) }}
+    steps:
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ matrix.image }}
+          format: sarif
+          output: trivy-results.sarif
+
+      # One upload per image with its own category: GitHub rejects several runs of the same
+      # tool and category in a single SARIF file.
+      - name: Upload scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-image-${{ matrix.image }}
