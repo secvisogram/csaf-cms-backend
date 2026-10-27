@@ -1,11 +1,15 @@
 # Scans the published CMS backend image and every image referenced by docker/compose.yaml with
 # Trivy and reports the findings to the GitHub Security tab (code scanning).
-name: Trivy Image Scan
+name: Trivy Image Scan RR
 
 on:
   schedule:
     - cron: '0 4 * * *' # 04:00 UTC
   workflow_dispatch:
+  # TEMPORARY: remove before merging; only here to test the workflow from this branch.
+  push:
+    branches:
+      - chore/336-trivy-scan-workflow
 
 jobs:
   backend-and-config:
