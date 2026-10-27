@@ -1,5 +1,6 @@
 # Smoke-tests that the whole docker compose stack (see docker/compose.yaml) comes up and
 # every service reaches a healthy state.
+# Also scan cms backend images with trivy
 name: Nightly Docker Compose Tests
 
 on:
@@ -7,7 +8,27 @@ on:
     - cron: '0 2 * * *' # 02:00 UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
+  check-latest-backend-images:
+    name: Check latest CMS backend images
+    runs-on: ubuntu-latest
+    steps:
+       - name: Scan latest CMS backend image with Trivy
+         uses: aquasecurity/trivy-action@v0.36.0
+         with:
+           image-ref: ghcr.io/secvisogram/csaf-cms-backend:latest
+           format: sarif
+           output: trivy-latest-results.sarif
+
+       - name: Upload latest CMS backend scan results to GitHub Security
+         uses: github/codeql-action/upload-sarif@v4
+         with:
+           sarif_file: trivy-latest-results.sarif
+
   docker-compose-up:
     name: docker compose up --build
     runs-on: ubuntu-latest
