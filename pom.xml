@@ -27,7 +27,7 @@
 		<dependency.version.commons-text>1.15.0</dependency.version.commons-text>
 		<dependency.version.springdoc-openapi>3.1.1</dependency.version.springdoc-openapi>
 		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
-		<dependency.version.zjsonpatch>0.6.3</dependency.version.zjsonpatch>
+		<dependency.version.zjsonpatch>0.6.4</dependency.version.zjsonpatch>
 		<dependency.version.org.graalvm.js>25.4.4.1.1</dependency.version.org.graalvm.js>
 		<dependency.version.org.graalvm.js-scriptengine>25.4.4.1.1</dependency.version.org.graalvm.js-scriptengine>
 		<dependency.version.spotbugs-annotations>4.10.5</dependency.version.spotbugs-annotations>
