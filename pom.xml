@@ -20,12 +20,12 @@
 		<!--<plugin.version.spring-boot></plugin.version.spring-boot>-->
 		<plugin.version.spotbugs>4.10.5.0</plugin.version.spotbugs>
 		<plugin.version.checkstyle>3.6.0</plugin.version.checkstyle>
-		<plugin.version.jacoco>0.8.15</plugin.version.jacoco>
+		<plugin.version.jacoco>0.8.16</plugin.version.jacoco>
 		<dependency.version.cloudant>0.10.24</dependency.version.cloudant>
 		<dependency.version.swagger-annotations>2.2.55</dependency.version.swagger-annotations>
 		<dependency.version.swagger-models>2.2.55</dependency.version.swagger-models>
 		<dependency.version.commons-text>1.15.0</dependency.version.commons-text>
-		<dependency.version.springdoc-openapi>3.1.1</dependency.version.springdoc-openapi>
+		<dependency.version.springdoc-openapi>3.2.0</dependency.version.springdoc-openapi>
 		<dependency.version.semver4j>3.1.0</dependency.version.semver4j>
 		<dependency.version.zjsonpatch>0.6.4</dependency.version.zjsonpatch>
 		<dependency.version.org.graalvm.js>25.4.4.1.1</dependency.version.org.graalvm.js>
