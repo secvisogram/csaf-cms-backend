@@ -62,6 +62,7 @@ public class PostConstructActions {
         LOG.info("Is Allowed to Approved Own Documents:  {}.", configuration.getWorkflow().isAllowOwnDocumentsApproved());
         LOG.info("Creates an Html Reference on Publish:  {}.", configuration.getWorkflow().isCreateHtmlReference());
         LOG.info("csaf.trackingid.assignment.phase is configured to {}.", advisoryService.getTrackingIdAssignmentPhase());
+        LOG.info("csaf.references.regeneration is configured to {}.", advisoryService.getSelfRefRegenerationMode());
 
         LOG.info(CONFIG_LOG_SEPARATOR);
     }
