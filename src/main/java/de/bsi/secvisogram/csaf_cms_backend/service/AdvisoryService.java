@@ -98,21 +98,18 @@ public class AdvisoryService {
 
     private TrackingIdAssignmentPhase trackingIdAssignmentPhase;
 
+    @Value("${csaf.references.regeneration}")
+    private String selfRefRegenerationModeValue;
+
+    private SelfRefRegenerationMode selfRefRegenerationMode;
+
     @Autowired
     private CsafConfiguration configuration;
 
     @PostConstruct
     void validateTrackingIdAssignmentPhase() {
-        try {
-            this.trackingIdAssignmentPhase = TrackingIdAssignmentPhase.valueOf(
-                    this.trackingIdAssignmentPhaseValue.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            LOG.error("Invalid value '{}' for property csaf.trackingid.assignment.phase. "
-                            + "Allowed values are: {}. Falling back to default value '{}'.",
-                    this.trackingIdAssignmentPhaseValue, Arrays.toString(TrackingIdAssignmentPhase.values()),
-                    TrackingIdAssignmentPhase.RELEASE);
-            this.trackingIdAssignmentPhase = TrackingIdAssignmentPhase.RELEASE;
-        }
+        this.trackingIdAssignmentPhase = parseEnumProperty("csaf.trackingid.assignment.phase",
+                this.trackingIdAssignmentPhaseValue, TrackingIdAssignmentPhase.class, TrackingIdAssignmentPhase.RELEASE);
     }
 
     /**
@@ -122,6 +119,41 @@ public class AdvisoryService {
      */
     public TrackingIdAssignmentPhase getTrackingIdAssignmentPhase() {
         return this.trackingIdAssignmentPhase;
+    }
+
+    @PostConstruct
+    void validateSelfReferenceRegenerationMode() {
+        this.selfRefRegenerationMode = parseEnumProperty("csaf.references.regeneration",
+                this.selfRefRegenerationModeValue, SelfRefRegenerationMode.class, SelfRefRegenerationMode.INITIAL);
+    }
+
+    /**
+     * Parse a String-valued configuration property into an enum constant, falling back to a default value if the
+     * property does not match any constant.
+     *
+     * @param propertyName the name of the configuration property, for logging
+     * @param rawValue     the raw, unparsed property value
+     * @param enumType     the enum type to parse into
+     * @param fallback     the value to fall back to
+     * @return the parsed enum constant, or {@code fallback} if the raw value is invalid
+     */
+    private static <E extends Enum<E>> E parseEnumProperty(String propertyName, String rawValue, Class<E> enumType, E fallback) {
+        try {
+            return Enum.valueOf(enumType, rawValue.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            LOG.error("Invalid value '{}' for property {}. Allowed values are: {}. Falling back to default value '{}'.",
+                    rawValue, propertyName, Arrays.toString(enumType.getEnumConstants()), fallback);
+            return fallback;
+        }
+    }
+
+    /**
+     * get the self-reference regeneration mode
+     *
+     * @return the self-reference regeneration mode
+     */
+    public SelfRefRegenerationMode getSelfRefRegenerationMode() {
+        return this.selfRefRegenerationMode;
     }
 
     @Autowired
@@ -391,7 +423,7 @@ public class AdvisoryService {
         }
 
         if (this.trackingIdAssignmentPhase == TrackingIdAssignmentPhase.DRAFT) {
-            setFinalTrackingIdAndUrl(newAdvisoryNode);
+            setFinalTrackingId(newAdvisoryNode);
         } else {
             addTemporaryTrackingId(newAdvisoryNode);
         }
@@ -729,6 +761,12 @@ public class AdvisoryService {
                 newAdvisoryNode.editLastRevisionHistoryElement(changedCsafJson, timestampNow);
             }
 
+            // goal: always but avoid generating for non-published documents.
+            if (this.selfRefRegenerationMode == SelfRefRegenerationMode.ALWAYS
+                    && oldAdvisoryNode.getLastMajorVersion() >= 1) {
+                regenerateSelfReference(newAdvisoryNode);
+            }
+
             AdvisoryEntity updated = EntityConverter.toEntity(newAdvisoryNode, existingEntity);
             AdvisoryEntity saved = postgresService.saveAdvisory(updated);
 
@@ -749,6 +787,24 @@ public class AdvisoryService {
         } else {
             throw new CsafException("User has no permission to edit the advisory", NoPermissionForAdvisory, UNAUTHORIZED);
         }
+    }
+
+    private boolean isCreateHtmlReference() {
+        return this.configuration.getWorkflow() != null && this.configuration.getWorkflow().isCreateHtmlReference();
+    }
+
+    private void regenerateSelfReference(AdvisoryWrapper advisoryNode) {
+        advisoryNode.generateOrUpdateSelfReference(this.referencesBaseUrl, isCreateHtmlReference());
+    }
+
+    private AdvisoryWrapper finalizePublication(AdvisoryWrapper advisoryNode, String proposedTime) throws CsafException, IOException {
+        AdvisoryWrapper releaseReadyNode = createReleaseReadyAdvisoryAndValidate(advisoryNode, proposedTime);
+        setFinalTrackingId(releaseReadyNode);
+        if (this.selfRefRegenerationMode == SelfRefRegenerationMode.ALWAYS
+                || (this.selfRefRegenerationMode == SelfRefRegenerationMode.INITIAL && releaseReadyNode.getLastMajorVersion() < 1)) {
+            regenerateSelfReference(releaseReadyNode);
+        }
+        return releaseReadyNode;
     }
 
     /**
@@ -780,7 +836,7 @@ public class AdvisoryService {
         checkAdvisoryRevision(existingEntity, revision);
 
         AdvisoryWrapper oldAdvisoryNode = AdvisoryWrapper.createCopy(existingAdvisoryNode);
-        setFinalTrackingIdAndUrl(existingAdvisoryNode);
+        setFinalTrackingId(existingAdvisoryNode);
         existingAdvisoryNode.setRevision(revision);
 
         AdvisoryEntity updated = EntityConverter.toEntity(existingAdvisoryNode, existingEntity);
@@ -929,7 +985,7 @@ public class AdvisoryService {
 
             if (newWorkflowState == WorkflowState.Review
                     && this.trackingIdAssignmentPhase == TrackingIdAssignmentPhase.REVIEW) {
-                setFinalTrackingIdAndUrl(existingAdvisoryNode);
+                setFinalTrackingId(existingAdvisoryNode);
             }
 
             if (newWorkflowState == WorkflowState.RfPublication) {
@@ -953,19 +1009,13 @@ public class AdvisoryService {
                     throw new CsafException("TLP-Level missing", CsafExceptionKey.AdvisoryValidationError, BAD_REQUEST);
                 }
                 //TODO: Check, if further checks for upload are needed
-
-                existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
-                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
-                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
-                }
+                
+                existingAdvisoryNode = finalizePublication(existingAdvisoryNode, proposedTime);
             }
 
             if (newWorkflowState == WorkflowState.Published && (previousWorkflowState != WorkflowState.AutoPublish)) {
 
-                existingAdvisoryNode = createReleaseReadyAdvisoryAndValidate(existingAdvisoryNode, proposedTime);
-                if (existingAdvisoryNode.getLastMajorVersion() < 1) {
-                    setFinalTrackingIdAndUrl(existingAdvisoryNode);
-                }
+                existingAdvisoryNode = finalizePublication(existingAdvisoryNode, proposedTime);
             }
 
             // Persist workflow audit trail
@@ -991,21 +1041,19 @@ public class AdvisoryService {
     }
 
     /**
-     * Set the final tracking id in the advisory and a DocumentReferencesNode with the url.
+     * Set the final tracking id in the advisory, unless a final tracking id is already assigned.
      *
      * @param advisoryNode the node to set the tracking id
      * @throws CsafException error creating counter
      */
-    void setFinalTrackingIdAndUrl(AdvisoryWrapper advisoryNode) throws CsafException {
+    void setFinalTrackingId(AdvisoryWrapper advisoryNode) throws CsafException {
 
         if (advisoryNode.isFinalTrackingIdAssigned()) {
             return;
         }
 
         final long sequentialNumber = getNewTrackingIdCounter(TrackingIdCounter.FINAL_OBJECT_ID);
-        final boolean createHtmlReference = this.configuration.getWorkflow() != null
-                && this.configuration.getWorkflow().isCreateHtmlReference();
-        advisoryNode.setFinalTrackingIdAndUrl(this.referencesBaseUrl, this.trackingidCompany, this.trackingidDigits, sequentialNumber, createHtmlReference);
+        advisoryNode.setFinalTrackingId(this.trackingidCompany, this.trackingidDigits, sequentialNumber);
     }
 
     private AdvisoryWrapper createReleaseReadyAdvisoryAndValidate(AdvisoryWrapper advisory,
