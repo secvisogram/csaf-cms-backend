@@ -270,9 +270,10 @@ public class AdvisoryService {
      * @param newCsafJson the advisory as JSON
      * @return a tuple of assigned id as UUID and the current revision for concurrent control
      * @throws JacksonException if the given JSON string is not valid
+     * @throws DatabaseException when an existing advisory could not be updated with a newer version
      */
     @Secured({CsafRoles.ROLE_PUBLISHER})
-    public IdAndRevision importAdvisory(JsonNode newCsafJson) throws IOException, CsafException {
+    public IdAndRevision importAdvisory(JsonNode newCsafJson) throws IOException, DatabaseException, CsafException {
 
         LOG.debug("importAdvisory");
         Authentication credentials = getAuthentication();
@@ -280,7 +281,8 @@ public class AdvisoryService {
         return importAdvisoryForCredentials(newCsafJson, credentials);
     }
 
-    IdAndRevision importAdvisoryForCredentials(JsonNode nodeToImport, Authentication credentials) throws IOException, CsafException {
+    IdAndRevision importAdvisoryForCredentials(JsonNode nodeToImport, Authentication credentials)
+            throws IOException, DatabaseException, CsafException {
         return importAdvisoryForUser(nodeToImport, credentials.getName());
     }
 
@@ -290,23 +292,25 @@ public class AdvisoryService {
      *
      * @param nodeToImport the advisory as JSON
      * @return a tuple of ID and revision of the imported advisory
-     * @throws IOException   when there are errors reading a file
-     * @throws CsafException when there are errors processing the advisory
-     *                       this could be invalid CSAF documents, importing a duplicate or importing an advisory which
-     *                       is not in interim or final status
+     * @throws IOException       when there are errors reading a file
+     * @throws DatabaseException when an existing advisory could not be updated with a newer version
+     * @throws CsafException     when there are errors processing the advisory
+     *                           this could be invalid CSAF documents, importing a duplicate, importing a version that
+     *                           is not newer than the existing one or importing an advisory which is not in interim or
+     *                           final status
      */
-    public IdAndRevision importAdvisoryForSystem(JsonNode nodeToImport) throws IOException, CsafException {
+    public IdAndRevision importAdvisoryForSystem(JsonNode nodeToImport)
+            throws IOException, DatabaseException, CsafException {
         return importAdvisoryForUser(nodeToImport, "_SYSTEM_IMPORT_");
     }
 
-    IdAndRevision importAdvisoryForUser(JsonNode nodeToImport, String userName) throws IOException, CsafException {
+    IdAndRevision importAdvisoryForUser(JsonNode nodeToImport, String userName)
+            throws IOException, DatabaseException, CsafException {
 
-        UUID advisoryId = UUID.randomUUID();
         if (!ValidatorServiceClient.isCsafValid(this.validationBaseUrl, nodeToImport)) {
             throw new CsafException("Advisory is no valid CSAF document",
                     CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
         }
-        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(userName);
         AdvisoryWrapper newAdvisoryNode = AdvisoryWrapper.importNewFromCsaf(nodeToImport, userName);
 
         String documentTrackingStatus = newAdvisoryNode.getDocumentTrackingStatus();
@@ -316,22 +320,126 @@ public class AdvisoryService {
                     CsafExceptionKey.AdvisoryValidationError, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
-        Map<String, Object> selector = expr2CouchDBFilter(equal(newAdvisoryNode.getDocumentTrackingId(), DOCUMENT_TRACKING_ID.getDbName()));
-        List<JsonNode> docList = findDocuments(selector, List.of(ID_FIELD));
-        if (!docList.isEmpty()) {
-            throw new CsafException("Trying to import a duplicate advisory (identical tracking ID)", DuplicateImport, UNPROCESSABLE_ENTITY);
+        AdvisoryWrapper existingAdvisory = readAdvisoryForTrackingId(newAdvisoryNode.getDocumentTrackingId());
+        if (existingAdvisory != null) {
+            return importNewVersionOfAdvisory(existingAdvisory, newAdvisoryNode, userName);
         }
+        return importInitialVersionOfAdvisory(newAdvisoryNode, userName);
+    }
 
+    private IdAndRevision importInitialVersionOfAdvisory(AdvisoryWrapper newAdvisoryNode, String userName)
+            throws IOException {
+
+        UUID advisoryId = UUID.randomUUID();
+        AdvisoryWrapper emptyAdvisory = AdvisoryWrapper.createInitialEmptyAdvisoryForUser(userName);
         AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(emptyAdvisory, newAdvisoryNode)
                 .setAdvisoryId(advisoryId.toString())
                 .setChangeType(ChangeType.Create)
                 .setUser(userName);
 
-
         String revision = couchDbService.writeDocument(advisoryId, newAdvisoryNode.advisoryAsString());
         this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
 
         return new IdAndRevision(advisoryId.toString(), revision);
+    }
+
+    private IdAndRevision importNewVersionOfAdvisory(AdvisoryWrapper existingAdvisory, AdvisoryWrapper newAdvisoryNode,
+            String userName) throws IOException, DatabaseException, CsafException {
+        checkIsNewerVersionOfAdvisory(existingAdvisory, newAdvisoryNode);
+
+        String advisoryId = existingAdvisory.getAdvisoryId();
+        // keep a copy of the version that is replaced before the imported one takes its place
+        AdvisoryWrapper advisoryVersionBackup = AdvisoryWrapper.createVersionFrom(existingAdvisory);
+        AdvisoryWrapper newVersionNode = AdvisoryWrapper.importNewVersionOf(existingAdvisory, newAdvisoryNode);
+
+        AuditTrailWrapper auditTrail = AdvisoryAuditTrailDiffWrapper.createNewFromAdvisories(existingAdvisory, newVersionNode)
+                .setAdvisoryId(advisoryId)
+                .setChangeType(ChangeType.Update)
+                .setUser(userName);
+
+        this.couchDbService.writeDocument(UUID.randomUUID(), auditTrail.auditTrailAsString());
+        this.couchDbService.writeDocument(UUID.randomUUID(), advisoryVersionBackup.advisoryAsString());
+        String revision = this.couchDbService.updateDocument(newVersionNode.advisoryAsString());
+
+        return new IdAndRevision(advisoryId, revision);
+    }
+
+    /**
+     * Check whether the advisory to import can replace the given existing advisory as a newer version of it
+     *
+     * @param existingAdvisory the advisory that is already in the system
+     * @param newAdvisoryNode  the advisory to import
+     * @throws CsafException when the advisory to import is not a newer version of the existing advisory
+     */
+    private void checkIsNewerVersionOfAdvisory(AdvisoryWrapper existingAdvisory, AdvisoryWrapper newAdvisoryNode)
+            throws CsafException {
+
+        WorkflowState existingWorkflowState = existingAdvisory.getWorkflowState();
+        if (existingWorkflowState != WorkflowState.Published) {
+            throw new CsafException("The existing advisory is in state " + existingWorkflowState
+                    + " and cannot be replaced by an import, only a published advisory can be superseded",
+                    AdvisoryNotPublished, UNPROCESSABLE_ENTITY);
+        }
+
+        String trackingId = newAdvisoryNode.getDocumentTrackingId();
+        String existingVersion = existingAdvisory.getDocumentTrackingVersion();
+        String newVersion = newAdvisoryNode.getDocumentTrackingVersion();
+        if (existingVersion.isBlank() || newVersion.isBlank()) {
+            throw new CsafException("Trying to import a duplicate advisory (identical tracking ID " + trackingId
+                    + "), the advisory in the system or the document to import has no tracking version",
+                    DuplicateImport, UNPROCESSABLE_ENTITY);
+        }
+        if (existingVersion.equals(newVersion)) {
+            throw new CsafException("Trying to import a duplicate advisory, version " + newVersion + " of "
+                    + trackingId + " is already in the system", DuplicateImport, UNPROCESSABLE_ENTITY);
+        }
+
+        Versioning existingVersioning = existingAdvisory.getVersioningStrategy();
+        VersioningType newVersioningType = Versioning.detectStrategy(newVersion).getVersioningType();
+        if (existingVersioning.getVersioningType() != newVersioningType) {
+            throw new CsafException("The advisory to import uses " + newVersioningType + " versioning, but "
+                    + trackingId + " in the system is at version " + existingVersion + " and uses "
+                    + existingVersioning.getVersioningType() + " versioning",
+                    ImportVersioningTypeMismatch, UNPROCESSABLE_ENTITY);
+        }
+
+        int versionComparison;
+        try {
+            versionComparison = existingVersioning.compareVersions(newVersion, existingVersion);
+        } catch (RuntimeException versionError) {
+            throw new CsafException("Version " + newVersion + " of the advisory to import cannot be compared to"
+                    + " version " + existingVersion + " of " + trackingId + " already in the system",
+                    OutdatedImport, UNPROCESSABLE_ENTITY);
+        }
+        if (versionComparison <= 0) {
+            throw new CsafException("Version " + newVersion + " of " + trackingId + " is not newer than version "
+                    + existingVersion + " already in the system", OutdatedImport, UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    /**
+     * Read the advisory with the given document tracking ID
+     *
+     * @param documentTrackingId the tracking ID to search for
+     * @return the advisory with the given tracking ID or null when there is none
+     * @throws IOException       when there are errors reading the advisory
+     * @throws DatabaseException when the advisory found for the tracking ID could not be read
+     * @throws CsafException     when the stored advisory is no valid CSAF document
+     */
+    @Nullable
+    private AdvisoryWrapper readAdvisoryForTrackingId(String documentTrackingId)
+            throws IOException, DatabaseException, CsafException {
+
+        Map<String, Object> selector = expr2CouchDBFilter(new AndExpression(
+                equal(ObjectType.Advisory.name(), TYPE_FIELD.getDbName()),
+                equal(documentTrackingId, DOCUMENT_TRACKING_ID.getDbName())));
+        List<JsonNode> docList = findDocuments(selector, List.of(ID_FIELD));
+        if (docList.isEmpty()) {
+            return null;
+        }
+        try (InputStream advisoryStream = couchDbService.readDocumentAsStream(ID_FIELD.stringVal(docList.get(0)))) {
+            return AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        }
     }
 
     /**
