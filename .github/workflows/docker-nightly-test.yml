@@ -8,12 +8,11 @@ on:
     - cron: '0 2 * * *' # 02:00 UTC
   workflow_dispatch:
 
-permissions:
-  contents: read
-  security-events: write
-
 jobs:
   check-latest-backend-images:
+    permissions:
+      contents: read
+      security-events: write
     name: Check latest CMS backend images
     runs-on: ubuntu-latest
     steps:
