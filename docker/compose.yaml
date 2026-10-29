@@ -169,13 +169,18 @@ services:
       retries: 10
 
   backend-cms:
-    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.7
+    image: ghcr.io/secvisogram/csaf-cms-backend:2.0.0-RC1
     env_file: ../.env
     environment:
       # Internal service names, only reachable from inside this container. The values in ../.env
       # (localhost-based) remain correct for running the backend on the host via
       # "./mvnw spring-boot:run" during debugging.
       CSAF_DB_HOST: cms-db
+      CSAF_DB_PORT: 5432
+      # Same values that create the database above, so docker/.env is the only place to set them.
+      CSAF_DB_NAME: ${CSAF_DB_NAME:?CSAF_DB_NAME is not set in docker/.env}
+      CSAF_DB_USER: ${CSAF_DB_USER:?CSAF_DB_USER is not set in docker/.env}
+      CSAF_DB_PASSWORD: ${CSAF_DB_PASSWORD:?CSAF_DB_PASSWORD is not set in docker/.env}
       CSAF_VALIDATION_BASE_URL: "http://validator:8082/api/v1"
       CSAF_OIDC_JWKS_URL: "http://keycloak:8080/realms/${CSAF_REALM}/protocol/openid-connect/certs"
       CSAF_AUTOPUBLISH_URL: "http://reverse-proxy/cgi-bin/csaf_provider.go/api/upload"
