@@ -1,27 +1,16 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryEntity;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryVersionEntity;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AuditTrailCommentEntity;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AuditTrailDocumentEntity;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AuditTrailWorkflowEntity;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.CommentEntity;
-import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.AdvisoryWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.json.CommentWrapper;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AnswerInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.CommentInformationResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import tools.jackson.databind.JsonNode;
+
 import java.time.Instant;
 import java.util.UUID;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Utility class for converting between JPA entities and the domain wrapper objects
@@ -40,46 +29,13 @@ public final class EntityConverter {
 
     /**
      * Build an {@link AdvisoryWrapper} from a persisted {@link AdvisoryEntity}.
-     *
-     * <p>The wrapper node is constructed to be structurally identical to what
-     * {@code AdvisoryWrapper.createFromStream} would produce, with synthetic
-     * {@code _id} and {@code _rev} fields populated from the entity's primary key
-     * and optimistic-lock version respectively.</p>
-     *
+     **
      * @param entity the advisory entity to convert
      * @return an AdvisoryWrapper backed by the entity data
-     * @throws IOException   if the CSAF JSON cannot be serialised/parsed
-     * @throws CsafException if the resulting node is not of type Advisory
      */
-    public static AdvisoryWrapper toWrapper(AdvisoryEntity entity) throws IOException, CsafException {
+    public static AdvisoryWrapper toWrapper(AdvisoryEntity entity) {
 
-        ObjectMapper mapper = new JsonMapper();
-        ObjectNode node = mapper.createObjectNode();
-        node.put("_id", entity.getId().toString());
-        node.put("_rev", String.valueOf(entity.getVersion()));
-        node.put("type", "Advisory");
-        node.put("workflowState", entity.getWorkflowState());
-        node.put("owner", entity.getOwner());
-        if (entity.getCsaf() != null) {
-            node.set("csaf", entity.getCsaf());
-        }
-        node.put("versioningType", entity.getVersioningType());
-        if (entity.getLastMajorVersion() != null) {
-            node.put("lastMajorVersion", entity.getLastMajorVersion());
-        }
-        if (entity.getTmpTrackingId() != null) {
-            node.put("tmpTrackingId", entity.getTmpTrackingId());
-        }
-        if (entity.getAdvisoryReference() != null) {
-            node.put("advisoryReference", entity.getAdvisoryReference().toString());
-        }
-        if (entity.getCreatedAt() != null) {
-            node.put("createdAt", entity.getCreatedAt().toString());
-        }
-
-        String json = node.toString();
-        return AdvisoryWrapper.createFromStream(
-                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        return AdvisoryWrapper.createFromEntity(entity);
     }
 
     /**

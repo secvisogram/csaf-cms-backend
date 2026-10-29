@@ -19,6 +19,7 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryEntity;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -68,6 +69,45 @@ public class AdvisoryWrapper {
         }
 
         return advisoryFromDb;
+    }
+
+    /**
+     * Create an advisory wrapper from its persisted entity representation.
+     *
+     * <p>The resulting wrapper has the same structure as an advisory loaded from
+     * the legacy database, including synthetic {@code _id} and {@code _rev}
+     * fields derived from the entity identity and optimistic-lock version.</p>
+     *
+     * @param entity the persisted advisory entity with sorted CSAF
+     * @return an advisory wrapper backed by the entity data
+     */
+    public static AdvisoryWrapper createFromEntity(AdvisoryEntity entity) {
+
+        ObjectMapper mapper = new JsonMapper();
+        ObjectNode node = mapper.createObjectNode();
+        node.put("_id", entity.getId().toString());
+        node.put("_rev", String.valueOf(entity.getVersion()));
+        node.put("type", "Advisory");
+        node.put("workflowState", entity.getWorkflowState());
+        node.put("owner", entity.getOwner());
+        if (entity.getCsaf() != null) {
+            node.set("csaf", CsafJsonSorter.sortRecursively(entity.getCsaf()));
+        }
+        node.put("versioningType", entity.getVersioningType());
+        if (entity.getLastMajorVersion() != null) {
+            node.put("lastMajorVersion", entity.getLastMajorVersion());
+        }
+        if (entity.getTmpTrackingId() != null) {
+            node.put("tmpTrackingId", entity.getTmpTrackingId());
+        }
+        if (entity.getAdvisoryReference() != null) {
+            node.put("advisoryReference", entity.getAdvisoryReference().toString());
+        }
+        if (entity.getCreatedAt() != null) {
+            node.put("createdAt", entity.getCreatedAt().toString());
+        }
+
+        return new AdvisoryWrapper(node);
     }
 
     /**
