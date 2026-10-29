@@ -126,6 +126,16 @@ public class PostgresRepositoryService {
     }
 
     /**
+     * Look up an advisory by its CSAF tracking ID.
+     *
+     * @param trackingId the CSAF document tracking ID
+     * @return an Optional containing the entity, or empty if there is none
+     */
+    public Optional<AdvisoryEntity> findAdvisoryByTrackingId(String trackingId) {
+        return advisoryRepository.findByTrackingId(trackingId);
+    }
+
+    /**
      * Check whether an advisory with the given CSAF tracking ID already exists.
      *
      * @param trackingId the CSAF document tracking ID
