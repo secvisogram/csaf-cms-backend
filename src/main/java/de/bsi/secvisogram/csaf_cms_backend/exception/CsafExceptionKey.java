@@ -17,5 +17,6 @@ public enum CsafExceptionKey {
     OutdatedImport,
     ImportVersioningTypeMismatch,
     AdvisoryNotPublished,
-    TrackingIdAlreadyAssigned;
+    TrackingIdAlreadyAssigned,
+    CsafHasWrongRevision;
 }

@@ -2,7 +2,7 @@ package de.bsi.secvisogram.csaf_cms_backend;
 
 import static java.util.Comparator.comparing;
 
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.json.Versioning;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;

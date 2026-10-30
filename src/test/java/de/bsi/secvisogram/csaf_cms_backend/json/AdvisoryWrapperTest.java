@@ -21,6 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryEntity;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
@@ -32,6 +33,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,7 +66,7 @@ public class AdvisoryWrapperTest {
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest() throws IOException, CsafException {
+    public void createFromStreamTest() throws IOException, CsafException {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -79,7 +82,7 @@ public class AdvisoryWrapperTest {
                     "_id": "%s"}""".formatted(revision, id);
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
-        var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        var advisory = AdvisoryWrapper.createFromStream(advisoryStream);
 
         assertThat(advisory.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(advisory.getWorkflowStateString(), equalTo("Draft"));
@@ -90,8 +93,68 @@ public class AdvisoryWrapperTest {
     }
 
     @Test
+    public void createFromEntityMapsPersistedFieldsAndSortsCsaf() {
+
+        UUID advisoryId = UUID.randomUUID();
+        UUID advisoryReference = UUID.randomUUID();
+        Instant createdAt = Instant.parse("2026-10-29T10:15:30Z");
+        AdvisoryEntity entity = new AdvisoryEntity();
+        entity.setId(advisoryId);
+        entity.setVersion(3L);
+        entity.setWorkflowState("Draft");
+        entity.setOwner("test-user");
+        entity.setVersioningType("Semantic");
+        entity.setLastMajorVersion("2");
+        entity.setTmpTrackingId("TEMP-123");
+        entity.setAdvisoryReference(advisoryReference);
+        entity.setCreatedAt(createdAt);
+        entity.setCsaf(new JsonMapper().readTree("""
+                {
+                  "vulnerabilities": [{ "zebra": 1, "alpha": 2 }],
+                  "document": { "tracking": { "version": "1.0.0", "id": "CSAF-2026-1" } }
+                }
+                """));
+
+        AdvisoryWrapper advisory = AdvisoryWrapper.createFromEntity(entity);
+
+        assertEquals(advisoryId.toString(), advisory.getAdvisoryId());
+        assertEquals("3", advisory.getRevision());
+        assertEquals("Draft", advisory.getWorkflowStateString());
+        assertEquals("test-user", advisory.getOwner());
+        assertEquals("Semantic", advisory.getVersioningType());
+        assertEquals("2", advisory.getLastVersion());
+        assertEquals("TEMP-123", advisory.getTempTrackingIdInFromMeta());
+        assertEquals(advisoryReference.toString(), advisory.getAdvisoryReference());
+        assertEquals(createdAt.toString(), advisory.at("/createdAt").asString());
+        assertEquals(List.of("document", "vulnerabilities"), propertyNames(advisory.getCsaf()));
+        assertEquals(List.of("alpha", "zebra"), propertyNames(advisory.at("/csaf/vulnerabilities/0")));
+    }
+
+    @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest_noType() throws IOException, CsafException {
+    public void createVersionFromTest_setsAdvisoryReference() throws IOException, CsafException {
+
+        var advisoryId = "id-aaa-bbb";
+        var advisoryDbString = """
+                {   "type": "Advisory",
+                    "csaf": { "document": {
+                                "category": "CSAF_BASE"
+                              }
+                            },
+                    "_rev": "rev-aa-12",
+                    "_id": "%s"}""".formatted(advisoryId);
+
+        var advisoryToClone = AdvisoryWrapper.createFromStream(
+                new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8)));
+
+        AdvisoryWrapper newAdvisory = AdvisoryWrapper.createVersionFrom(advisoryToClone);
+
+        assertEquals(advisoryToClone.getAdvisoryId(), newAdvisory.getAdvisoryReference());
+    }
+
+    @Test
+    @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
+    public void createFromStreamTest_noType() {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -108,13 +171,13 @@ public class AdvisoryWrapperTest {
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
 
         CsafException exception = assertThrows(CsafException.class,
-                () -> AdvisoryWrapper.createFromCouchDb(advisoryStream));
+                () -> AdvisoryWrapper.createFromStream(advisoryStream));
         assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
     }
 
     @Test
     @SuppressFBWarnings(value = "CE_CLASS_ENVY", justification = "Only for Test")
-    public void createFromCouchDbTest_wrongType() {
+    public void createFromStreamTest_wrongType() {
 
         var revision = "rev-aa-12";
         var id = "id-aaa-bbb";
@@ -132,7 +195,7 @@ public class AdvisoryWrapperTest {
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
 
         CsafException exception = assertThrows(CsafException.class,
-                () -> AdvisoryWrapper.createFromCouchDb(advisoryStream));
+                () -> AdvisoryWrapper.createFromStream(advisoryStream));
         assertThat(exception.getRecommendedHttpState(), equalTo(HttpStatus.BAD_REQUEST));
     }
 
@@ -164,7 +227,7 @@ public class AdvisoryWrapperTest {
 
 
         var advisoryStream = new ByteArrayInputStream(advisoryDbString.getBytes(StandardCharsets.UTF_8));
-        var advisory = AdvisoryWrapper.createFromCouchDb(advisoryStream);
+        var advisory = AdvisoryWrapper.createFromStream(advisoryStream);
         AdvisoryWrapper updatedWrapper = AdvisoryWrapper.updateFromExisting(advisory, csafToRequest(updateCsafJson));
         assertThat(updatedWrapper.getWorkflowState(), equalTo(WorkflowState.Draft));
         assertThat(updatedWrapper.getOwner(), equalTo("Musterfrau"));
@@ -506,7 +569,7 @@ public class AdvisoryWrapperTest {
     }
 
     @Test
-    public void calculateFileNameTest() throws IOException, CsafException {
+    public void calculateFileNameTest() {
 
         assertEquals("exxcellent-2023-00333.json", calculateFileName("eXXcellent-2023-00333", ".json"));
         assertEquals("exxcellent-2023-00333.html", calculateFileName("eXXcellent-2023-00333", ".html"));
@@ -517,7 +580,7 @@ public class AdvisoryWrapperTest {
    }
 
     @Test
-    public void formatNumberTest() throws IOException, CsafException {
+    public void formatNumberTest() {
 
         assertEquals("0000790", AdvisoryWrapper.formatNumber("7", 790));
         assertEquals("00790", AdvisoryWrapper.formatNumber("abc", 790));
@@ -702,5 +765,9 @@ public class AdvisoryWrapperTest {
         assertEquals("HTML URL generated by system", advisory.at("/csaf/document/references/1/summary").asString());
         assertEquals("self", advisory.at("/csaf/document/references/1/category").asString());
         assertEquals("tempExamle-TEMP-0000123", advisory.getTempTrackingIdInFromMeta());
+    }
+
+    private List<String> propertyNames(tools.jackson.databind.JsonNode node) {
+        return node.properties().stream().map(Map.Entry::getKey).toList();
     }
 }

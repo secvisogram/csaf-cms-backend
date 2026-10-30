@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,6 +23,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -34,7 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  * <a href="https://github.com/secvisogram/csaf-cms-backend/issues/103">issue #103</a>.
  */
 @SpringBootTest(properties = {"csaf.workflow.allowOwnDocumentsApproved=true"})
-@ExtendWith(CouchDBExtension.class)
+@ExtendWith(PostgreSQLExtension.class)
 @DirtiesContext
 @SpringJUnitConfig
 class OnStartupImporterIntegrationTest {
@@ -48,7 +47,7 @@ class OnStartupImporterIntegrationTest {
     private AdvisoryService advisoryService;
 
     @Autowired
-    private CouchDbService couchDbService;
+    private JdbcTemplate jdbc;
 
     @Test
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_EDITOR})
@@ -100,10 +99,12 @@ class OnStartupImporterIntegrationTest {
     @WithMockUser(username = "editor", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_EDITOR})
     void aMalformedAdvisoryInTheDatabaseDoesNotStopTheImportRun(@TempDir Path importDir) throws Exception {
 
-        // an advisory without a workflowState - e.g. written by an older schema or edited by hand.
-        // Reading it makes WorkflowState.valueOf(null) throw an unchecked exception while the import
-        // checks whether the stored advisory may be replaced.
-        couchDbService.writeDocument(UUID.randomUUID(), advisoryWithoutWorkflowState(TRACKING_ID, "1.0.0"));
+        // an advisory with a workflow state the application does not know - e.g. written by another version
+        // or edited by hand. Reading it makes WorkflowState.valueOf(...) throw an unchecked exception while the
+        // import checks whether the stored advisory may be replaced.
+        jdbc.update("INSERT INTO advisories (workflow_state, owner, csaf, tracking_id, versioning_type)"
+                + " VALUES ('NoSuchState', 'someone', ?::jsonb, ?, 'Semantic')",
+                csafWithTrackingId(TRACKING_ID, "1.0.0"), TRACKING_ID);
 
         Files.writeString(importDir.resolve("newer-release.json"), csafDocument(TRACKING_ID, "2.0.0"));
         Files.writeString(importDir.resolve("other-advisory.json"), csafDocument("CSAF-CMS-103-OTHER", "1.0.0"));
@@ -120,22 +121,17 @@ class OnStartupImporterIntegrationTest {
                 "an unrelated advisory should still be imported");
     }
 
-    private static String advisoryWithoutWorkflowState(String trackingId, String version) {
+    private static String csafWithTrackingId(String trackingId, String version) {
 
         return """
                {
-                 "type": "Advisory",
-                 "owner": "someone",
-                 "versioningType": "Semantic",
-                 "csaf": {
-                   "document": {
-                     "category": "CSAF Base",
-                     "title": "Advisory without a workflow state",
-                     "tracking": {
-                       "id": "%s",
-                       "status": "final",
-                       "version": "%s"
-                     }
+                 "document": {
+                   "category": "CSAF Base",
+                   "title": "Advisory with an unknown workflow state",
+                   "tracking": {
+                     "id": "%s",
+                     "status": "final",
+                     "version": "%s"
                    }
                  }
                }""".formatted(trackingId, version);

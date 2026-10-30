@@ -1,13 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.ADVISORY_ID;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryAuditTrailField.DOC_VERSION;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CHANGE_TYPE;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.AuditTrailField.CREATED_AT;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDBFilterCreator.expr2CouchDBFilter;
-import static de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField.TYPE_FIELD;
 import static de.bsi.secvisogram.csaf_cms_backend.fixture.CsafDocumentJsonCreator.csafToInputstream;
-import static de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression.equal;
 import static java.util.Comparator.comparing;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -15,33 +8,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
-import de.bsi.secvisogram.csaf_cms_backend.CouchDBExtension;
+import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisoryField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.AdvisorySearchField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbField;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.CouchDbService;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DatabaseException;
-import de.bsi.secvisogram.csaf_cms_backend.couchdb.DbField;
+import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
-import de.bsi.secvisogram.csaf_cms_backend.json.ObjectType;
 import de.bsi.secvisogram.csaf_cms_backend.model.ChangeType;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryResponse;
 import de.bsi.secvisogram.csaf_cms_backend.validator.ValidatorServiceClient;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -53,7 +39,7 @@ import tools.jackson.databind.json.JsonMapper;
  * Tests for importing several versions of one and the same advisory.
  */
 @SpringBootTest(properties = {"csaf.workflow.allowOwnDocumentsApproved=true"})
-@ExtendWith(CouchDBExtension.class)
+@ExtendWith(PostgreSQLExtension.class)
 @DirtiesContext
 @SpringJUnitConfig
 public class AdvisoryImportVersionsTest {
@@ -64,7 +50,7 @@ public class AdvisoryImportVersionsTest {
     private AdvisoryService advisoryService;
 
     @Autowired
-    private CouchDbService couchDbService;
+    private JdbcTemplate jdbc;
 
     // ---------------------------------------------------------------------------------------------------------------
     // importing a newer version of an already imported advisory
@@ -91,24 +77,24 @@ public class AdvisoryImportVersionsTest {
             assertEquals(WorkflowState.Published, live.getWorkflowState(),
                     "an imported version is already published");
 
-            assertEquals(1, readAllLiveAdvisoriesFromDb().size(),
+            assertEquals(1, countLiveAdvisories(),
                     "there should be exactly one live advisory document for the tracking ID");
 
             List<JsonNode> snapshots = readAllAdvisoryVersionsFromDb();
             assertEquals(1, snapshots.size(), "the replaced version should be kept as an AdvisoryVersion snapshot");
             assertEquals("1.0.0", trackingVersionOf(snapshots.get(0)),
                     "the snapshot should hold the version that was replaced");
-            assertEquals(firstImport.getId(), AdvisoryField.ADVISORY_REFERENCE.stringVal(snapshots.get(0)),
+            assertEquals(firstImport.getId(), snapshots.get(0).get("advisoryReference").asString(),
                     "the snapshot should reference the live advisory");
 
-            List<JsonNode> auditTrails = readAllAdvisoryAuditTrailsFromDb();
-            auditTrails.sort(comparing(CREATED_AT::stringVal));
+            List<AuditTrailRow> auditTrails = readAllAdvisoryAuditTrailsFromDb();
+            auditTrails.sort(comparing(AuditTrailRow::createdAt));
             assertEquals(2, auditTrails.size(), "both imports should be recorded in the audit trail");
-            assertEquals(ChangeType.Create.name(), CHANGE_TYPE.stringVal(auditTrails.get(0)),
+            assertEquals(ChangeType.Create.name(), auditTrails.get(0).changeType(),
                     "the first import creates the advisory");
-            assertEquals(ChangeType.Update.name(), CHANGE_TYPE.stringVal(auditTrails.get(1)),
+            assertEquals(ChangeType.Update.name(), auditTrails.get(1).changeType(),
                     "importing a newer version updates the existing advisory");
-            assertEquals("1.1.0", DOC_VERSION.stringVal(auditTrails.get(1)),
+            assertEquals("1.1.0", auditTrails.get(1).docVersion(),
                     "the audit trail should record the newly imported version");
         }
     }
@@ -178,9 +164,7 @@ public class AdvisoryImportVersionsTest {
 
             List<JsonNode> snapshots = readAllAdvisoryVersionsFromDb();
             assertEquals(1, snapshots.size());
-            // read the whole snapshot document - readAllAdvisoryVersionsFromDb only projects a few fields, and
-            // getAdvisory cannot read an AdvisoryVersion because createFromCouchDb only accepts type Advisory
-            JsonNode snapshot = readFullDocumentFromDb(CouchDbField.ID_FIELD.stringVal(snapshots.get(0)));
+            JsonNode snapshot = snapshots.get(0);
             assertEquals("The first release", snapshot.at("/csaf/document/title").asString(),
                     "the snapshot should still hold the content of the version it replaced");
             assertEquals("CVE-2022-00001", snapshot.at("/csaf/vulnerabilities/0/cve").asString(),
@@ -224,7 +208,7 @@ public class AdvisoryImportVersionsTest {
             assertThrows(CsafException.class, () -> importAdvisory(TRACKING_ID, "1.0.0"),
                     "importing the very same version twice is still a duplicate");
 
-            assertEquals(1, readAllLiveAdvisoriesFromDb().size(), "the duplicate must not be stored");
+            assertEquals(1, countLiveAdvisories(), "the duplicate must not be stored");
             assertEquals(0, readAllAdvisoryVersionsFromDb().size(),
                     "a rejected import must not create a version snapshot");
         }
@@ -313,40 +297,33 @@ public class AdvisoryImportVersionsTest {
         return advisory.getCsaf().at("/document/tracking/version").asString();
     }
 
-    private static String trackingVersionOf(JsonNode couchDbDocument) {
-        return couchDbDocument.at("/csaf/document/tracking/version").asString();
+    private static String trackingVersionOf(JsonNode versionSnapshot) {
+        return versionSnapshot.at("/csaf/document/tracking/version").asString();
     }
 
-    private JsonNode readFullDocumentFromDb(String documentId) throws IOException, DatabaseException {
-
-        try (InputStream documentStream = couchDbService.readDocumentAsStream(documentId)) {
-            return new JsonMapper().readValue(documentStream, JsonNode.class);
-        }
+    private int countLiveAdvisories() {
+        return jdbc.queryForObject("SELECT count(*) FROM advisories", Integer.class);
     }
 
-    private List<JsonNode> readAllLiveAdvisoriesFromDb() throws IOException {
-        return readAllDocumentsOfType(ObjectType.Advisory);
+    /** The replaced versions, each as a node with the {@code advisoryReference} and the {@code csaf} document. */
+    private List<JsonNode> readAllAdvisoryVersionsFromDb() {
+
+        ObjectMapper mapper = new JsonMapper();
+        return jdbc.query("SELECT advisory_id::text AS advisory_id, csaf::text AS csaf FROM advisory_versions",
+                (rs, rowNum) -> mapper.createObjectNode()
+                        .put("advisoryReference", rs.getString("advisory_id"))
+                        .set("csaf", mapper.readTree(rs.getString("csaf"))));
     }
 
-    private List<JsonNode> readAllAdvisoryVersionsFromDb() throws IOException {
-        return readAllDocumentsOfType(ObjectType.AdvisoryVersion);
+    private record AuditTrailRow(Instant createdAt, String changeType, String docVersion) {
     }
 
-    private List<JsonNode> readAllDocumentsOfType(ObjectType objectType) throws IOException {
+    private List<AuditTrailRow> readAllAdvisoryAuditTrailsFromDb() {
 
-        Collection<DbField> fields = List.of(CouchDbField.ID_FIELD, AdvisoryField.ADVISORY_REFERENCE,
-                AdvisoryField.WORKFLOW_STATE, AdvisorySearchField.DOCUMENT_TRACKING_ID,
-                AdvisorySearchField.DOCUMENT_TRACKING_VERSION);
-        Map<String, Object> selector = expr2CouchDBFilter(equal(objectType.name(), TYPE_FIELD.getDbName()));
-        return advisoryService.findDocuments(selector, fields);
-    }
-
-    private List<JsonNode> readAllAdvisoryAuditTrailsFromDb() throws IOException {
-
-        Collection<DbField> fields = List.of(CouchDbField.ID_FIELD, ADVISORY_ID, CREATED_AT, CHANGE_TYPE, DOC_VERSION);
-        Map<String, Object> selector = expr2CouchDBFilter(
-                equal(ObjectType.AuditTrailDocument.name(), TYPE_FIELD.getDbName()));
-        return new ArrayList<>(advisoryService.findDocuments(selector, fields));
+        return new java.util.ArrayList<>(jdbc.query(
+                "SELECT created_at, change_type, doc_version FROM audit_trail_documents",
+                (rs, rowNum) -> new AuditTrailRow(rs.getTimestamp("created_at").toInstant(),
+                        rs.getString("change_type"), rs.getString("doc_version"))));
     }
 
     private static String csafDocumentWithContent(String trackingId, String version, String title, String cve) {

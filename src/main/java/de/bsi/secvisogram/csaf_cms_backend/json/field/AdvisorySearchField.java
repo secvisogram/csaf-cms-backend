@@ -1,4 +1,4 @@
-package de.bsi.secvisogram.csaf_cms_backend.couchdb;
+package de.bsi.secvisogram.csaf_cms_backend.json.field;
 
 public enum AdvisorySearchField implements DbField {
 
