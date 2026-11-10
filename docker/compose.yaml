@@ -4,7 +4,7 @@
 
 services:
   cms-couchdb:
-    image: couchdb:3.4
+    image: couchdb:3.4@sha256:d9b6609989f1d47822e84005946cecc2fd49e4be5e4f35da960d4379f6c60de0
     restart: on-failure
     env_file: .env
     environment:
@@ -22,7 +22,7 @@ services:
 
 
   keycloak-db:
-    image: postgres:17-alpine
+    image: postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
     container_name: keycloak-db
     volumes:
       - ./data/keycloak-db:/var/lib/postgresql/data
@@ -41,7 +41,7 @@ services:
       retries: 10
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.2
+    image: quay.io/keycloak/keycloak:26.7.2@sha256:9d1f1b2b7261ff53c66cb1092dfcdc34a5fb77e81f9e6a6e75b8b6a795de8067
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
@@ -90,7 +90,7 @@ services:
         exec /opt/keycloak/bin/kc.sh start-dev --verbose --import-realm
 
   oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0-alpine
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0-alpine@sha256:1e04100f7b44290bc39bf52412153bb27edfc6141f3529b67ea543737a689ae2
     container_name: oauth2-proxy
     env_file: .env
     environment:
@@ -157,7 +157,7 @@ services:
         condition: service_healthy
     
   validator:
-    image: ghcr.io/secvisogram/csaf-validator-service:3.0.2
+    image: ghcr.io/secvisogram/csaf-validator-service:3.0.2@sha256:a30918220b32315ce2d35c0532529235f3351ab37bbbb51a1dfb9a0b7626bf85
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
@@ -168,7 +168,7 @@ services:
       retries: 10 
 
   backend-cms:
-    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.7
+    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.7@sha256:0950552c5233f7f991c75873e33b5380153d3957bdb2ee5d205ca01a99735540
     env_file: ../.env
     environment:
       # Internal service names, only reachable from inside this container. The values in ../.env
@@ -198,7 +198,7 @@ services:
     restart: on-failure
 
   secvisogram:
-    image: ghcr.io/secvisogram/secvisogram:2.6.16
+    image: ghcr.io/secvisogram/secvisogram:2.6.16@sha256:4e3d18569ef088e82d47c3c7faadf0c6069bf48261cec5c3706978004fc48631
     volumes:
       - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
     healthcheck:
@@ -208,7 +208,7 @@ services:
       retries: 10
 
   reverse-proxy:
-    image:  nginx:1.27-alpine
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
     restart: on-failure
     ports:
       - "80:80" 
