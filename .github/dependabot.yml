@@ -8,4 +8,36 @@ updates:
   - package-ecosystem: "maven" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    groups:
+      maven-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+      - "/docker/container/trustedprovider"
+      - "/docker/container/uploader"
+    schedule:
+      interval: "daily"
+    groups:
+      docker-images:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "docker-compose"
+    directory: "/docker"
+    schedule:
+      interval: "daily"
+    groups:
+      docker-compose-images:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
