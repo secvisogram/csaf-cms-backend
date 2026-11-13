@@ -21,7 +21,7 @@ public class SwaggerConfiguration {
                 .info(new Info().title("Secvisogram 2.0 CSAF-Backend API")
                         .description("CSAF Content Management Systems: Secvisogram 2.0")
                         .version(buildProperties.getVersion())
-                        .license(new License().name("MIT").url("https://mit-license.org/")))
+                        .license(new License().name("Apache-2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .externalDocs(new ExternalDocumentation()
                         .description("Common Security Advisory Framework Version 2.0")
                         .url("https://docs.oasis-open.org/csaf/csaf/v2.0/csaf-v2.0.html"));
