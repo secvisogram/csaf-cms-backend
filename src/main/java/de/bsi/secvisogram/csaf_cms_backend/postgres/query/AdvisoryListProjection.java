@@ -1,4 +1,4 @@
-package de.bsi.secvisogram.csaf_cms_backend.postgres;
+package de.bsi.secvisogram.csaf_cms_backend.postgres.query;
 
 /**
  * Scalar values required to render an advisory in the list endpoint.

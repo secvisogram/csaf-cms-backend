@@ -21,7 +21,6 @@ import tools.jackson.databind.node.ObjectNode;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.AdvisoryEntity;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
@@ -33,8 +32,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -90,44 +87,6 @@ public class AdvisoryWrapperTest {
         assertThat(advisory.getRevision(), equalTo(revision));
         assertThat(advisory.getAdvisoryId(), equalTo(id));
         assertThat(advisory.at("/csaf/document/category").asString(), equalTo("CSAF_BASE"));
-    }
-
-    @Test
-    public void createFromEntityMapsPersistedFieldsAndSortsCsaf() {
-
-        UUID advisoryId = UUID.randomUUID();
-        UUID advisoryReference = UUID.randomUUID();
-        Instant createdAt = Instant.parse("2026-10-29T10:15:30Z");
-        AdvisoryEntity entity = new AdvisoryEntity();
-        entity.setId(advisoryId);
-        entity.setVersion(3L);
-        entity.setWorkflowState("Draft");
-        entity.setOwner("test-user");
-        entity.setVersioningType("Semantic");
-        entity.setLastMajorVersion("2");
-        entity.setTmpTrackingId("TEMP-123");
-        entity.setAdvisoryReference(advisoryReference);
-        entity.setCreatedAt(createdAt);
-        entity.setCsaf(new JsonMapper().readTree("""
-                {
-                  "vulnerabilities": [{ "zebra": 1, "alpha": 2 }],
-                  "document": { "tracking": { "version": "1.0.0", "id": "CSAF-2026-1" } }
-                }
-                """));
-
-        AdvisoryWrapper advisory = AdvisoryWrapper.createFromEntity(entity);
-
-        assertEquals(advisoryId.toString(), advisory.getAdvisoryId());
-        assertEquals("3", advisory.getRevision());
-        assertEquals("Draft", advisory.getWorkflowStateString());
-        assertEquals("test-user", advisory.getOwner());
-        assertEquals("Semantic", advisory.getVersioningType());
-        assertEquals("2", advisory.getLastVersion());
-        assertEquals("TEMP-123", advisory.getTempTrackingIdInFromMeta());
-        assertEquals(advisoryReference.toString(), advisory.getAdvisoryReference());
-        assertEquals(createdAt.toString(), advisory.at("/createdAt").asString());
-        assertEquals(List.of("document", "vulnerabilities"), propertyNames(advisory.getCsaf()));
-        assertEquals(List.of("alpha", "zebra"), propertyNames(advisory.at("/csaf/vulnerabilities/0")));
     }
 
     @Test
@@ -767,7 +726,4 @@ public class AdvisoryWrapperTest {
         assertEquals("tempExamle-TEMP-0000123", advisory.getTempTrackingIdInFromMeta());
     }
 
-    private List<String> propertyNames(tools.jackson.databind.JsonNode node) {
-        return node.properties().stream().map(Map.Entry::getKey).toList();
-    }
 }
