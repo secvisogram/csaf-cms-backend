@@ -6,6 +6,7 @@ public enum CsafExceptionKey {
     NoPermissionForAdvisory,
     InvalidDateTimeFormat,
     InvalidFilterExpression,
+    InvalidListParameter,
     UnknownExportFormat,
     ExportTimeout,
     InvalidObjectType,

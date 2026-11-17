@@ -13,18 +13,34 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Compiles a filter expression to SQL for a table with the given columns; selectors without a column use a JSON
- * path on the document.
+ * Compiles a filter expression to SQL for a table with the given columns. Not strict (list v1): selectors
+ * without a column use a JSON path on the document. Strict (paged list): only columns are accepted, everything
+ * else throws {@link UnsupportedFilterException}, and the selector {@code lastUpdated} addresses the column
+ * passed to {@link #compile(Expression, String)}.
  */
 final class SqlExpressionCompiler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SqlExpressionCompiler.class);
 
     private final List<Object> values = new ArrayList<>();
+    private final boolean strict;
     private final Map<String, ListColumn> columns;
+    /** Only set for the duration of {@link #compile(Expression, String)}. */
+    private String lastUpdatedColumn;
 
-    SqlExpressionCompiler(Map<String, ListColumn> columns) {
+    SqlExpressionCompiler(boolean strict, Map<String, ListColumn> columns) {
+        this.strict = strict;
         this.columns = columns;
+    }
+
+    /** Compiles a filter of the paged list, in which the selector lastUpdated addresses the given column. */
+    String compile(Expression expression, String lastUpdatedColumn) {
+        this.lastUpdatedColumn = lastUpdatedColumn;
+        try {
+            return compile(expression);
+        } finally {
+            this.lastUpdatedColumn = null;
+        }
     }
 
     String compile(Expression expression) {
@@ -53,19 +69,42 @@ final class SqlExpressionCompiler {
 
     private String compileOperator(OperatorExpression expression) {
         String[] selector = expression.getSelector();
+        if (selector == null) {
+            selector = new String[0];
+        }
+        if (strict && expression.getValueType() != TypeOfValue.Text) {
+            throw new UnsupportedFilterException("Only text values are supported, not "
+                    + expression.getValueType());
+        }
         if (selector.length == 1 && "owner".equals(selector[0])) {
             return columnComparison("owner", expression);
         }
         if (selector.length == 1 && "workflowState".equals(selector[0])) {
             return columnComparison("workflow_state", expression);
         }
+        if (strict && selector.length == 1 && "lastUpdated".equals(selector[0])) {
+            String sql = timestampComparison(lastUpdatedColumn, expression);
+            if (sql == null) {
+                throw new UnsupportedFilterException(
+                        "lastUpdated needs an ISO-8601 date-time with offset and a comparison operator");
+            }
+            return sql;
+        }
         int offset = selector.length > 0 && "csaf".equals(selector[0]) ? 1 : 0;
         if (offset == selector.length) {
+            if (strict) {
+                throw new UnsupportedFilterException("Missing selector");
+            }
             return "TRUE";
         }
         String column = columnForSelector(selector, offset, expression);
         if (column != null) {
             return column;
+        }
+        if (strict) {
+            throw new UnsupportedFilterException("Filter on " + String.join(".", selector)
+                    + " is not supported: no column, or a timestamp that is not an ISO-8601 date-time with "
+                    + "offset, or ContainsIgnoreCase on a timestamp");
         }
         String path = jsonPath(selector, offset);
         String comparisonPath = path + " ? (" + predicate(expression) + ")";

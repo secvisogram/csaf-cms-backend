@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SecvisogramApplication {
 
     public static final String BASE_ROUTE = "/api/v1/";
+    public static final String BASE_ROUTE_V2 = "/api/v2/";
 
     public static void main(String[] args) {
         SpringApplication.run(SecvisogramApplication.class, args);

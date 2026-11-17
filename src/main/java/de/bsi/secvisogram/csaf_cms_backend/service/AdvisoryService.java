@@ -4,10 +4,14 @@ import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListPage;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListProjection;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListSort;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListSortField;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryVersionListProjection;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.UnsupportedFilterException;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
@@ -198,6 +202,74 @@ public class AdvisoryService {
         }
         LOG.debug("End getAdvisoryInformations - readAllAdvisories");
         return allResponses;
+    }
+
+    /** Largest page size of {@link #getAdvisoryPage}. */
+    public static final int MAX_PAGE_SIZE = 500;
+
+    /**
+     * One page of the advisories the user may see; auditors also get the version snapshots, in the same sorted list.
+     * Filter and sort accept only fields that are stored as columns.
+     *
+     * @param expression optional filter expression as JSON, see the list endpoint
+     * @param page       zero-based page number
+     * @param size       entries per page, 1 to {@link #MAX_PAGE_SIZE}
+     * @param sort       sort criteria {@code field} or {@code field,asc|desc}; empty sorts by lastUpdated, newest first
+     * @throws CsafException BAD_REQUEST for an unsupported filter, sort field or page parameter
+     */
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    @Transactional(readOnly = true)
+    public AdvisoryPageResponse getAdvisoryPage(String expression, int page, int size, List<String> sort)
+            throws CsafException {
+
+        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
+            throw new CsafException("page must be >= 0 and size between 1 and " + MAX_PAGE_SIZE,
+                    InvalidListParameter, BAD_REQUEST);
+        }
+        List<AdvisoryListSort> sortCriteria = parseSort(sort);
+        Authentication credentials = getAuthentication();
+        Expression parsedExpr = parseFilterExpression(expression);
+
+        AdvisoryListPage result;
+        try {
+            result = advisoryListQueryService.findAdvisoryPage(parsedExpr, sortCriteria, page, size, credentials,
+                    hasRole(AUDITOR, credentials));
+        } catch (UnsupportedFilterException ex) {
+            throw new CsafException("Invalid filter expression: " + ex.getMessage(), InvalidFilterExpression,
+                    BAD_REQUEST);
+        }
+
+        List<AdvisoryInformationResponse> items = new ArrayList<>();
+        for (AdvisoryListPage.Entry entry : result.entries()) {
+            AdvisoryInformationResponse response = toAdvisoryInformationResponse(entry.projection());
+            if (entry.version()) {
+                response.setRevision(null);
+                enrichAdvisoryVersion(response);
+            } else {
+                enrichAdvisory(response, credentials);
+            }
+            items.add(response);
+        }
+        return new AdvisoryPageResponse(items, page, size, result.total());
+    }
+
+    private static List<AdvisoryListSort> parseSort(List<String> sort) throws CsafException {
+        if (sort == null || sort.isEmpty()) {
+            return List.of(new AdvisoryListSort(AdvisoryListSortField.LAST_UPDATED, true));
+        }
+        List<AdvisoryListSort> criteria = new ArrayList<>();
+        for (String criterion : sort) {
+            String[] parts = criterion.split(",", -1);
+            Optional<AdvisoryListSortField> field = AdvisoryListSortField.fromApiName(parts[0].trim());
+            String direction = parts.length > 1 ? parts[1].trim().toLowerCase(Locale.ROOT) : "asc";
+            if (field.isEmpty() || parts.length > 2 || !(direction.equals("asc") || direction.equals("desc"))) {
+                throw new CsafException("Invalid sort '" + criterion + "', expected field[,asc|desc] with field one of "
+                        + Arrays.stream(AdvisoryListSortField.values()).map(AdvisoryListSortField::getApiName).toList(),
+                        InvalidListParameter, BAD_REQUEST);
+            }
+            criteria.add(new AdvisoryListSort(field.get(), direction.equals("desc")));
+        }
+        return criteria;
     }
 
     private Expression parseFilterExpression(String expression) throws CsafException {
