@@ -17,7 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.StringUtils;
 
-import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryListQueryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
 
 @SpringBootTest(properties = {
