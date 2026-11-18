@@ -7,7 +7,7 @@ WORKDIR /app
 RUN bash /app/compile.sh
 
 # Create provider image
-FROM nginx:1.31-alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11 AS provider
+FROM nginx:1.31-alpine@sha256:fed7e14be83cbd2661a75cdc5b872d936cf155d46c327084d30b8df19ae88d72 AS provider
 
 COPY --from=base /usr/local/go/ /usr/local/go/
 COPY --from=base /app/csaf/bin-linux-amd64/csaf_provider /usr/lib/cgi-bin/csaf_provider.go
