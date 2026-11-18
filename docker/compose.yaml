@@ -160,7 +160,7 @@ services:
         condition: service_healthy
     
   validator:
-    image: ghcr.io/secvisogram/csaf-validator-service:3.0.2@sha256:a30918220b32315ce2d35c0532529235f3351ab37bbbb51a1dfb9a0b7626bf85
+    image: ghcr.io/secvisogram/csaf-validator-service:3.0.6@sha256:2a4a76039ab5091c84c30d6983f632f3f1e0ed6727d994edc81e6060852fbcf7
     env_file: .env
     ports:
       - "$CSAF_VALIDATOR_PORT:8082"
@@ -171,7 +171,7 @@ services:
       retries: 10 
 
   backend-cms:
-    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.7@sha256:0950552c5233f7f991c75873e33b5380153d3957bdb2ee5d205ca01a99735540
+    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.8
     env_file: ../.env
     environment:
       # Internal service names, only reachable from inside this container. The values in ../.env
@@ -204,7 +204,7 @@ services:
     restart: on-failure
 
   secvisogram:
-    image: ghcr.io/secvisogram/secvisogram:2.6.16@sha256:4e3d18569ef088e82d47c3c7faadf0c6069bf48261cec5c3706978004fc48631
+    image: ghcr.io/secvisogram/secvisogram:2.6.20@sha256:ad4bfa27c6b9d00ddc1e5f8d37eed8cd67fd4bc20c62fa7825d04c6b6448ce65
     volumes:
       - "./config/secvisogram/appspecific:/usr/share/nginx/html/.well-known/appspecific:ro"
     healthcheck:
@@ -275,4 +275,3 @@ services:
     depends_on:
       trusted-provider:
         condition: service_healthy
-    
