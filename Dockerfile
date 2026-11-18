@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:25-jdk@sha256:884a2f8692cc1e2c7e21f95914adf0ae0eafee9a7eb663a12169cc44468256ec AS build
 
 COPY . /build
 WORKDIR /build
@@ -9,7 +9,7 @@ RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 RUN ./mvnw dependency:copy-dependencies -DoutputDirectory=./target/dependency
 RUN ./mvnw package -DskipTests
 
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:25-jre@sha256:884a2f8692cc1e2c7e21f95914adf0ae0eafee9a7eb663a12169cc44468256ec
 
 ARG MAINTAINER
 ARG REPO_URL=https://github.com/secvisogram/csaf-cms-backend

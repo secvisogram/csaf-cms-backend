@@ -62,6 +62,9 @@ services:
       KC_HOSTNAME: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME}
       KC_HOSTNAME_ADMIN: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME}
 
+      # Interim mitigation for CVE-2026-114938 (Java4Shell); remove once the image ships a fixed JDK
+      JAVA_OPTS_APPEND: "-XX:-UseBASE64Intrinsics"
+
     healthcheck:
       start_period: 120s
       test:
