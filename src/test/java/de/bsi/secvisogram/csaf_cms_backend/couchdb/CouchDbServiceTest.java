@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 @SpringBootTest
 @ExtendWith(CouchDBExtension.class)
-@DirtiesContext
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class CouchDbServiceTest {
 
     private static final String[] ARRAY_FIELD_SELECTOR = {ARRAY_VALUES};
