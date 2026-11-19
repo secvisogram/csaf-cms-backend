@@ -22,7 +22,7 @@ services:
 
 
   keycloak-db:
-    image: postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
+    image: postgres:17-alpine@sha256:a77aa70e641402a21411b92b721c58d10f23b50ae5fdd2333efd22d166e1e5f7
     container_name: keycloak-db
     volumes:
       - ./data/keycloak-db:/var/lib/postgresql/data
