@@ -41,7 +41,7 @@ services:
       retries: 10
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.2@sha256:9d1f1b2b7261ff53c66cb1092dfcdc34a5fb77e81f9e6a6e75b8b6a795de8067
+    image: quay.io/keycloak/keycloak:26.8.2-3@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
     env_file: .env
     environment:
       # https://www.keycloak.org/server/all-config
@@ -61,9 +61,6 @@ services:
 
       KC_HOSTNAME: ${CSAF_KEYCLOAK_CLIENT_HOSTNAME}
       KC_HOSTNAME_ADMIN: ${CSAF_KEYCLOAK_ADMIN_HOSTNAME}
-
-      # Interim mitigation for CVE-2026-114938 (Java4Shell); remove once the image ships a fixed JDK
-      JAVA_OPTS_APPEND: "-XX:-UseBASE64Intrinsics"
 
     healthcheck:
       start_period: 120s
