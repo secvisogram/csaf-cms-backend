@@ -14,9 +14,9 @@ import java.util.Map;
 
 /**
  * Compiles a filter expression to SQL for a table with the given columns. Not strict (list v1): selectors
- * without a column use a JSON path on the document. Strict (paged list): only columns are accepted, everything
- * else throws {@link UnsupportedFilterException}, and the selector {@code lastUpdated} addresses the column
- * passed to {@link #compile(Expression, String)}.
+ * without a column use a JSON path on the document. Strict (paged list of advisories): only columns are
+ * accepted, everything else throws {@link UnsupportedFilterException}, and the selectors {@code lastUpdated}
+ * and {@code createdAt} address {@code updated_at} and {@code created_at}.
  */
 final class SqlExpressionCompiler {
 
@@ -25,22 +25,10 @@ final class SqlExpressionCompiler {
     private final List<Object> values = new ArrayList<>();
     private final boolean strict;
     private final Map<String, ListColumn> columns;
-    /** Only set for the duration of {@link #compile(Expression, String)}. */
-    private String lastUpdatedColumn;
 
     SqlExpressionCompiler(boolean strict, Map<String, ListColumn> columns) {
         this.strict = strict;
         this.columns = columns;
-    }
-
-    /** Compiles a filter of the paged list, in which the selector lastUpdated addresses the given column. */
-    String compile(Expression expression, String lastUpdatedColumn) {
-        this.lastUpdatedColumn = lastUpdatedColumn;
-        try {
-            return compile(expression);
-        } finally {
-            this.lastUpdatedColumn = null;
-        }
     }
 
     String compile(Expression expression) {
@@ -82,11 +70,16 @@ final class SqlExpressionCompiler {
         if (selector.length == 1 && "workflowState".equals(selector[0])) {
             return columnComparison("workflow_state", expression);
         }
-        if (strict && selector.length == 1 && "lastUpdated".equals(selector[0])) {
-            String sql = timestampComparison(lastUpdatedColumn, expression);
+        String metaTimestamp = selector.length != 1 ? null : switch (selector[0]) {
+            case "lastUpdated" -> "updated_at";
+            case "createdAt" -> "created_at";
+            default -> null;
+        };
+        if (strict && metaTimestamp != null) {
+            String sql = timestampComparison(metaTimestamp, expression);
             if (sql == null) {
-                throw new UnsupportedFilterException(
-                        "lastUpdated needs an ISO-8601 date-time with offset and a comparison operator");
+                throw new UnsupportedFilterException(selector[0]
+                        + " needs an ISO-8601 date-time with offset and a comparison operator");
             }
             return sql;
         }

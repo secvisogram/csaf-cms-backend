@@ -12,5 +12,6 @@ public record AdvisoryListProjection(
         String documentTrackingId,
         String title,
         String currentReleaseDate,
-        String lastUpdated) {
+        String lastUpdated,
+        String createdAt) {
 }

@@ -208,8 +208,8 @@ public class AdvisoryService {
     public static final int MAX_PAGE_SIZE = 500;
 
     /**
-     * One page of the advisories the user may see; auditors also get the version snapshots, in the same sorted list.
-     * Filter and sort accept only fields that are stored as columns.
+     * One page of the advisories the user may see. Unlike {@link #getAdvisoryInformations}, version snapshots are
+     * not listed, also not for auditors. Filter and sort accept only fields that are stored as columns.
      *
      * @param expression optional filter expression as JSON, see the list endpoint
      * @param page       zero-based page number
@@ -232,22 +232,16 @@ public class AdvisoryService {
 
         AdvisoryListPage result;
         try {
-            result = advisoryListQueryService.findAdvisoryPage(parsedExpr, sortCriteria, page, size, credentials,
-                    hasRole(AUDITOR, credentials));
+            result = advisoryListQueryService.findAdvisoryPage(parsedExpr, sortCriteria, page, size, credentials);
         } catch (UnsupportedFilterException ex) {
             throw new CsafException("Invalid filter expression: " + ex.getMessage(), InvalidFilterExpression,
                     BAD_REQUEST);
         }
 
         List<AdvisoryInformationResponse> items = new ArrayList<>();
-        for (AdvisoryListPage.Entry entry : result.entries()) {
-            AdvisoryInformationResponse response = toAdvisoryInformationResponse(entry.projection());
-            if (entry.version()) {
-                response.setRevision(null);
-                enrichAdvisoryVersion(response);
-            } else {
-                enrichAdvisory(response, credentials);
-            }
+        for (AdvisoryListProjection projection : result.advisories()) {
+            AdvisoryInformationResponse response = toAdvisoryInformationResponse(projection);
+            enrichAdvisory(response, credentials);
             items.add(response);
         }
         return new AdvisoryPageResponse(items, page, size, result.total());
@@ -301,6 +295,7 @@ public class AdvisoryService {
         response.setTitle(projection.title());
         response.setCurrentReleaseDate(projection.currentReleaseDate());
         response.setLastUpdated(projection.lastUpdated());
+        response.setCreatedAt(projection.createdAt());
         return response;
     }
 

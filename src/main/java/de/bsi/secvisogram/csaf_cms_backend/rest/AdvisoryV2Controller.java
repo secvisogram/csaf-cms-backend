@@ -55,9 +55,7 @@ public class AdvisoryV2Controller {
             summary = "Get one page of the authorized advisories.",
             tags = {"Advisory"},
             description = "Like GET /api/v1/advisories, but paged and sorted, and filter and sort accept only fields"
-                    + " stored as columns. Auditors also get the version snapshots of published advisories, in the"
-                    + " same sorted list. For a snapshot, revision is null and lastUpdated is the time the snapshot"
-                    + " was taken (v1 returns null there)."
+                    + " stored as columns. Version snapshots are not listed, also not for auditors."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "The page of advisories.",
@@ -74,22 +72,22 @@ public class AdvisoryV2Controller {
             array = @ArraySchema(schema = @Schema(type = "string", example = "title,asc")),
             description = """
                     Sort criteria, repeatable: field or field,asc or field,desc. Fields: workflowState, owner,
-                    lastUpdated, trackingId, title, currentReleaseDate, trackingVersion (text order), trackingStatus,
-                    category, tlp. Empty values sort last. Blank values are ignored. Default: lastUpdated,desc.
-                    Text fields sort by the collation of the database (e.g. under C or POSIX upper case comes
-                    before lower case).""")
+                    lastUpdated, createdAt, trackingId, title, currentReleaseDate, trackingVersion (text order),
+                    trackingStatus, category, tlp. Empty values sort last. Blank values are ignored.
+                    Default: lastUpdated,desc. Text fields sort by the collation of the database (e.g. under C or
+                    POSIX upper case comes before lower case).""")
     public ResponseEntity<?> listAdvisoryPage(
             @RequestParam(required = false)
             @Parameter(in = ParameterIn.QUERY, name = "expression",
                     description = """
                             The filter expression in JSON format, as for GET /api/v1/advisories, but only on these
                             selectors with valueType 'Text': ["owner"], ["workflowState"], ["lastUpdated"],
-                            ["csaf","document","tracking","id"], ["csaf","document","title"],
+                            ["createdAt"], ["csaf","document","tracking","id"], ["csaf","document","title"],
                             ["csaf","document","tracking","current_release_date"],
                             ["csaf","document","tracking","version"], ["csaf","document","tracking","status"],
                             ["csaf","document","category"], ["csaf","document","distribution","tlp","label"],
                             ["csaf","document","tracking","aliases"], ["csaf","vulnerabilities","cve"],
-                            ["csaf","vulnerabilities","ids","text"]. Date-times (lastUpdated,
+                            ["csaf","vulnerabilities","ids","text"]. Date-times (lastUpdated, createdAt,
                             current_release_date) are ISO-8601 with offset and compared as instants. On the array
                             fields (aliases, cve, ids text) an advisory matches if any element matches.""",
                     schema = @Schema(type = "string", format = "json"))

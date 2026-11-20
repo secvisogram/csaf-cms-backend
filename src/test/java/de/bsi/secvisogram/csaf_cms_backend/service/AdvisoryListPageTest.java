@@ -1,8 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
@@ -28,7 +26,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
- * The paged advisory list: paging, sort, column-only filters, visibility and version snapshots.
+ * The paged advisory list: paging, sort, column-only filters, visibility, and no version snapshots.
  */
 @SpringBootTest(properties = {
         "csaf.workflow.allowOwnDocumentsApproved=true",
@@ -59,10 +57,16 @@ public class AdvisoryListPageTest {
 
     /** Inserts an advisory as it is; updated_at is {@link #BASE_TIME} minus the given minutes. */
     private UUID insert(String owner, String workflowState, String csaf, int minutesBefore) {
+        return insert(owner, workflowState, csaf, minutesBefore, 60);
+    }
+
+    /** Like {@link #insert(String, String, String, int)}, with created_at {@link #BASE_TIME} minus createdBefore. */
+    private UUID insert(String owner, String workflowState, String csaf, int minutesBefore, int createdBefore) {
         UUID id = UUID.randomUUID();
         jdbc.update("INSERT INTO advisories (id, owner, workflow_state, csaf, created_at, updated_at) "
-                + "VALUES (?, ?, ?, ?, now(), CAST(? AS timestamptz) - make_interval(mins => ?))",
-                id, owner, workflowState, csaf, BASE_TIME, minutesBefore);
+                + "VALUES (?, ?, ?, ?, CAST(? AS timestamptz) - make_interval(mins => ?), "
+                + "CAST(? AS timestamptz) - make_interval(mins => ?))",
+                id, owner, workflowState, csaf, BASE_TIME, createdBefore, BASE_TIME, minutesBefore);
         return id;
     }
 
@@ -241,36 +245,43 @@ public class AdvisoryListPageTest {
 
     @Test
     @WithMockUser(username = "auditor1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
-    public void auditorGetsVersionsInTheSameSortedList() throws Exception {
-        UUID advisory = insert("author1", "Draft", csaf("B current", "ID-B", "draft", null, null), 0);
-        insertVersion(advisory, csaf("A snapshot", "ID-B", "final", "2024-01-01T00:00:00Z", null), 20);
-        insertVersion(advisory, csaf("C snapshot", "ID-B", "final", "2024-02-01T00:00:00Z", null), 10);
+    public void auditorGetsNoVersions() throws Exception {
+        UUID advisory = insert("author1", "Draft", csaf("current", "ID-1", "draft", null, null), 10);
+        insertVersion(advisory, csaf("snapshot", "ID-1", "final", null, null), 0);
 
-        AdvisoryPageResponse first = page(null, 0, 2, "title");
-        assertEquals(List.of("A snapshot", "B current"), titles(first));
-        assertEquals(3, first.totalElements());
-        AdvisoryInformationResponse snapshot = first.items().get(0);
-        assertEquals(advisory.toString(), snapshot.getAdvisoryId());
-        assertNull(snapshot.getRevision());
-        assertFalse(snapshot.isChangeable());
-        assertEquals(List.of("C snapshot"), titles(page(null, 1, 2, "title")));
-
-        AdvisoryPageResponse filtered = page(OperatorExpression.equal("final",
-                "csaf", "document", "tracking", "status"), 0, 10, "title");
-        assertEquals(List.of("A snapshot", "C snapshot"), titles(filtered));
-
-        // snapshots are filtered and sorted by their created_at, the advisory by updated_at
-        assertEquals(List.of("B current", "C snapshot", "A snapshot"), titles(page(null, 0, 10, "lastUpdated,desc")));
-        assertEquals("2025-01-01T11:50:00Z", page(null, 0, 10, "lastUpdated,desc").items().get(1).getLastUpdated());
-        assertEquals(List.of("B current", "C snapshot"), titles(page(OperatorExpression.greater(
-                "2025-01-01T11:45:00Z", "lastUpdated"), 0, 10, "lastUpdated,desc")));
+        AdvisoryPageResponse page = page(null, 0, 10);
+        assertEquals(List.of("current"), titles(page));
+        assertEquals(1, page.totalElements());
+        assertEquals("0", page.items().get(0).getRevision());
+        assertEquals(List.of(), titles(page(OperatorExpression.equal("final",
+                "csaf", "document", "tracking", "status"), 0, 10)));
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
-    public void authorDoesNotGetVersions() throws Exception {
-        UUID advisory = insert("author1", "Draft", csaf("current", "ID-1", "draft", null, null), 0);
-        insertVersion(advisory, csaf("snapshot", "ID-1", "final", null, null), 0);
-        assertEquals(List.of("current"), titles(page(null, 0, 10)));
+    public void filtersOnLastUpdated() throws Exception {
+        seedFive();
+        assertEquals(List.of("E", "D"), titles(page(OperatorExpression.greater(
+                "2025-01-01T11:57:30Z", "lastUpdated"), 0, 10, "lastUpdated,desc")));
+        assertEquals("2025-01-01T11:59:00Z", page(null, 0, 1).items().get(0).getLastUpdated());
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void filtersAndSortsByCreatedAt() throws Exception {
+        // created order is the reverse of the updated order
+        insert("author1", "Draft", csaf("first created", "ID-1", "draft", null, null), 1, 30);
+        insert("author1", "Draft", csaf("second created", "ID-2", "draft", null, null), 2, 20);
+        insert("author1", "Draft", csaf("third created", "ID-3", "draft", null, null), 3, 10);
+
+        assertEquals(List.of("first created", "second created", "third created"),
+                titles(page(null, 0, 10, "createdAt")));
+        assertEquals(List.of("third created", "second created", "first created"),
+                titles(page(null, 0, 10, "createdAt,desc")));
+        assertEquals(List.of("second created", "third created"), titles(page(OperatorExpression.greaterOrEqual(
+                "2025-01-01T13:40:00+02:00", "createdAt"), 0, 10, "createdAt")));
+        assertEquals("2025-01-01T11:30:00Z", page(null, 0, 1, "createdAt").items().get(0).getCreatedAt());
+        assertRejected(CsafExceptionKey.InvalidFilterExpression,
+                () -> page(OperatorExpression.containsIgnoreCase("2025", "createdAt"), 0, 10));
     }
 }
