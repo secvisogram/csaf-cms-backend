@@ -88,7 +88,7 @@ public class SemanticVersioning implements Versioning {
     @Override
     public String getNextVersion(PatchType changeType, String currentVersionString, String lastVersionString) {
 
-        Semver lastVersion = new Semver(lastVersionString);
+        Semver lastVersion = new Semver(lastVersionString != null ? lastVersionString : getZeroVersion());
         Semver oldVersion = new Semver(currentVersionString);
         Semver result;
         if (oldVersion.getMajor() == 0) {
