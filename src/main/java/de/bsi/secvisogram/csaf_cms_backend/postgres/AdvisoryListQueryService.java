@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /** Executes the advisory list query without selecting the large {@code csaf} column. */
 @Service
@@ -109,7 +110,7 @@ public class AdvisoryListQueryService {
         return credentials.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(role::equals);
     }
 
-    private static final class SqlExpressionCompiler {
+        private static final class SqlExpressionCompiler {
         private final List<Object> values = new ArrayList<>();
 
         private String compile(Expression expression) {
@@ -147,13 +148,211 @@ public class AdvisoryListQueryService {
             if (offset == selector.length) {
                 return "TRUE";
             }
+
+            // For Equal, use the @> containment operator which can leverage GIN indexes.
+            if (expression.getOperatorType() == TypeOfOperator.Equal) {
+                return compileContainment(selector, offset, expression);
+            }
+
             String path = jsonPath(selector, offset);
             String comparisonPath = path + " ? (" + predicate(expression) + ")";
-            String jsonPath = "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath) + " AS jsonpath)";
-            if (expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
-                return jsonPath + ")";
+            return "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath) + " AS jsonpath))";
+        }
+
+        /**
+         * CSAF array paths derived from the Secvisogram UI schema metadata for both
+         * CSAF 2.0 and CSAF 2.1. Each entry is a dotted path (without the leading
+         * {@code $}) whose last segment is an array in the CSAF JSON structure.
+         * The union of both versions ensures correct containment queries regardless
+         * of the document's CSAF version.
+         *
+         * @see <a href="https://github.com/secvisogram/secvisogram/blob/main/app/lib/uiSchemas/csaf_2_0/metaData.js">
+         *     metaData.js — Secvisogram CSAF 2.0 UI schema</a>
+         * @see <a href="https://github.com/secvisogram/secvisogram/blob/main/app/lib/uiSchemas/csaf_2_1/metaData.js">
+         *     metaData.js — Secvisogram CSAF 2.1 UI schema</a>
+         */
+        private static final Set<String> CSAF_ARRAY_PATHS = Set.of(
+                // --- document ---
+                "document.acknowledgments",
+                "document.acknowledgments.names",
+                "document.acknowledgments.urls",
+                "document.involvement.actions",                              // 2.1
+                "document.involvement.actions.acting_entity_refs",           // 2.1
+                "document.involvement.actions.dl_vuln_ids",                  // 2.1
+                "document.involvement.actions.group_ids",                    // 2.1
+                "document.involvement.actions.product_ids",                  // 2.1
+                "document.involvement.actions.receiving_entity_refs",        // 2.1
+                "document.involvement.actions.referenced_action_ids",        // 2.1
+                "document.involvement.entities",                             // 2.1
+                "document.involvement.entity_groups",                        // 2.1
+                "document.involvement.entity_groups.entity_ids",             // 2.1
+                "document.notes",
+                "document.notes.group_ids",                                  // 2.1
+                "document.notes.product_ids",                                // 2.1
+                "document.references",
+                "document.tracking.aliases",
+                "document.tracking.revision_history",
+                "document.x_extensions",                                     // 2.1
+                // --- product_tree ---
+                "product_tree.branches",
+                "product_tree.branches.product.product_identification_helper.hashes",
+                "product_tree.branches.product.product_identification_helper.hashes.file_hashes",
+                "product_tree.branches.product.product_identification_helper.model_numbers",
+                "product_tree.branches.product.product_identification_helper.purls",             // 2.1
+                "product_tree.branches.product.product_identification_helper.sbom_urls",
+                "product_tree.branches.product.product_identification_helper.serial_numbers",
+                "product_tree.branches.product.product_identification_helper.skus",
+                "product_tree.branches.product.product_identification_helper.x_generic_uris",
+                "product_tree.branches.product.x_extensions",                // 2.1
+                "product_tree.full_product_names",
+                "product_tree.full_product_names.product_identification_helper.hashes",
+                "product_tree.full_product_names.product_identification_helper.hashes.file_hashes",
+                "product_tree.full_product_names.product_identification_helper.model_numbers",
+                "product_tree.full_product_names.product_identification_helper.purls",           // 2.1
+                "product_tree.full_product_names.product_identification_helper.sbom_urls",
+                "product_tree.full_product_names.product_identification_helper.serial_numbers",
+                "product_tree.full_product_names.product_identification_helper.skus",
+                "product_tree.full_product_names.product_identification_helper.x_generic_uris",
+                "product_tree.full_product_names.x_extensions",              // 2.1
+                "product_tree.product_groups",
+                "product_tree.product_groups.product_ids",
+                "product_tree.product_paths",                                // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.hashes",          // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.hashes.file_hashes", // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.model_numbers",   // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.purls",           // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.sbom_urls",       // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.serial_numbers",  // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.skus",            // 2.1
+                "product_tree.product_paths.full_product_name.product_identification_helper.x_generic_uris", // 2.1
+                "product_tree.product_paths.full_product_name.x_extensions",                                  // 2.1
+                "product_tree.product_paths.subpaths",                       // 2.1
+                "product_tree.relationships",
+                "product_tree.relationships.full_product_name.product_identification_helper.hashes",
+                "product_tree.relationships.full_product_name.product_identification_helper.hashes.file_hashes",
+                "product_tree.relationships.full_product_name.product_identification_helper.model_numbers",
+                "product_tree.relationships.full_product_name.product_identification_helper.purls",           // 2.1
+                "product_tree.relationships.full_product_name.product_identification_helper.sbom_urls",
+                "product_tree.relationships.full_product_name.product_identification_helper.serial_numbers",
+                "product_tree.relationships.full_product_name.product_identification_helper.skus",
+                "product_tree.relationships.full_product_name.product_identification_helper.x_generic_uris",
+                // --- vulnerabilities ---
+                "vulnerabilities",
+                "vulnerabilities.acknowledgments",
+                "vulnerabilities.acknowledgments.names",
+                "vulnerabilities.acknowledgments.urls",
+                "vulnerabilities.cwes",                                      // 2.1
+                "vulnerabilities.first_known_exploitation_dates",            // 2.1
+                "vulnerabilities.first_known_exploitation_dates.group_ids",  // 2.1
+                "vulnerabilities.first_known_exploitation_dates.product_ids", // 2.1
+                "vulnerabilities.flags",
+                "vulnerabilities.flags.group_ids",
+                "vulnerabilities.flags.product_ids",
+                "vulnerabilities.ids",
+                "vulnerabilities.ids.group_ids",                             // 2.1
+                "vulnerabilities.ids.product_ids",                           // 2.1
+                "vulnerabilities.involvements",                              // 2.0
+                "vulnerabilities.metrics",                                   // 2.1
+                "vulnerabilities.metrics.content.x_extensions",              // 2.1
+                "vulnerabilities.metrics.products",                          // 2.1
+                "vulnerabilities.notes",
+                "vulnerabilities.notes.group_ids",                           // 2.1
+                "vulnerabilities.notes.product_ids",                         // 2.1
+                "vulnerabilities.product_status.first_affected",
+                "vulnerabilities.product_status.first_fixed",
+                "vulnerabilities.product_status.fixed",
+                "vulnerabilities.product_status.known_affected",
+                "vulnerabilities.product_status.known_not_affected",
+                "vulnerabilities.product_status.last_affected",
+                "vulnerabilities.product_status.recommended",
+                "vulnerabilities.product_status.under_investigation",
+                "vulnerabilities.product_status.unknown",                    // 2.1
+                "vulnerabilities.references",
+                "vulnerabilities.remediations",
+                "vulnerabilities.remediations.entitlements",
+                "vulnerabilities.remediations.group_ids",
+                "vulnerabilities.remediations.product_ids",
+                "vulnerabilities.scores",                                    // 2.0
+                "vulnerabilities.scores.products",                           // 2.0
+                "vulnerabilities.threats",
+                "vulnerabilities.threats.group_ids",
+                "vulnerabilities.threats.product_ids",
+                "vulnerabilities.x_extensions",                              // 2.1
+                // --- top-level ---
+                "x_extensions"                                               // 2.1
+        );
+
+        /**
+         * Returns whether the CSAF path up to and including segment index {@code end}
+         * (relative to the selector starting at {@code offset}) denotes an array.
+         * The path is built as {@code selector[offset] + "." + … + selector[end]}.
+         */
+        private static boolean isArrayPath(String[] selector, int offset, int end) {
+            StringBuilder path = new StringBuilder();
+            for (int i = offset; i <= end; i++) {
+                if (i > offset) path.append('.');
+                path.append(selector[i]);
             }
-            return jsonPath + ", jsonb_build_object('value', to_jsonb(" + bindValue(expression) + ")))";
+            return CSAF_ARRAY_PATHS.contains(path.toString());
+        }
+
+        /**
+         * Compiles an Equal expression using the {@code @>} containment operator,
+         * which can leverage GIN indexes on the {@code csaf} column or sub-paths.
+         *
+         * <p>Uses the CSAF schema metadata ({@link #CSAF_ARRAY_PATHS}) to determine
+         * which intermediate levels are arrays and wraps only those levels in
+         * {@code jsonb_build_array(…)}, producing a single containment expression
+         * instead of an exponential number of OR-branches.</p>
+         *
+         * <p>For a selector like {@code ["csaf", "document", "tracking", "revision_history", "summary"]}
+         * with value {@code "some text"}, the method knows that {@code revision_history}
+         * is an array and generates:</p>
+         * <pre>
+         *   csaf @> jsonb_build_object('document',
+         *            jsonb_build_object('tracking',
+         *              jsonb_build_object('revision_history',
+         *                jsonb_build_array(
+         *                  jsonb_build_object('summary', to_jsonb(:p1::text))))))
+         * </pre>
+         *
+         * @see <a href="https://github.com/secvisogram/secvisogram/blob/main/app/lib/uiSchemas/csaf_2_1/metaData.js">
+         *     Secvisogram CSAF 2.1 metaData.js</a>
+         */
+        private String compileContainment(String[] selector, int offset, OperatorExpression expression) {
+            String leafKey = selector[selector.length - 1];
+
+            String valueParam = bindText(expression.getValue());
+            String typedValue = switch (expression.getValueType()) {
+                case Text -> "to_jsonb(CAST(" + valueParam + " AS text))";
+                case Decimal -> "to_jsonb(CAST(" + valueParam + " AS numeric))";
+                case Boolean -> "to_jsonb(CAST(" + valueParam + " AS boolean))";
+            };
+
+            // Start from the leaf: {"leafKey": typedValue}
+            String inner = "jsonb_build_object(" + bindText(leafKey) + ", " + typedValue + ")";
+
+            int segmentCount = selector.length - offset;
+            if (segmentCount == 1) {
+                // Top-level key (e.g. csaf.title): csaf @> {"title": "value"}.
+                return "csaf @> " + inner;
+            }
+
+            // Build inside-out from the second-to-last segment up to the first.
+            // At each level, wrap the inner value in jsonb_build_array if the
+            // path up to that segment is a known array, otherwise wrap in an object.
+            for (int i = selector.length - 2; i >= offset; i--) {
+                String key = bindText(selector[i]);
+                if (isArrayPath(selector, offset, i)) {
+                    // This segment is an array: wrap the inner object in an array first,
+                    // then nest it under the key.
+                    inner = "jsonb_build_object(" + key + ", jsonb_build_array(" + inner + "))";
+                } else {
+                    inner = "jsonb_build_object(" + key + ", " + inner + ")";
+                }
+            }
+
+            return "csaf @> " + inner;
         }
 
         private String columnComparison(String column, OperatorExpression expression) {
@@ -170,15 +369,27 @@ public class AdvisoryListQueryService {
         }
 
         private String predicate(OperatorExpression expression) {
+            String literal = jsonPathLiteral(expression);
             return switch (expression.getOperatorType()) {
-                case Equal -> "@ == $value";
-                case NotEqual -> "@ != $value";
-                case Greater -> "@ > $value";
-                case GreaterOrEqual -> "@ >= $value";
-                case Less -> "@ < $value";
-                case LessOrEqual -> "@ <= $value";
+                case Equal -> "@ == " + literal;
+                case NotEqual -> "@ != " + literal;
+                case Greater -> "@ > " + literal;
+                case GreaterOrEqual -> "@ >= " + literal;
+                case Less -> "@ < " + literal;
+                case LessOrEqual -> "@ <= " + literal;
                 case ContainsIgnoreCase -> "@ like_regex " + jsonPathStringLiteral(
                         ".*" + escapeRegex(expression.getValue()) + ".*") + " flag \"i\"";
+            };
+        }
+
+        /**
+         * Returns a jsonpath literal for the expression's value, properly typed.
+         * Strings are double-quoted and escaped, numerics and booleans are bare.
+         */
+        private String jsonPathLiteral(OperatorExpression expression) {
+            return switch (expression.getValueType()) {
+                case Text -> jsonPathStringLiteral(expression.getValue());
+                case Decimal, Boolean -> expression.getValue();
             };
         }
 
