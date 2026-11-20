@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.postgres.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,8 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.Mutability;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -30,21 +30,10 @@ public class AdvisoryEntity {
     @Column(nullable = false)
     private String owner;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", nullable = false)
+    @Convert(converter = JsonNodeTextConverter.class)
+    @Mutability(JsonNodeMutabilityPlan.class)
+    @Column(columnDefinition = "text", nullable = false)
     private JsonNode csaf;
-
-    // Set from csaf.document.tracking.id.
-    @Column(name = "tracking_id")
-    private String trackingId;
-
-    // Set from csaf.document.title.
-    @Column(name = "document_title", columnDefinition = "text")
-    private String documentTitle;
-
-    // Set from csaf.document.tracking.current_release_date.
-    @Column(name = "current_release_date")
-    private Instant currentReleaseDate;
 
     @Column(name = "versioning_type", nullable = false)
     private String versioningType = "Semantic";
@@ -98,30 +87,6 @@ public class AdvisoryEntity {
 
     public void setCsaf(JsonNode csaf) {
         this.csaf = csaf;
-    }
-
-    public String getTrackingId() {
-        return trackingId;
-    }
-
-    public void setTrackingId(String trackingId) {
-        this.trackingId = trackingId;
-    }
-
-    public String getDocumentTitle() {
-        return documentTitle;
-    }
-
-    public void setDocumentTitle(String documentTitle) {
-        this.documentTitle = documentTitle;
-    }
-
-    public Instant getCurrentReleaseDate() {
-        return currentReleaseDate;
-    }
-
-    public void setCurrentReleaseDate(Instant currentReleaseDate) {
-        this.currentReleaseDate = currentReleaseDate;
     }
 
     public String getVersioningType() {

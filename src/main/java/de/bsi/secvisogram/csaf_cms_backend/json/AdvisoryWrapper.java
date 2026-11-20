@@ -78,7 +78,7 @@ public class AdvisoryWrapper {
      * the legacy database, including synthetic {@code _id} and {@code _rev}
      * fields derived from the entity identity and optimistic-lock version.</p>
      *
-     * @param entity the persisted advisory entity with sorted CSAF
+     * @param entity the persisted advisory entity
      * @return an advisory wrapper backed by the entity data
      */
     public static AdvisoryWrapper createFromEntity(AdvisoryEntity entity) {
@@ -91,7 +91,7 @@ public class AdvisoryWrapper {
         node.put("workflowState", entity.getWorkflowState());
         node.put("owner", entity.getOwner());
         if (entity.getCsaf() != null) {
-            node.set("csaf", CsafJsonSorter.sortRecursively(entity.getCsaf()));
+            node.set("csaf", entity.getCsaf());
         }
         node.put("versioningType", entity.getVersioningType());
         if (entity.getLastMajorVersion() != null) {
