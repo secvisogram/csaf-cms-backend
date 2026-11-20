@@ -412,6 +412,9 @@ public class AdvisoryWrapper {
 
     public int getLastMajorVersion() {
         String lastVersion = getTextFor(AdvisoryField.LAST_VERSION);
+        if (lastVersion == null) {
+            return 0;
+        }
         if (usesSemanticVersioning()) {
             return new Semver(lastVersion).getMajor();
         } else {
