@@ -19,7 +19,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
- * The columns derived from the csaf text by the {@code csaf_extract_list_columns} trigger, and the filters that use them.
+ * The columns derived from the csaf text by the {@code csaf_extract_list_columns} trigger, the paged list (v2) filters
+ * that use them, and the list v1 filters, which use the JSON path on the document instead.
  */
 @SpringBootTest(properties = {
         "csaf.workflow.allowOwnDocumentsApproved=true",
@@ -65,8 +66,15 @@ public class AdvisoryListColumnsTest {
         insert(GAMMA);
     }
 
+    /** The number of advisories the list v1 finds; it filters CSAF selectors by the JSON path. */
     private int count(OperatorExpression filter) throws Exception {
         return advisoryService.getAdvisoryInformations(AdvisorySearchUtil.expression2Json(filter)).size();
+    }
+
+    /** The number of advisories the paged list (v2) finds; it filters CSAF selectors by the columns. */
+    private int countV2(OperatorExpression filter) throws Exception {
+        return Math.toIntExact(advisoryService.getAdvisoryPage(AdvisorySearchUtil.expression2Json(filter), 0, 500,
+                List.of()).totalElements());
     }
 
     @Test
@@ -171,7 +179,7 @@ public class AdvisoryListColumnsTest {
         assertEquals("6.4", String.valueOf(row.get("critical")));
     }
 
-    /** The publisher name and the initial release date are CSAF paths, so the v1 filter uses their columns. */
+    /** The publisher name and the initial release date are CSAF paths, so the v2 filter uses their columns. */
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void publisherAndInitialReleaseDateColumns() throws Exception {
@@ -183,11 +191,11 @@ public class AdvisoryListColumnsTest {
                   "tracking": {"initial_release_date": "2024-03-01T00:00:00Z"}}}""");
         String[] publisher = {"csaf", "document", "publisher", "name"};
         String[] initial = {"csaf", "document", "tracking", "initial_release_date"};
-        assertEquals(1, count(OperatorExpression.equal("Example Inc.", publisher)));
-        assertEquals(2, count(OperatorExpression.containsIgnoreCase("e", publisher)));
+        assertEquals(1, countV2(OperatorExpression.equal("Example Inc.", publisher)));
+        assertEquals(2, countV2(OperatorExpression.containsIgnoreCase("e", publisher)));
         // the same instant as One, written with another offset
-        assertEquals(1, count(OperatorExpression.equal("2024-01-01T08:00:00Z", initial)));
-        assertEquals(1, count(OperatorExpression.greater("2024-02-01T00:00:00Z", initial)));
+        assertEquals(1, countV2(OperatorExpression.equal("2024-01-01T08:00:00Z", initial)));
+        assertEquals(1, countV2(OperatorExpression.greater("2024-02-01T00:00:00Z", initial)));
     }
 
     private Map<String, Object> isdubaColumns() {
@@ -237,32 +245,32 @@ public class AdvisoryListColumnsTest {
     public void arrayColumns() throws Exception {
         seed();
         String[] cve = {"csaf", "vulnerabilities", "cve"};
-        assertEquals(2, count(OperatorExpression.equal("CVE-2024-0002", cve)));
-        assertEquals(1, count(OperatorExpression.equal("CVE-2024-0001", cve)));
-        assertEquals(0, count(OperatorExpression.equal("CVE-9999-0001", cve)));
+        assertEquals(2, countV2(OperatorExpression.equal("CVE-2024-0002", cve)));
+        assertEquals(1, countV2(OperatorExpression.equal("CVE-2024-0001", cve)));
+        assertEquals(0, countV2(OperatorExpression.equal("CVE-9999-0001", cve)));
         // some element differs, as with a JSON path over an array; a document without any cve never matches
-        assertEquals(2, count(OperatorExpression.notEqual("CVE-2024-0001", cve)));
-        assertEquals(2, count(OperatorExpression.containsIgnoreCase("cve-2024-000", cve)));
-        assertEquals(1, count(OperatorExpression.containsIgnoreCase("0001", cve)));
+        assertEquals(2, countV2(OperatorExpression.notEqual("CVE-2024-0001", cve)));
+        assertEquals(2, countV2(OperatorExpression.containsIgnoreCase("cve-2024-000", cve)));
+        assertEquals(1, countV2(OperatorExpression.containsIgnoreCase("0001", cve)));
 
-        assertEquals(1, count(OperatorExpression.equal("VID-2", "csaf", "vulnerabilities", "ids", "text")));
-        assertEquals(1, count(OperatorExpression.equal("alias-two", "csaf", "document", "tracking", "aliases")));
-        assertEquals(1, count(OperatorExpression.containsIgnoreCase("ALIAS", "document", "tracking", "aliases")));
+        assertEquals(1, countV2(OperatorExpression.equal("VID-2", "csaf", "vulnerabilities", "ids", "text")));
+        assertEquals(1, countV2(OperatorExpression.equal("alias-two", "csaf", "document", "tracking", "aliases")));
+        assertEquals(1, countV2(OperatorExpression.containsIgnoreCase("ALIAS", "document", "tracking", "aliases")));
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
     public void textColumns() throws Exception {
         seed();
-        assertEquals(1, count(OperatorExpression.equal("2", "csaf", "document", "tracking", "version")));
-        assertEquals(1, count(OperatorExpression.equal("final", "csaf", "document", "tracking", "status")));
-        assertEquals(2, count(OperatorExpression.equal("csaf_base", "csaf", "document", "category")));
-        assertEquals(1, count(OperatorExpression.equal("ID-B", "csaf", "document", "tracking", "id")));
-        assertEquals(1, count(OperatorExpression.containsIgnoreCase("amm", "document", "title")));
-        assertEquals(1, count(OperatorExpression.equal("AMBER", "csaf", "document", "distribution", "tlp", "label")));
-        assertEquals(1, count(OperatorExpression.equal("WHITE", "document", "distribution", "tlp", "label")));
+        assertEquals(1, countV2(OperatorExpression.equal("2", "csaf", "document", "tracking", "version")));
+        assertEquals(1, countV2(OperatorExpression.equal("final", "csaf", "document", "tracking", "status")));
+        assertEquals(2, countV2(OperatorExpression.equal("csaf_base", "csaf", "document", "category")));
+        assertEquals(1, countV2(OperatorExpression.equal("ID-B", "csaf", "document", "tracking", "id")));
+        assertEquals(1, countV2(OperatorExpression.containsIgnoreCase("amm", "document", "title")));
+        assertEquals(1, countV2(OperatorExpression.equal("AMBER", "csaf", "document", "distribution", "tlp", "label")));
+        assertEquals(1, countV2(OperatorExpression.equal("WHITE", "document", "distribution", "tlp", "label")));
         // without the leading csaf
-        assertEquals(1, count(OperatorExpression.equal("draft", "document", "tracking", "status")));
+        assertEquals(1, countV2(OperatorExpression.equal("draft", "document", "tracking", "status")));
     }
 
     @Test
@@ -271,22 +279,28 @@ public class AdvisoryListColumnsTest {
         seed();
         String[] date = {"csaf", "document", "tracking", "current_release_date"};
         // the same instant as Alpha, written with another offset
-        assertEquals(1, count(OperatorExpression.equal("2024-05-01T08:00:00Z", date)));
-        assertEquals(1, count(OperatorExpression.greater("2024-05-15T00:00:00Z", date)));
-        assertEquals(1, count(OperatorExpression.less("2024-05-15T00:00:00Z", date)));
-        assertEquals(2, count(OperatorExpression.lessOrEqual("2024-06-01T00:00:00Z", date)));
+        assertEquals(1, countV2(OperatorExpression.equal("2024-05-01T08:00:00Z", date)));
+        assertEquals(1, countV2(OperatorExpression.greater("2024-05-15T00:00:00Z", date)));
+        assertEquals(1, countV2(OperatorExpression.less("2024-05-15T00:00:00Z", date)));
+        assertEquals(2, countV2(OperatorExpression.lessOrEqual("2024-06-01T00:00:00Z", date)));
     }
 
     @Test
     @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
-    public void filtersTheColumnsCannotAnswerUseTheJsonPath() throws Exception {
+    public void theV1FilterUsesTheJsonPath() throws Exception {
         seed();
+        // the date is compared as text, so the same instant as Alpha with another offset does not match (v2 does)
+        assertEquals(0, count(OperatorExpression.equal("2024-05-01T08:00:00Z", "csaf", "document", "tracking",
+                "current_release_date")));
+        assertEquals(1, count(OperatorExpression.equal("2024-05-01T10:00:00+02:00", "csaf", "document", "tracking",
+                "current_release_date")));
+        assertEquals(2, count(OperatorExpression.equal("CVE-2024-0002", "csaf", "vulnerabilities", "cve")));
         // not a timestamp, and a substring of one: both only make sense on the text in the document
         assertEquals(0, count(OperatorExpression.equal("yesterday", "csaf", "document", "tracking", "current_release_date")));
         assertEquals(1, count(OperatorExpression.containsIgnoreCase("2024-05", "document", "tracking", "current_release_date")));
         // a number is never equal to a string
         assertEquals(0, count(OperatorExpression.equal(1.0, "csaf", "document", "title")));
-        // a selector without a column
+        // a selector without a column in v2
         assertEquals(1, count(OperatorExpression.equal("s", "csaf", "vulnerabilities", "ids", "system_name")));
     }
 

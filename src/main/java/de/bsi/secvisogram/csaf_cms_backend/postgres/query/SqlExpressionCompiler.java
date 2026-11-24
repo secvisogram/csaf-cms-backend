@@ -1,9 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.postgres.query;
 
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -14,15 +11,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Compiles a filter expression to SQL for a table with the given columns. Not strict (list v1): selectors
- * without a column use a JSON path on the document. Strict (paged list of advisories): only columns are
- * accepted, everything else throws {@link UnsupportedFilterException}, the selectors {@code lastUpdated}
- * and {@code createdAt} address {@code updated_at} and {@code created_at}, and the named numbers of
- * {@link #NUMBER_COLUMNS} take Decimal values.
+ * Compiles a filter expression to SQL.
+ * <ul>
+ *   <li>{@link #lenient()} (list v1): {@code owner} and {@code workflowState} use their columns, every CSAF
+ *   selector uses a JSON path on the document.</li>
+ *   <li>{@link #strict(Map)} (paged list of advisories, v2): only columns are accepted, everything else throws
+ *   {@link UnsupportedFilterException}. CSAF selectors use the given list columns, {@code lastUpdated} and
+ *   {@code createdAt} address {@code updated_at} and {@code created_at}, and the named numbers of
+ *   {@link #NUMBER_COLUMNS} take Decimal values.</li>
+ * </ul>
  */
 final class SqlExpressionCompiler {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SqlExpressionCompiler.class);
 
     /**
      * Named numbers of the paged list. They are aggregates (the highest CVSS base score, critical as v4, else v3,
@@ -35,13 +34,33 @@ final class SqlExpressionCompiler {
             "critical", "critical",
             "revisionHistoryLength", "revision_history_length");
 
+    /** The meta selectors of both modes that are plain columns of the table. */
+    private static final Map<String, String> META_COLUMNS = Map.of(
+            "owner", "owner",
+            "workflowState", "workflow_state");
+
+    /** The meta selectors of the strict mode that are timestamp columns. */
+    private static final Map<String, String> META_TIMESTAMP_COLUMNS = Map.of(
+            "lastUpdated", "updated_at",
+            "createdAt", "created_at");
+
     private final List<Object> values = new ArrayList<>();
     private final boolean strict;
     private final Map<String, ListColumn> columns;
 
-    SqlExpressionCompiler(boolean strict, Map<String, ListColumn> columns) {
+    private SqlExpressionCompiler(boolean strict, Map<String, ListColumn> columns) {
         this.strict = strict;
         this.columns = columns;
+    }
+
+    /** Filters CSAF selectors by a JSON path on the document. */
+    static SqlExpressionCompiler lenient() {
+        return new SqlExpressionCompiler(false, Map.of());
+    }
+
+    /** Filters on columns only; CSAF selectors must be keys of {@code columns}. */
+    static SqlExpressionCompiler strict(Map<String, ListColumn> columns) {
+        return new SqlExpressionCompiler(true, columns);
     }
 
     String compile(Expression expression) {
@@ -69,52 +88,58 @@ final class SqlExpressionCompiler {
     }
 
     private String compileOperator(OperatorExpression expression) {
+        return strict ? compileOperatorStrict(expression) : compileOperatorLenient(expression);
+    }
+
+    /** Columns only: anything else throws with the reason. */
+    private String compileOperatorStrict(OperatorExpression expression) {
         String[] selector = expression.getSelector();
-        String numberColumn = selector.length == 1 ? NUMBER_COLUMNS.get(selector[0]) : null;
-        if (strict && numberColumn != null) {
-            return numberComparison(selector[0], numberColumn, expression);
+        String name = String.join(".", selector);
+        String numberColumn = NUMBER_COLUMNS.get(name);
+        if (numberColumn != null) {
+            return numberComparison(name, numberColumn, expression);
         }
-        if (strict && expression.getValueType() != TypeOfValue.Text) {
+        if (expression.getValueType() != TypeOfValue.Text) {
             throw new UnsupportedFilterException("Only text values are supported, not "
                     + expression.getValueType());
         }
-        if (selector.length == 1 && "owner".equals(selector[0])) {
-            return columnComparison("owner", expression);
+        String metaColumn = META_COLUMNS.get(name);
+        if (metaColumn != null) {
+            return columnComparison(metaColumn, expression);
         }
-        if (selector.length == 1 && "workflowState".equals(selector[0])) {
-            return columnComparison("workflow_state", expression);
+        String metaTimestamp = META_TIMESTAMP_COLUMNS.get(name);
+        if (metaTimestamp != null) {
+            return timestampComparison(name, metaTimestamp, expression);
         }
-        String metaTimestamp = selector.length != 1 ? null : switch (selector[0]) {
-            case "lastUpdated" -> "updated_at";
-            case "createdAt" -> "created_at";
-            default -> null;
+        String[] path = csafPath(selector);
+        if (path.length == 0) {
+            throw new UnsupportedFilterException("Missing selector");
+        }
+        String key = String.join(".", path);
+        ListColumn column = columns.get(key);
+        if (column == null) {
+            throw new UnsupportedFilterException("Filter on " + name
+                    + " is not supported: the field is not stored as a column");
+        }
+        return switch (column.kind()) {
+            case TEXT -> columnComparison(column.column(), expression);
+            case TIMESTAMP -> timestampComparison(name, column.column(), expression);
+            case TEXT_ARRAY -> arrayComparison(column.column(), expression);
         };
-        if (strict && metaTimestamp != null) {
-            String sql = timestampComparison(metaTimestamp, expression);
-            if (sql == null) {
-                throw new UnsupportedFilterException(selector[0]
-                        + " needs an ISO-8601 date-time with offset and a comparison operator");
-            }
-            return sql;
+    }
+
+    /** owner and workflowState use their columns, every CSAF selector uses a JSON path on the document. */
+    private String compileOperatorLenient(OperatorExpression expression) {
+        String[] selector = expression.getSelector();
+        String metaColumn = META_COLUMNS.get(String.join(".", selector));
+        if (metaColumn != null) {
+            return columnComparison(metaColumn, expression);
         }
-        int offset = selector.length > 0 && "csaf".equals(selector[0]) ? 1 : 0;
-        if (offset == selector.length) {
-            if (strict) {
-                throw new UnsupportedFilterException("Missing selector");
-            }
+        String[] path = csafPath(selector);
+        if (path.length == 0) {
             return "TRUE";
         }
-        String column = columnForSelector(selector, offset, expression);
-        if (column != null) {
-            return column;
-        }
-        if (strict) {
-            throw new UnsupportedFilterException("Filter on " + String.join(".", selector)
-                    + " is not supported: no column, or a timestamp that is not an ISO-8601 date-time with "
-                    + "offset, or ContainsIgnoreCase on a timestamp");
-        }
-        String path = jsonPath(selector, offset);
-        String comparisonPath = path + " ? (" + predicate(expression) + ")";
+        String comparisonPath = jsonPath(path) + " ? (" + predicate(expression) + ")";
         String jsonPath = "jsonb_path_exists(CAST(csaf AS jsonb), CAST(" + bindText(comparisonPath) + " AS jsonpath)";
         if (expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
             return jsonPath + ")";
@@ -122,14 +147,23 @@ final class SqlExpressionCompiler {
         return jsonPath + ", jsonb_build_object('value', to_jsonb(" + bindValue(expression) + ")))";
     }
 
+    /** The CSAF selector without the optional leading {@code csaf}; empty if nothing is left. */
+    private static String[] csafPath(String[] selector) {
+        int offset = selector.length > 0 && "csaf".equals(selector[0]) ? 1 : 0;
+        return Arrays.copyOfRange(selector, offset, selector.length);
+    }
+
     /**
      * A named number (strict only): the value must be a Decimal and is compared as a number. A NULL column (e.g. no
      * scores) never matches.
      */
     private String numberComparison(String name, String column, OperatorExpression expression) {
-        if (expression.getValueType() != TypeOfValue.Decimal
-                || expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
-            throw new UnsupportedFilterException(name + " needs a Decimal value and a comparison operator");
+        if (expression.getValueType() != TypeOfValue.Decimal) {
+            throw new UnsupportedFilterException(name + " needs a Decimal value, not "
+                    + expression.getValueType());
+        }
+        if (expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
+            throw new UnsupportedFilterException("ContainsIgnoreCase is not supported on the number " + name);
         }
         String value = expression.getValue();
         BigDecimal number;
@@ -162,37 +196,18 @@ final class SqlExpressionCompiler {
         return rightSide != null ? rightSide : bindValue(expression);
     }
 
-    /**
-     * SQL for a selector that is stored in a column, or {@code null} if the filter has to use the JSON path.
-     * The column answers text values only: a number or boolean compared with a string never matches in a
-     * JSON path, so those keep using it.
-     */
-    private String columnForSelector(String[] selector, int offset, OperatorExpression expression) {
-        String key = String.join(".", Arrays.copyOfRange(selector, offset, selector.length));
-        ListColumn listColumn = columns.get(key);
-        if (listColumn == null || expression.getValueType() != TypeOfValue.Text) {
-            return null;
-        }
-        String sql = switch (listColumn.kind()) {
-            case TEXT -> columnComparison(listColumn.column(), expression);
-            case TIMESTAMP -> timestampComparison(listColumn.column(), expression);
-            case TEXT_ARRAY -> arrayComparison(listColumn.column(), expression);
-        };
-        if (sql == null) {
-            LOG.debug("Filter on {} uses the JSON path, not the column {}", key, listColumn.column());
-        }
-        return sql;
-    }
-
-    private String timestampComparison(String column, OperatorExpression expression) {
+    /** Compares a timestamp column with an ISO-8601 date-time with offset; anything else throws. */
+    private String timestampComparison(String name, String column, OperatorExpression expression) {
         if (expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
-            return null;
+            throw new UnsupportedFilterException("ContainsIgnoreCase is not supported on the timestamp " + name);
         }
+        String value = expression.getValue();
         Instant instant;
         try {
-            instant = OffsetDateTime.parse(expression.getValue()).toInstant();
+            instant = OffsetDateTime.parse(value == null ? "" : value).toInstant();
         } catch (DateTimeParseException ex) {
-            return null;
+            throw new UnsupportedFilterException(name + " needs an ISO-8601 date-time with offset, e.g. "
+                    + "2024-01-31T00:00:00Z, not '" + value + "'");
         }
         return columnComparison(column, expression, bindText(instant));
     }
@@ -219,10 +234,10 @@ final class SqlExpressionCompiler {
         };
     }
 
-    private String jsonPath(String[] selector, int offset) {
+    private String jsonPath(String[] csafPath) {
         StringBuilder path = new StringBuilder("$");
-        for (int index = offset; index < selector.length; index++) {
-            path.append(".\"").append(selector[index].replace("\\", "\\\\").replace("\"", "\\\"")).append("\"");
+        for (String part : csafPath) {
+            path.append(".\"").append(part.replace("\\", "\\\\").replace("\"", "\\\"")).append("\"");
         }
         return path.toString();
     }

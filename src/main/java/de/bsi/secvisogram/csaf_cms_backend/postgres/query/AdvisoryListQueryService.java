@@ -24,7 +24,7 @@ public class AdvisoryListQueryService {
 
     public List<AdvisoryListProjection> findAdvisories(Expression filter, Authentication credentials) {
         LOG.debug("Start findAdvisories");
-        SqlExpressionCompiler compiler = new SqlExpressionCompiler(false, ListColumn.ADVISORIES);
+        SqlExpressionCompiler compiler = SqlExpressionCompiler.lenient();
         String compiledExpr = compiler.compile(filter);
         String where = visibilityClause(credentials, compiler) + " AND " + compiledExpr;
         String sql = """
@@ -67,7 +67,7 @@ public class AdvisoryListQueryService {
 
     /** Executes the advisory version list query without selecting the large {@code csaf} column. */
     public List<AdvisoryVersionListProjection> findAdvisoryVersions(Expression filter) {
-        SqlExpressionCompiler compiler = new SqlExpressionCompiler(false, ListColumn.VERSIONS);
+        SqlExpressionCompiler compiler = SqlExpressionCompiler.lenient();
         String sql = """
                 SELECT advisory_id, workflow_state, owner,
                        tracking_id,
@@ -95,10 +95,11 @@ public class AdvisoryListQueryService {
      */
     public AdvisoryListPage findAdvisoryPage(Expression filter, List<AdvisoryListSort> sort, int page, int size,
                                              Authentication credentials) {
-        SqlExpressionCompiler compiler = new SqlExpressionCompiler(true, ListColumn.ADVISORIES);
+        SqlExpressionCompiler compiler = SqlExpressionCompiler.strict(ListColumn.ADVISORIES);
         String where = visibilityClause(credentials, compiler) + " AND " + compiler.compile(filter);
 
-        // the total comes with the page rows; only a page beyond the end needs a separate count
+        // the total comes with the page rows except when a page beyond the end is requested, then we need to count
+        // separately
         String sql = """
                 SELECT id, workflow_state, owner, version,
                        tracking_id, document_title, current_release_date, updated_at, created_at,
@@ -113,15 +114,15 @@ public class AdvisoryListQueryService {
 
         long total;
         if (!rows.isEmpty()) {
-            total = ((Number) rows.get(0)[9]).longValue();
+            total = ((Number) rows.get(0)[9]).longValue(); // "total" column
         } else if (page == 0) {
             total = 0;
-        } else {
+        } else { // no results because a page beyond the end was requested: needs separate query for the total
             var countQuery = entityManager.createNativeQuery("SELECT count(*) FROM advisories WHERE " + where);
             compiler.bind(countQuery);
             total = ((Number) countQuery.getSingleResult()).longValue();
         }
-
+        // see the SQL for what an index matches
         List<AdvisoryListProjection> advisories = rows.stream().map(row -> new AdvisoryListProjection(
                 row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
                 (String) row[4], (String) row[5], toIsoInstant(row[6]), toIsoInstant(row[7]),
