@@ -73,7 +73,10 @@ public class AdvisoryV2Controller {
             description = """
                     Sort criteria, repeatable: field or field,asc or field,desc. Fields: workflowState, owner,
                     lastUpdated, createdAt, trackingId, title, currentReleaseDate, trackingVersion (text order),
-                    trackingStatus, category, tlp. Empty values sort last. Blank values are ignored.
+                    trackingStatus, category, tlp, initialReleaseDate, publisherName, revisionHistoryLength,
+                    cvssV2Score, cvssV3Score, cvssV4Score, critical (the highest CVSS v4 score, else v3, else v2).
+                    The CVSS fields are the highest base score over all vulnerabilities. Empty values sort last.
+                    Blank values are ignored.
                     Default: lastUpdated,desc. Text fields sort by the collation of the database (e.g. under C or
                     POSIX upper case comes before lower case).""")
     public ResponseEntity<?> listAdvisoryPage(
@@ -84,12 +87,19 @@ public class AdvisoryV2Controller {
                             selectors with valueType 'Text': ["owner"], ["workflowState"], ["lastUpdated"],
                             ["createdAt"], ["csaf","document","tracking","id"], ["csaf","document","title"],
                             ["csaf","document","tracking","current_release_date"],
+                            ["csaf","document","tracking","initial_release_date"],
                             ["csaf","document","tracking","version"], ["csaf","document","tracking","status"],
                             ["csaf","document","category"], ["csaf","document","distribution","tlp","label"],
+                            ["csaf","document","publisher","name"],
                             ["csaf","document","tracking","aliases"], ["csaf","vulnerabilities","cve"],
                             ["csaf","vulnerabilities","ids","text"]. Date-times (lastUpdated, createdAt,
-                            current_release_date) are ISO-8601 with offset and compared as instants. On the array
-                            fields (aliases, cve, ids text) an advisory matches if any element matches.""",
+                            current_release_date, initial_release_date) are ISO-8601 with offset and compared as
+                            instants. On the array fields (aliases, cve, ids text) an advisory matches if any
+                            element matches. Numbers, with valueType 'Decimal' and no ContainsIgnoreCase:
+                            ["cvssV2Score"], ["cvssV3Score"], ["cvssV4Score"] (the highest base score over all
+                            vulnerabilities, from CSAF 2.0 scores or CSAF 2.1 metrics), ["critical"] (cvssV4Score,
+                            else cvssV3Score, else cvssV2Score) and ["revisionHistoryLength"]. An advisory without
+                            such a value never matches.""",
                     schema = @Schema(type = "string", format = "json"))
             String expression,
             @RequestParam(defaultValue = "0")

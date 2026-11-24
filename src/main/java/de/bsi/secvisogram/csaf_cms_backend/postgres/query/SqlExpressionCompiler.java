@@ -4,6 +4,7 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -15,12 +16,24 @@ import java.util.Map;
 /**
  * Compiles a filter expression to SQL for a table with the given columns. Not strict (list v1): selectors
  * without a column use a JSON path on the document. Strict (paged list of advisories): only columns are
- * accepted, everything else throws {@link UnsupportedFilterException}, and the selectors {@code lastUpdated}
- * and {@code createdAt} address {@code updated_at} and {@code created_at}.
+ * accepted, everything else throws {@link UnsupportedFilterException}, the selectors {@code lastUpdated}
+ * and {@code createdAt} address {@code updated_at} and {@code created_at}, and the named numbers of
+ * {@link #NUMBER_COLUMNS} take Decimal values.
  */
 final class SqlExpressionCompiler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SqlExpressionCompiler.class);
+
+    /**
+     * Named numbers of the paged list. They are aggregates (the highest CVSS base score, critical as v4, else v3,
+     * else v2, the number of revisions), not values at a CSAF path, so they have their own selectors.
+     */
+    private static final Map<String, String> NUMBER_COLUMNS = Map.of(
+            "cvssV2Score", "cvss_v2_score",
+            "cvssV3Score", "cvss_v3_score",
+            "cvssV4Score", "cvss_v4_score",
+            "critical", "critical",
+            "revisionHistoryLength", "revision_history_length");
 
     private final List<Object> values = new ArrayList<>();
     private final boolean strict;
@@ -57,8 +70,9 @@ final class SqlExpressionCompiler {
 
     private String compileOperator(OperatorExpression expression) {
         String[] selector = expression.getSelector();
-        if (selector == null) {
-            selector = new String[0];
+        String numberColumn = selector.length == 1 ? NUMBER_COLUMNS.get(selector[0]) : null;
+        if (strict && numberColumn != null) {
+            return numberComparison(selector[0], numberColumn, expression);
         }
         if (strict && expression.getValueType() != TypeOfValue.Text) {
             throw new UnsupportedFilterException("Only text values are supported, not "
@@ -106,6 +120,25 @@ final class SqlExpressionCompiler {
             return jsonPath + ")";
         }
         return jsonPath + ", jsonb_build_object('value', to_jsonb(" + bindValue(expression) + ")))";
+    }
+
+    /**
+     * A named number (strict only): the value must be a Decimal and is compared as a number. A NULL column (e.g. no
+     * scores) never matches.
+     */
+    private String numberComparison(String name, String column, OperatorExpression expression) {
+        if (expression.getValueType() != TypeOfValue.Decimal
+                || expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
+            throw new UnsupportedFilterException(name + " needs a Decimal value and a comparison operator");
+        }
+        String value = expression.getValue();
+        BigDecimal number;
+        try {
+            number = new BigDecimal(value == null ? "" : value.trim());
+        } catch (NumberFormatException ex) {
+            throw new UnsupportedFilterException(name + " needs a number, not '" + value + "'");
+        }
+        return columnComparison(column, expression, "CAST(" + bindText(number.toPlainString()) + " AS numeric)");
     }
 
     private String columnComparison(String column, OperatorExpression expression) {

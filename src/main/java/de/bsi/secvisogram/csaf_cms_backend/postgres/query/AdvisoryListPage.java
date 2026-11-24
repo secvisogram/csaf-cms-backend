@@ -1,5 +1,6 @@
 package de.bsi.secvisogram.csaf_cms_backend.postgres.query;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 
 /**
@@ -8,5 +9,7 @@ import java.util.List;
  * @param advisories the advisories of the page, in sort order
  * @param total      the number of advisories matching the filter on all pages
  */
+@SuppressFBWarnings(value = "EI_EXPOSE_REP",
+        justification = "Short-lived result holder, the list is not shared")
 public record AdvisoryListPage(List<AdvisoryListProjection> advisories, long total) {
 }

@@ -17,11 +17,7 @@ import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.*;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.TypeOfOperator;
 import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
@@ -318,116 +314,6 @@ public class AdvisoryService {
         response.setTitle(projection.title());
         response.setCurrentReleaseDate(projection.currentReleaseDate());
         return response;
-    }
-
-    /**
-     * Recursively evaluate an {@link Expression} against the entity's CSAF JSON.
-     */
-    private boolean evaluateCsafExpression(Expression expr, JsonNode csafJson) {
-
-        if (expr instanceof OperatorExpression opExpr) {
-            return evaluateCsafOperator(opExpr, csafJson);
-        }
-        if (expr instanceof AndExpression andExpr) {
-            for (Expression child : andExpr.getExpressions()) {
-                if (!evaluateCsafExpression(child, csafJson)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        if (expr instanceof OrExpression orExpr) {
-            for (Expression child : orExpr.getExpressions()) {
-                if (evaluateCsafExpression(child, csafJson)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Evaluate a single operator expression against the CSAF JSON.
-     * The selector path starts with "csaf" (e.g. ["csaf","document","title"]);
-     * the "csaf" prefix is stripped and the remainder is used to navigate the JSON tree.
-     * Array nodes are traversed recursively so that a match in any element qualifies.
-     */
-    private boolean evaluateCsafOperator(
-            OperatorExpression opExpr,
-            JsonNode csafJson) {
-
-        String[] path = opExpr.getSelector();
-        String filterValue = opExpr.getValue();
-
-        // Strip "csaf" prefix; remaining segments address the CSAF JSON
-        int startIdx = (path.length > 0 && "csaf".equals(path[0])) ? 1 : 0;
-        String[] csafPath = Arrays.copyOfRange(path, startIdx, path.length);
-
-        List<String> values = collectJsonValues(csafJson, csafPath, 0);
-        if (values.isEmpty()) {
-            return false;
-        }
-
-        return values.stream().anyMatch(value -> matchesOperator(opExpr.getOperatorType(), value, filterValue));
-    }
-
-    /**
-     * Collect all text values reachable by following the given path segments through the JSON tree.
-     * When an array node is encountered at any level, the remaining path is applied to each element.
-     */
-    private List<String> collectJsonValues(JsonNode node, String[] pathSegments, int segmentIndex) {
-
-        if (node == null || node.isMissingNode() || node.isNull()) {
-            return List.of();
-        }
-        if (segmentIndex >= pathSegments.length) {
-            // Reached the target depth — collect value(s)
-            if (node.isArray()) {
-                List<String> result = new ArrayList<>();
-                for (JsonNode element : node) {
-                    if (element.isValueNode()) {
-                        result.add(element.asString());
-                    }
-                }
-                return result;
-            }
-            if (node.isValueNode()) {
-                return List.of(node.asString());
-            }
-            return List.of();
-        }
-
-        String segment = pathSegments[segmentIndex];
-        if (node.isArray()) {
-            // Apply current segment to each array element
-            List<String> result = new ArrayList<>();
-            for (JsonNode element : node) {
-                result.addAll(collectJsonValues(element, pathSegments, segmentIndex));
-            }
-            return result;
-        }
-        // Navigate into the child
-        JsonNode child = node.get(segment);
-        return collectJsonValues(child, pathSegments, segmentIndex + 1);
-    }
-
-    /**
-     * Check whether a single string value matches the filter using the given operator.
-     */
-    private boolean matchesOperator(
-            TypeOfOperator operatorType,
-            String fieldValue, String filterValue) {
-
-        return switch (operatorType) {
-            case Equal -> fieldValue.equals(filterValue);
-            case NotEqual -> !fieldValue.equals(filterValue);
-            case ContainsIgnoreCase -> fieldValue.toLowerCase().contains(filterValue.toLowerCase());
-            case Greater -> fieldValue.compareTo(filterValue) > 0;
-            case GreaterOrEqual -> fieldValue.compareTo(filterValue) >= 0;
-            case Less -> fieldValue.compareTo(filterValue) < 0;
-            case LessOrEqual -> fieldValue.compareTo(filterValue) <= 0;
-        };
     }
 
     private void enrichAdvisory(AdvisoryInformationResponse response, Authentication credentials) {

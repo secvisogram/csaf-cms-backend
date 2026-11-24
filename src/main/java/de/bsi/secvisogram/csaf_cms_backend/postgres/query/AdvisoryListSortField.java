@@ -19,7 +19,16 @@ public enum AdvisoryListSortField {
     TRACKING_VERSION("trackingVersion", "tracking_version"),
     TRACKING_STATUS("trackingStatus", "tracking_status"),
     CATEGORY("category", "category"),
-    TLP("tlp", "tlp");
+    TLP("tlp", "tlp"),
+    INITIAL_RELEASE_DATE("initialReleaseDate", "initial_release_date"),
+    PUBLISHER_NAME("publisherName", "publisher_name"),
+    REVISION_HISTORY_LENGTH("revisionHistoryLength", "revision_history_length"),
+    /** The highest CVSS v2 base score; likewise for v3 and v4. */
+    CVSS_V2_SCORE("cvssV2Score", "cvss_v2_score"),
+    CVSS_V3_SCORE("cvssV3Score", "cvss_v3_score"),
+    CVSS_V4_SCORE("cvssV4Score", "cvss_v4_score"),
+    /** The highest CVSS v4 score, else v3, else v2. */
+    CRITICAL("critical", "critical");
 
     private final String apiName;
     private final String column;

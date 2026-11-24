@@ -11,6 +11,8 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.TypeOfOperator;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.TypeOfValue;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryPageResponse;
 import java.util.List;
@@ -283,5 +285,87 @@ public class AdvisoryListPageTest {
         assertEquals("2025-01-01T11:30:00Z", page(null, 0, 1, "createdAt").items().get(0).getCreatedAt());
         assertRejected(CsafExceptionKey.InvalidFilterExpression,
                 () -> page(OperatorExpression.containsIgnoreCase("2025", "createdAt"), 0, 10));
+    }
+
+    /** A filter on a named number of the paged list, with a Decimal value. */
+    private static OperatorExpression number(String name, TypeOfOperator operator, String value) {
+        return new OperatorExpression(new String[] {name}, operator, value, TypeOfValue.Decimal);
+    }
+
+    /**
+     * A: CSAF 2.0 scores v3 9.8 and v2 7.5, two revisions. B: CSAF 2.1 metrics v3 5.0 and v4 8.7, one revision.
+     * C: no scores, no revision history, no publisher, no initial release date.
+     */
+    private void seedScores() {
+        insert("author1", "Draft", """
+                {"document": {"title": "A", "publisher": {"name": "Alpha Corp"},
+                  "tracking": {"id": "ID-A", "initial_release_date": "2024-01-01T00:00:00Z",
+                    "revision_history": [{"number": "1"}, {"number": "2"}]}},
+                 "vulnerabilities": [{"scores": [{"cvss_v3": {"baseScore": 9.8}, "cvss_v2": {"baseScore": 7.5}}]}]}""",
+                0);
+        insert("author1", "Draft", """
+                {"document": {"title": "B", "publisher": {"name": "beta GmbH"},
+                  "tracking": {"id": "ID-B", "initial_release_date": "2024-03-01T00:00:00+01:00",
+                    "revision_history": [{"number": "1"}]}},
+                 "vulnerabilities": [{"metrics": [{"content": {"cvss_v3": {"baseScore": 5.0},
+                                                               "cvss_v4": {"baseScore": 8.7}}}]}]}""", 0);
+        insert("author1", "Draft", """
+                {"document": {"title": "C", "tracking": {"id": "ID-C"}}}""", 0);
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void sortsByScoresAndRevisionCountWithEmptyValuesLast() throws Exception {
+        seedScores();
+        // critical: A 9.8 (v3), B 8.7 (v4 wins over its v3 5.0), C none
+        assertEquals(List.of("A", "B", "C"), titles(page(null, 0, 10, "critical,desc")));
+        assertEquals(List.of("B", "A", "C"), titles(page(null, 0, 10, "critical")));
+        assertEquals(List.of("B", "A", "C"), titles(page(null, 0, 10, "cvssV3Score")));
+        assertEquals("B", titles(page(null, 0, 10, "cvssV4Score,desc")).get(0));
+        assertEquals("A", titles(page(null, 0, 10, "cvssV2Score")).get(0));
+        assertEquals(List.of("B", "A", "C"), titles(page(null, 0, 10, "revisionHistoryLength")));
+        assertEquals(List.of("B", "A", "C"), titles(page(null, 0, 10, "initialReleaseDate,desc")));
+        assertEquals(List.of("A", "B", "C"), titles(page(null, 0, 10, "publisherName")));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void filtersOnNamedNumbers() throws Exception {
+        seedScores();
+        assertEquals(List.of("A"), titles(page(number("critical", TypeOfOperator.GreaterOrEqual, "9"), 0, 10)));
+        // the maximum is compared, and an advisory without scores never matches
+        assertEquals(List.of("B"), titles(page(number("cvssV3Score", TypeOfOperator.Less, "6"), 0, 10)));
+        assertEquals(List.of("B"), titles(page(number("critical", TypeOfOperator.NotEqual, "9.8"), 0, 10)));
+        assertEquals(List.of("B"), titles(page(number("cvssV4Score", TypeOfOperator.Equal, "8.7"), 0, 10)));
+        assertEquals(List.of("A"), titles(page(OperatorExpression.equal(7.5, "cvssV2Score"), 0, 10)));
+        assertEquals(List.of("A"),
+                titles(page(number("revisionHistoryLength", TypeOfOperator.Greater, "1"), 0, 10)));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void filtersOnPublisherAndInitialReleaseDate() throws Exception {
+        seedScores();
+        assertEquals(List.of("A"), titles(page(OperatorExpression.equal("Alpha Corp",
+                "csaf", "document", "publisher", "name"), 0, 10)));
+        assertEquals(List.of("A", "B"), titles(page(OperatorExpression.containsIgnoreCase("a",
+                "csaf", "document", "publisher", "name"), 0, 10, "title")));
+        // B is 2024-02-29T23:00:00Z
+        assertEquals(List.of("B"), titles(page(OperatorExpression.greater("2024-02-01T00:00:00Z",
+                "csaf", "document", "tracking", "initial_release_date"), 0, 10)));
+    }
+
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void rejectsInvalidNumberFilters() {
+        // a Text value, ContainsIgnoreCase, not a number, no value
+        assertRejected(CsafExceptionKey.InvalidFilterExpression,
+                () -> page(OperatorExpression.greater("9", "critical"), 0, 10));
+        assertRejected(CsafExceptionKey.InvalidFilterExpression,
+                () -> page(number("critical", TypeOfOperator.ContainsIgnoreCase, "9"), 0, 10));
+        assertRejected(CsafExceptionKey.InvalidFilterExpression,
+                () -> page(number("cvssV3Score", TypeOfOperator.Greater, "high"), 0, 10));
+        assertRejected(CsafExceptionKey.InvalidFilterExpression,
+                () -> page(number("revisionHistoryLength", TypeOfOperator.Equal, null), 0, 10));
     }
 }
