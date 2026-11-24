@@ -168,7 +168,7 @@ services:
       retries: 10 
 
   backend-cms:
-    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.9
+    image: ghcr.io/secvisogram/csaf-cms-backend:1.1.10
     env_file: ../.env
     environment:
       # Internal service names, only reachable from inside this container. The values in ../.env
@@ -178,9 +178,6 @@ services:
       CSAF_VALIDATION_BASE_URL: "http://validator:8082/api/v1"
       CSAF_OIDC_JWKS_URL: "http://keycloak:8080/realms/${CSAF_REALM}/protocol/openid-connect/certs"
       CSAF_AUTOPUBLISH_URL: "http://reverse-proxy/cgi-bin/csaf_provider.go/api/upload"
-      # Interim mitigation for CVE-2026-114938 (Java4Shell). The published image predates the
-      # Dockerfile ENV; remove once the image ships a fixed JDK.
-      JAVA_TOOL_OPTIONS: "-XX:-UseBASE64Intrinsics"
     volumes:
       # Dev fixture files referenced by CSAF_TEMPLATES_FILE / CSAF_COMPANY_LOGO_PATH; mounted at
       # the same relative path so the default .env values keep working unmodified.
