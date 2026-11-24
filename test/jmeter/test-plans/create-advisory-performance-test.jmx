@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <!-- ================================================================== -->
+    <!-- Performance Test: Create CSAF Advisories from real documents        -->
+    <!--                                                                    -->
+    <!-- Creates advisories from CSAF files in test-data/, reads them back, -->
+    <!-- then deletes them. Rotate through files via CSV Data Set Config.    -->
+    <!--                                                                    -->
+    <!-- Usage:                                                             -->
+    <!--   bash jmeter/run.sh test-plans/create-advisory-performance-test.jmx              -->
+    <!--   bash jmeter/run.sh test-plans/create-advisory-performance-test.jmx -Jloops=50  -->
+    <!--   bash jmeter/run.sh test-plans/create-advisory-performance-test.jmx -Jthreads=5 -Jloops=20 -->
+    <!--   bash jmeter/run.sh test-plans/create-advisory-performance-test.jmx -Jtimeout=300000       -->
+    <!-- ================================================================== -->
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CSAF CMS Backend - Performance Test" enabled="true">
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="API_HOST" elementType="Argument">
+            <stringProp name="Argument.name">API_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(api.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="API_PORT" elementType="Argument">
+            <stringProp name="Argument.name">API_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(api.port,8081)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="USERNAME" elementType="Argument">
+            <stringProp name="Argument.name">USERNAME</stringProp>
+            <stringProp name="Argument.value">${__P(username,publisher)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PASSWORD" elementType="Argument">
+            <stringProp name="Argument.name">PASSWORD</stringProp>
+            <stringProp name="Argument.value">${__P(password,publisher)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="THREADS" elementType="Argument">
+            <stringProp name="Argument.name">THREADS</stringProp>
+            <stringProp name="Argument.value">${__P(threads,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="RAMPUP" elementType="Argument">
+            <stringProp name="Argument.name">RAMPUP</stringProp>
+            <stringProp name="Argument.value">${__P(rampup,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="LOOPS" elementType="Argument">
+            <stringProp name="Argument.name">LOOPS</stringProp>
+            <stringProp name="Argument.value">${__P(loops,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="DATA_DIR" elementType="Argument">
+            <stringProp name="Argument.name">DATA_DIR</stringProp>
+            <stringProp name="Argument.value">${__P(data.dir,/jmeter/test-data)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="XSRF_TOKEN" elementType="Argument">
+            <stringProp name="Argument.name">XSRF_TOKEN</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="CREATE_TIMEOUT" elementType="Argument">
+            <stringProp name="Argument.name">CREATE_TIMEOUT</stringProp>
+            <stringProp name="Argument.value">${__P(timeout,300000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+
+      <!-- ===== 01 - Authentication: Obtain JWT token from Keycloak ===== -->
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="01 - Authentication" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">0</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">stoptestNow</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Authenticate (${USERNAME})" enabled="true"/>
+        <hashTree>
+          <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="Credentials" enabled="true">
+            <collectionProp name="UserParameters.names">
+              <stringProp name="1">KC_USERNAME</stringProp>
+              <stringProp name="2">KC_PASSWORD</stringProp>
+              <stringProp name="3">KC_TOKEN_NAME</stringProp>
+            </collectionProp>
+            <collectionProp name="UserParameters.thread_values">
+              <collectionProp name="1">
+                <stringProp name="1">${USERNAME}</stringProp>
+                <stringProp name="2">${PASSWORD}</stringProp>
+                <stringProp name="3">ACCESS_TOKEN</stringProp>
+              </collectionProp>
+            </collectionProp>
+            <boolProp name="UserParameters.per_iteration">false</boolProp>
+          </UserParameters>
+          <hashTree/>
+          <!-- Shared Keycloak login, see fragments/keycloak-token.jmx -->
+          <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="Keycloak token" enabled="true">
+            <stringProp name="IncludeController.includepath">fragments/keycloak-token.jmx</stringProp>
+          </IncludeController>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+
+      <!-- ===== 02 - Performance Test: Create-Read-Delete advisory cycles using real CSAF documents from test-data/ ===== -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="02 - Advisory Create-Read-Delete (Performance)" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">${THREADS}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${RAMPUP}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <stringProp name="LoopController.loops">${LOOPS}</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- Backend target: samplers below only specify method + path -->
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults (API)" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${API_HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${API_PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+        </ConfigTestElement>
+        <hashTree/>
+
+        <!-- Rotate through CSAF test files -->
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSAF Test Files" enabled="true">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="filename">${DATA_DIR}/csaf-files.csv</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="variableNames">csafFile</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+
+        <!-- Cookie manager (captures XSRF-TOKEN cookie) -->
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+          <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+
+        <!-- Shared headers: Authorization + Content-Type -->
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Authorization</stringProp>
+              <stringProp name="Header.value">Bearer ${__P(ACCESS_TOKEN,)}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+
+        <!-- Note: Spring Security's CookieCsrfTokenRepository writes the XSRF-TOKEN cookie on the first response    -->
+        <!-- that reads the CSRF token, i.e. the POST /advisories response (not GET). The token is therefore -->
+        <!-- extracted after the POST and reused as ${XSRF_TOKEN} by the DELETE in the same iteration.      -->
+
+        <!-- ===== Transaction: Create → Read → Delete (measured as one unit) ===== -->
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Advisory Lifecycle (${csafFile})" enabled="true">
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+          <boolProp name="TransactionController.parent">false</boolProp>
+        </TransactionController>
+        <hashTree>
+
+          <!-- All samplers in the lifecycle must return 2xx -->
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 2xx" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="">2\d{2}</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+
+          <!-- CSRF header for state-changing requests (value is resolved per request) -->
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="CSRF Header" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">X-XSRF-TOKEN</stringProp>
+                <stringProp name="Header.value">${XSRF_TOKEN}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+
+          <!-- Refresh JWT token if it expires within the next 30 seconds.     -->
+          <!-- Handles both clock skew between Docker and host and long-       -->
+          <!-- running tests that outlive Keycloak's token TTL.                -->
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Refresh JWT Token (if needed)" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">
+import groovy.json.JsonSlurper
+
+def token = props.get("ACCESS_TOKEN")
+def needsRefresh = (token == null || token.isEmpty())
+
+if (!needsRefresh) {
+    try {
+        def payload = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]))
+        def exp = new JsonSlurper().parseText(payload).exp as long
+        def secsLeft = exp - (System.currentTimeMillis() / 1000 as long)
+        if (secsLeft &lt; 30) {
+            needsRefresh = true
+            log.info("JWT token expires in " + secsLeft + "s — refreshing")
+        }
+    } catch (Exception e) {
+        log.warn("Cannot decode JWT, refreshing: " + e.message)
+        needsRefresh = true
+    }
+}
+
+if (needsRefresh) {
+    def url = "http://" + props.get("keycloak.host") + ":" + props.get("keycloak.port") +
+              "/realms/csaf/protocol/openid-connect/token"
+    def body = "grant_type=password" +
+        "&amp;client_id="     + URLEncoder.encode(props.get("client.id"), "UTF-8") +
+        "&amp;client_secret=" + URLEncoder.encode(props.get("client.secret"), "UTF-8") +
+        "&amp;username="      + URLEncoder.encode(vars.get("USERNAME"), "UTF-8") +
+        "&amp;password="      + URLEncoder.encode(vars.get("PASSWORD"), "UTF-8") +
+        "&amp;scope=openid"
+    def conn = new URL(url).openConnection()
+    conn.setRequestMethod("POST")
+    conn.setDoOutput(true)
+    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+    conn.outputStream.write(body.getBytes("UTF-8"))
+    if (conn.responseCode == 200) {
+        def newToken = new JsonSlurper().parseText(conn.inputStream.text).access_token
+        props.put("ACCESS_TOKEN", newToken)
+        log.info("JWT token refreshed successfully")
+    } else {
+        log.error("Token refresh failed: HTTP " + conn.responseCode)
+    }
+}
+            </stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+
+          <!-- CREATE: POST /advisories -->
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /advisories (create)" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/advisories</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout">${CREATE_TIMEOUT}</stringProp>
+            <stringProp name="HTTPSampler.response_timeout">${CREATE_TIMEOUT}</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <!-- Load CSAF file and build request body -->
+            <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Load CSAF File" enabled="true">
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="script">
+// Read CSAF file content (cached in JMeter properties to avoid re-reading)
+def fileName = vars.get("csafFile")
+def cacheKey = "csaf_content_" + fileName
+def content = props.get(cacheKey)
+
+if (content == null) {
+    def dataDir = vars.get("DATA_DIR")
+    def file = new File(dataDir + "/" + fileName)
+    if (!file.exists()) {
+        log.error("CSAF file not found: " + file.absolutePath)
+        throw new RuntimeException("CSAF file not found: " + file.absolutePath)
+    }
+    content = file.getText("UTF-8")
+    props.put(cacheKey, content)
+    log.info("Cached CSAF file: " + fileName + " (" + content.length() + " bytes)")
+}
+
+// Build CreateAdvisoryRequest JSON wrapping the CSAF document
+def threadNum = ctx.getThreadNum()
+def iteration = vars.getIteration()
+def body = '{"summary":"Perf Test [' + fileName + '] T' + threadNum + ' #' + iteration + '","csaf":' + content + '}'
+
+// Inject the body directly into the sampler to bypass JMeter's 65535-char
+// variable limit, which causes ${requestBody} to be sent literally for large
+// files such as rhsa-2018_3140.json (~31 MB).
+// Use addNonEncodedArgument to avoid URL-encoding the JSON body.
+sampler.setPostBodyRaw(true)
+sampler.getArguments().removeAllArguments()
+sampler.addNonEncodedArgument("", body, "")
+
+vars.put("csafFileName", fileName)
+              </stringProp>
+            </JSR223PreProcessor>
+            <hashTree/>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract advisoryId" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">advisoryId</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract revision" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">revision</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.revision</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+
+            <!-- Extract CSRF token from the POST response cookie.           -->
+            <!-- Spring Security's CookieCsrfTokenRepository writes the      -->
+            <!-- XSRF-TOKEN cookie on the first response that reads the CSRF -->
+            <!-- token — which happens here on POST /advisories, not on GET. -->
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract CSRF Token from POST response" enabled="true">
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="script">
+def token = vars.get("COOKIE_XSRF-TOKEN")
+if (token != null &amp;&amp; !token.isEmpty()) {
+    vars.put("XSRF_TOKEN", token)
+    log.info("CSRF token captured from POST response: " + token.substring(0, Math.min(8, token.length())) + "...")
+} else {
+    // Keep whatever token was captured in a previous iteration (if any).
+    // If still empty the backend likely has CSRF disabled.
+    def existing = vars.get("XSRF_TOKEN")
+    if (existing == null || existing.isEmpty()) {
+        vars.put("XSRF_TOKEN", "")
+        log.info("No CSRF token in POST response (CSRF may be disabled)")
+    } else {
+        log.info("Reusing CSRF token from previous iteration")
+    }
+}
+              </stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+
+          <!-- READ + DELETE only when the POST succeeded (advisoryId was extracted) -->
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If POST succeeded" enabled="true">
+            <stringProp name="IfController.condition">"${advisoryId}" != "NOT_FOUND"</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">false</boolProp>
+          </IfController>
+          <hashTree>
+
+          <!-- READ: GET /advisories/{id} -->
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /advisories/${advisoryId}" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+
+          <!-- DELETE: DELETE /advisories/{id}?revision= -->
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DELETE /advisories/${advisoryId}" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}</stringProp>
+            <stringProp name="HTTPSampler.method">DELETE</stringProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="revision" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">revision</stringProp>
+                  <stringProp name="Argument.value">${revision}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+
+          </hashTree><!-- end IfController: If POST succeeded -->
+
+        </hashTree>
+
+        <!-- ===== Listeners ===== -->
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+
+        <!-- View Results Tree: disabled for performance runs (buffers full   -->
+        <!-- request+response bodies in RAM — causes OOM with large payloads) -->
+        <!-- Re-enable temporarily only for debugging individual failures.    -->
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+          <boolProp name="ResultCollector.error_logging">true</boolProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+
+      </hashTree>
+
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

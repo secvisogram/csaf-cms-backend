@@ -1,0 +1,1058 @@
+{
+  "document": {
+    "aggregate_severity": {
+      "text": "High"
+    },
+    "category": "csaf_vex",
+    "csaf_version": "2.0",
+    "distribution": {
+      "tlp": {
+        "label": "WHITE",
+        "url": "https://www.first.org/tlp/"
+      }
+    },
+    "lang": "en-US",
+    "notes": [
+      {
+        "category": "legal_disclaimer",
+        "text": "As a content provider, BSI is responsible under general law for its own content distributed for use. However, it remains your responsibility to carefully check usage and/or implementation of information provided with the content.",
+        "title": "Legal disclaimer"
+      },
+      {
+        "category": "summary",
+        "text": "The CSAF full validator implementations csaf-validator-lib and csaf-validator-service provided by the Secvisogram project are not vulnarable by the lodash command injection",
+        "title": "Summary"
+      },
+      {
+        "category": "description",
+        "text": "csaf-validator-lib is a CSAF full validator written as a JavaScript library. It implements the business level tests that can be shared across application working with CSAF.\n\ncsaf-validator-service is a REST-based service used to validate documents against the CSAF standard. It uses the csaf-validator-lib under the hood which is included as a git subtree module.",
+        "title": "Product description"
+      }
+    ],
+    "publisher": {
+      "category": "coordinator",
+      "name": "Bundesamt für Sicherheit in der Informationstechnik",
+      "namespace": "https://www.bsi.bund.de"
+    },
+    "references": [
+      {
+        "category": "self",
+        "summary": "BSI-2025-secvisogram-lodash_invalid - CSAF Version",
+        "url": "https://wid.cert-bund.de/.well-known/csaf/white/2025/bsi-2025-secvisogram-lodash_invalid.json"
+      },
+      {
+        "category": "external",
+        "summary": "Secvisogram - csaf-validator-lib repository",
+        "url": "https://github.com/secvisogram/csaf-validator-lib"
+      },
+      {
+        "category": "external",
+        "summary": "Secvisogram - csaf-validator-service repository",
+        "url": "https://github.com/secvisogram/csaf-validator-service"
+      }
+    ],
+    "title": "VEX document that analyses the vulnerable to the Command Injection in lodash",
+    "tracking": {
+      "current_release_date": "2025-02-06T15:00:00.000Z",
+      "generator": {
+        "date": "2025-02-06T13:30:57.754Z",
+        "engine": {
+          "name": "Secvisogram",
+          "version": "2.5.18"
+        }
+      },
+      "id": "BSI-2025-secvisogram-lodash",
+      "initial_release_date": "2025-02-06T15:00:00.000Z",
+      "revision_history": [
+        {
+          "date": "2025-02-13T15:00:00.000Z",
+          "number": "1",
+          "summary": "Initial version."
+        }
+      ],
+      "status": "final",
+      "version": "1"
+    }
+  },
+  "product_tree": {
+    "branches": [
+      {
+        "branches": [
+          {
+            "branches": [
+              {
+                "category": "product_version_range",
+                "name": "<0.1.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib < 0.1.0",
+                  "product_id": "CSAFPID-0001"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "0.1.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 0.1.0",
+                  "product_id": "CSAFPID-0002"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.0.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.0.0",
+                  "product_id": "CSAFPID-0003"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.0.1",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.0.1",
+                  "product_id": "CSAFPID-0004"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.1.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.1.0",
+                  "product_id": "CSAFPID-0005"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.2.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.2.0",
+                  "product_id": "CSAFPID-0006"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.0",
+                  "product_id": "CSAFPID-0007"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.1",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.1",
+                  "product_id": "CSAFPID-0063"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.2",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.2",
+                  "product_id": "CSAFPID-0080"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.3",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.3",
+                  "product_id": "CSAFPID-0081"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.4",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.4",
+                  "product_id": "CSAFPID-0082"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.5",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.5",
+                  "product_id": "CSAFPID-0083"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.6",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.6",
+                  "product_id": "CSAFPID-0084"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.7",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.7",
+                  "product_id": "CSAFPID-0085"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.8",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.8",
+                  "product_id": "CSAFPID-0086"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.9",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.9",
+                  "product_id": "CSAFPID-0087"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.10",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.10",
+                  "product_id": "CSAFPID-0088"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.11",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.11",
+                  "product_id": "CSAFPID-0089"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.12",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.12",
+                  "product_id": "CSAFPID-0090"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.13",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.13",
+                  "product_id": "CSAFPID-0091"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.14",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.14",
+                  "product_id": "CSAFPID-0092"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.15",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.15",
+                  "product_id": "CSAFPID-0093"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.16",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.16",
+                  "product_id": "CSAFPID-0094"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.17",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.17",
+                  "product_id": "CSAFPID-0095"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.18",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.18",
+                  "product_id": "CSAFPID-0096"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.19",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.19",
+                  "product_id": "CSAFPID-0097"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.10",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.20",
+                  "product_id": "CSAFPID-0098"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.11",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.21",
+                  "product_id": "CSAFPID-0099"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.12",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.12",
+                  "product_id": "CSAFPID-0100"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.13",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.13",
+                  "product_id": "CSAFPID-0101"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.14",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.14",
+                  "product_id": "CSAFPID-0102"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.15",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.15",
+                  "product_id": "CSAFPID-0103"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.16",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.16",
+                  "product_id": "CSAFPID-0104"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.17",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.17",
+                  "product_id": "CSAFPID-0105"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.18",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.18",
+                  "product_id": "CSAFPID-0106"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.19",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.19",
+                  "product_id": "CSAFPID-0107"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.20",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.20",
+                  "product_id": "CSAFPID-0108"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.21",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.21",
+                  "product_id": "CSAFPID-0109"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.22",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.22",
+                  "product_id": "CSAFPID-0110"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.23",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.23",
+                  "product_id": "CSAFPID-0111"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.24",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.24",
+                  "product_id": "CSAFPID-0112"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.25",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.25",
+                  "product_id": "CSAFPID-0113"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.26",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.26",
+                  "product_id": "CSAFPID-0114"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.27",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.27",
+                  "product_id": "CSAFPID-0115"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.28",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.28",
+                  "product_id": "CSAFPID-0116"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.29",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.29",
+                  "product_id": "CSAFPID-0117"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.30",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.30",
+                  "product_id": "CSAFPID-0118"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.31",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.31",
+                  "product_id": "CSAFPID-0119"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.32",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.32",
+                  "product_id": "CSAFPID-0120"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.33",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.33",
+                  "product_id": "CSAFPID-0121"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.34",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.34",
+                  "product_id": "CSAFPID-0122"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.35",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.35",
+                  "product_id": "CSAFPID-0123"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.36",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.36",
+                  "product_id": "CSAFPID-0124"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.37",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.37",
+                  "product_id": "CSAFPID-0125"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.38",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.38",
+                  "product_id": "CSAFPID-0126"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.39",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.39",
+                  "product_id": "CSAFPID-0127"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.40",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.40",
+                  "product_id": "CSAFPID-0128"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.41",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.41",
+                  "product_id": "CSAFPID-0129"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.42",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.42",
+                  "product_id": "CSAFPID-0130"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.43",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.43",
+                  "product_id": "CSAFPID-0131"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.44",
+                "product": {
+                  "name": "Secvisogram csaf-validator-lib 1.3.44",
+                  "product_id": "CSAFPID-0132"
+                }
+              }
+            ],
+            "category": "product_name",
+            "name": "csaf-validator-lib"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version_range",
+                "name": "<0.1.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service < 0.1.0",
+                  "product_id": "CSAFPID-0008"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "0.1.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 0.1.0",
+                  "product_id": "CSAFPID-0017"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.0.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.0.0",
+                  "product_id": "CSAFPID-0018"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.0.1",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.0.1",
+                  "product_id": "CSAFPID-0011"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.1.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.1.0",
+                  "product_id": "CSAFPID-0012"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.2.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.2.0",
+                  "product_id": "CSAFPID-0013"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.0",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.0",
+                  "product_id": "CSAFPID-0019"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.1",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.1",
+                  "product_id": "CSAFPID-0020"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.3",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.3",
+                  "product_id": "CSAFPID-0021"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.4",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.4",
+                  "product_id": "CSAFPID-0022"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.5",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.5",
+                  "product_id": "CSAFPID-0023"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.6",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.6",
+                  "product_id": "CSAFPID-0024"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.7",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.7",
+                  "product_id": "CSAFPID-0025"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.8",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.8",
+                  "product_id": "CSAFPID-0026"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.9",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service1.3.9",
+                  "product_id": "CSAFPID-0046"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.10",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.10",
+                  "product_id": "CSAFPID-0028"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.11",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.11",
+                  "product_id": "CSAFPID-0029"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.12",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.12",
+                  "product_id": "CSAFPID-0030"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.13",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.13",
+                  "product_id": "CSAFPID-0031"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.14",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.14",
+                  "product_id": "CSAFPID-0032"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.15",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.15",
+                  "product_id": "CSAFPID-0033"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.16",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.16",
+                  "product_id": "CSAFPID-0034"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.17",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.17",
+                  "product_id": "CSAFPID-0035"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.18",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.18",
+                  "product_id": "CSAFPID-0036"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.19",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.19",
+                  "product_id": "CSAFPID-0037"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.20",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.20",
+                  "product_id": "CSAFPID-0038"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.21",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.21",
+                  "product_id": "CSAFPID-0039"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.22",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.22",
+                  "product_id": "CSAFPID-0027"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.23",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.23",
+                  "product_id": "CSAFPID-0048"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.24",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.24",
+                  "product_id": "CSAFPID-0042"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.25",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.25",
+                  "product_id": "CSAFPID-0051"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.26",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.26",
+                  "product_id": "CSAFPID-0044"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.27",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.27",
+                  "product_id": "CSAFPID-0040"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.28",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.28",
+                  "product_id": "CSAFPID-0041"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.29",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.29",
+                  "product_id": "CSAFPID-0056"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.30",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.30",
+                  "product_id": "CSAFPID-0043"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.31",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.31",
+                  "product_id": "CSAFPID-0064"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.32",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.32",
+                  "product_id": "CSAFPID-0065"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.33",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.33",
+                  "product_id": "CSAFPID-0066"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.34",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.34",
+                  "product_id": "CSAFPID-0067"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.35",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.35",
+                  "product_id": "CSAFPID-0068"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.36",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.36",
+                  "product_id": "CSAFPID-0069"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.37",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.37",
+                  "product_id": "CSAFPID-0070"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.38",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.38",
+                  "product_id": "CSAFPID-0071"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.39",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.39",
+                  "product_id": "CSAFPID-0072"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.40",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.40",
+                  "product_id": "CSAFPID-0073"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.41",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.41",
+                  "product_id": "CSAFPID-0074"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.42",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.42",
+                  "product_id": "CSAFPID-0075"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.43",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.43",
+                  "product_id": "CSAFPID-0076"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.44",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.44",
+                  "product_id": "CSAFPID-0077"
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "1.3.45",
+                "product": {
+                  "name": "Secvisogram csaf-validator-service 1.3.45",
+                  "product_id": "CSAFPID-0078"
+                }
+              }
+            ],
+            "category": "product_name",
+            "name": "csaf-validator-service"
+          }
+        ],
+        "category": "vendor",
+        "name": "Secvisogram"
+      }
+    ]
+  },
+  "vulnerabilities": [
+    {
+      "cve": "CVE-2021-23337",
+      "scores": [
+        {
+          "cvss_v3": {
+            "attackVector": "NETWORK",
+            "attackComplexity": "LOW",
+            "privilegesRequired": "HIGH",
+            "userInteraction": "NONE",
+            "scope": "UNCHANGED",
+            "confidentialityImpact": "HIGH",
+            "integrityImpact": "HIGH",
+            "availabilityImpact": "HIGH",
+            "version": "3.1",
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H",
+            "baseScore": 7.2,
+            "baseSeverity": "HIGH",
+            "temporalScore": 7.2,
+            "temporalSeverity": "HIGH",
+            "environmentalScore": 7.2,
+            "environmentalSeverity": "HIGH"
+          },
+          "products": [
+            "CSAFPID-0078"
+          ]
+        }
+      ],
+      "title": "Lodash versions prior to 4.17.21 are vulnerable to Command Injection via the template function.",
+      "cwe": {
+        "id": "CWE-77",
+        "name": "Improper Neutralization of Special Elements used in a Command ('Command Injection')"
+      },
+      "notes": [
+        {
+          "category": "summary",
+          "title": "Vulnerability summary",
+          "text": "Secvisogram is not affected"
+        }
+      ],
+      "product_status": {
+        "known_not_affected": [
+          "CSAFPID-0078",
+          "CSAFPID-0131",
+          "CSAFPID-0077",
+          "CSAFPID-0132"
+        ]
+      },
+      "threats": [
+        {
+          "category": "impact",
+          "date": "2025-02-06T11:00:00.000Z",
+          "details": "csaf-validator-lib and csaf-validator-service  are not affected, because the lodash is only used in the build process",
+          "product_ids": [
+            "CSAFPID-0078",
+            "CSAFPID-0077",
+            "CSAFPID-0132",
+            "CSAFPID-0131"
+          ]
+        }
+      ]
+    }
+  ]
+}
