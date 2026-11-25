@@ -15,7 +15,7 @@ record ListColumn(String column, Kind kind) {
 
     /**
      * CSAF selectors (without the optional leading {@code csaf}) that {@code advisories} also stores in a column, which
-     * the csaf_extract_list_columns trigger keeps in sync. Only the paged list (v2) filters on them; the list v1
+     * are generated from the csaf jsonb column. Only the paged list (v2) filters on them; the list v1
      * filters every CSAF selector by a JSON path on the document.
      * All selectors exist unchanged in CSAF 2.0 and 2.1. The derived CVSS scores and the revision history length are
      * not listed: they are aggregates (a maximum, a count) and do not answer a filter on a CSAF path identically.

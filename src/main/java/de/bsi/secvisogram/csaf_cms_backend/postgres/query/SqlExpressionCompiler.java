@@ -140,7 +140,7 @@ final class SqlExpressionCompiler {
             return "TRUE";
         }
         String comparisonPath = jsonPath(path) + " ? (" + predicate(expression) + ")";
-        String jsonPath = "jsonb_path_exists(CAST(csaf AS jsonb), CAST(" + bindText(comparisonPath) + " AS jsonpath)";
+        String jsonPath = "jsonb_path_exists(csaf, CAST(" + bindText(comparisonPath) + " AS jsonpath)";
         if (expression.getOperatorType() == TypeOfOperator.ContainsIgnoreCase) {
             return jsonPath + ")";
         }

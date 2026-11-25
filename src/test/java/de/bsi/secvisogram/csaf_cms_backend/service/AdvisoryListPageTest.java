@@ -65,7 +65,7 @@ public class AdvisoryListPageTest {
     /** Like {@link #insert(String, String, String, int)}, with created_at {@link #BASE_TIME} minus createdBefore. */
     private UUID insert(String owner, String workflowState, String csaf, int minutesBefore, int createdBefore) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO advisories (id, owner, workflow_state, csaf, created_at, updated_at) "
+        jdbc.update("INSERT INTO advisories (id, owner, workflow_state, csaf_text, created_at, updated_at) "
                 + "VALUES (?, ?, ?, ?, CAST(? AS timestamptz) - make_interval(mins => ?), "
                 + "CAST(? AS timestamptz) - make_interval(mins => ?))",
                 id, owner, workflowState, csaf, BASE_TIME, createdBefore, BASE_TIME, minutesBefore);
@@ -74,7 +74,7 @@ public class AdvisoryListPageTest {
 
     /** Inserts a snapshot; created_at is {@link #BASE_TIME} minus the given minutes. */
     private void insertVersion(UUID advisoryId, String csaf, int minutesBefore) {
-        jdbc.update("INSERT INTO advisory_versions (advisory_id, owner, workflow_state, csaf, versioning_type, "
+        jdbc.update("INSERT INTO advisory_versions (advisory_id, owner, workflow_state, csaf_text, versioning_type, "
                 + "created_at) VALUES (?, 'author1', 'Published', ?, 'Semantic', "
                 + "CAST(? AS timestamptz) - make_interval(mins => ?))", advisoryId, csaf, BASE_TIME, minutesBefore);
     }
