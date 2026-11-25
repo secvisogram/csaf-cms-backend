@@ -5,7 +5,8 @@
 -- The CSAF document is stored twice: csaf_text is the document as the backend wrote it (keeps key order) and is the
 -- only column the application reads and writes; csaf is the same document as jsonb, set from csaf_text by a trigger,
 -- for searching. The columns used for listing and searching are generated from csaf. Absent optional values give
--- NULL or an empty array; invalid JSON in csaf_text rejects the write.
+-- NULL or an empty array; invalid JSON in csaf_text rejects the write. Both document columns use lz4 compression,
+-- which (de)compresses several times faster than the default pglz; the v1 JSON path decompresses csaf of each row.
 
 -- A CSAF date-time as timestamp, or NULL if it is absent or not an RFC 3339 date-time with offset. IMMUTABLE because
 -- only values with an explicit offset are accepted, so the result does not depend on the TimeZone setting.
@@ -72,8 +73,8 @@ CREATE TABLE advisories
     id                      UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
     workflow_state          VARCHAR(20)  NOT NULL DEFAULT 'Draft',
     owner                   VARCHAR(255) NOT NULL,
-    csaf_text               TEXT         NOT NULL,
-    csaf                    JSONB        NOT NULL,
+    csaf_text               TEXT COMPRESSION lz4 NOT NULL,
+    csaf                    JSONB COMPRESSION lz4 NOT NULL,
     tracking_id             VARCHAR(255) GENERATED ALWAYS AS (csaf #>> '{document,tracking,id}') STORED,
     document_title          TEXT GENERATED ALWAYS AS (csaf #>> '{document,title}') STORED,
     current_release_date    TIMESTAMPTZ GENERATED ALWAYS AS
@@ -116,8 +117,8 @@ CREATE TABLE advisory_versions
     advisory_id          UUID         NOT NULL REFERENCES advisories (id) ON DELETE CASCADE,
     workflow_state       VARCHAR(20)  NOT NULL,
     owner                VARCHAR(255) NOT NULL,
-    csaf_text            TEXT         NOT NULL,
-    csaf                 JSONB        NOT NULL,
+    csaf_text            TEXT COMPRESSION lz4 NOT NULL,
+    csaf                 JSONB COMPRESSION lz4 NOT NULL,
     -- only the columns the list v1 shows for auditors; the paged list does not list versions
     tracking_id          VARCHAR(255) GENERATED ALWAYS AS (csaf #>> '{document,tracking,id}') STORED,
     document_title       TEXT GENERATED ALWAYS AS (csaf #>> '{document,title}') STORED,
