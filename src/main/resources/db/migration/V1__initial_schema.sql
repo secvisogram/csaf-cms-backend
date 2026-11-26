@@ -2,11 +2,12 @@
 -- Initial PostgreSQL schema for CSAF CMS Backend
 -- Replaces single-database CouchDB document model with normalized relational tables
 --
--- The CSAF document is stored twice: csaf_text is the document as the backend wrote it (keeps key order) and is the
--- only column the application reads and writes; csaf is the same document as jsonb, set from csaf_text by a trigger,
--- for searching. The columns used for listing and searching are generated from csaf. Absent optional values give
--- NULL or an empty array; invalid JSON in csaf_text rejects the write. Both document columns use lz4 compression,
--- which (de)compresses several times faster than the default pglz; the v1 JSON path decompresses csaf of each row.
+-- The CSAF document is stored twice: csaf is the document as text, as the backend wrote it (keeps key order), and is
+-- the only column the application reads and writes; csaf_jsonb is the same document as jsonb, set from csaf by a
+-- trigger, for searching. The columns used for listing and searching are generated from csaf_jsonb. Absent optional
+-- values give NULL or an empty array; invalid JSON in csaf rejects the write. Both document columns use lz4
+-- compression, which (de)compresses several times faster than the default pglz; the v1 JSON path decompresses
+-- csaf_jsonb of each row.
 
 -- A CSAF date-time as timestamp, or NULL if it is absent or not an RFC 3339 date-time with offset. IMMUTABLE because
 -- only values with an explicit offset are accepted, so the result does not depend on the TimeZone setting.
@@ -54,15 +55,15 @@ FROM (SELECT jsonb_path_query(j, '$.vulnerabilities[*].scores[*]') AS s
 WHERE jsonb_typeof(s -> cvss_version -> 'baseScore') = 'number';
 $$;
 
--- Sets csaf from csaf_text; the cast rejects invalid JSON. csaf cannot be a generated column itself: the columns
--- generated from it could then not read it. Generated columns are computed after BEFORE triggers, so they see the
--- new csaf.
-CREATE FUNCTION csaf_from_text() RETURNS trigger
+-- Sets csaf_jsonb from csaf; the cast rejects invalid JSON. csaf_jsonb cannot be a generated column itself: the
+-- columns generated from it could then not read it. Generated columns are computed after BEFORE triggers, so they see
+-- the new csaf_jsonb.
+CREATE FUNCTION csaf_jsonb_from_csaf() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
 BEGIN
-    NEW.csaf := NEW.csaf_text::jsonb;
+    NEW.csaf_jsonb := NEW.csaf::jsonb;
     RETURN NEW;
 END;
 $$;
@@ -73,34 +74,34 @@ CREATE TABLE advisories
     id                      UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
     workflow_state          VARCHAR(20)  NOT NULL DEFAULT 'Draft',
     owner                   VARCHAR(255) NOT NULL,
-    csaf_text               TEXT COMPRESSION lz4 NOT NULL,
-    csaf                    JSONB COMPRESSION lz4 NOT NULL,
-    tracking_id             VARCHAR(255) GENERATED ALWAYS AS (csaf #>> '{document,tracking,id}') STORED,
-    document_title          TEXT GENERATED ALWAYS AS (csaf #>> '{document,title}') STORED,
+    csaf                    TEXT COMPRESSION lz4 NOT NULL,
+    csaf_jsonb              JSONB COMPRESSION lz4 NOT NULL,
+    tracking_id             VARCHAR(255) GENERATED ALWAYS AS (csaf_jsonb #>> '{document,tracking,id}') STORED,
+    document_title          TEXT GENERATED ALWAYS AS (csaf_jsonb #>> '{document,title}') STORED,
     current_release_date    TIMESTAMPTZ GENERATED ALWAYS AS
-        (csaf_timestamp(csaf #>> '{document,tracking,current_release_date}')) STORED,
-    tracking_version        VARCHAR(255) GENERATED ALWAYS AS (csaf #>> '{document,tracking,version}') STORED,
-    tracking_status         VARCHAR(20) GENERATED ALWAYS AS (csaf #>> '{document,tracking,status}') STORED,
-    category                TEXT GENERATED ALWAYS AS (csaf #>> '{document,category}') STORED,
-    tlp                     VARCHAR(20) GENERATED ALWAYS AS (csaf #>> '{document,distribution,tlp,label}') STORED,
+        (csaf_timestamp(csaf_jsonb #>> '{document,tracking,current_release_date}')) STORED,
+    tracking_version        VARCHAR(255) GENERATED ALWAYS AS (csaf_jsonb #>> '{document,tracking,version}') STORED,
+    tracking_status         VARCHAR(20) GENERATED ALWAYS AS (csaf_jsonb #>> '{document,tracking,status}') STORED,
+    category                TEXT GENERATED ALWAYS AS (csaf_jsonb #>> '{document,category}') STORED,
+    tlp                     VARCHAR(20) GENERATED ALWAYS AS (csaf_jsonb #>> '{document,distribution,tlp,label}') STORED,
     cves                    TEXT[] NOT NULL GENERATED ALWAYS AS
-        (csaf_strings(csaf, '$.vulnerabilities[*].cve')) STORED,
+        (csaf_strings(csaf_jsonb, '$.vulnerabilities[*].cve')) STORED,
     vul_ids                 TEXT[] NOT NULL GENERATED ALWAYS AS
-        (csaf_strings(csaf, '$.vulnerabilities[*].ids[*].text')) STORED,
+        (csaf_strings(csaf_jsonb, '$.vulnerabilities[*].ids[*].text')) STORED,
     aliases                 TEXT[] NOT NULL GENERATED ALWAYS AS
-        (csaf_strings(csaf, '$.document.tracking.aliases[*]')) STORED,
+        (csaf_strings(csaf_jsonb, '$.document.tracking.aliases[*]')) STORED,
     initial_release_date    TIMESTAMPTZ GENERATED ALWAYS AS
-        (csaf_timestamp(csaf #>> '{document,tracking,initial_release_date}')) STORED,
-    publisher_name          TEXT GENERATED ALWAYS AS (csaf #>> '{document,publisher,name}') STORED,
+        (csaf_timestamp(csaf_jsonb #>> '{document,tracking,initial_release_date}')) STORED,
+    publisher_name          TEXT GENERATED ALWAYS AS (csaf_jsonb #>> '{document,publisher,name}') STORED,
     revision_history_length INTEGER GENERATED ALWAYS AS
-        (CASE WHEN jsonb_typeof(csaf #> '{document,tracking,revision_history}') = 'array'
-                  THEN jsonb_array_length(csaf #> '{document,tracking,revision_history}') END) STORED,
-    cvss_v2_score           NUMERIC GENERATED ALWAYS AS (csaf_max_score(csaf, 'cvss_v2')) STORED,
-    cvss_v3_score           NUMERIC GENERATED ALWAYS AS (csaf_max_score(csaf, 'cvss_v3')) STORED,
-    cvss_v4_score           NUMERIC GENERATED ALWAYS AS (csaf_max_score(csaf, 'cvss_v4')) STORED,
+        (CASE WHEN jsonb_typeof(csaf_jsonb #> '{document,tracking,revision_history}') = 'array'
+                  THEN jsonb_array_length(csaf_jsonb #> '{document,tracking,revision_history}') END) STORED,
+    cvss_v2_score           NUMERIC GENERATED ALWAYS AS (csaf_max_score(csaf_jsonb, 'cvss_v2')) STORED,
+    cvss_v3_score           NUMERIC GENERATED ALWAYS AS (csaf_max_score(csaf_jsonb, 'cvss_v3')) STORED,
+    cvss_v4_score           NUMERIC GENERATED ALWAYS AS (csaf_max_score(csaf_jsonb, 'cvss_v4')) STORED,
     -- the score of the newest CVSS version present
-    critical                NUMERIC GENERATED ALWAYS AS (COALESCE(csaf_max_score(csaf, 'cvss_v4'),
-        csaf_max_score(csaf, 'cvss_v3'), csaf_max_score(csaf, 'cvss_v2'))) STORED,
+    critical                NUMERIC GENERATED ALWAYS AS (COALESCE(csaf_max_score(csaf_jsonb, 'cvss_v4'),
+        csaf_max_score(csaf_jsonb, 'cvss_v3'), csaf_max_score(csaf_jsonb, 'cvss_v2'))) STORED,
     versioning_type         VARCHAR(10)  NOT NULL DEFAULT 'Semantic',
     last_major_version      VARCHAR(50),
     tmp_tracking_id         VARCHAR(255),
@@ -117,33 +118,35 @@ CREATE TABLE advisory_versions
     advisory_id          UUID         NOT NULL REFERENCES advisories (id) ON DELETE CASCADE,
     workflow_state       VARCHAR(20)  NOT NULL,
     owner                VARCHAR(255) NOT NULL,
-    csaf_text            TEXT COMPRESSION lz4 NOT NULL,
-    csaf                 JSONB COMPRESSION lz4 NOT NULL,
+    csaf                 TEXT COMPRESSION lz4 NOT NULL,
+    csaf_jsonb           JSONB COMPRESSION lz4 NOT NULL,
     -- only the columns the list v1 shows for auditors; the paged list does not list versions
-    tracking_id          VARCHAR(255) GENERATED ALWAYS AS (csaf #>> '{document,tracking,id}') STORED,
-    document_title       TEXT GENERATED ALWAYS AS (csaf #>> '{document,title}') STORED,
+    tracking_id          VARCHAR(255) GENERATED ALWAYS AS (csaf_jsonb #>> '{document,tracking,id}') STORED,
+    document_title       TEXT GENERATED ALWAYS AS (csaf_jsonb #>> '{document,title}') STORED,
     current_release_date TIMESTAMPTZ GENERATED ALWAYS AS
-        (csaf_timestamp(csaf #>> '{document,tracking,current_release_date}')) STORED,
+        (csaf_timestamp(csaf_jsonb #>> '{document,tracking,current_release_date}')) STORED,
     versioning_type      VARCHAR(10)  NOT NULL,
     last_major_version   VARCHAR(50),
     created_at           TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
--- UPDATE OF csaf_text: updates that do not assign csaf_text (e.g. a workflow state change) skip the parse
-CREATE TRIGGER advisories_csaf_from_text
-    BEFORE INSERT OR UPDATE OF csaf_text
+-- UPDATE OF csaf: only an UPDATE that sets csaf re-parses the document. Hibernate sets all columns, so every update
+-- through the application does; PostgreSQL recomputes the generated columns on every UPDATE anyway, because of this
+-- BEFORE ROW trigger.
+CREATE TRIGGER advisories_csaf_jsonb_from_csaf
+    BEFORE INSERT OR UPDATE OF csaf
     ON advisories
     FOR EACH ROW
-EXECUTE FUNCTION csaf_from_text();
+EXECUTE FUNCTION csaf_jsonb_from_csaf();
 
-CREATE TRIGGER advisory_versions_csaf_from_text
-    BEFORE INSERT OR UPDATE OF csaf_text
+CREATE TRIGGER advisory_versions_csaf_jsonb_from_csaf
+    BEFORE INSERT OR UPDATE OF csaf
     ON advisory_versions
     FOR EACH ROW
-EXECUTE FUNCTION csaf_from_text();
+EXECUTE FUNCTION csaf_jsonb_from_csaf();
 
-COMMENT ON COLUMN advisories.csaf IS 'Set from csaf_text by a trigger; write csaf_text only';
-COMMENT ON COLUMN advisory_versions.csaf IS 'Set from csaf_text by a trigger; write csaf_text only';
+COMMENT ON COLUMN advisories.csaf_jsonb IS 'Set from csaf by a trigger; write csaf only';
+COMMENT ON COLUMN advisory_versions.csaf_jsonb IS 'Set from csaf by a trigger; write csaf only';
 
 -- Audit trail for document changes (was ObjectType.AuditTrailDocument)
 CREATE TABLE audit_trail_documents

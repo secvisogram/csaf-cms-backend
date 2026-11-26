@@ -102,7 +102,7 @@ class OnStartupImporterIntegrationTest {
         // an advisory with a workflow state the application does not know - e.g. written by another version
         // or edited by hand. Reading it makes WorkflowState.valueOf(...) throw an unchecked exception while the
         // import checks whether the stored advisory may be replaced.
-        jdbc.update("INSERT INTO advisories (workflow_state, owner, csaf_text, versioning_type)"
+        jdbc.update("INSERT INTO advisories (workflow_state, owner, csaf, versioning_type)"
                 + " VALUES ('NoSuchState', 'someone', ?, 'Semantic')",
                 csafWithTrackingId(TRACKING_ID, "1.0.0"));
 

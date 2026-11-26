@@ -106,7 +106,8 @@ public class AdvisoryV2Controller {
             @Parameter(description = "Zero-based page number.")
             int page,
             @RequestParam(defaultValue = "50")
-            @Parameter(description = "Entries per page, 1 to " + AdvisoryService.MAX_PAGE_SIZE + ".")
+            @Parameter(description = "Entries per page, at least 1, or -1 for all entries at once (page must then be "
+                    + "0).")
             int size,
             @Parameter(hidden = true)
             HttpServletRequest request

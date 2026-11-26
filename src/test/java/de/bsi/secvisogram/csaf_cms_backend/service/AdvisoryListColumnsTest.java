@@ -19,7 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
- * The csaf jsonb column set from csaf_text by a trigger, the columns generated from it, the paged list (v2) filters
+ * The csaf_jsonb column set from csaf by a trigger, the columns generated from it, the paged list (v2) filters
  * that use them, and the list v1 filters, which use the JSON path on the document instead.
  */
 @SpringBootTest(properties = {
@@ -56,7 +56,7 @@ public class AdvisoryListColumnsTest {
 
     /** Inserts the documents as they are: the service would replace tracking id, version, status and dates. */
     private void insert(String csaf) {
-        jdbc.update("INSERT INTO advisories (id, owner, csaf_text, created_at, updated_at) "
+        jdbc.update("INSERT INTO advisories (id, owner, csaf, created_at, updated_at) "
                 + "VALUES (gen_random_uuid(), 'author1', ?, now(), now())", csaf);
     }
 
@@ -73,7 +73,7 @@ public class AdvisoryListColumnsTest {
 
     /** The number of advisories the paged list (v2) finds; it filters CSAF selectors by the columns. */
     private int countV2(OperatorExpression filter) throws Exception {
-        return Math.toIntExact(advisoryService.getAdvisoryPage(AdvisorySearchUtil.expression2Json(filter), 0, 500,
+        return Math.toIntExact(advisoryService.getAdvisoryPage(AdvisorySearchUtil.expression2Json(filter), 0, -1,
                 List.of()).totalElements());
     }
 
@@ -227,7 +227,7 @@ public class AdvisoryListColumnsTest {
         assertEquals("Beta", row.get("document_title"));
         // the service writes tracking id and dates itself: the column follows what was stored
         assertEquals(Boolean.TRUE, jdbc.queryForObject(
-                "SELECT tracking_id = (csaf #>> '{document,tracking,id}') FROM advisories", Boolean.class));
+                "SELECT tracking_id = (csaf_jsonb #>> '{document,tracking,id}') FROM advisories", Boolean.class));
         assertEquals("draft", row.get("tracking_status"));
         assertEquals(List.of("CVE-2024-0002"), array(row.get("cves")));
         assertEquals(List.of(), array(row.get("aliases")));
@@ -236,7 +236,7 @@ public class AdvisoryListColumnsTest {
     @Test
     public void invalidJsonIsRejectedByTheDatabase() {
         assertThrows(DataAccessException.class, () -> jdbc.update("""
-                INSERT INTO advisories (id, owner, csaf_text, created_at, updated_at)
+                INSERT INTO advisories (id, owner, csaf, created_at, updated_at)
                 VALUES (gen_random_uuid(), 'x', 'not json', now(), now())"""));
     }
 
@@ -304,15 +304,15 @@ public class AdvisoryListColumnsTest {
         assertEquals(1, count(OperatorExpression.equal("s", "csaf", "vulnerabilities", "ids", "system_name")));
     }
 
-    /** csaf follows csaf_text on every write of csaf_text, and the generated columns follow csaf. */
+    /** csaf_jsonb follows csaf on every write of csaf, and the generated columns follow csaf_jsonb. */
     @Test
-    public void csafFollowsCsafText() {
+    public void csafJsonbFollowsCsaf() {
         insert(ALPHA);
-        assertEquals(Boolean.TRUE, jdbc.queryForObject("SELECT csaf = csaf_text::jsonb FROM advisories",
+        assertEquals(Boolean.TRUE, jdbc.queryForObject("SELECT csaf_jsonb = csaf::jsonb FROM advisories",
                 Boolean.class));
 
-        jdbc.update("UPDATE advisories SET csaf_text = ?", BETA);
-        assertEquals(Boolean.TRUE, jdbc.queryForObject("SELECT csaf = csaf_text::jsonb FROM advisories",
+        jdbc.update("UPDATE advisories SET csaf = ?", BETA);
+        assertEquals(Boolean.TRUE, jdbc.queryForObject("SELECT csaf_jsonb = csaf::jsonb FROM advisories",
                 Boolean.class));
         assertEquals("Beta", title());
 
@@ -321,14 +321,14 @@ public class AdvisoryListColumnsTest {
         assertEquals("Beta", title());
     }
 
-    /** csaf_text keeps the key order as written; the jsonb column orders the keys by length. */
+    /** csaf keeps the key order as written; csaf_jsonb orders the keys by length. */
     @Test
-    public void csafTextKeepsTheKeyOrder() {
+    public void csafKeepsTheKeyOrder() {
         String text = """
                 {"vulnerabilities": [{"cve": "CVE-2024-0001"}], "document": {"title": "Order", "category": "csaf_base"}}""";
         insert(text);
-        assertEquals(text, jdbc.queryForObject("SELECT csaf_text FROM advisories", String.class));
-        assertTrue(jdbc.queryForObject("SELECT csaf::text FROM advisories", String.class)
+        assertEquals(text, jdbc.queryForObject("SELECT csaf FROM advisories", String.class));
+        assertTrue(jdbc.queryForObject("SELECT csaf_jsonb::text FROM advisories", String.class)
                 .startsWith("{\"document\": {\"title\""));
     }
 
@@ -349,9 +349,9 @@ public class AdvisoryListColumnsTest {
     @Test
     @WithMockUser(username = "auditor1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
     public void versionsHaveOnlyTheV1ColumnsAndFilterTheRestByJsonPath() throws Exception {
-        jdbc.update("INSERT INTO advisories (id, owner, csaf_text) VALUES ('00000000-0000-0000-0000-000000000001', "
+        jdbc.update("INSERT INTO advisories (id, owner, csaf) VALUES ('00000000-0000-0000-0000-000000000001', "
                 + "'author1', ?)", GAMMA);
-        jdbc.update("INSERT INTO advisory_versions (advisory_id, owner, workflow_state, csaf_text, versioning_type) "
+        jdbc.update("INSERT INTO advisory_versions (advisory_id, owner, workflow_state, csaf, versioning_type) "
                 + "VALUES ('00000000-0000-0000-0000-000000000001', 'author1', 'Published', ?, 'Semantic')", ALPHA);
 
         Map<String, Object> row = jdbc.queryForMap("""

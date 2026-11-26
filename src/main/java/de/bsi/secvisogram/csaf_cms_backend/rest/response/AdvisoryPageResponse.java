@@ -9,7 +9,7 @@ import java.util.List;
 @Schema(name = "AdvisoryPage")
 public record AdvisoryPageResponse(
         @Schema(description = "The advisories of this page, in sort order.")
-        List<AdvisoryInformationResponse> items,
+        List<AdvisoryInformationPageResponse> items,
         @Schema(description = "The zero-based page number.", example = "0")
         int page,
         @Schema(description = "The requested page size.", example = "50")

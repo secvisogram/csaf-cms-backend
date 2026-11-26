@@ -11,5 +11,5 @@ import java.util.List;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP",
         justification = "Short-lived result holder, the list is not shared")
-public record AdvisoryListPage(List<AdvisoryListProjection> advisories, long total) {
+public record AdvisoryListPage(List<AdvisoryPageProjection> advisories, long total) {
 }

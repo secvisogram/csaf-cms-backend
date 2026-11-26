@@ -10,11 +10,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-/** Executes the advisory list query without selecting the large {@code csaf} column. */
+/** Executes the advisory list query without selecting the large document columns. */
 @Service
 public class AdvisoryListQueryService {
 
@@ -22,9 +25,12 @@ public class AdvisoryListQueryService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /** The page size that reads all entries. */
+    public static final int ALL_ENTRIES = -1;
+
     public List<AdvisoryListProjection> findAdvisories(Expression filter, Authentication credentials) {
         LOG.debug("Start findAdvisories");
-        SqlExpressionCompiler compiler = SqlExpressionCompiler.lenient();
+        SqlExpressionCompiler compiler = new LenientSqlExpressionCompiler();
         String compiledExpr = compiler.compile(filter);
         String where = visibilityClause(credentials, compiler) + " AND " + compiledExpr;
         String sql = """
@@ -65,9 +71,9 @@ public class AdvisoryListQueryService {
         return timestamp.toString();
     }
 
-    /** Executes the advisory version list query without selecting the large {@code csaf} column. */
+    /** Executes the advisory version list query without selecting the large document columns. */
     public List<AdvisoryVersionListProjection> findAdvisoryVersions(Expression filter) {
-        SqlExpressionCompiler compiler = SqlExpressionCompiler.lenient();
+        SqlExpressionCompiler compiler = new LenientSqlExpressionCompiler();
         String sql = """
                 SELECT advisory_id, workflow_state, owner,
                        tracking_id,
@@ -91,11 +97,12 @@ public class AdvisoryListQueryService {
      * One page of the advisories the user may see. Version snapshots are not listed. Only filters on columns are
      * accepted (no JSON path).
      *
+     * @param size entries per page; {@link #ALL_ENTRIES} for all entries (page must then be 0)
      * @throws UnsupportedFilterException if the filter uses a field or value that is not backed by a column
      */
     public AdvisoryListPage findAdvisoryPage(Expression filter, List<AdvisoryListSort> sort, int page, int size,
                                              Authentication credentials) {
-        SqlExpressionCompiler compiler = SqlExpressionCompiler.strict(ListColumn.ADVISORIES);
+        SqlExpressionCompiler compiler = new StrictSqlExpressionCompiler(CsafSelectorColumn.ADVISORIES);
         String where = visibilityClause(credentials, compiler) + " AND " + compiler.compile(filter);
 
         // the total comes with the page rows except when a page beyond the end is requested, then we need to count
@@ -103,10 +110,13 @@ public class AdvisoryListQueryService {
         String sql = """
                 SELECT id, workflow_state, owner, version,
                        tracking_id, document_title, current_release_date, updated_at, created_at,
-                       count(*) OVER () AS total
+                       count(*) OVER () AS total,
+                       tracking_version, tracking_status, category, tlp, initial_release_date, publisher_name,
+                       revision_history_length, cvss_v2_score, cvss_v3_score, cvss_v4_score, critical,
+                       cves, vul_ids, aliases
                   FROM advisories
                  WHERE\s""" + where + "\n ORDER BY " + orderBy(sort)
-                + "\n LIMIT " + size + " OFFSET " + ((long) page * size);
+                + (size == ALL_ENTRIES ? "" : "\n LIMIT " + size + " OFFSET " + ((long) page * size));
         var query = entityManager.createNativeQuery(sql);
         compiler.bind(query);
         @SuppressWarnings("unchecked")
@@ -123,11 +133,32 @@ public class AdvisoryListQueryService {
             total = ((Number) countQuery.getSingleResult()).longValue();
         }
         // see the SQL for what an index matches
-        List<AdvisoryListProjection> advisories = rows.stream().map(row -> new AdvisoryListProjection(
-                row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
-                (String) row[4], (String) row[5], toIsoInstant(row[6]), toIsoInstant(row[7]),
-                toIsoInstant(row[8]))).toList();
+        List<AdvisoryPageProjection> advisories = rows.stream().map(row -> new AdvisoryPageProjection(
+                new AdvisoryListProjection(
+                        row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
+                        (String) row[4], (String) row[5], toIsoInstant(row[6]), toIsoInstant(row[7]),
+                        toIsoInstant(row[8])),
+                (String) row[10], (String) row[11], (String) row[12], (String) row[13], toIsoInstant(row[14]),
+                (String) row[15], row[16] == null ? null : ((Number) row[16]).intValue(),
+                (BigDecimal) row[17], (BigDecimal) row[18], (BigDecimal) row[19], (BigDecimal) row[20],
+                toStringList(row[21]), toStringList(row[22]), toStringList(row[23]))).toList();
         return new AdvisoryListPage(advisories, total);
+    }
+
+    /** A text[] column as list; the JDBC driver may return it as array or as {@link java.sql.Array}. */
+    private static List<String> toStringList(Object value) {
+        Object elements = value;
+        if (value instanceof java.sql.Array sqlArray) {
+            try {
+                elements = sqlArray.getArray();
+            } catch (SQLException ex) {
+                throw new IllegalStateException("Cannot read a text[] column", ex);
+            }
+        }
+        if (elements instanceof Object[] array) {
+            return Arrays.stream(array).map(String::valueOf).toList();
+        }
+        return List.of();
     }
 
     /** The sort criteria, then the id so that the order and therefore the pages are stable. */

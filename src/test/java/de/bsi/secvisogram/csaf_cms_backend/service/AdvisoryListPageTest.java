@@ -1,6 +1,7 @@
 package de.bsi.secvisogram.csaf_cms_backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.bsi.secvisogram.csaf_cms_backend.PostgreSQLExtension;
@@ -13,8 +14,10 @@ import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.TypeOfOperator;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.TypeOfValue;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationPageResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryPageResponse;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -65,7 +68,7 @@ public class AdvisoryListPageTest {
     /** Like {@link #insert(String, String, String, int)}, with created_at {@link #BASE_TIME} minus createdBefore. */
     private UUID insert(String owner, String workflowState, String csaf, int minutesBefore, int createdBefore) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO advisories (id, owner, workflow_state, csaf_text, created_at, updated_at) "
+        jdbc.update("INSERT INTO advisories (id, owner, workflow_state, csaf, created_at, updated_at) "
                 + "VALUES (?, ?, ?, ?, CAST(? AS timestamptz) - make_interval(mins => ?), "
                 + "CAST(? AS timestamptz) - make_interval(mins => ?))",
                 id, owner, workflowState, csaf, BASE_TIME, createdBefore, BASE_TIME, minutesBefore);
@@ -74,7 +77,7 @@ public class AdvisoryListPageTest {
 
     /** Inserts a snapshot; created_at is {@link #BASE_TIME} minus the given minutes. */
     private void insertVersion(UUID advisoryId, String csaf, int minutesBefore) {
-        jdbc.update("INSERT INTO advisory_versions (advisory_id, owner, workflow_state, csaf_text, versioning_type, "
+        jdbc.update("INSERT INTO advisory_versions (advisory_id, owner, workflow_state, csaf, versioning_type, "
                 + "created_at) VALUES (?, 'author1', 'Published', ?, 'Semantic', "
                 + "CAST(? AS timestamptz) - make_interval(mins => ?))", advisoryId, csaf, BASE_TIME, minutesBefore);
     }
@@ -229,8 +232,32 @@ public class AdvisoryListPageTest {
         assertRejected(CsafExceptionKey.InvalidListParameter, () -> page(null, 0, 10, "title,up"));
         assertRejected(CsafExceptionKey.InvalidListParameter, () -> page(null, -1, 10));
         assertRejected(CsafExceptionKey.InvalidListParameter, () -> page(null, 0, 0));
-        assertRejected(CsafExceptionKey.InvalidListParameter,
-                () -> page(null, 0, AdvisoryService.MAX_PAGE_SIZE + 1));
+    }
+
+    /** Size -1 reads all entries at once, filtered and sorted; only page 0 is allowed with it. */
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void sizeMinusOneReadsAll() throws Exception {
+        seedFive();
+        AdvisoryPageResponse all = page(null, 0, -1, "title");
+        assertEquals(List.of("A", "B", "C", "D", "E"), titles(all));
+        assertEquals(5, all.totalElements());
+        assertEquals(-1, all.size());
+        assertEquals(List.of("A", "D"), titles(page(OperatorExpression.equal("CVE-2024-0001",
+                "csaf", "vulnerabilities", "cve"), 0, -1, "title")));
+        assertRejected(CsafExceptionKey.InvalidListParameter, () -> page(null, 1, -1));
+        assertRejected(CsafExceptionKey.InvalidListParameter, () -> page(null, 0, -2));
+    }
+
+    /** The size has no upper limit; the offset of a large page does not overflow. */
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void largeSizeDoesNotOverflow() throws Exception {
+        seedFive();
+        assertEquals(5, page(null, 0, Integer.MAX_VALUE, "title").items().size());
+        AdvisoryPageResponse beyond = page(null, 1, Integer.MAX_VALUE, "title");
+        assertEquals(List.of(), titles(beyond));
+        assertEquals(5, beyond.totalElements());
     }
 
     @Test
@@ -326,6 +353,50 @@ public class AdvisoryListPageTest {
         assertEquals(List.of("B", "A", "C"), titles(page(null, 0, 10, "revisionHistoryLength")));
         assertEquals(List.of("B", "A", "C"), titles(page(null, 0, 10, "initialReleaseDate,desc")));
         assertEquals(List.of("A", "B", "C"), titles(page(null, 0, 10, "publisherName")));
+    }
+
+    /** Every field the paged list filters or sorts by is also returned. */
+    @Test
+    @WithMockUser(username = "author1", authorities = {CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUTHOR})
+    public void returnsTheFilterAndSortFields() throws Exception {
+        insert("author1", "Draft", """
+                {"document": {"category": "csaf_base", "title": "Full",
+                  "distribution": {"tlp": {"label": "AMBER"}},
+                  "publisher": {"name": "Example Inc."},
+                  "tracking": {"id": "ID-F", "version": "1.0.0", "status": "final", "aliases": ["ALIAS-1"],
+                    "initial_release_date": "2024-01-01T10:00:00+02:00",
+                    "revision_history": [{"number": "1"}, {"number": "2"}]}},
+                 "vulnerabilities": [
+                   {"cve": "CVE-2024-0001", "ids": [{"system_name": "s", "text": "VID-1"}],
+                    "scores": [{"cvss_v3": {"baseScore": 9.8}, "cvss_v2": {"baseScore": 7.5}}]},
+                   {"cve": "CVE-2024-0002"}]}""", 0);
+        insert("author1", "Draft", """
+                {"document": {"title": "Empty"}}""", 1);
+
+        List<AdvisoryInformationPageResponse> items = page(null, 0, 10, "title").items();
+        AdvisoryInformationPageResponse empty = items.get(0);
+        AdvisoryInformationPageResponse full = items.get(1);
+        assertEquals("1.0.0", full.getTrackingVersion());
+        assertEquals("final", full.getTrackingStatus());
+        assertEquals("csaf_base", full.getCategory());
+        assertEquals("AMBER", full.getTlp());
+        assertEquals("2024-01-01T08:00:00Z", full.getInitialReleaseDate());
+        assertEquals("Example Inc.", full.getPublisherName());
+        assertEquals(2, full.getRevisionHistoryLength());
+        assertEquals(0, new BigDecimal("7.5").compareTo(full.getCvssV2Score()));
+        assertEquals(0, new BigDecimal("9.8").compareTo(full.getCvssV3Score()));
+        assertNull(full.getCvssV4Score());
+        assertEquals(0, new BigDecimal("9.8").compareTo(full.getCritical()));
+        assertEquals(List.of("CVE-2024-0001", "CVE-2024-0002"), full.getCves());
+        assertEquals(List.of("VID-1"), full.getVulnerabilityIds());
+        assertEquals(List.of("ALIAS-1"), full.getAliases());
+
+        assertNull(empty.getTrackingVersion());
+        assertNull(empty.getRevisionHistoryLength());
+        assertNull(empty.getCritical());
+        assertEquals(List.of(), empty.getCves());
+        assertEquals(List.of(), empty.getVulnerabilityIds());
+        assertEquals(List.of(), empty.getAliases());
     }
 
     @Test

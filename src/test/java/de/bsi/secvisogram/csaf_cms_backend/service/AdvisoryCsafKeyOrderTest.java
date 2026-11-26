@@ -51,7 +51,7 @@ public class AdvisoryCsafKeyOrderTest {
     public void savedKeyOrderIsStoredAndReturned() throws Exception {
         IdAndRevision created = advisoryService.addAdvisory(csafToRequest(FIRST));
 
-        assertFirstOrder(MAPPER.readTree(jdbc.queryForObject("SELECT csaf_text FROM advisories", String.class)));
+        assertFirstOrder(MAPPER.readTree(jdbc.queryForObject("SELECT csaf FROM advisories", String.class)));
         assertFirstOrder(advisoryService.getAdvisory(created.getId()).getCsaf());
     }
 
@@ -61,7 +61,7 @@ public class AdvisoryCsafKeyOrderTest {
         IdAndRevision created = advisoryService.addAdvisory(csafToRequest(FIRST));
         advisoryService.updateAdvisory(created.getId(), created.getRevision(), csafToRequest(SECOND));
 
-        assertSecondOrder(MAPPER.readTree(jdbc.queryForObject("SELECT csaf_text FROM advisories", String.class)));
+        assertSecondOrder(MAPPER.readTree(jdbc.queryForObject("SELECT csaf FROM advisories", String.class)));
         assertSecondOrder(advisoryService.getAdvisory(created.getId()).getCsaf());
     }
 

@@ -309,7 +309,7 @@ public class AdvisoryImportVersionsTest {
     private List<JsonNode> readAllAdvisoryVersionsFromDb() {
 
         ObjectMapper mapper = new JsonMapper();
-        return jdbc.query("SELECT advisory_id::text AS advisory_id, csaf::text AS csaf FROM advisory_versions",
+        return jdbc.query("SELECT advisory_id::text AS advisory_id, csaf FROM advisory_versions",
                 (rs, rowNum) -> mapper.createObjectNode()
                         .put("advisoryReference", rs.getString("advisory_id"))
                         .set("csaf", mapper.readTree(rs.getString("csaf"))));

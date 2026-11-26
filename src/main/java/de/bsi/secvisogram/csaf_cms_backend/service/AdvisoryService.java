@@ -8,7 +8,7 @@ import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListPage;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListProjection;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListSort;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListSortField;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryPageProjection;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryVersionListProjection;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.query.UnsupportedFilterException;
@@ -54,6 +54,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
 import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
 import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
 import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Interim;
+import static de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService.ALL_ENTRIES;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
 import static java.util.Collections.emptyList;
 import static org.springframework.http.HttpStatus.*;
@@ -200,16 +201,14 @@ public class AdvisoryService {
         return allResponses;
     }
 
-    /** Largest page size of {@link #getAdvisoryPage}. */
-    public static final int MAX_PAGE_SIZE = 500;
-
     /**
      * One page of the advisories the user may see. Unlike {@link #getAdvisoryInformations}, version snapshots are
      * not listed, also not for auditors. Filter and sort accept only fields that are stored as columns.
      *
      * @param expression optional filter expression as JSON, see the list endpoint
      * @param page       zero-based page number
-     * @param size       entries per page, 1 to {@link #MAX_PAGE_SIZE}
+     * @param size       entries per page, at least 1, or {@link AdvisoryListQueryService#ALL_ENTRIES} for all entries
+     *                   (then page must be 0)
      * @param sort       sort criteria {@code field} or {@code field,asc|desc}; empty sorts by lastUpdated, newest first
      * @throws CsafException BAD_REQUEST for an unsupported filter, sort field or page parameter
      */
@@ -218,11 +217,15 @@ public class AdvisoryService {
     public AdvisoryPageResponse getAdvisoryPage(String expression, int page, int size, List<String> sort)
             throws CsafException {
 
-        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
-            throw new CsafException("page must be >= 0 and size between 1 and " + MAX_PAGE_SIZE,
+        if (page < 0 || (size < 1 && size != ALL_ENTRIES)) {
+            throw new CsafException("page must be >= 0 and size >= 1, or size " + ALL_ENTRIES + " for all entries",
                     InvalidListParameter, BAD_REQUEST);
         }
-        List<AdvisoryListSort> sortCriteria = parseSort(sort);
+        if (size == ALL_ENTRIES && page != 0) {
+            throw new CsafException("size " + ALL_ENTRIES + " reads all entries, so page must be 0",
+                    InvalidListParameter, BAD_REQUEST);
+        }
+        List<AdvisoryListSort> sortCriteria = AdvisoryListSort.parse(sort);
         Authentication credentials = getAuthentication();
         Expression parsedExpr = parseFilterExpression(expression);
 
@@ -234,32 +237,13 @@ public class AdvisoryService {
                     BAD_REQUEST);
         }
 
-        List<AdvisoryInformationResponse> items = new ArrayList<>();
-        for (AdvisoryListProjection projection : result.advisories()) {
-            AdvisoryInformationResponse response = toAdvisoryInformationResponse(projection);
+        List<AdvisoryInformationPageResponse> items = new ArrayList<>();
+        for (AdvisoryPageProjection projection : result.advisories()) {
+            AdvisoryInformationPageResponse response = toAdvisoryInformationPageResponse(projection);
             enrichAdvisory(response, credentials);
             items.add(response);
         }
         return new AdvisoryPageResponse(items, page, size, result.total());
-    }
-
-    private static List<AdvisoryListSort> parseSort(List<String> sort) throws CsafException {
-        if (sort == null || sort.isEmpty()) {
-            return List.of(new AdvisoryListSort(AdvisoryListSortField.LAST_UPDATED, true));
-        }
-        List<AdvisoryListSort> criteria = new ArrayList<>();
-        for (String criterion : sort) {
-            String[] parts = criterion.split(",", -1);
-            Optional<AdvisoryListSortField> field = AdvisoryListSortField.fromApiName(parts[0].trim());
-            String direction = parts.length > 1 ? parts[1].trim().toLowerCase(Locale.ROOT) : "asc";
-            if (field.isEmpty() || parts.length > 2 || !(direction.equals("asc") || direction.equals("desc"))) {
-                throw new CsafException("Invalid sort '" + criterion + "', expected field[,asc|desc] with field one of "
-                        + Arrays.stream(AdvisoryListSortField.values()).map(AdvisoryListSortField::getApiName).toList(),
-                        InvalidListParameter, BAD_REQUEST);
-            }
-            criteria.add(new AdvisoryListSort(field.get(), direction.equals("desc")));
-        }
-        return criteria;
     }
 
     private Expression parseFilterExpression(String expression) throws CsafException {
@@ -283,7 +267,11 @@ public class AdvisoryService {
     }
 
     private AdvisoryInformationResponse toAdvisoryInformationResponse(AdvisoryListProjection projection) {
-        AdvisoryInformationResponse response = new AdvisoryInformationResponse(projection.advisoryId());
+        return fillAdvisoryInformationResponse(new AdvisoryInformationResponse(projection.advisoryId()), projection);
+    }
+
+    private static <T extends AdvisoryInformationResponse> T fillAdvisoryInformationResponse(
+            T response, AdvisoryListProjection projection) {
         response.setWorkflowState(projection.workflowState());
         response.setOwner(projection.owner());
         response.setRevision(String.valueOf(projection.version()));
@@ -292,6 +280,27 @@ public class AdvisoryService {
         response.setCurrentReleaseDate(projection.currentReleaseDate());
         response.setLastUpdated(projection.lastUpdated());
         response.setCreatedAt(projection.createdAt());
+        return response;
+    }
+
+    private static AdvisoryInformationPageResponse toAdvisoryInformationPageResponse(
+            AdvisoryPageProjection projection) {
+        AdvisoryInformationPageResponse response = fillAdvisoryInformationResponse(
+                new AdvisoryInformationPageResponse(projection.base().advisoryId()), projection.base());
+        response.setTrackingVersion(projection.trackingVersion());
+        response.setTrackingStatus(projection.trackingStatus());
+        response.setCategory(projection.category());
+        response.setTlp(projection.tlp());
+        response.setInitialReleaseDate(projection.initialReleaseDate());
+        response.setPublisherName(projection.publisherName());
+        response.setRevisionHistoryLength(projection.revisionHistoryLength());
+        response.setCvssV2Score(projection.cvssV2Score());
+        response.setCvssV3Score(projection.cvssV3Score());
+        response.setCvssV4Score(projection.cvssV4Score());
+        response.setCritical(projection.critical());
+        response.setCves(projection.cves());
+        response.setVulnerabilityIds(projection.vulnerabilityIds());
+        response.setAliases(projection.aliases());
         return response;
     }
 

@@ -41,7 +41,7 @@ public class AdvisoryVersionEntity {
 
     @Convert(converter = JsonNodeTextConverter.class)
     @Mutability(JsonNodeMutabilityPlan.class)
-    @Column(name = "csaf_text", columnDefinition = "text", nullable = false)
+    @Column(columnDefinition = "text", nullable = false)
     private JsonNode csaf;
 
     @Column(name = "versioning_type", nullable = false)

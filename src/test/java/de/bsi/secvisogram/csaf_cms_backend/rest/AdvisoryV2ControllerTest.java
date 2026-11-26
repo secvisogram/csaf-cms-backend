@@ -12,9 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.model.WorkflowState;
-import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationResponse;
+import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryInformationPageResponse;
 import de.bsi.secvisogram.csaf_cms_backend.rest.response.AdvisoryPageResponse;
 import de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryService;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +39,18 @@ public class AdvisoryV2ControllerTest {
     @Test
     @WithMockUser
     void defaultsAndResponseShape() throws Exception {
-        AdvisoryInformationResponse info = new AdvisoryInformationResponse("id-1", WorkflowState.Draft);
+        AdvisoryInformationPageResponse info = new AdvisoryInformationPageResponse("id-1");
+        info.setWorkflowState(WorkflowState.Draft);
+        info.setCves(List.of("CVE-2024-0001"));
+        info.setCritical(new BigDecimal("9.8"));
         when(advisoryService.getAdvisoryPage(isNull(), eq(0), eq(50), eq(List.of())))
                 .thenReturn(new AdvisoryPageResponse(List.of(info), 0, 50, 7));
 
         mockMvc.perform(get(ROUTE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].advisoryId").value("id-1"))
+                .andExpect(jsonPath("$.items[0].cves[0]").value("CVE-2024-0001"))
+                .andExpect(jsonPath("$.items[0].critical").value(9.8))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(50))
                 .andExpect(jsonPath("$.totalElements").value(7));
