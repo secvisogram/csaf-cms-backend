@@ -1,0 +1,196 @@
+package de.bsi.secvisogram.csaf_cms_backend.postgres.query;
+
+import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
+import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/** Executes the advisory list query without selecting the large document columns. */
+@Service
+public class AdvisoryListQueryService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdvisoryListQueryService.class);
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    /** The page size that reads all entries. */
+    public static final int ALL_ENTRIES = -1;
+
+    public List<AdvisoryListProjection> findAdvisories(Expression filter, Authentication credentials) {
+        LOG.debug("Start findAdvisories");
+        SqlExpressionCompiler compiler = new LenientSqlExpressionCompiler();
+        String compiledExpr = compiler.compile(filter);
+        String where = visibilityClause(credentials, compiler) + " AND " + compiledExpr;
+        String sql = """
+                SELECT id, workflow_state, owner, version,
+                       tracking_id,
+                       document_title,
+                       current_release_date,
+                       updated_at,
+                       created_at
+                  FROM advisories
+                 WHERE""" + " " + where + "\n" + """
+                 ORDER BY id
+                 """;
+
+        LOG.debug("Start findAdvisories - createNativeQuery");
+        var query = entityManager.createNativeQuery(sql);
+        compiler.bind(query);
+        LOG.debug("Start findAdvisories - getResultList");
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        LOG.debug("Start findAdvisories - stream");
+        return rows.stream().map(row -> new AdvisoryListProjection(
+                row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
+                (String) row[4], (String) row[5], row[6] == null ? null : row[6].toString(),
+                toIsoInstant(row[7]), toIsoInstant(row[8]))).toList();
+    }
+
+    private static String toIsoInstant(Object timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        if (timestamp instanceof java.sql.Timestamp sqlTimestamp) {
+            return sqlTimestamp.toInstant().toString();
+        }
+        if (timestamp instanceof java.time.OffsetDateTime offsetDateTime) {
+            return offsetDateTime.toInstant().toString();
+        }
+        return timestamp.toString();
+    }
+
+    /** Executes the advisory version list query without selecting the large document columns. */
+    public List<AdvisoryVersionListProjection> findAdvisoryVersions(Expression filter) {
+        SqlExpressionCompiler compiler = new LenientSqlExpressionCompiler();
+        String sql = """
+                SELECT advisory_id, workflow_state, owner,
+                       tracking_id,
+                       document_title,
+                       current_release_date
+                  FROM advisory_versions
+                 WHERE""" + " " + compiler.compile(filter) + "\n" + """
+                 ORDER BY id
+                 """;
+
+        var query = entityManager.createNativeQuery(sql);
+        compiler.bind(query);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        return rows.stream().map(row -> new AdvisoryVersionListProjection(
+                row[0].toString(), (String) row[1], (String) row[2],
+                (String) row[3], (String) row[4], row[5] == null ? null : row[5].toString())).toList();
+    }
+
+    /**
+     * One page of the advisories the user may see. Version snapshots are not listed. Only filters on columns are
+     * accepted (no JSON path).
+     *
+     * @param size entries per page; {@link #ALL_ENTRIES} for all entries (page must then be 0)
+     * @throws UnsupportedFilterException if the filter uses a field or value that is not backed by a column
+     */
+    public AdvisoryListPage findAdvisoryPage(Expression filter, List<AdvisoryListSort> sort, int page, int size,
+                                             Authentication credentials) {
+        SqlExpressionCompiler compiler = new StrictSqlExpressionCompiler(CsafSelectorColumn.ADVISORIES);
+        String where = visibilityClause(credentials, compiler) + " AND " + compiler.compile(filter);
+
+        // the total comes with the page rows except when a page beyond the end is requested, then we need to count
+        // separately
+        String sql = """
+                SELECT id, workflow_state, owner, version,
+                       tracking_id, document_title, current_release_date, updated_at, created_at,
+                       count(*) OVER () AS total,
+                       tracking_version, tracking_status, category, tlp, initial_release_date, publisher_name,
+                       revision_history_length, cvss_v2_score, cvss_v3_score, cvss_v4_score, critical,
+                       cves, vul_ids, aliases
+                  FROM advisories
+                 WHERE\s""" + where + "\n ORDER BY " + orderBy(sort)
+                + (size == ALL_ENTRIES ? "" : "\n LIMIT " + size + " OFFSET " + ((long) page * size));
+        var query = entityManager.createNativeQuery(sql);
+        compiler.bind(query);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+
+        long total;
+        if (!rows.isEmpty()) {
+            total = ((Number) rows.get(0)[9]).longValue(); // "total" column
+        } else if (page == 0) {
+            total = 0;
+        } else { // no results because a page beyond the end was requested: needs separate query for the total
+            var countQuery = entityManager.createNativeQuery("SELECT count(*) FROM advisories WHERE " + where);
+            compiler.bind(countQuery);
+            total = ((Number) countQuery.getSingleResult()).longValue();
+        }
+        // see the SQL for what an index matches
+        List<AdvisoryPageProjection> advisories = rows.stream().map(row -> new AdvisoryPageProjection(
+                new AdvisoryListProjection(
+                        row[0].toString(), (String) row[1], (String) row[2], ((Number) row[3]).longValue(),
+                        (String) row[4], (String) row[5], toIsoInstant(row[6]), toIsoInstant(row[7]),
+                        toIsoInstant(row[8])),
+                (String) row[10], (String) row[11], (String) row[12], (String) row[13], toIsoInstant(row[14]),
+                (String) row[15], row[16] == null ? null : ((Number) row[16]).intValue(),
+                (BigDecimal) row[17], (BigDecimal) row[18], (BigDecimal) row[19], (BigDecimal) row[20],
+                toStringList(row[21]), toStringList(row[22]), toStringList(row[23]))).toList();
+        return new AdvisoryListPage(advisories, total);
+    }
+
+    /** A text[] column as list; the JDBC driver may return it as array or as {@link java.sql.Array}. */
+    private static List<String> toStringList(Object value) {
+        Object elements = value;
+        if (value instanceof java.sql.Array sqlArray) {
+            try {
+                elements = sqlArray.getArray();
+            } catch (SQLException ex) {
+                throw new IllegalStateException("Cannot read a text[] column", ex);
+            }
+        }
+        if (elements instanceof Object[] array) {
+            return Arrays.stream(array).map(String::valueOf).toList();
+        }
+        return List.of();
+    }
+
+    /** The sort criteria, then the id so that the order and therefore the pages are stable. */
+    private static String orderBy(List<AdvisoryListSort> sort) {
+        List<String> parts = new ArrayList<>();
+        for (AdvisoryListSort criterion : sort) {
+            parts.add(criterion.field().getColumn() + (criterion.descending() ? " DESC" : " ASC") + " NULLS LAST");
+        }
+        parts.add("id ASC");
+        return String.join(", ", parts);
+    }
+
+    private String visibilityClause(Authentication credentials, SqlExpressionCompiler compiler) {
+        if (hasRole(credentials, CsafRoles.ROLE_AUDITOR) || hasRole(credentials, CsafRoles.ROLE_EDITOR)) {
+            return "TRUE";
+        }
+        List<String> clauses = new ArrayList<>();
+        clauses.add("(workflow_state = 'Published' AND "
+                + "current_release_date < " + compiler.bindText(Instant.now()) + ")");
+        if (hasRole(credentials, CsafRoles.ROLE_AUTHOR)) {
+            clauses.add("owner = " + compiler.bindText(credentials.getName()));
+        }
+        if (hasRole(credentials, CsafRoles.ROLE_PUBLISHER)) {
+            clauses.add("workflow_state IN ('Draft', 'Approved', 'RfPublication')");
+        }
+        if (hasRole(credentials, CsafRoles.ROLE_REVIEWER)) {
+            clauses.add("(workflow_state = 'Review' AND owner <> " + compiler.bindText(credentials.getName()) + ")");
+        }
+        return "(" + String.join(" OR ", clauses) + ")";
+    }
+
+    private boolean hasRole(Authentication credentials, String role) {
+        return credentials.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(role::equals);
+    }
+}

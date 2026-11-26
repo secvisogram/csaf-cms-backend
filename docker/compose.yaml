@@ -99,7 +99,8 @@ services:
       OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
       # Points at the csaf-cms-backend container by default. For debugging, stop that container,
       # set CSAF_CMS_BACKEND_HOST=host.docker.internal in .env, and restart this service.
-      OAUTH2_PROXY_UPSTREAMS: "http://${CSAF_CMS_BACKEND_HOST}:${CSAF_CMS_BACKEND_PORT}/api/v1/"
+      # The path of each upstream is also the request path prefix it serves.
+      OAUTH2_PROXY_UPSTREAMS: "http://${CSAF_CMS_BACKEND_HOST}:${CSAF_CMS_BACKEND_PORT}/api/v1/,http://${CSAF_CMS_BACKEND_HOST}:${CSAF_CMS_BACKEND_PORT}/api/v2/"
       
       OAUTH2_PROXY_REVERSE_PROXY: "true"
       

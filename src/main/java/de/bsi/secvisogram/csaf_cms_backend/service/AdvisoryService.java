@@ -4,20 +4,20 @@ import de.bsi.secvisogram.csaf_cms_backend.config.CsafConfiguration;
 import de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles;
 import de.bsi.secvisogram.csaf_cms_backend.db.DatabaseException;
 import de.bsi.secvisogram.csaf_cms_backend.db.IdNotFoundException;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryListProjection;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryListQueryService;
-import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryVersionListProjection;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListPage;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListProjection;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListSort;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryPageProjection;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryVersionListProjection;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.UnsupportedFilterException;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.entity.*;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafException;
 import de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey;
 import de.bsi.secvisogram.csaf_cms_backend.json.*;
 import de.bsi.secvisogram.csaf_cms_backend.model.*;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.AndExpression;
 import de.bsi.secvisogram.csaf_cms_backend.model.filter.Expression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OperatorExpression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.OrExpression;
-import de.bsi.secvisogram.csaf_cms_backend.model.filter.TypeOfOperator;
 import de.bsi.secvisogram.csaf_cms_backend.mustache.JavascriptExporter;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateAdvisoryRequest;
 import de.bsi.secvisogram.csaf_cms_backend.rest.request.CreateCommentRequest;
@@ -54,6 +54,7 @@ import static de.bsi.secvisogram.csaf_cms_backend.config.CsafRoles.Role.AUDITOR;
 import static de.bsi.secvisogram.csaf_cms_backend.exception.CsafExceptionKey.*;
 import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Final;
 import static de.bsi.secvisogram.csaf_cms_backend.model.DocumentTrackingStatus.Interim;
+import static de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService.ALL_ENTRIES;
 import static de.bsi.secvisogram.csaf_cms_backend.service.AdvisoryWorkflowUtil.*;
 import static java.util.Collections.emptyList;
 import static org.springframework.http.HttpStatus.*;
@@ -200,6 +201,51 @@ public class AdvisoryService {
         return allResponses;
     }
 
+    /**
+     * One page of the advisories the user may see. Unlike {@link #getAdvisoryInformations}, version snapshots are
+     * not listed, also not for auditors. Filter and sort accept only fields that are stored as columns.
+     *
+     * @param expression optional filter expression as JSON, see the list endpoint
+     * @param page       zero-based page number
+     * @param size       entries per page, at least 1, or {@link AdvisoryListQueryService#ALL_ENTRIES} for all entries
+     *                   (then page must be 0)
+     * @param sort       sort criteria {@code field} or {@code field,asc|desc}; empty sorts by lastUpdated, newest first
+     * @throws CsafException BAD_REQUEST for an unsupported filter, sort field or page parameter
+     */
+    @Secured({CsafRoles.ROLE_REGISTERED, CsafRoles.ROLE_AUDITOR})
+    @Transactional(readOnly = true)
+    public AdvisoryPageResponse getAdvisoryPage(String expression, int page, int size, List<String> sort)
+            throws CsafException {
+
+        if (page < 0 || (size < 1 && size != ALL_ENTRIES)) {
+            throw new CsafException("page must be >= 0 and size >= 1, or size " + ALL_ENTRIES + " for all entries",
+                    InvalidListParameter, BAD_REQUEST);
+        }
+        if (size == ALL_ENTRIES && page != 0) {
+            throw new CsafException("size " + ALL_ENTRIES + " reads all entries, so page must be 0",
+                    InvalidListParameter, BAD_REQUEST);
+        }
+        List<AdvisoryListSort> sortCriteria = AdvisoryListSort.parse(sort);
+        Authentication credentials = getAuthentication();
+        Expression parsedExpr = parseFilterExpression(expression);
+
+        AdvisoryListPage result;
+        try {
+            result = advisoryListQueryService.findAdvisoryPage(parsedExpr, sortCriteria, page, size, credentials);
+        } catch (UnsupportedFilterException ex) {
+            throw new CsafException("Invalid filter expression: " + ex.getMessage(), InvalidFilterExpression,
+                    BAD_REQUEST);
+        }
+
+        List<AdvisoryInformationPageResponse> items = new ArrayList<>();
+        for (AdvisoryPageProjection projection : result.advisories()) {
+            AdvisoryInformationPageResponse response = toAdvisoryInformationPageResponse(projection);
+            enrichAdvisory(response, credentials);
+            items.add(response);
+        }
+        return new AdvisoryPageResponse(items, page, size, result.total());
+    }
+
     private Expression parseFilterExpression(String expression) throws CsafException {
         if (expression == null || expression.isBlank()) {
             return null;
@@ -221,7 +267,11 @@ public class AdvisoryService {
     }
 
     private AdvisoryInformationResponse toAdvisoryInformationResponse(AdvisoryListProjection projection) {
-        AdvisoryInformationResponse response = new AdvisoryInformationResponse(projection.advisoryId());
+        return fillAdvisoryInformationResponse(new AdvisoryInformationResponse(projection.advisoryId()), projection);
+    }
+
+    private static <T extends AdvisoryInformationResponse> T fillAdvisoryInformationResponse(
+            T response, AdvisoryListProjection projection) {
         response.setWorkflowState(projection.workflowState());
         response.setOwner(projection.owner());
         response.setRevision(String.valueOf(projection.version()));
@@ -229,6 +279,28 @@ public class AdvisoryService {
         response.setTitle(projection.title());
         response.setCurrentReleaseDate(projection.currentReleaseDate());
         response.setLastUpdated(projection.lastUpdated());
+        response.setCreatedAt(projection.createdAt());
+        return response;
+    }
+
+    private static AdvisoryInformationPageResponse toAdvisoryInformationPageResponse(
+            AdvisoryPageProjection projection) {
+        AdvisoryInformationPageResponse response = fillAdvisoryInformationResponse(
+                new AdvisoryInformationPageResponse(projection.base().advisoryId()), projection.base());
+        response.setTrackingVersion(projection.trackingVersion());
+        response.setTrackingStatus(projection.trackingStatus());
+        response.setCategory(projection.category());
+        response.setTlp(projection.tlp());
+        response.setInitialReleaseDate(projection.initialReleaseDate());
+        response.setPublisherName(projection.publisherName());
+        response.setRevisionHistoryLength(projection.revisionHistoryLength());
+        response.setCvssV2Score(projection.cvssV2Score());
+        response.setCvssV3Score(projection.cvssV3Score());
+        response.setCvssV4Score(projection.cvssV4Score());
+        response.setCritical(projection.critical());
+        response.setCves(projection.cves());
+        response.setVulnerabilityIds(projection.vulnerabilityIds());
+        response.setAliases(projection.aliases());
         return response;
     }
 
@@ -251,116 +323,6 @@ public class AdvisoryService {
         response.setTitle(projection.title());
         response.setCurrentReleaseDate(projection.currentReleaseDate());
         return response;
-    }
-
-    /**
-     * Recursively evaluate an {@link Expression} against the entity's CSAF JSON.
-     */
-    private boolean evaluateCsafExpression(Expression expr, JsonNode csafJson) {
-
-        if (expr instanceof OperatorExpression opExpr) {
-            return evaluateCsafOperator(opExpr, csafJson);
-        }
-        if (expr instanceof AndExpression andExpr) {
-            for (Expression child : andExpr.getExpressions()) {
-                if (!evaluateCsafExpression(child, csafJson)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        if (expr instanceof OrExpression orExpr) {
-            for (Expression child : orExpr.getExpressions()) {
-                if (evaluateCsafExpression(child, csafJson)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Evaluate a single operator expression against the CSAF JSON.
-     * The selector path starts with "csaf" (e.g. ["csaf","document","title"]);
-     * the "csaf" prefix is stripped and the remainder is used to navigate the JSON tree.
-     * Array nodes are traversed recursively so that a match in any element qualifies.
-     */
-    private boolean evaluateCsafOperator(
-            OperatorExpression opExpr,
-            JsonNode csafJson) {
-
-        String[] path = opExpr.getSelector();
-        String filterValue = opExpr.getValue();
-
-        // Strip "csaf" prefix; remaining segments address the CSAF JSON
-        int startIdx = (path.length > 0 && "csaf".equals(path[0])) ? 1 : 0;
-        String[] csafPath = Arrays.copyOfRange(path, startIdx, path.length);
-
-        List<String> values = collectJsonValues(csafJson, csafPath, 0);
-        if (values.isEmpty()) {
-            return false;
-        }
-
-        return values.stream().anyMatch(value -> matchesOperator(opExpr.getOperatorType(), value, filterValue));
-    }
-
-    /**
-     * Collect all text values reachable by following the given path segments through the JSON tree.
-     * When an array node is encountered at any level, the remaining path is applied to each element.
-     */
-    private List<String> collectJsonValues(JsonNode node, String[] pathSegments, int segmentIndex) {
-
-        if (node == null || node.isMissingNode() || node.isNull()) {
-            return List.of();
-        }
-        if (segmentIndex >= pathSegments.length) {
-            // Reached the target depth — collect value(s)
-            if (node.isArray()) {
-                List<String> result = new ArrayList<>();
-                for (JsonNode element : node) {
-                    if (element.isValueNode()) {
-                        result.add(element.asString());
-                    }
-                }
-                return result;
-            }
-            if (node.isValueNode()) {
-                return List.of(node.asString());
-            }
-            return List.of();
-        }
-
-        String segment = pathSegments[segmentIndex];
-        if (node.isArray()) {
-            // Apply current segment to each array element
-            List<String> result = new ArrayList<>();
-            for (JsonNode element : node) {
-                result.addAll(collectJsonValues(element, pathSegments, segmentIndex));
-            }
-            return result;
-        }
-        // Navigate into the child
-        JsonNode child = node.get(segment);
-        return collectJsonValues(child, pathSegments, segmentIndex + 1);
-    }
-
-    /**
-     * Check whether a single string value matches the filter using the given operator.
-     */
-    private boolean matchesOperator(
-            TypeOfOperator operatorType,
-            String fieldValue, String filterValue) {
-
-        return switch (operatorType) {
-            case Equal -> fieldValue.equals(filterValue);
-            case NotEqual -> !fieldValue.equals(filterValue);
-            case ContainsIgnoreCase -> fieldValue.toLowerCase().contains(filterValue.toLowerCase());
-            case Greater -> fieldValue.compareTo(filterValue) > 0;
-            case GreaterOrEqual -> fieldValue.compareTo(filterValue) >= 0;
-            case Less -> fieldValue.compareTo(filterValue) < 0;
-            case LessOrEqual -> fieldValue.compareTo(filterValue) <= 0;
-        };
     }
 
     private void enrichAdvisory(AdvisoryInformationResponse response, Authentication credentials) {

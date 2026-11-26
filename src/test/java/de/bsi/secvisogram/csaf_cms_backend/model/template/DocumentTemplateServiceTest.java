@@ -16,7 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import de.bsi.secvisogram.csaf_cms_backend.postgres.AdvisoryListQueryService;
+import de.bsi.secvisogram.csaf_cms_backend.postgres.query.AdvisoryListQueryService;
 import de.bsi.secvisogram.csaf_cms_backend.postgres.PostgresRepositoryService;
 
 @SpringBootTest(properties = {

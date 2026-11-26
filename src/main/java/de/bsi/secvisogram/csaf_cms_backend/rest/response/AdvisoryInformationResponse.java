@@ -25,6 +25,7 @@ public class AdvisoryInformationResponse {
 
     private String currentReleaseDate;
     private String lastUpdated;
+    private String createdAt;
 
     public AdvisoryInformationResponse() {
 
@@ -175,6 +176,15 @@ public class AdvisoryInformationResponse {
 
     public AdvisoryInformationResponse setLastUpdated(String lastUpdated) {
         this.lastUpdated = lastUpdated;
+        return this;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public AdvisoryInformationResponse setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
         return this;
     }
 
