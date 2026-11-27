@@ -5,7 +5,7 @@ name: Nightly Docker Compose Tests
 
 on:
   schedule:
-    - cron: '0 2 * * *' # 02:00 UTC
+    - cron: '23 2 * * *' # 02:00 UTC
   workflow_dispatch:
 
 jobs:
