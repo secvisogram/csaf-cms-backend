@@ -28,7 +28,7 @@
 [CmdletBinding()]
 param(
     [string]$TestPlan = "test-plans/smoke-test.jmx",
-    [string]$JMeterImage = "justb4/jmeter:5.5",
+    [string]$JMeterImage = "alpine/jmeter:5.6.3",
     [string]$JMeterHeap = "8g",
 
     # Container CLI: auto-detected by default (docker or nerdctl)
@@ -106,14 +106,18 @@ $HostOverride = "host.docker.internal"
 $prevEAP = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 $cliInfo = $null
+$cliInfoExit = 1
 try {
     $cliInfo = cmd /c "$Cli info 2>&1"
+    $cliInfoExit = $LASTEXITCODE
     $cliInfo = $cliInfo -join "`n"
 } catch { }
 $ErrorActionPreference = $prevEAP
 
-if ([string]::IsNullOrWhiteSpace($cliInfo)) {
-    Write-Error "$Cli is not running. Start Rancher Desktop first."
+# 'docker info' prints client details even when the daemon is unreachable,
+# so the output alone is not enough - the exit code tells us if the daemon is up.
+if ($cliInfoExit -ne 0 -or [string]::IsNullOrWhiteSpace($cliInfo)) {
+    Write-Error "$Cli daemon is not running. Start Rancher Desktop or Docker Desktop first."
     exit 1
 }
 
