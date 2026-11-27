@@ -1,0 +1,43 @@
+# Local CSAF CMS and Keycloak defaults. Override these values for another environment.
+@keycloakBaseUrl = http://localhost:9000
+@apiBaseUrl = http://localhost:8081/api/v1
+@realm = csaf
+@clientId = secvisogram
+@clientSecret = dev-only-3f8a1c7e2b9d4f6a0e5c8b3d7a1f9e2c
+@username = publisher
+@password = publisher
+# Replace with an advisory UUID returned by the list request.
+@advisoryId = 24525992-7886-42ed-a9c1-cb3e87e6b264
+
+# Obtain an access token for the CMS API.
+POST {{keycloakBaseUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&client_secret={{clientSecret}}&username={{username}}&password={{password}}
+
+> {%
+    client.global.set("accessToken", response.body.access_token);
+%}
+
+###
+
+# List all advisories visible to this user with vulnerability CVE-2002-0012.
+GET {{apiBaseUrl}}/advisories?expression=%7B%22type%22%3A%22Operator%22%2C%22selector%22%3A%5B%22csaf%22%2C%22vulnerabilities%22%2C%22cve%22%5D%2C%22operatorType%22%3A%22Equal%22%2C%22value%22%3A%22CVE-2002-0012%22%2C%22valueType%22%3A%22Text%22%7D
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+###
+
+# can ist all advisories whose revision_history contains summary "Imported Red Hat advisory RHSA-2020:5422."
+# Decoded expression: {"type":"Operator","selector":["csaf","document","tracking","revision_history","summary"],"operatorType":"Equal","value":"Imported Red Hat advisory RHSA-2020:5422.","valueType":"Text"}
+GET {{apiBaseUrl}}/advisories?expression=%7B%22type%22%3A%22Operator%22%2C%22selector%22%3A%5B%22csaf%22%2C%22document%22%2C%22tracking%22%2C%22revision_history%22%2C%22summary%22%5D%2C%22operatorType%22%3A%22Equal%22%2C%22value%22%3A%22Imported%20Red%20Hat%20advisory%20RHSA-2020%3A5422.%22%2C%22valueType%22%3A%22Text%22%7D
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
+
+# Load one advisory by its UUID.
+GET {{apiBaseUrl}}/advisories/{{advisoryId}}
+Accept: application/json
+Authorization: Bearer {{accessToken}}

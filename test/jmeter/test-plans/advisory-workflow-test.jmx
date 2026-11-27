@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <!-- ================================================================== -->
+    <!-- Test Plan: CSAF CMS Backend - Advisory Workflow                     -->
+    <!--                                                                      -->
+    <!-- Exercises the complete advisory lifecycle using separate author,    -->
+    <!-- reviewer, and publisher credentials. This satisfies the default     -->
+    <!-- rule that an author may not approve their own advisory.              -->
+    <!--                                                                      -->
+    <!-- Usage:                                                               -->
+    <!--   bash jmeter/run.sh test-plans/advisory-workflow-test.jmx -Jthreads=5 -Jloops=20 -->
+    <!-- ================================================================== -->
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CSAF CMS Backend - Advisory Workflow Test" enabled="true">
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="API_HOST" elementType="Argument"><stringProp name="Argument.name">API_HOST</stringProp><stringProp name="Argument.value">${__P(api.host,localhost)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="API_PORT" elementType="Argument"><stringProp name="Argument.name">API_PORT</stringProp><stringProp name="Argument.value">${__P(api.port,8081)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="AUTHOR_USERNAME" elementType="Argument"><stringProp name="Argument.name">AUTHOR_USERNAME</stringProp><stringProp name="Argument.value">${__P(author.username,author)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="AUTHOR_PASSWORD" elementType="Argument"><stringProp name="Argument.name">AUTHOR_PASSWORD</stringProp><stringProp name="Argument.value">${__P(author.password,author)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="REVIEWER_USERNAME" elementType="Argument"><stringProp name="Argument.name">REVIEWER_USERNAME</stringProp><stringProp name="Argument.value">${__P(reviewer.username,reviewer)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="REVIEWER_PASSWORD" elementType="Argument"><stringProp name="Argument.name">REVIEWER_PASSWORD</stringProp><stringProp name="Argument.value">${__P(reviewer.password,reviewer)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="PUBLISHER_USERNAME" elementType="Argument"><stringProp name="Argument.name">PUBLISHER_USERNAME</stringProp><stringProp name="Argument.value">${__P(publisher.username,publisher)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="PUBLISHER_PASSWORD" elementType="Argument"><stringProp name="Argument.name">PUBLISHER_PASSWORD</stringProp><stringProp name="Argument.value">${__P(publisher.password,publisher)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <!-- Acquire one JWT for each workflow role and store it as a property. -->
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="01 - Authenticate workflow users" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">1</stringProp><stringProp name="ThreadGroup.ramp_time">0</stringProp><stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController"><stringProp name="LoopController.loops">1</stringProp><boolProp name="LoopController.continue_forever">false</boolProp></elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Authenticate author" enabled="true"/>
+        <hashTree>
+          <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="Credentials" enabled="true">
+            <collectionProp name="UserParameters.names">
+              <stringProp name="1">KC_USERNAME</stringProp>
+              <stringProp name="2">KC_PASSWORD</stringProp>
+              <stringProp name="3">KC_TOKEN_NAME</stringProp>
+            </collectionProp>
+            <collectionProp name="UserParameters.thread_values">
+              <collectionProp name="1">
+                <stringProp name="1">${AUTHOR_USERNAME}</stringProp>
+                <stringProp name="2">${AUTHOR_PASSWORD}</stringProp>
+                <stringProp name="3">AUTHOR_TOKEN</stringProp>
+              </collectionProp>
+            </collectionProp>
+            <boolProp name="UserParameters.per_iteration">false</boolProp>
+          </UserParameters>
+          <hashTree/>
+          <!-- Shared Keycloak login, see fragments/keycloak-token.jmx -->
+          <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="Keycloak token" enabled="true">
+            <stringProp name="IncludeController.includepath">fragments/keycloak-token.jmx</stringProp>
+          </IncludeController>
+          <hashTree/>
+        </hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Authenticate reviewer" enabled="true"/>
+        <hashTree>
+          <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="Credentials" enabled="true">
+            <collectionProp name="UserParameters.names">
+              <stringProp name="1">KC_USERNAME</stringProp>
+              <stringProp name="2">KC_PASSWORD</stringProp>
+              <stringProp name="3">KC_TOKEN_NAME</stringProp>
+            </collectionProp>
+            <collectionProp name="UserParameters.thread_values">
+              <collectionProp name="1">
+                <stringProp name="1">${REVIEWER_USERNAME}</stringProp>
+                <stringProp name="2">${REVIEWER_PASSWORD}</stringProp>
+                <stringProp name="3">REVIEWER_TOKEN</stringProp>
+              </collectionProp>
+            </collectionProp>
+            <boolProp name="UserParameters.per_iteration">false</boolProp>
+          </UserParameters>
+          <hashTree/>
+          <!-- Shared Keycloak login, see fragments/keycloak-token.jmx -->
+          <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="Keycloak token" enabled="true">
+            <stringProp name="IncludeController.includepath">fragments/keycloak-token.jmx</stringProp>
+          </IncludeController>
+          <hashTree/>
+        </hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Authenticate publisher" enabled="true"/>
+        <hashTree>
+          <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="Credentials" enabled="true">
+            <collectionProp name="UserParameters.names">
+              <stringProp name="1">KC_USERNAME</stringProp>
+              <stringProp name="2">KC_PASSWORD</stringProp>
+              <stringProp name="3">KC_TOKEN_NAME</stringProp>
+            </collectionProp>
+            <collectionProp name="UserParameters.thread_values">
+              <collectionProp name="1">
+                <stringProp name="1">${PUBLISHER_USERNAME}</stringProp>
+                <stringProp name="2">${PUBLISHER_PASSWORD}</stringProp>
+                <stringProp name="3">PUBLISHER_TOKEN</stringProp>
+              </collectionProp>
+            </collectionProp>
+            <boolProp name="UserParameters.per_iteration">false</boolProp>
+          </UserParameters>
+          <hashTree/>
+          <!-- Shared Keycloak login, see fragments/keycloak-token.jmx -->
+          <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="Keycloak token" enabled="true">
+            <stringProp name="IncludeController.includepath">fragments/keycloak-token.jmx</stringProp>
+          </IncludeController>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="02 - Advisory workflow" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,5)}</stringProp><stringProp name="ThreadGroup.ramp_time">${__P(rampup,0)}</stringProp><stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController"><stringProp name="LoopController.loops">${__P(loops,20)}</stringProp><boolProp name="LoopController.continue_forever">false</boolProp></elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- Backend target: samplers below only specify method + path -->
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults (API)" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.domain">${API_HOST}</stringProp><stringProp name="HTTPSampler.port">${API_PORT}</stringProp><stringProp name="HTTPSampler.protocol">http</stringProp></ConfigTestElement><hashTree/>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true"><collectionProp name="CookieManager.cookies"/><boolProp name="CookieManager.clearEachIteration">true</boolProp></CookieManager><hashTree/>
+        <!-- The backend uses a cookie CSRF token when CSRF protection is enabled. -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /about (obtain CSRF cookie)" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/about</stringProp><stringProp name="HTTPSampler.method">GET</stringProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp></HTTPSamplerProxy>
+        <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract CSRF token" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">vars.put('XSRF_TOKEN', vars.get('COOKIE_XSRF-TOKEN') ?: '')</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Author: create, submit, create version, and submit version" enabled="true"/>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Author headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(AUTHOR_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /advisories (create advisory)" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories</stringProp><stringProp name="HTTPSampler.method">POST</stringProp><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{
+  "summary": "JMeter advisory workflow test",
+  "csaf": {
+    "document": {
+      "category": "generic_csaf", "csaf_version": "2.0",
+      "publisher": { "category": "coordinator", "name": "exxcellent", "namespace": "https://exxcellent.de" },
+      "title": "JMeter Workflow ${__Random(10000,99999)}",
+      "tracking": {
+        "current_release_date": "2022-01-11T11:00:00.000Z", "initial_release_date": "2022-01-12T11:00:00.000Z",
+        "id": "JMeter-Workflow-${__UUID}", "status": "draft", "version": "0.0.1",
+        "revision_history": [{ "date": "2022-01-12T11:00:00.000Z", "number": "0.0.1", "summary": "JMeter advisory workflow test" }],
+        "generator": { "date": "2022-01-11T04:07:27.246Z", "engine": { "version": "1.10.0", "name": "JMeter" } }
+      },
+      "acknowledgments": [{ "names": ["JMeter"], "organization": "exxcellent", "summary": "Workflow test", "urls": ["https://exxcellent.de"] }]
+    }
+  }
+}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp></HTTPSamplerProxy>
+          <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 201" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">201</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract advisory ID and initial revision" enabled="true"><stringProp name="JSONPostProcessor.referenceNames">advisoryId;initialRevision</stringProp><stringProp name="JSONPostProcessor.jsonPathExprs">$.id;$.revision</stringProp><stringProp name="JSONPostProcessor.match_numbers">1;1</stringProp><stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND;NOT_FOUND</stringProp></JSONPostProcessor><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Initialize revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">vars.put('revision', vars.get('initialRevision'))</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH Draft to Review" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Review?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        </hashTree>
+
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Reviewer: approve initial advisory" enabled="true"/>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Reviewer headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(REVIEWER_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH Review to Approved" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Approved?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        </hashTree>
+
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Publisher: Approved to Draft, then publish" enabled="true"/>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Publisher headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(PUBLISHER_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH Approved to Draft" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Draft?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        </hashTree>
+
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Author: re-submit, request publication, and create new version" enabled="true"/>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Author headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(AUTHOR_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH Draft to Review (again)" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Review?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        </hashTree>
+
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Reviewer: approve re-submitted advisory and new version" enabled="true"/>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Reviewer headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(REVIEWER_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH Review to Approved (again)" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Approved?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+          <hashTree><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        </hashTree>
+
+        <!-- The remaining publication and version steps use publisher/author/reviewer headers. -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH Approved to RfPublication" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/RfPublication?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Author mutation headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(AUTHOR_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="TestBeanGUI" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH RfPublication to Published" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Published?revision=${revision}&amp;documentTrackingStatus=Final</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Publisher mutation headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(PUBLISHER_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH create new version" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/createNewVersion?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Author mutation headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(AUTHOR_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH new version Draft to Review" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Review?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Author mutation headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(AUTHOR_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/><JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Store returned revision" enabled="true"><stringProp name="scriptLanguage">groovy</stringProp><stringProp name="script">def updatedRevision = prev.getResponseDataAsString().trim(); if (!(updatedRevision ==~ /^\d+(?:-[0-9a-fA-F]+)?$/)) { prev.setSuccessful(false); prev.setResponseMessage('Workflow state update did not return a valid PostgreSQL or CouchDB revision'); ctx.getThread().stop(); return }; vars.put('revision', updatedRevision)</stringProp></JSR223PostProcessor><hashTree/></hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH new version Review to Approved" enabled="true"><stringProp name="HTTPSampler.path">/api/v1/advisories/${advisoryId}/workflowstate/Approved?revision=${revision}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+        <hashTree><HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Reviewer mutation headers" enabled="true"><collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">Authorization</stringProp><stringProp name="Header.value">Bearer ${__P(REVIEWER_TOKEN,)}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${XSRF_TOKEN}</stringProp></elementProp></collectionProp></HeaderManager><hashTree/><ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="">200</stringProp></collectionProp><stringProp name="Assertion.test_field">Assertion.response_code</stringProp><intProp name="Assertion.test_type">8</intProp></ResponseAssertion><hashTree/></hashTree>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true"><boolProp name="ResultCollector.error_logging">false</boolProp><stringProp name="filename"></stringProp></ResultCollector><hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
